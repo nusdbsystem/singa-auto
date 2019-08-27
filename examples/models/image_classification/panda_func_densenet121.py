@@ -21,7 +21,6 @@ from torchvision.models.vgg import vgg19_bn
 from torchvision.models.alexnet import alexnet
 ### pydensenet
 from torch.utils.data import Dataset, DataLoader
-
 # from panda import *
 import sklearn.metrics
 import pickle
@@ -29,10 +28,6 @@ import base64
 #from generic_models.densenet import densenet121
 import abc
 from typing import Union, Dict, Optional, Any, List
-
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.python.client import device_lib
 
 import tempfile
 import numpy as np
@@ -129,7 +124,7 @@ class panda_func_densenet121(BaseModel):
         return {
             'max_epochs': FixedKnob(10), 
             # 'learning_rate': FloatKnob(1e-5, 1e-2, is_exp=True),
-            'batch_size': CategoricalKnob([8]),
+            'batch_size': CategoricalKnob([4]),
             # 'max_image_size': CategoricalKnob([512]),
             'max_iter': FixedKnob(20),
             # 'kernel': CategoricalKnob(['rbf', 'linear', 'poly']),

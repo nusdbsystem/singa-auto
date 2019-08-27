@@ -150,3 +150,14 @@ class BaseModel(abc.ABC):
         Runs class-wide teardown logic (e.g. close a training session shared across trials).
         '''
         pass
+
+
+class PandaModel(BaseModel):
+    def __init__(self, **knobs: Knobs):
+        super(PandaModel).__init__(**knobs)
+
+    @abc.abstractmethod
+    def local_explain(self, queries, params: Params):
+        raise NotImplementedError()
+
+    
