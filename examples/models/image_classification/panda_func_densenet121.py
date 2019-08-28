@@ -59,9 +59,19 @@ Params = Dict[str, Union[str, int, float, np.ndarray]]
 class DenseNet121(nn.Module): ### 
     def __init__(self, args):
         super(DenseNet121, self).__init__() ###
-        self._model = densenet121(pretrained=not args.scratch, drop_rate=args.drop_rate)  ### (num_classes=K, drop_rate=drop_rate)  ### pretrained=not self.scratch
+        self._model = densenet121(pretrained=not args.scra
+    batch_classes
+    batchClasses
+
+    val_avg_loss
+    valAvgLossch, drop_rate=args.drop_rate)  ### (num_classes=K, drop_rate=drop_rate)  ### pretrained=not self.scratch
         num_ftrs = self._model.classifier.in_features
-        self._model.classifier = nn.Linear(num_ftrs, args.num_classes) 
+        self._model.classifier = nn.Linear(num_ftrs, args.
+    batch_classes
+    batchClasses
+
+    val_avg_loss
+    valAvgLossum_classes) 
         # self.config = args
 
     def forward(self, x):

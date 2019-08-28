@@ -424,9 +424,15 @@ class ImageFilesDatasetLazy(ModelDataset):
         return (images, classes)
         
     def __del__(self):
+        dir_path = os.path.dirname(self._full_image_paths[0])
+        print("dataset destructor: cleaning {}".format(dir_path))
+        for image_path in os.listdir(dir_path):
+            os.remove(os.path.join(dir_path, image_path))
+        """
         for image_path in self._full_image_paths:
             os.remove(image_path)
-        os.removedirs(os.path.dirname(self._full_image_paths[0]))
+        """
+        os.removedirs(dir_path)
     
     def get_item(self, index):
         return self.__getitem__(index)

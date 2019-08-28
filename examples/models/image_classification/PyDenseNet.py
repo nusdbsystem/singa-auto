@@ -1,16 +1,11 @@
 from __future__ import division
 from __future__ import print_function
 import numpy as np
-import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import os
 import sys
-import pprint
-import json
-import time
-from PIL import Image
 from torch.optim import lr_scheduler
 from torch.autograd import Variable
 import torchvision.transforms as transforms
@@ -67,13 +62,13 @@ class PyDenseNet(BaseModel):
         #The following parameters are determined when training dataset is loaded
         self._normalize_mean = []
         self._normalize_std = []
-        self._num_classes = []
+        self._num_classes = 2
 
     @staticmethod
     def get_knob_config():
         return {
-            'max_epochs': FixedKnob(10), 
-            'batch_size': CategoricalKnob([4]),
+            'max_epochs': FixedKnob(1), 
+            'batch_size': CategoricalKnob([32]),
             'max_iter': FixedKnob(20),
             'max_image_size': FixedKnob(32),   ### scale 
             'share_params': CategoricalKnob(['SHARE_PARAMS']),
@@ -98,7 +93,7 @@ class PyDenseNet(BaseModel):
 
         }
 
-    def get_peformance_metrics(self, gts, probabilities, use_only_index = None):
+    def get_peformance_metrics(self, gts: np.ndarray, probabilities: np.ndarray, use_only_index = None):
         assert(np.all(probabilities >= 0) == True)
         assert(np.all(probabilities <= 1) == True)
 
@@ -118,11 +113,11 @@ class PyDenseNet(BaseModel):
         counts = []
         preds = probabilities >= 0.5
 
-        classes = [use_only_index] if use_only_index is not None else range(self.num_classes)
+        classes = [use_only_index] if use_only_index is not None else range(self._num_classes)
 
-        for i in classes: ### i for each pathology
+        for i in classes:
             try:
-                PR_AUC, ROC_AUC, F1, acc, count = compute_metrics_for_class(i) ### i for each pathology
+                PR_AUC, ROC_AUC, F1, acc, count = compute_metrics_for_class(i)
             except ValueError:
                 continue
             PR_AUCs.append(PR_AUC)
@@ -130,20 +125,21 @@ class PyDenseNet(BaseModel):
             F1s.append(F1)
             accs.append(acc)
             counts.append(count)
-            # print('Class: {!s} Count: {:d} PR AUC: {:.4f} ROC AUC: {:.4f} F1: {:.3f} Acc: {:.3f}'.format(self.pathologies[i], count, PR_AUC, ROC_AUC, F1, acc))
+
+            print('Class: {:3d} Count: {:6d} PR AUC: {:.4f} ROC AUC: {:.4f} F1: {:.3f} Acc: {:.3f}'.format(i, count, PR_AUC, ROC_AUC, F1, acc))
 
         avg_PR_AUC = np.average(PR_AUCs)
-        ### what if count == 0 ???
         avg_ROC_AUC = np.average(ROC_AUCs, weights=counts)  
         avg_F1 = np.average(F1s, weights=counts)
 
         print('Avg PR AUC: {:.3f}'.format(avg_PR_AUC))
         print('Avg ROC AUC: {:.3f}'.format(avg_ROC_AUC))
         print('Avg F1: {:.3f}'.format(avg_F1))
-        return avg_PR_AUC, avg_ROC_AUC, avg_F1, sum(accs)/classes
+        return avg_PR_AUC, avg_ROC_AUC, avg_F1, np.mean(accs)
 
-    def train(self, dataset_path, **kwargs):###  args
+    def train(self, dataset_path: str, shared_params: Optional[Params] = None, **train_args):
         """
+        Overide BaseModel.train()
         Train the model with given dataset_path
 
         parameters:
@@ -151,7 +147,9 @@ class PyDenseNet(BaseModel):
                 type: str
             **kwargs:
                 optional arguments
-
+        
+        return:
+            nothing
         """
         num_classes = 2
         dataset = utils.dataset.load_dataset_of_image_files(
@@ -167,7 +165,7 @@ class PyDenseNet(BaseModel):
         self._normalize_std = std
 
         # construct the model
-        self._model = DenseNet121(self._knobs.get("scratch"), self._knobs.get("drop_rate"), num_classes)
+        self._model = DenseNet121(scratch=True, drop_rate=0, num_classes=2)
 
         train_dataset = ImageDataset(
             rafiki_dataset=dataset, 
@@ -204,7 +202,7 @@ class PyDenseNet(BaseModel):
             self._model = self._model.cuda()
         except: 
             pass
-
+        
         for epoch in range(1, self.max_epochs + 1):
             print("Epoch {}/{}".format(epoch, self.max_epochs))
             print("-" * 10)
@@ -224,7 +222,6 @@ class PyDenseNet(BaseModel):
             train_loss = np.mean(batch_losses)
             print("Training Loss: {:.6f}".format(train_loss))
         
-
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path, 
@@ -258,66 +255,99 @@ class PyDenseNet(BaseModel):
 
                 batch_losses.append(loss.item())
 
-                outs.extend(outputs)
-                gts.extend(labels)
+                outs.extend(torch.sigmoid(outputs).cpu().numpy())
+                gts.extend(labels.cpu().numpy())
+                print("Batch: {:d}".format(batch_idx))
 
         valid_loss = np.mean(batch_losses)
-
         print("Validation Loss: {:.6f}".format(valid_loss))
+        gts = np.array(gts)
+        outs = np.array(outs)
 
-        _, epoch_auc, _, acc = self.get_peformance_metrics(gts=gts, probabilities=outs)
+        # in case that the ground truth has only one dimension 
+        # i.e. is size of (N,) with integer elements of 0...C-1, where C is the number of classes
+        # the ground truth array has to be "one hot" encoded for evaluating the performance metric
+        if len(gts.shape) == 1:
+            gts = np.eye(self._num_classes)[gts].astype(np.int64)
 
-        return acc
+        pr_auc, roc_auc, f1, acc = self.get_peformance_metrics(gts=np.array(gts), probabilities=np.array(outs))
 
-    def predict(self, queries):
-        outs = []
+        return f1
+
+    def predict(self, queries: List[Any]) -> List[Any]:
+        """
+        Overide BaseModel.predict()
+        Making prediction using queries
+
+        Parameters:
+            queries: list of quries
+        Return:
+            outs: list of numbers indicating scores of classes
+        """
         images = utils.dataset.transform_images(queries, image_size=128, mode='RGB')
         (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
 
-        self._model.eval()
-
-        with torch.no_grad():
+        try:
+            self._model.cuda()
+        except:
             pass
 
-        return outs
+        self._model.eval()
+
+        # images are size of (B, W, H, C)
+        with torch.no_grad():
+            try:
+                images = torch.FloatTensor(images).permute(0, 3, 1, 2).cuda()
+            except:
+                images = torch.FloatTensor(images).permute(0, 3, 1, 2)
+
+            outs = self._model(images)
+            outs = torch.sigmoid(outs).cpu()
+
+        return outs.tolist()
 
     def dump_parameters(self):
         params = {}
-        # Save model parameters
-        model_bytes = pickle.dumps(self._model)
-        model_base64 = base64.b64encode(model_bytes).decode('utf-8')
-        params['model_base64'] = model_base64
-        # Save image size
-        params['image_size'] = self._image_size 
 
-        # self._model.save(tmp.name) ### save model  
+        # Save model parameters
+        with tempfile.NamedTemporaryFile() as tmp:
+            # Save whole model to temp h5 file
+            state_dict = self._model.state_dict()
+            torch.save(state_dict, tmp.name)
+        
+            # Read from temp h5 file & encode it to base64 string
+            with open(tmp.name, 'rb') as f:
+                h5_model_bytes = f.read()
+
+            params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode('utf-8')
+
+        # Save pre-processing params
+        params['image_size'] = self._image_size
+        params['normalize_mean'] = json.dumps(self._normalize_mean)
+        params['normalize_std'] = json.dumps(self._normalize_std)
+        params['num_classes'] = self._num_classes
+
         return params
 
     def load_parameters(self, params):
-        ### Load model params
-        # model_base64 = params['model_base64']
-        # model_bytes = base64.b64decode(model_base64.encode('utf-8'))
-        # Load image size
+        # Load model parameters
+        h5_model_base64 = params['h5_model_base64']
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            # Convert back to bytes & write to temp file
+            h5_model_bytes = base64.b64decode(h5_model_base64.encode('utf-8'))
+            with open(tmp.name, 'wb') as f:
+                f.write(h5_model_bytes)
+
+            # Load model from temp file
+            self._model = DenseNet121(scratch=True, drop_rate=0, num_classes=2)
+            self._model.load_state_dict(torch.load(tmp.name))
+        
+        # Load pre-processing params
         self._image_size = params['image_size']
-
-        ### load model
-        # self._model = keras.models.load_model(tmp.name)  
-        # if args.model == "densenet":
-        model = DenseNet121(params)
-        try: model.load_state_dict(torch.load('densenet.ckpt'))  ### tmp.name
-        except: model.load_state_dict(torch.load('densenet.ckpt',map_location='cpu'))
-        model.eval()
-        try: model = model.cuda()
-        except: pass
-        self._model =model
-
-        ### params for normalization 
-        # self._normalize_mean = json.loads(params['normalize_mean'])
-        # self._normalize_std = json.loads(params['normalize_std'])
-
-        ### add seed
-
-        lr = self._knobs.get('lr') or self.lr
+        self._normalize_mean = json.loads(params['normalize_mean'])
+        self._normalize_std = json.loads(params['normalize_std'])
+        self._num_classes = params['num_classes']
 
     def _transform_data(self, data, labels, train=False):
         """
