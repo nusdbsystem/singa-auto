@@ -22,7 +22,7 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 from torch.autograd import Variable
 import torchvision.transforms as transforms
-from torchvision.models.densenet import densenet121
+from torchvision.models.vgg import vgg11_bn
 from torch.utils.data import Dataset, DataLoader
 
 # Misc Third-party Machine-Learning Dependency
@@ -35,19 +35,6 @@ from rafiki.panda.modelslicing.models import create_sr_scheduler, upgrade_dynami
 KnobConfig = Dict[str, BaseKnob]
 Knobs = Dict[str, Any]
 Params = Dict[str, Union[str, int, float, np.ndarray]]
-
-class DenseNet121(nn.Module):
-    """
-    Encapsulation of PyTorch pretrained DenseNet model
-    """
-    def __init__(self, scratch=False, drop_rate=0, num_classes=2):
-        super(DenseNet121, self).__init__()
-        self._model = densenet121(pretrained=not scratch, drop_rate=drop_rate)
-        num_features = self._model.classifier.in_features
-        self._model.classifier = nn.Linear(num_features, num_classes) 
-
-    def forward(self, x):
-        return self._model(x)
 
 class ImageDataset(Dataset):
     """
@@ -83,7 +70,7 @@ class ImageDataset(Dataset):
 
         return (image, image_class)
 
-class PyDenseNet(PandaModel):
+class PyVGG(PandaModel):
     """
     Implementation of PyTorch DenseNet
     """
@@ -104,6 +91,12 @@ class PyDenseNet(PandaModel):
         self._normalize_mean = []
         self._normalize_std = []
         self._num_classes = 2
+
+    def _create_model(self, scratch: bool, num_classes: int):
+        model = vgg11_bn(pretrained=not scratch)
+        num_features = 4096
+        model.classifier[6] = nn.Linear(num_features, num_classes) 
+        return model
 
     @staticmethod
     def get_knob_config():
@@ -217,10 +210,10 @@ class PyDenseNet(PandaModel):
         self._num_classes = dataset.classes
 
         # construct the model
-        self._model = DenseNet121(
-            scratch=True, 
-            drop_rate=0, 
-            num_classes=self._num_classes)
+        self._model = self._create_model(
+            scratch = self._knobs.get("scratch"),
+            num_classes = self._num_classes
+        )
         
         train_dataset = ImageDataset(
             rafiki_dataset=dataset, 
@@ -288,11 +281,6 @@ class PyDenseNet(PandaModel):
             max_image_size=self._knobs.get("max_image_size"), 
             mode='RGB',
             lazy_load=True)
-
-        """
-        mu = [0.48233507, 0.48233507, 0.48233507]
-        std = [0.07271624, 0.07271624, 0.07271624]
-        """
 
         torch_dataset = ImageDataset(
             rafiki_dataset=dataset,

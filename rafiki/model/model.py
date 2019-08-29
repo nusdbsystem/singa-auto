@@ -154,7 +154,7 @@ class BaseModel(abc.ABC):
 
 class PandaModel(BaseModel):
     def __init__(self, **knobs: Knobs):
-        super(PandaModel).__init__(**knobs)
+        super().__init__(**knobs)
 
     @abc.abstractmethod
     def local_explain(self, queries, params: Params):
