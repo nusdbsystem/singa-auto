@@ -1,38 +1,34 @@
 from __future__ import division
 from __future__ import print_function
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
 import os
 import sys
-from torch.optim import lr_scheduler
-from torch.autograd import Variable
-import torchvision.transforms as transforms
-from torchvision.models.densenet import densenet121
-from torchvision.models.resnet import resnet101
-from torchvision.models.inception import inception_v3
-from torchvision.models.vgg import vgg19_bn
-from torchvision.models.alexnet import alexnet
-### pydensenet
-from torch.utils.data import Dataset, DataLoader
-# from panda import *
-import sklearn.metrics
 import pickle
 import base64
-#from generic_models.densenet import densenet121
 import abc
-from typing import Union, Dict, Optional, Any, List
-
 import tempfile
-import numpy as np
 import json
 import argparse
+from typing import Union, Dict, Optional, Any, List
 
+# Rafiki Dependency
 from rafiki.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, IntegerKnob, PolicyKnob, utils
 from rafiki.model.knob import BaseKnob
 from rafiki.constants import ModelDependency
 from rafiki.model.dev import test_model_class
+
+# PyTorch Denpendency
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
+from torch.autograd import Variable
+import torchvision.transforms as transforms
+from torchvision.models.densenet import densenet121
+from torch.utils.data import Dataset, DataLoader
+
+# Misc Third-party Machine-Learning Dependency
+import sklearn.metrics
+import numpy as np
 
 
 KnobConfig = Dict[str, BaseKnob]
@@ -40,6 +36,9 @@ Knobs = Dict[str, Any]
 Params = Dict[str, Union[str, int, float, np.ndarray]]
 
 class DenseNet121(nn.Module):
+    """
+    Encapsulation of PyTorch pretrained DenseNet model
+    """
     def __init__(self, scratch=False, drop_rate=0, num_classes=2):
         super(DenseNet121, self).__init__()
         self._model = densenet121(pretrained=not scratch, drop_rate=drop_rate)
@@ -50,11 +49,19 @@ class DenseNet121(nn.Module):
         return self._model(x)
 
 class PyDenseNet(BaseModel):
+    """
+    Implementation of PyTorch DenseNet
+    """
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self.__dict__.update(knobs) 
         self._knobs = knobs
 
+        if torch.cuda.is_available():
+            self._use_gpu = True
+        else:
+            self._use_gpu = False
+        
         #Parameters not advised by rafiki advisor
         #NOTE: should be dumped/loaded in dump_parameter/load_parameter
         self._image_size = 128
@@ -72,7 +79,6 @@ class PyDenseNet(BaseModel):
             'max_iter': FixedKnob(20),
             'max_image_size': FixedKnob(32),   ### scale 
             'share_params': CategoricalKnob(['SHARE_PARAMS']),
-            ### panda params
             'model':CategoricalKnob(['densenet']),
             'tag':CategoricalKnob(['relabeled']),
             'optimizer':CategoricalKnob(['adam']),
@@ -151,68 +157,75 @@ class PyDenseNet(BaseModel):
         return:
             nothing
         """
-        num_classes = 2
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path, 
             min_image_size=32, 
-            max_image_size=self.max_image_size, 
+            max_image_size=self._knobs.get("max_image_size"), 
             mode='RGB', 
             lazy_load=True)
-        #stat = dataset.get_stat()
+        self._normalize_mean, self._normalize_std = dataset.get_stat()
+        self._num_classes = dataset.classes
+        """
         mu = [0.48233507, 0.48233507, 0.48233507]
         std = [0.07271624, 0.07271624, 0.07271624]
-        self._normalize_mean = mu
-        self._normalize_std = std
+        """
 
         # construct the model
-        self._model = DenseNet121(scratch=True, drop_rate=0, num_classes=2)
+        self._model = DenseNet121(
+            scratch=True, 
+            drop_rate=0, 
+            num_classes=self._num_classes)
 
         train_dataset = ImageDataset(
             rafiki_dataset=dataset, 
             image_scale_size=128, 
-            norm_mean=mu, 
-            norm_std=std, 
+            norm_mean=self._normalize_mean, 
+            norm_std=self._normalize_std, 
             is_train=True)
-        train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+        train_dataloader = DataLoader(
+            train_dataset, 
+            batch_size=self._knobs.get("batch_size"), 
+            shuffle=True)
 
         #Setup Criterion
-        if num_classes == 2:
+        if self._num_classes == 2:
             self.train_criterion = nn.CrossEntropyLoss()
         else:
             self.train_criterion = nn.MultiLabelSoftMarginLoss()
 
         #Setup Optimizer
-        if self.optimizer == "adam":
+        if self._knobs.get("optimizer") == "adam":
             optimizer = optim.Adam(
                            filter(lambda p: p.requires_grad, self._model.parameters()),
-                           lr=self.lr,
-                           weight_decay=self.weight_decay)
-        elif self.optimizer == "rmsprop":
+                           lr=self._knobs.get("lr"),
+                           weight_decay=self._knobs.get("weight_decay"))
+        elif self._knobs.get("optimizer") == "rmsprop":
             optimizer = optim.RMSprop(
                            filter(lambda p: p.requires_grad, self._model.parameters()),
-                           lr=self.lr,
-                           weight_decay=self.weight_decay)
+                           lr=self._knobs.get("lr"),
+                           weight_decay=self._knobs.get("weight_decay"))
         else:
-            print("{} is not a valid optimizer.".format(self.optimizer))
+            raise NotImplementedError()
 
         #Setup Learning Rate Scheduler
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=1, threshold=0.001, factor=0.1)
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            patience=1, 
+            threshold=0.001, 
+            factor=0.1)
 
-        try: 
-            self._model = self._model.cuda()
-        except: 
-            pass
         
-        for epoch in range(1, self.max_epochs + 1):
-            print("Epoch {}/{}".format(epoch, self.max_epochs))
-            print("-" * 10)
-            self._model.train()
+        if self._use_gpu:
+            self._model = self._model.cuda()
+        
+        self._model.train()
+        for epoch in range(1, self._knobs.get("max_epochs") + 1):
+            print("Epoch {}/{}".format(epoch, self._knobs.get("max_epochs")))
             batch_losses = []
             for batch_idx, (traindata, batch_classes) in enumerate(train_dataloader):
                 inputs, labels = self._transform_data(traindata, batch_classes, train=True)  
                 optimizer.zero_grad()
                 outputs = self._model(inputs)
-                # out = torch.sigmoid(outputs).data.cpu().numpy()
                 trainloss = self.train_criterion(outputs, labels)
                 trainloss.backward()
                 optimizer.step()
@@ -226,21 +239,26 @@ class PyDenseNet(BaseModel):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path, 
             min_image_size=32, 
-            max_image_size=self.max_image_size, 
-            mode='RGB')
+            max_image_size=self._knobs.get("max_image_size"), 
+            mode='RGB',
+            lazy_load=True)
 
+        """
         mu = [0.48233507, 0.48233507, 0.48233507]
         std = [0.07271624, 0.07271624, 0.07271624]
+        """
 
         torch_dataset = ImageDataset(
             rafiki_dataset=dataset,
             image_scale_size=128,
-            norm_mean=mu,
-            norm_std=std,
+            norm_mean=self._normalize_mean,
+            norm_std=self._normalize_std,
             is_train=False
         )
 
-        torch_dataloader = DataLoader(torch_dataset, batch_size=self.batch_size)
+        torch_dataloader = DataLoader(
+            torch_dataset, 
+            batch_size=self._knobs.get("batch_size"))
 
         self._model.eval()
         batch_losses = []
@@ -250,11 +268,8 @@ class PyDenseNet(BaseModel):
             for batch_idx, (batch_data, batch_classes) in enumerate(torch_dataloader):
                 inputs, labels = self._transform_data(batch_data, batch_classes, train=True)  
                 outputs = self._model(inputs)
-
                 loss = self.train_criterion(outputs, labels)
-
                 batch_losses.append(loss.item())
-
                 outs.extend(torch.sigmoid(outputs).cpu().numpy())
                 gts.extend(labels.cpu().numpy())
                 print("Batch: {:d}".format(batch_idx))
@@ -287,10 +302,8 @@ class PyDenseNet(BaseModel):
         images = utils.dataset.transform_images(queries, image_size=128, mode='RGB')
         (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
 
-        try:
+        if self._use_gpu:
             self._model.cuda()
-        except:
-            pass
 
         self._model.eval()
 
@@ -298,7 +311,7 @@ class PyDenseNet(BaseModel):
         with torch.no_grad():
             try:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2).cuda()
-            except:
+            except Exception:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2)
 
             outs = self._model(images)
@@ -323,8 +336,8 @@ class PyDenseNet(BaseModel):
 
         # Save pre-processing params
         params['image_size'] = self._image_size
-        params['normalize_mean'] = json.dumps(self._normalize_mean)
-        params['normalize_std'] = json.dumps(self._normalize_std)
+        params['normalize_mean'] = json.dumps(self._normalize_mean.tolist())
+        params['normalize_std'] = json.dumps(self._normalize_std.tolist())
         params['num_classes'] = self._num_classes
 
         return params
@@ -345,8 +358,8 @@ class PyDenseNet(BaseModel):
         
         # Load pre-processing params
         self._image_size = params['image_size']
-        self._normalize_mean = json.loads(params['normalize_mean'])
-        self._normalize_std = json.loads(params['normalize_std'])
+        self._normalize_mean = np.array(json.loads(params['normalize_mean']))
+        self._normalize_std = np.array(json.loads(params['normalize_std']))
         self._num_classes = params['num_classes']
 
     def _transform_data(self, data, labels, train=False):
@@ -355,17 +368,15 @@ class PyDenseNet(BaseModel):
         """
         inputs = data
         labels = labels.type(torch.LongTensor)
-        try:
+        if self._use_gpu:
             inputs, labels = inputs.cuda(), labels.cuda()
-        except: 
-            pass
-        inputs = Variable(inputs, requires_grad=False, volatile=not train)
-        labels = Variable(labels, requires_grad=False, volatile=not train)
+        inputs = Variable(inputs, requires_grad=False)
+        labels = Variable(labels, requires_grad=False)
         return inputs, labels
 
 class ImageDataset(Dataset):
     """
-    A Pytorch encapsulation for rafiki ImageFilesDataset
+    A Pytorch-type encapsulation for rafiki ImageFilesDataset to support training/evaluation
     """
     def __init__(self, rafiki_dataset, image_scale_size, norm_mean, norm_std, is_train=False):
         self.rafiki_dataset = rafiki_dataset
@@ -410,15 +421,6 @@ if __name__ == '__main__':
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
 
-    '''(model_file_path: str, 
-        model_class: str, task: str, 
-        dependencies: Dict[str, str], 
-        train_dataset_path: str, 
-        val_dataset_path: str, 
-        test_dataset_path: str = None, 
-        budget: Budget = None, 
-        train_args: Dict[str, any] = None, 
-        queries: List[Any] = None) -> (List[Any], BaseModel):'''
     test_model_class(
         model_file_path=__file__,
         model_class='PyDenseNet',
