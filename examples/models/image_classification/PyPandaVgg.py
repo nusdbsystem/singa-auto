@@ -65,7 +65,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'enable_spl':FixedKnob(True),
 
             # Label Adaptation
-            'enable_label_adapatation':FixedKnob(True),
+            'enable_label_adaptation':FixedKnob(True),
 
             # GM Prior Regularization
             'enable_gm_prior_regularization':FixedKnob(False),
@@ -78,7 +78,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'gm_prior_regularization_param_upt_freq':FixedKnob(50),
 
             # Model Slicing
-            'enable_model_slicing':FixedKnob(True),
+            'enable_model_slicing':FixedKnob(False),
             'model_slicing_groups':FixedKnob(0),
             'model_slicing_rate':FixedKnob(1.0),
             'model_slicing_scheduler_type':FixedKnob('randomminmax'),
@@ -91,8 +91,12 @@ if __name__ == '__main__':
     parser.add_argument('--val_path', type=str, default='data/val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/test.zip', help='Path to test dataset')
     print (os.getcwd())
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/xray_1.jpeg',
-                        help='Path(s) to query image(s), delimited by commas')  ### os.getcwd()  Error of path setting  examples/data/image_classification/xray_1.jpeg
+    parser.add_argument(
+        '--query_path', 
+        type=str, 
+        default=
+        'examples/data/image_classification/xray_1.jpeg,examples/data/image_classification/IM-0103-0001.jpeg,examples/data/image_classification/NORMAL2-IM-0023-0001.jpeg',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()

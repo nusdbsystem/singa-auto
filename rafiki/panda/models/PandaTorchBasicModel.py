@@ -32,6 +32,7 @@ import numpy as np
 # Panda Modules Dependency
 from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
+from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
 
 KnobConfig = Dict[str, BaseKnob]
 Knobs = Dict[str, Any]
@@ -124,10 +125,10 @@ class PandaTorchBasicModel(PandaModel):
             'enable_spl':FixedKnob(True),
 
             # Label Adaptation
-            'enable_label_adapatation':FixedKnob(True),
+            'enable_label_adaptation':FixedKnob(True),
 
             # GM Prior Regularization
-            'enable_gm_prior_regularization':FixedKnob(True),
+            'enable_gm_prior_regularization':FixedKnob(False),
             'gm_prior_regularization_a':FixedKnob(0.001),
             'gm_prior_regularization_b':FixedKnob(0.0001),
             'gm_prior_regularization_alpha':FixedKnob(0.5),
@@ -145,8 +146,6 @@ class PandaTorchBasicModel(PandaModel):
         }
 
     def get_peformance_metrics(self, gts: np.ndarray, probabilities: np.ndarray, use_only_index = None):
-        assert(np.all(probabilities >= 0) == True)
-        assert(np.all(probabilities <= 1) == True)
 
         def compute_metrics_for_class(i):  ### i for each pathology
             p, r, t = sklearn.metrics.precision_recall_curve(gts[:, i], probabilities[:, i])
@@ -330,6 +329,7 @@ class PandaTorchBasicModel(PandaModel):
                 print("Epoch: {:d} Batch: {:d} Train Loss: {:.6f}".format(epoch, batch_idx, trainloss.item()))
                 sys.stdout.flush()
                 batch_losses.append(trainloss.item())
+
             train_loss = np.mean(batch_losses)
             print("Training Loss: {:.6f}".format(train_loss))
         
@@ -354,6 +354,12 @@ class PandaTorchBasicModel(PandaModel):
             batch_size=self._knobs.get("batch_size"))
 
         self._model.eval()
+
+        if self._knobs.get("enable_label_adaptation"):
+            self._label_drift_adapter = LabelDriftAdapter(
+                model=self._model,
+                num_classes=self._num_classes)
+
         batch_losses = []
         outs = []
         gts = []
@@ -365,7 +371,14 @@ class PandaTorchBasicModel(PandaModel):
                 batch_losses.append(loss.item())
                 outs.extend(torch.sigmoid(outputs).cpu().numpy())
                 gts.extend(labels.cpu().numpy())
+
+                if self._knobs.get("enable_label_adaptation"):
+                    self._label_drift_adapter.accumulate_c(outputs, labels)
+
                 print("Batch: {:d}".format(batch_idx))
+
+        if self._knobs.get("enable_label_adaptation"):
+            self._label_drift_adapter.estimate_cinv()
 
         valid_loss = np.mean(batch_losses)
         print("Validation Loss: {:.6f}".format(valid_loss))
@@ -408,7 +421,11 @@ class PandaTorchBasicModel(PandaModel):
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2)
 
             outs = self._model(images)
-            outs = torch.sigmoid(outs).cpu()
+
+            if self._knobs.get("enable_label_adaptation"):
+                outs = self._label_drift_adapter.adapt(outs)
+            else:
+                outs = torch.sigmoid(outs).cpu()
 
         return outs.tolist()
 
@@ -453,6 +470,9 @@ class PandaTorchBasicModel(PandaModel):
         params['normalize_std'] = json.dumps(self._normalize_std.tolist())
         params['num_classes'] = self._num_classes
 
+        if self._knobs.get("enable_label_adaptation"):
+            params[self._label_drift_adapter.get_mod_name()] = self._label_drift_adapter.dump_parameters()
+
         return params
 
     def load_parameters(self, params):
@@ -464,6 +484,10 @@ class PandaTorchBasicModel(PandaModel):
         """
         # Load model parameters
         h5_model_base64 = params['h5_model_base64']
+        self._image_size = params['image_size']
+        self._normalize_mean = np.array(json.loads(params['normalize_mean']))
+        self._normalize_std = np.array(json.loads(params['normalize_std']))
+        self._num_classes = params['num_classes']
 
         with tempfile.NamedTemporaryFile() as tmp:
             # Convert back to bytes & write to temp file
@@ -483,11 +507,12 @@ class PandaTorchBasicModel(PandaModel):
                     sr_in_list=[0.5, 0.75, 1.0])
             self._model.load_state_dict(torch.load(tmp.name))
         
-        # Load pre-processing params
-        self._image_size = params['image_size']
-        self._normalize_mean = np.array(json.loads(params['normalize_mean']))
-        self._normalize_std = np.array(json.loads(params['normalize_std']))
-        self._num_classes = params['num_classes']
+        if self._knobs.get("enable_label_adaptation"):
+            self._label_drift_adapter = LabelDriftAdapter(
+                model=self._model,
+                num_classes=self._num_classes
+            )
+            self._label_drift_adapter.load_parameters(params=params[self._label_drift_adapter.get_mod_name()])
 
     def _transform_data(self, data, labels, train=False):
         """
