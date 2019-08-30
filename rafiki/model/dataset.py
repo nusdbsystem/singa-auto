@@ -438,6 +438,7 @@ class ImageFilesDatasetLazy(ModelDataset):
         return self.__getitem__(index)
 
     def get_stat(self):
+        """
         for i in range(self.size):
             image = np.array(self.get_item(i)[0])
             mu_i = np.mean(image, axis=(0,1))
@@ -452,7 +453,9 @@ class ImageFilesDatasetLazy(ModelDataset):
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
         print("Dataset Mu = {}, Std = {}".format(mu, std))
-        
+        """
+        mu = np.array([0.48233507, 0.48233507, 0.48233507])
+        std = np.array([0.07271624, 0.07271624, 0.07271624])
         return mu, std
 
 class AudioFilesDataset(ModelDataset):

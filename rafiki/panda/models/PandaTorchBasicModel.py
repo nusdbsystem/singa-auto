@@ -30,7 +30,8 @@ import sklearn.metrics
 import numpy as np
 
 # Panda Modules Dependency
-from rafiki.panda.modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
+from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
+from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 
 KnobConfig = Dict[str, BaseKnob]
 Knobs = Dict[str, Any]
@@ -70,7 +71,7 @@ class ImageDataset(Dataset):
 
         return (image, image_class)
 
-class PyVGG(PandaModel):
+class PandaTorchBasicModel(PandaModel):
     """
     Implementation of PyTorch DenseNet
     """
@@ -92,11 +93,9 @@ class PyVGG(PandaModel):
         self._normalize_std = []
         self._num_classes = 2
 
+    @abc.abstractclassmethod
     def _create_model(self, scratch: bool, num_classes: int):
-        model = vgg11_bn(pretrained=not scratch)
-        num_features = 4096
-        model.classifier[6] = nn.Linear(num_features, num_classes) 
-        return model
+        raise NotImplementedError
 
     @staticmethod
     def get_knob_config():
@@ -139,7 +138,10 @@ class PyVGG(PandaModel):
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(False),
-            'model_slicing_rate':CategoricalKnob([0.25, 0.5, 0.75, 1.0])
+            'model_slicing_groups':FixedKnob(0),
+            'model_slicing_rate':FixedKnob(1.0),
+            'model_slicing_scheduler_type':FixedKnob('randomminmax'),
+            'model_slicing_randnum':FixedKnob(1)
         }
 
     def get_peformance_metrics(self, gts: np.ndarray, probabilities: np.ndarray, use_only_index = None):
@@ -207,6 +209,9 @@ class PyVGG(PandaModel):
             mode='RGB', 
             lazy_load=True)
         self._normalize_mean, self._normalize_std = dataset.get_stat()
+        # self._normalize_mean = [0.48233507, 0.48233507, 0.48233507]
+        # self._normalize_std = [0.07271624, 0.07271624, 0.07271624]
+
         self._num_classes = dataset.classes
 
         # construct the model
@@ -214,7 +219,32 @@ class PyVGG(PandaModel):
             scratch = self._knobs.get("scratch"),
             num_classes = self._num_classes
         )
+
+        if self._knobs.get("enable_model_slicing"):
+            self._model = upgrade_dynamic_layers(
+                model=self._model, 
+                num_groups=self._knobs.get("model_slicing_groups"), 
+                sr_in_list=[0.5, 0.75, 1.0])
         
+        if self._knobs.get("enable_gm_prior_regularization"):
+            self._gm_optimizer = GMOptimizer()
+            for name, f in self._model.named_parameters():
+                self._gm_optimizer.gm_register(
+                    name,
+                    f.data.cpu().numpy(),
+                    model_name="PyVGG",
+                    hyperpara_list=[
+                        self._knobs.get("gm_prior_regularization_a"),
+                        self._knobs.get("gm_prior_regularization_b"),
+                        self._knobs.get("gm_prior_regularization_alpha"),
+                        ],
+                    gm_num=self._knobs.get("gm_prior_regularization_num"),
+                    gm_lambda_ratio_value=self._knobs.get("gm_prior_regularization_lambda"),
+                    uptfreq=[
+                        self._knobs.get("gm_prior_regularization_upt_freq"),
+                        self._knobs.get("gm_prior_regularization_param_upt_freq")]
+                )
+
         train_dataset = ImageDataset(
             rafiki_dataset=dataset, 
             image_scale_size=128, 
@@ -253,20 +283,49 @@ class PyVGG(PandaModel):
             threshold=0.001, 
             factor=0.1)
 
-        
         if self._use_gpu:
             self._model = self._model.cuda()
         
         self._model.train()
+
+        if self._knobs.get("enable_model_slicing"):
+            sr_scheduler = create_sr_scheduler(
+                scheduler_type=self._knobs.get("model_slicing_scheduler_type"),
+                sr_rand_num=self._knobs.get("model_slicing_randnum"),
+                sr_list=[0.5, 0.75, 1.0],
+                sr_prob=None
+            )
+        
         for epoch in range(1, self._knobs.get("max_epochs") + 1):
             print("Epoch {}/{}".format(epoch, self._knobs.get("max_epochs")))
             batch_losses = []
             for batch_idx, (traindata, batch_classes) in enumerate(train_dataloader):
                 inputs, labels = self._transform_data(traindata, batch_classes, train=True)  
                 optimizer.zero_grad()
-                outputs = self._model(inputs)
-                trainloss = self.train_criterion(outputs, labels)
-                trainloss.backward()
+                
+                if self._knobs.get("enable_model_slicing"):
+                    for sr_idx in next(sr_scheduler):
+                        self._model.update_sr_idx(sr_idx)
+                        outputs = self._model(inputs)
+                        trainloss = self.train_criterion(outputs, labels)
+                        trainloss.backward()
+                else:
+                    outputs = self._model(inputs)
+                    trainloss = self.train_criterion(outputs, labels)
+                    trainloss.backward()
+
+                if self._knobs.get("enable_gm_prior_regularization"):
+                    for name, f in self._model.named_parameters():
+                        self._gm_optimizer.apply_GM_regularizer_constraint(
+                            labelnum=1,
+                            trainnum=0,
+                            epoch=epoch,
+                            weight_decay=self._knobs.get("weight_decay"),
+                            f=f,
+                            name=name,
+                            step=batch_idx
+                        )
+
                 optimizer.step()
                 print("Epoch: {:d} Batch: {:d} Train Loss: {:.6f}".format(epoch, batch_idx, trainloss.item()))
                 sys.stdout.flush()
@@ -367,7 +426,6 @@ class PyVGG(PandaModel):
 
         return None
 
-
     def dump_parameters(self):
         """
         Override BaseModel.dump_parameters
@@ -414,7 +472,15 @@ class PyVGG(PandaModel):
                 f.write(h5_model_bytes)
 
             # Load model from temp file
-            self._model = DenseNet121(scratch=True, drop_rate=0, num_classes=2)
+            self._model = self._create_model(
+                scratch=self._knobs.get("scratch"),
+                num_classes=self._num_classes
+            )
+            if self._knobs.get("enable_model_slicing"):
+                self._model = upgrade_dynamic_layers(
+                    model=self._model, 
+                    num_groups=self._knobs.get("model_slicing_groups"), 
+                    sr_in_list=[0.5, 0.75, 1.0])
             self._model.load_state_dict(torch.load(tmp.name))
         
         # Load pre-processing params
@@ -434,29 +500,3 @@ class PyVGG(PandaModel):
         inputs = Variable(inputs, requires_grad=False)
         labels = Variable(labels, requires_grad=False)
         return inputs, labels
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/train.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/test.zip', help='Path to test dataset')
-    print (os.getcwd())
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/xray_1.jpeg',
-                        help='Path(s) to query image(s), delimited by commas')  ### os.getcwd()  Error of path setting  examples/data/image_classification/xray_1.jpeg
-    (args, _) = parser.parse_known_args()
-
-    queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-
-    test_model_class(
-        model_file_path=__file__,
-        model_class='PyDenseNet',
-        task='IMAGE_CLASSIFICATION',
-        dependencies={ 
-            ModelDependency.TORCH: '1.0.1',
-            ModelDependency.TORCHVISION: '0.2.2'
-        },
-        train_dataset_path=args.train_path,
-        val_dataset_path=args.val_path,
-        test_dataset_path=args.test_path,
-        queries=queries
-    )
