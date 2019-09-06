@@ -45,7 +45,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'lr':FixedKnob(0.0001), ### learning_rate
             'weight_decay':FixedKnob(0.0),
             'drop_rate':FixedKnob(0.0),
-            'max_epochs': FixedKnob(1), 
+            'max_epochs': FixedKnob(5), 
             'batch_size': CategoricalKnob([32]),
             'max_iter': FixedKnob(20),
             'optimizer':CategoricalKnob(['adam']),
@@ -63,9 +63,13 @@ class PyPandaVgg(PandaTorchBasicModel):
             # Hyperparameters for PANDA modules
             # Self-paced Learning and Loss Revision
             'enable_spl':FixedKnob(True),
+            'spl_threshold_init':FixedKnob(16.0),
+            'spl_mu':FixedKnob(1.3),
+            'enable_lossrevise':FixedKnob(False),
+            'lossrevise_slop':FixedKnob(2.0),
 
             # Label Adaptation
-            'enable_label_adaptation':FixedKnob(True),
+            'enable_label_adaptation':FixedKnob(False),
 
             # GM Prior Regularization
             'enable_gm_prior_regularization':FixedKnob(False),

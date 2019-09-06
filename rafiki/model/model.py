@@ -159,5 +159,4 @@ class PandaModel(BaseModel):
     @abc.abstractmethod
     def local_explain(self, queries, params: Params):
         raise NotImplementedError()
-
     

@@ -71,7 +71,7 @@ class PyPandaDenseNet(PandaTorchBasicModel):
             'lr':FixedKnob(0.0001), ### learning_rate
             'weight_decay':FixedKnob(0.0),
             'drop_rate':FixedKnob(0.0),
-            'max_epochs': FixedKnob(1), 
+            'max_epochs': FixedKnob(10), 
             'batch_size': CategoricalKnob([32]),
             'max_iter': FixedKnob(20),
             'optimizer':CategoricalKnob(['adam']),
@@ -88,10 +88,14 @@ class PyPandaDenseNet(PandaTorchBasicModel):
      
             # Hyperparameters for PANDA modules
             # Self-paced Learning and Loss Revision
-            'enable_spl':FixedKnob(True),
+            'enable_spl':FixedKnob(False),
+            'spl_threshold_init':FixedKnob(16.0),
+            'spl_mu':FixedKnob(1.1),
+            'enable_lossrevise':FixedKnob(False),
+            'lossrevise_slop':FixedKnob(2.0),
 
             # Label Adaptation
-            'enable_label_adapatation':FixedKnob(True),
+            'enable_label_adaptation':FixedKnob(False),
 
             # GM Prior Regularization
             'enable_gm_prior_regularization':FixedKnob(False),
@@ -117,8 +121,12 @@ if __name__ == '__main__':
     parser.add_argument('--val_path', type=str, default='data/val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/test.zip', help='Path to test dataset')
     print (os.getcwd())
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/xray_1.jpeg',
-                        help='Path(s) to query image(s), delimited by commas')  ### os.getcwd()  Error of path setting  examples/data/image_classification/xray_1.jpeg
+    parser.add_argument(
+        '--query_path', 
+        type=str, 
+        default=
+        'examples/data/image_classification/xray_1.jpeg,examples/data/image_classification/IM-0103-0001.jpeg,examples/data/image_classification/NORMAL2-IM-0023-0001.jpeg',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
