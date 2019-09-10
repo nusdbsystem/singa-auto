@@ -147,12 +147,12 @@ def get_datasets(auth):
 # TODO:New METHOD Delete Dataset
 @app.route('/datasets/<id>', methods=['DELETE'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
-def del_dataset(auth):
+def del_dataset(auth, id):
     admin = get_admin()
     params = get_request_params()
     with admin:
         # would delete dataset
-        return jsonify(admin.del_datasets(auth['user_id'], **params))
+        return jsonify(admin.del_datasets(auth['user_id'], id ,**params))
 
 # TODO:New METHOD get Dataset by ID
 @app.route('/datasets/<id>', methods=['GET'])
@@ -162,7 +162,7 @@ def get_dataset(auth, id):
     params = get_request_params()
     with admin:
         # would delete datasets
-        return jsonify(admin.get_dataset_by_id(auth['user_id'], id,**params))
+        return jsonify(admin.get_dataset_by_id(auth['user_id'], id ,**params))
 
 ####################################
 # Train Jobs
