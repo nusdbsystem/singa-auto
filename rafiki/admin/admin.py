@@ -142,37 +142,65 @@ class Admin(object):
 
         dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, owner_id)
         self._meta_store.commit()
-
+        # number of  classes (labels), number of sample, stat(None, ), orm 
+        num_classes=int(4)
+        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        num_samples=int(10000)
+        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
-            'size_bytes': dataset.size_bytes
+            'size_bytes': dataset.size_bytes,
+
+            'number of classes': num_classes,
+            'labels' : labels,
+            'number of samples' : num_samples,
+            'stat' : stat
         }
 
     def get_dataset(self, dataset_id):
         dataset = self._meta_store.get_dataset(dataset_id)
         if dataset is None:
             raise InvalidDatasetError()
-
+        # modified here
+        num_classes=int(4)
+        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        num_samples=int(10000)
+        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
             'datetime_created': dataset.datetime_created,
             'size_bytes': dataset.size_bytes,
-            'owner_id': dataset.owner_id
+            'owner_id': dataset.owner_id,
+
+            'number of classes': num_classes,
+            'labels': labels,
+            'number of samples' : num_samples,
+            'stat' : stat
         }
 
     def get_datasets(self, user_id, task=None):
         datasets = self._meta_store.get_datasets(user_id, task)
+        # modified here
+        num_classes=int(4)
+        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        num_samples=int(10000)
+        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
         return [
             {
                 'id': x.id,
                 'name': x.name,
                 'task': x.task,
                 'datetime_created': x.datetime_created,
-                'size_bytes': x.size_bytes
+                'size_bytes': x.size_bytes,
+
+                'number of classes': num_classes,
+                'labels': labels,
+                'number of samples' : num_samples,
+                'stat' : stat
 
             }
             for x in datasets
@@ -409,7 +437,7 @@ class Admin(object):
         params = self._param_store.load(trial.store_params_id)
         return params
 
-    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0):
+    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0): ### return top 1000
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
