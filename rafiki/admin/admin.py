@@ -153,9 +153,9 @@ class Admin(object):
             'task': dataset.task,
             'size_bytes': dataset.size_bytes,
 
-            'number of classes': num_classes,
+            'number_of_classes': num_classes,
             'labels' : labels,
-            'number of samples' : num_samples,
+            'number_of_samples' : num_samples,
             'stat' : stat
         }
 
@@ -176,9 +176,9 @@ class Admin(object):
             'size_bytes': dataset.size_bytes,
             'owner_id': dataset.owner_id,
 
-            'number of classes': num_classes,
+            'number_of_classes': num_classes,
             'labels': labels,
-            'number of samples' : num_samples,
+            'number_of_samples' : num_samples,
             'stat' : stat
         }
 
@@ -197,9 +197,9 @@ class Admin(object):
                 'datetime_created': x.datetime_created,
                 'size_bytes': x.size_bytes,
 
-                'number of classes': num_classes,
+                'number_of_classes': num_classes,
                 'labels': labels,
-                'number of samples' : num_samples,
+                'number_of_samples' : num_samples,
                 'stat' : stat
 
             }
