@@ -144,30 +144,37 @@ class Admin(object):
         self._meta_store.commit()
         # number of  classes (labels), number of sample, stat(None, ), orm 
         num_classes=int(4)
-        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        labels ={'disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000}
         num_samples=int(10000)
-        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
+        stat={'feature A': 500, 'feature B': 5000, 'feature C': 1000}
+        try: print (dataset.num_classes, dataset.labels, dataset.num_samples, dataset.stat)
+        except: pass
+        ### return dataset path
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
             'size_bytes': dataset.size_bytes,
 
+            'data_file_path' : data_file_path,
+            'store_dataset_id' : store_dataset_id,
             'number_of_classes': num_classes,
             'labels' : labels,
             'number_of_samples' : num_samples,
             'stat' : stat
         }
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, dataset_id): # by id
         dataset = self._meta_store.get_dataset(dataset_id)
         if dataset is None:
             raise InvalidDatasetError()
         # modified here
         num_classes=int(4)
-        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        labels={'disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000}
         num_samples=int(10000)
-        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
+        stat={'feature A': 500, 'feature B': 5000, 'feature C': 1000}
+        try: print (dataset.num_classes, dataset.lables, dataset.num_samples, dataset.stat)
+        except: pass
         return {
             'id': dataset.id,
             'name': dataset.name,
@@ -186,9 +193,11 @@ class Admin(object):
         datasets = self._meta_store.get_datasets(user_id, task)
         # modified here
         num_classes=int(4)
-        lables=['disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000]
+        labels={'disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000}
         num_samples=int(10000)
-        stat=['feature A': 500, 'feature B': 5000, 'feature C': 1000]
+        stat={'feature A': 500, 'feature B': 5000, 'feature C': 1000}
+        try: print (dataset.num_classes, dataset.lables, dataset.num_samples, dataset.stat)
+        except: pass
         return [
             {
                 'id': x.id,
@@ -297,7 +306,7 @@ class Admin(object):
             'id': sub_train_job_id
         }
             
-    def get_train_job(self, user_id, app, app_version=-1):
+    def get_train_job(self, user_id, app, app_version=-1): # by app ver
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
