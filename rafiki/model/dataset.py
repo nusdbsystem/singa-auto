@@ -30,6 +30,8 @@ import abc
 import csv
 import pandas
 import tempfile
+import pandas as pd
+
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +298,7 @@ class ImageFilesDataset(ModelDataset):
             try:
                 with open(images_csv_path, mode='r') as f:
                     reader = csv.DictReader(f)
-                    (image_paths, image_classes) = zip(*[(row['path'], int(row['class'])) for row in reader])
+                    (image_paths, image_classes) = zip(*[(row['path'], int(row['class'])) for row in reader]) 
             except:
                 traceback.print_stack()
                 raise InvalidDatasetFormatException()
@@ -307,7 +309,6 @@ class ImageFilesDataset(ModelDataset):
 
         num_classes = len(set(image_classes))
         num_samples = len(image_paths)
-
         return (pil_images, image_classes, num_samples, num_classes)
 
     def _shuffle(self, images, classes):
@@ -375,17 +376,21 @@ class ImageFilesDatasetLazy(ModelDataset):
         images_csv_path = os.path.join(dir_path, 'images.csv')
 
         try:
-            with open(images_csv_path, mode='r') as f:
-                reader = csv.DictReader(f)
-                (image_paths, image_classes) = zip(*[(row['path'], int(row['class'])) for row in reader])
+            # replaced the csv.DictReader() with pandas.read_csv()
+            reader=pd.read_csv(images_csv_path)
+            image_classes=reader[reader.columns[1:]]
+            image_paths=reader[reader.columns[0]]
         except:
             traceback.print_stack()
             raise InvalidDatasetFormatException()
 
         # Load images from files
         full_image_paths = [os.path.join(dir_path, x) for x in image_paths]
-        num_classes = len(set(image_classes))
-        num_samples = len(image_paths)
+
+        num_classes = image_classes.shape[1]
+        num_samples = image_paths.shape[0]
+        image_classes=tuple(np.array(image_classes).tolist())
+        image_paths=tuple(image_paths)
 
         return (full_image_paths, image_classes, num_samples, num_classes)
 
@@ -401,9 +406,10 @@ class ImageFilesDatasetLazy(ModelDataset):
             image_classes = []
             images_csv_path = os.path.join(d, 'images.csv')
             try:
-                with open(images_csv_path, mode='r') as f:
-                    reader = csv.DictReader(f)
-                    (image_paths, image_classes) = zip(*[(row['path'], int(row['class'])) for row in reader])
+                # replaced the csv.DictReader() with pandas.read_csv()
+                reader=pd.read_csv(images_csv_path)
+                image_classes=reader[reader.columns[1:]]
+                image_paths=reader[reader.columns[0]]
             except:
                 traceback.print_stack()
                 raise InvalidDatasetFormatException()
@@ -412,8 +418,9 @@ class ImageFilesDatasetLazy(ModelDataset):
             full_image_paths = [os.path.join(d, x) for x in image_paths]
             pil_images = _load_pil_images(full_image_paths, mode=mode)
 
-        num_classes = len(set(image_classes))
-        num_samples = len(image_paths)
+        num_classes = image_classes.shape[1]
+        num_samples = image_paths.shape[0]
+        image_classes=tuple(np.array(image_classes).tolist())
 
         return (pil_images, image_classes, num_samples, num_classes)
 

@@ -152,8 +152,8 @@ class PandaTorchBasicModel(PandaModel):
             F1s.append(F1)
             accs.append(acc)
             counts.append(count)
-
-            print('Class: {:3d} Count: {:6d} PR AUC: {:.4f} ROC AUC: {:.4f} F1: {:.3f} Acc: {:.3f}'.format(i, count, PR_AUC, ROC_AUC, F1, acc))
+            ### modified here
+            # print('Class: {:3d} Count: {:6d} PR AUC: {:.4f} ROC AUC: {:.4f} F1: {:.3f} Acc: {:.3f}'.format(i, count, PR_AUC, ROC_AUC, F1, acc))
 
         avg_PR_AUC = np.average(PR_AUCs)
         avg_ROC_AUC = np.average(ROC_AUCs, weights=counts)  
@@ -237,9 +237,9 @@ class PandaTorchBasicModel(PandaModel):
 
         #Setup Criterion
         if self._num_classes == 2:
-            self.train_criterion = nn.CrossEntropyLoss()
+            self.train_criterion = nn.CrossEntropyLoss() ### type(torch.LongTensor)
         else:
-            self.train_criterion = nn.MultiLabelSoftMarginLoss()
+            self.train_criterion = nn.MultiLabelSoftMarginLoss() ### type(torch.FloatTensor)
 
         #Setup Optimizer
         if self._knobs.get("optimizer") == "adam":
@@ -291,6 +291,8 @@ class PandaTorchBasicModel(PandaModel):
                 else:
                     outputs = self._model(inputs)
                     trainloss = self.train_criterion(outputs, labels)
+
+
                     trainloss.backward()
 
                 if self._knobs.get("enable_gm_prior_regularization"):
@@ -515,7 +517,9 @@ class PandaTorchBasicModel(PandaModel):
         Send data to GPU
         """
         inputs = data
-        labels = labels.type(torch.LongTensor)
+        ### modified here
+        # labels = labels.type(torch.LongTensor)
+        labels = labels.type(torch.FloatTensor)
         if self._use_gpu:
             inputs, labels = inputs.cuda(), labels.cuda()
         inputs = Variable(inputs, requires_grad=False)

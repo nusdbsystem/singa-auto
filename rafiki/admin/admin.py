@@ -20,7 +20,9 @@
 import os
 import logging
 import bcrypt
-
+import pandas as pd
+import zipfile
+import tempfile
 from rafiki.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
 from rafiki.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from rafiki.meta_store import MetaStore
@@ -142,20 +144,27 @@ class Admin(object):
 
         dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, owner_id)
         self._meta_store.commit()
-
+        ### dataset path, store_dataset_id
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
-            'size_bytes': dataset.size_bytes
+            'size_bytes': dataset.size_bytes,
+
+            'data_file_path' : data_file_path,
+            'store_dataset_id' : store_dataset_id,
+            'number_of_classes': dataset.num_classes,
+            'labels' : dataset.labels,
+            'number_of_samples' : dataset.num_samples,
+            'stat' : dataset.stat
         }
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, dataset_id): # by id
         dataset = self._meta_store.get_dataset(dataset_id)
         if dataset is None:
             raise InvalidDatasetError()
 
-        return {
+        datasetdict={
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
@@ -163,20 +172,62 @@ class Admin(object):
             'size_bytes': dataset.size_bytes,
             'owner_id': dataset.owner_id
         }
+        # modified here
+        if dataset.task == 'IMAGE_CLASSIFICATION':
+            datapath=os.path.join(os.getcwd(),dataset.store_dataset_id+'.data')
+            dataset_zipfile = zipfile.ZipFile(datapath, 'r')
+            num_samples=len(dataset_zipfile.filelist) -1
+            dir_path = tempfile.mkdtemp()
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
+            dataset_zipfile.close()
+            labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
+            os.unlink(os.path.join(dir_path,'images.csv'))
+
+            datasetdict['store_dataset_id'] = dataset.store_dataset_id
+            datasetdict['number_of_classes'] =  len(labels)
+            datasetdict['labels'] = labels
+            datasetdict['number_of_samples'] =  num_samples
+            datasetdict['stat'] =  dataset.stat
+            
+        else:
+            pass
+        return datasetdict
 
     def get_datasets(self, user_id, task=None):
         datasets = self._meta_store.get_datasets(user_id, task)
-        return [
-            {
+
+        datasetdicts=[]       
+        for x in datasets:
+            datasetdict={
                 'id': x.id,
                 'name': x.name,
                 'task': x.task,
                 'datetime_created': x.datetime_created,
-                'size_bytes': x.size_bytes
-
+                'size_bytes': x.size_bytes,
+                'store_dataset_id' : x.store_dataset_id,
+                'stat' : x.stat
             }
-            for x in datasets
-        ]
+            if x.task == 'IMAGE_CLASSIFICATION':
+                datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)
+                dataset_zipfile = zipfile.ZipFile(datapath, 'r')
+                num_samples=len(dataset_zipfile.filelist) -1
+                dir_path = tempfile.mkdtemp()
+                if not os.path.exists(dir_path):
+                    os.makedirs(dir_path)
+                images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
+                dataset_zipfile.close()
+                labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
+                os.unlink(os.path.join(dir_path,'images.csv'))
+                datasetdict['labels'] = labels
+                datasetdict['number_of_samples'] =  num_samples
+                datasetdict['number_of_classes'] = len(labels)
+            else:
+                pass
+            datasetdicts.append(datasetdict)
+
+        return datasetdicts
 
     ####################################
     # Train Job
@@ -269,7 +320,7 @@ class Admin(object):
             'id': sub_train_job_id
         }
             
-    def get_train_job(self, user_id, app, app_version=-1):
+    def get_train_job(self, user_id, app, app_version=-1): # by app ver
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
@@ -409,7 +460,7 @@ class Admin(object):
         params = self._param_store.load(trial.store_params_id)
         return params
 
-    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0):
+    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0): ### return top 1000
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
