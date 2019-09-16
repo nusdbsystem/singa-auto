@@ -30,6 +30,7 @@ import sklearn.metrics
 import numpy as np
 
 # Panda Modules Dependency
+from rafiki.panda.modules.explanations.lime.lime import Lime
 from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
@@ -108,6 +109,10 @@ class PandaTorchBasicModel(PandaModel):
             'gm_prior_regularization_lambda':FixedKnob(0.0001),
             'gm_prior_regularization_upt_freq':FixedKnob(100),
             'gm_prior_regularization_param_upt_freq':FixedKnob(50),
+            
+            # Explanation
+            'enable_explanation':FixedKnob(False),
+            'explanation_method':FixedKnob('lime'),
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(False),
@@ -411,6 +416,9 @@ class PandaTorchBasicModel(PandaModel):
             else:
                 outs = torch.sigmoid(outs).cpu()
 
+        if self._knobs.get("enable_explanation"):
+            self.local_explain(queries)
+
         return outs.tolist()
 
     def local_explain(self, queries: List[Any], params: Params) -> List[Any]:
@@ -424,7 +432,10 @@ class PandaTorchBasicModel(PandaModel):
         Return:
             explanations: list of explanations
         """
-
+        method = self._knobs.get("explanation_method")
+        if method == 'lime':
+            self._lime = Lime(self._model)
+            self._lime.explain(queries, self._normalize_mean, self._normalize_std)
         return None
 
     def dump_parameters(self):

@@ -80,6 +80,10 @@ class PyPandaVgg(PandaTorchBasicModel):
             'gm_prior_regularization_lambda':FixedKnob(0.0001),
             'gm_prior_regularization_upt_freq':FixedKnob(100),
             'gm_prior_regularization_param_upt_freq':FixedKnob(50),
+            
+            # Explanation
+            'enable_explanation':FixedKnob(False),
+            'explanation_method':FixedKnob('lime'),
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(False),
@@ -100,11 +104,12 @@ if __name__ == '__main__':
         type=str, 
         default=
         'examples/data/image_classification/xray_1.jpeg,examples/data/image_classification/IM-0103-0001.jpeg,examples/data/image_classification/NORMAL2-IM-0023-0001.jpeg',
+        #'examples/data/image_classification/IM-0001-0001.jpeg,examples/data/image_classification/IM-0003-0001.jpeg,examples/data/image_classification/IM-0005-0001.jpeg',
         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-
+    
     test_model_class(
         model_file_path=__file__,
         model_class='PyPandaVgg',
