@@ -159,70 +159,60 @@ class Admin(object):
             'stat' : dataset.stat
         }
 
-    def get_dataset(self, dataset_id): # by id
-        dataset = self._meta_store.get_dataset(dataset_id)
-        if dataset is None:
-            raise InvalidDatasetError()
+    def _get_unzipfile_info(self, dataset ):
+        datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),dataset.store_dataset_id)
+        dataset_zipfile = zipfile.ZipFile(datapath, 'r')
+        num_samples=len(dataset_zipfile.filelist) -1
+        # make temp dir to extract 
+        dir_path = tempfile.mkdtemp()
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path)
+        dataset_zipfile.close()
+        labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
+        os.unlink(os.path.join(dir_path,'images.csv'))
 
+        return [labels, num_samples, len(labels)]
+
+    def _build_datasetdict(self, dataset):
         datasetdict={
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
             'datetime_created': dataset.datetime_created,
             'size_bytes': dataset.size_bytes,
-            'owner_id': dataset.owner_id
+            'owner_id': dataset.owner_id,
+            'store_dataset_id' : dataset.store_dataset_id,
+            'stat' : dataset.stat,
         }
-        # modified here
-        if dataset.task == 'IMAGE_CLASSIFICATION':
-            datapath=os.path.join(os.getcwd(),dataset.store_dataset_id+'.data')
-            dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-            num_samples=len(dataset_zipfile.filelist) -1
-            dir_path = tempfile.mkdtemp()
-            if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
-            images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-            dataset_zipfile.close()
-            labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-            os.unlink(os.path.join(dir_path,'images.csv'))
+        return datasetdict
 
-            datasetdict['store_dataset_id'] = dataset.store_dataset_id
-            datasetdict['number_of_classes'] =  len(labels)
-            datasetdict['labels'] = labels
-            datasetdict['number_of_samples'] =  num_samples
-            datasetdict['stat'] =  dataset.stat
-            
+
+    def get_dataset(self, dataset_id): 
+        # read by id
+        dataset = self._meta_store.get_dataset(dataset_id)
+        if dataset is None:
+            raise InvalidDatasetError()
+
+        datasetdict=self._build_datasetdict(dataset)
+
+        # this is for 'IMAGE_CLASSIFICATION'
+        if dataset.task == 'IMAGE_CLASSIFICATION':
+            [datasetdict['labels'],datasetdict['number_of_samples'] , datasetdict['number_of_classes']] = self._get_unzipfile_info(dataset)
         else:
             pass
         return datasetdict
 
     def get_datasets(self, user_id, task=None):
+        # read by user_id
         datasets = self._meta_store.get_datasets(user_id, task)
 
         datasetdicts=[]       
         for x in datasets:
-            datasetdict={
-                'id': x.id,
-                'name': x.name,
-                'task': x.task,
-                'datetime_created': x.datetime_created,
-                'size_bytes': x.size_bytes,
-                'store_dataset_id' : x.store_dataset_id,
-                'stat' : x.stat
-            }
+            datasetdict=self._build_datasetdict(x)
+            # this is for 'IMAGE_CLASSIFICATION'
             if x.task == 'IMAGE_CLASSIFICATION':
-                datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)
-                dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-                num_samples=len(dataset_zipfile.filelist) -1
-                dir_path = tempfile.mkdtemp()
-                if not os.path.exists(dir_path):
-                    os.makedirs(dir_path)
-                images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-                dataset_zipfile.close()
-                labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-                os.unlink(os.path.join(dir_path,'images.csv'))
-                datasetdict['labels'] = labels
-                datasetdict['number_of_samples'] =  num_samples
-                datasetdict['number_of_classes'] = len(labels)
+                [datasetdict['labels'],datasetdict['number_of_samples'] , datasetdict['number_of_classes']] = self._get_unzipfile_info(x)
             else:
                 pass
             datasetdicts.append(datasetdict)
@@ -691,6 +681,15 @@ class Admin(object):
             'user_id': model.user_id,
             'name': model.name 
         }
+
+    ### modified here
+    def del_datasets(self, user_id, dataset_ids, task=None):
+        for dataset_id in dataset_ids:
+            if dataset_id is None:
+                raise InvalidDatasetError()
+            self._meta_store.del_dataset(user_id, dataset_id, task)
+        return 
+        
 
     def get_model_by_name(self, user_id, name):
         model = self._meta_store.get_model_by_name(user_id, name)
