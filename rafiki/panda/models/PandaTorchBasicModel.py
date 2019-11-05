@@ -33,44 +33,12 @@ import numpy as np
 from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
+from rafiki.panda.modules.mod_spl.spl import SPL
+from rafiki.panda.datasets.PandaTorchImageDataset import PandaTorchImageDataset
 
 KnobConfig = Dict[str, BaseKnob]
 Knobs = Dict[str, Any]
 Params = Dict[str, Union[str, int, float, np.ndarray]]
-
-class ImageDataset(Dataset):
-    """
-    A Pytorch-type encapsulation for rafiki ImageFilesDataset to support training/evaluation
-    """
-    def __init__(self, rafiki_dataset, image_scale_size, norm_mean, norm_std, is_train=False):
-        self.rafiki_dataset = rafiki_dataset
-        if is_train:
-            self._transform = transforms.Compose([
-                transforms.Resize((image_scale_size, image_scale_size)),
-                #transforms.RandomCrop(crop_size, padding=4),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(norm_mean, norm_std)
-            ])
-        else:
-            self._transform = transforms.Compose([
-                transforms.Resize((image_scale_size, image_scale_size)),
-                transforms.ToTensor(),
-                transforms.Normalize(norm_mean, norm_std)
-            ])
-
-    def __len__(self):
-        return self.rafiki_dataset.size
-
-    def __getitem__(self, idx):
-        image, image_class = self.rafiki_dataset.get_item(idx)
-        image_class = torch.tensor(image_class)
-        if self._transform:
-            image = self._transform(image)
-        else:
-            image = torch.tensor(image)
-
-        return (image, image_class)
 
 class PandaTorchBasicModel(PandaModel):
     """
@@ -123,6 +91,10 @@ class PandaTorchBasicModel(PandaModel):
             # Hyperparameters for PANDA modules
             # Self-paced Learning and Loss Revision
             'enable_spl':FixedKnob(True),
+            'spl_threshold_init':FixedKnob(16.0),
+            'spl_mu':FixedKnob(1.3),
+            'enable_lossrevise':FixedKnob(False),
+            'lossrevise_slop':FixedKnob(2.0),
 
             # Label Adaptation
             'enable_label_adaptation':FixedKnob(True),
@@ -243,8 +215,11 @@ class PandaTorchBasicModel(PandaModel):
                         self._knobs.get("gm_prior_regularization_upt_freq"),
                         self._knobs.get("gm_prior_regularization_param_upt_freq")]
                 )
+        
+        if self._knobs.get("enable_spl"):
+            self._spl = SPL()
 
-        train_dataset = ImageDataset(
+        train_dataset = PandaTorchImageDataset(
             rafiki_dataset=dataset, 
             image_scale_size=128, 
             norm_mean=self._normalize_mean, 
@@ -298,7 +273,7 @@ class PandaTorchBasicModel(PandaModel):
         for epoch in range(1, self._knobs.get("max_epochs") + 1):
             print("Epoch {}/{}".format(epoch, self._knobs.get("max_epochs")))
             batch_losses = []
-            for batch_idx, (traindata, batch_classes) in enumerate(train_dataloader):
+            for batch_idx, (raw_indices, traindata, batch_classes) in enumerate(train_dataloader):
                 inputs, labels = self._transform_data(traindata, batch_classes, train=True)  
                 optimizer.zero_grad()
                 
@@ -326,6 +301,9 @@ class PandaTorchBasicModel(PandaModel):
                             name=name,
                             step=batch_idx
                         )
+                
+                if self._knobs.get("enable_spl"):
+                    train_dataset.update_sample_score(raw_indices, trainloss.detach().cpu().numpy())
 
                 optimizer.step()
                 print("Epoch: {:d} Batch: {:d} Train Loss: {:.6f}".format(epoch, batch_idx, trainloss.item()))
@@ -334,6 +312,12 @@ class PandaTorchBasicModel(PandaModel):
 
             train_loss = np.mean(batch_losses)
             print("Training Loss: {:.6f}".format(train_loss))
+            if self._knobs.get("enable_spl"):
+                train_dataset.update_score_threshold(
+                    threshold=self._spl.calculate_threshold_by_epoch(
+                        epoch=epoch,
+                        threshold_init=self._knobs.get("spl_threshold_init"),
+                        mu=self._knobs.get("spl_mu")))
         
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
@@ -343,7 +327,7 @@ class PandaTorchBasicModel(PandaModel):
             mode='RGB',
             lazy_load=True)
 
-        torch_dataset = ImageDataset(
+        torch_dataset = PandaTorchImageDataset(
             rafiki_dataset=dataset,
             image_scale_size=128,
             norm_mean=self._normalize_mean,
@@ -366,7 +350,7 @@ class PandaTorchBasicModel(PandaModel):
         outs = []
         gts = []
         with torch.no_grad():
-            for batch_idx, (batch_data, batch_classes) in enumerate(torch_dataloader):
+            for batch_idx, (raw_indices, batch_data, batch_classes) in enumerate(torch_dataloader):
                 inputs, labels = self._transform_data(batch_data, batch_classes, train=True)  
                 outputs = self._model(inputs)
                 loss = self.train_criterion(outputs, labels)
@@ -517,6 +501,7 @@ class PandaTorchBasicModel(PandaModel):
             self._label_drift_adapter.load_parameters(params=params[self._label_drift_adapter.get_mod_name()])
 
     def _transform_data(self, data, labels, train=False):
+
         """
         Send data to GPU
         """
@@ -529,3 +514,4 @@ class PandaTorchBasicModel(PandaModel):
         inputs = Variable(inputs, requires_grad=False)
         labels = Variable(labels, requires_grad=False)
         return inputs, labels
+    
