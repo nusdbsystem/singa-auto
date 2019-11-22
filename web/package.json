@@ -1,6 +1,6 @@
 {
   "name": "rafiki_web_admin",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "description": "Web Admin Portal for Rafiki",
   "private": false,
   "dependencies": {

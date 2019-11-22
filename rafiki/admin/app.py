@@ -144,6 +144,26 @@ def get_datasets(auth):
     with admin:
         return jsonify(admin.get_datasets(auth['user_id'], **params))
 
+# TODO:New METHOD Delete Dataset
+@app.route('/datasets/<id>', methods=['DELETE'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def del_dataset(auth, id):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        # would delete dataset
+        return jsonify(admin.del_datasets(auth['user_id'], id ,**params))
+
+# TODO:New METHOD get Dataset by ID
+@app.route('/datasets/<id>', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_dataset(auth, id):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        # would delete datasets
+        return jsonify(admin.get_dataset_by_id(auth['user_id'], id ,**params))
+
 ####################################
 # Train Jobs
 ####################################
@@ -345,6 +365,15 @@ def create_model(auth):
 
     with admin:
         return jsonify(admin.create_model(auth['user_id'], **params))
+
+# TODO:New METHOD get model of specific task
+@app.route('/models/<task>/available', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_available_models_of_taks(auth, task):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        return jsonify(admin.get_available_models(auth['user_id'], task, **params))
 
 @app.route('/models/available', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
