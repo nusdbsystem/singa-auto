@@ -28,6 +28,7 @@ from torch.utils.data import Dataset, DataLoader
 # Misc Third-party Machine-Learning Dependency
 import sklearn.metrics
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Panda Modules Dependency
 from rafiki.panda.modules.explanations.lime.lime import Lime
@@ -35,6 +36,7 @@ from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, up
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
 from rafiki.panda.modules.mod_spl.spl import SPL
+from rafiki.panda.modules.mod_mcdropout.mc_dropout import update_model
 from rafiki.panda.datasets.PandaTorchImageDataset import PandaTorchImageDataset
 
 KnobConfig = Dict[str, BaseKnob]
@@ -119,7 +121,10 @@ class PandaTorchBasicModel(PandaModel):
             'model_slicing_groups':FixedKnob(0),
             'model_slicing_rate':FixedKnob(1.0),
             'model_slicing_scheduler_type':FixedKnob('randomminmax'),
-            'model_slicing_randnum':FixedKnob(1)
+            'model_slicing_randnum':FixedKnob(1),
+
+            # MC Dropout
+            'enable_mc_dropout':FixedKnob(False)
         }
 
     def get_peformance_metrics(self, gts: np.ndarray, probabilities: np.ndarray, use_only_index = None):
@@ -195,6 +200,8 @@ class PandaTorchBasicModel(PandaModel):
             scratch = self._knobs.get("scratch"),
             num_classes = self._num_classes
         )
+        if self._knobs.get("enable_mc_dropout"):
+            self._model = update_model(self._model)
 
         if self._knobs.get("enable_model_slicing"):
             self._model = upgrade_dynamic_layers(
@@ -410,18 +417,34 @@ class PandaTorchBasicModel(PandaModel):
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2).cuda()
             except Exception:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2)
+            
 
-            outs = self._model(images)
-
-            if self._knobs.get("enable_label_adaptation"):
-                outs = self._label_drift_adapter.adapt(outs)
+            if self._knobs.get("enable_mc_dropout"):
+                print("MC Dropout Enabled")
+                trials_n = self._knobs.get("mc_trials_n")
             else:
-                outs = torch.sigmoid(outs).cpu()
+                trials_n = 1
+            
+            outs = list()
+            for i in range(trials_n):
+                out = self._model(images)
 
+                if self._knobs.get("enable_label_adaptation"):
+                    out = self._label_drift_adapter.adapt(out)
+                else:
+                    out = torch.sigmoid(out).cpu()
+
+                outs.append(out.numpy())
+    
         if self._knobs.get("enable_explanation"):
             self.local_explain(queries)
 
-        return outs.tolist()
+        if self._knobs.get("enable_mc_dropout"):
+            outs = np.asarray(outs)
+            print("mean {}, var {}".format(np.mean(outs, axis=0), np.var(outs, axis=0)))
+            return np.mean(outs, axis=0).tolist()
+        else:
+            return out.tolist()
 
     def local_explain(self, queries: List[Any], params: Params) -> List[Any]:
         """
@@ -497,6 +520,8 @@ class PandaTorchBasicModel(PandaModel):
                 scratch=self._knobs.get("scratch"),
                 num_classes=self._num_classes
             )
+            if self._knobs.get("enable_mc_dropout"):
+                self._model = update_model(self._model)
             if self._knobs.get("enable_model_slicing"):
                 self._model = upgrade_dynamic_layers(
                     model=self._model, 

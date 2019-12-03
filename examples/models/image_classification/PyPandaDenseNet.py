@@ -112,7 +112,10 @@ class PyPandaDenseNet(PandaTorchBasicModel):
             'model_slicing_groups':FixedKnob(0),
             'model_slicing_rate':FixedKnob(1.0),
             'model_slicing_scheduler_type':FixedKnob('randomminmax'),
-            'model_slicing_randnum':FixedKnob(1)
+            'model_slicing_randnum':FixedKnob(1),
+
+            # MC Dropout
+            'enable_mc_dropout':FixedKnob(True)
         }
 
 if __name__ == '__main__':

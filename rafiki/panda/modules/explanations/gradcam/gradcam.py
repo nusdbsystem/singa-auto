@@ -8,8 +8,9 @@ import numpy as np
 import torch
 
 from extractor import CamExtractorAlexNet, CamExtractorDenseNet, CamExtractorResNet, CamExtractorVGG
+from rafiki.panda.modules.explanations.explanation import BaseExplanation
 
-class GradCam():
+class GradCam(BaseExplanation):
     """
         Produces class activation map
     """
