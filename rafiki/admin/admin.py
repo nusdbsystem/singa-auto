@@ -150,13 +150,13 @@ class Admin(object):
             'name': dataset.name,
             'task': dataset.task,
             'size_bytes': dataset.size_bytes,
-
-            'data_file_path' : data_file_path,
-            'store_dataset_id' : store_dataset_id,
-            'number_of_classes': dataset.num_classes,
-            'labels' : dataset.labels,
-            'number_of_samples' : dataset.num_samples,
-            'stat' : dataset.stat
+           #
+           #  'data_file_path' : data_file_path,
+           #  'store_dataset_id' : store_dataset_id,
+           #  'number_of_classes': dataset.num_classes,
+           #  'labels' : dataset.labels,
+           #  'number_of_samples' : dataset.num_samples,
+           #  'stat' : dataset.stat
         }
 
     def get_dataset(self, dataset_id): # by id
@@ -172,27 +172,27 @@ class Admin(object):
             'size_bytes': dataset.size_bytes,
             'owner_id': dataset.owner_id
         }
-        # modified here
-        if dataset.task == 'IMAGE_CLASSIFICATION':
-            datapath=os.path.join(os.getcwd(),dataset.store_dataset_id+'.data')
-            dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-            num_samples=len(dataset_zipfile.filelist) -1
-            dir_path = tempfile.mkdtemp()
-            if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
-            images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-            dataset_zipfile.close()
-            labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-            os.unlink(os.path.join(dir_path,'images.csv'))
+        # # modified here
+        # if dataset.task == 'IMAGE_CLASSIFICATION':
+        #     datapath=os.path.join(os.getcwd(),dataset.store_dataset_id+'.data')
+        #     dataset_zipfile = zipfile.ZipFile(datapath, 'r')
+        #     num_samples=len(dataset_zipfile.filelist) -1
+        #     dir_path = tempfile.mkdtemp()
+        #     if not os.path.exists(dir_path):
+        #         os.makedirs(dir_path)
+        #     images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
+        #     dataset_zipfile.close()
+        #     labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
+        #     os.unlink(os.path.join(dir_path,'images.csv'))
 
-            datasetdict['store_dataset_id'] = dataset.store_dataset_id
-            datasetdict['number_of_classes'] =  len(labels)
-            datasetdict['labels'] = labels
-            datasetdict['number_of_samples'] =  num_samples
-            datasetdict['stat'] =  dataset.stat
-            
-        else:
-            pass
+        #     datasetdict['store_dataset_id'] = dataset.store_dataset_id
+        #     datasetdict['number_of_classes'] =  len(labels)
+        #     datasetdict['labels'] = labels
+        #     datasetdict['number_of_samples'] =  num_samples
+        #     datasetdict['stat'] =  dataset.stat
+        #
+        # else:
+        #     pass
         return datasetdict
 
     def get_datasets(self, user_id, task=None):
@@ -209,22 +209,22 @@ class Admin(object):
                 'store_dataset_id' : x.store_dataset_id,
                 'stat' : x.stat
             }
-            if x.task == 'IMAGE_CLASSIFICATION':
-                datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)
-                dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-                num_samples=len(dataset_zipfile.filelist) -1
-                dir_path = tempfile.mkdtemp()
-                if not os.path.exists(dir_path):
-                    os.makedirs(dir_path)
-                images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-                dataset_zipfile.close()
-                labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-                os.unlink(os.path.join(dir_path,'images.csv'))
-                datasetdict['labels'] = labels
-                datasetdict['number_of_samples'] =  num_samples
-                datasetdict['number_of_classes'] = len(labels)
-            else:
-                pass
+            # if x.task == 'IMAGE_CLASSIFICATION':
+            #     datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)
+            #     dataset_zipfile = zipfile.ZipFile(datapath, 'r')
+            #     num_samples=len(dataset_zipfile.filelist) -1
+            #     dir_path = tempfile.mkdtemp()
+            #     if not os.path.exists(dir_path):
+            #         os.makedirs(dir_path)
+            #     images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
+            #     dataset_zipfile.close()
+            #     labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
+            #     os.unlink(os.path.join(dir_path,'images.csv'))
+            #     datasetdict['labels'] = labels
+            #     datasetdict['number_of_samples'] =  num_samples
+            #     datasetdict['number_of_classes'] = len(labels)
+            # else:
+            #     pass
             datasetdicts.append(datasetdict)
 
         return datasetdicts

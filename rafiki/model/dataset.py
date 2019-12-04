@@ -439,7 +439,7 @@ class ImageFilesDatasetLazy(ModelDataset):
         for image_path in self._full_image_paths:
             os.remove(image_path)
         """
-        os.removedirs(dir_path)
+        # os.removedirs(dir_path)
     
     def get_item(self, index):
         return self.__getitem__(index)

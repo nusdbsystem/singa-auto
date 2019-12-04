@@ -45,7 +45,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'lr':FixedKnob(0.0001), ### learning_rate
             'weight_decay':FixedKnob(0.0),
             'drop_rate':FixedKnob(0.0),
-            'max_epochs': FixedKnob(5), 
+            'max_epochs': FixedKnob(1), 
             'batch_size': CategoricalKnob([32]),
             'max_iter': FixedKnob(20),
             'optimizer':CategoricalKnob(['adam']),
@@ -93,7 +93,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'model_slicing_randnum':FixedKnob(1),
 
             # MC Dropout
-            'enable_mc_dropout':FixedKnob(True),
+            'enable_mc_dropout':FixedKnob(False),
             'mc_trials_n':FixedKnob(1000)
         }
 
