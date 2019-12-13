@@ -37,4 +37,4 @@ COPY web/ web/
 
 EXPOSE 3001
 
-CMD cd web/ && yarn build && node app.js
+CMD cd web/ && yarn build && node serveBuilt.js
