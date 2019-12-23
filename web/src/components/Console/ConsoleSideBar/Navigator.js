@@ -83,7 +83,7 @@ const styles = theme => ({
     fontSize: theme.typography.fontSize,
   },
   divider: {
-    marginTop: theme.spacing(1) * 2,
+    marginTop: theme.spacing(2),
   }
 });
 
@@ -96,16 +96,22 @@ class Navigator extends React.Component {
 
   state = {
     DatasetsTableOpen: true,
-    JobsTableOpen: false,
+    ModelsTableOpen: true,
+    JobsTableOpen: true,
     DataApplicationOpen: false,
-    KeyValueDBOpen: false
   };
 
   handleClick = (categoryHeader) => {
+    // case is collapseID
     switch(categoryHeader) {
       case "Datasets":
         this.setState(state => (
           { DatasetsTableOpen: !state.DatasetsTableOpen }
+        ));
+        break
+      case "Models":
+        this.setState(state => (
+          { ModelsTableOpen: !state.ModelsTableOpen }
         ));
         break
       case "Jobs":
@@ -113,14 +119,9 @@ class Navigator extends React.Component {
           { JobsTableOpen: !state.JobsTableOpen }
         ));
         break
-      case "Application":
+      case "Applications":
         this.setState(state => (
           { DataApplicationOpen: !state.DataApplicationOpen }
-        ));
-        break
-      case "KeyValue":
-        this.setState(state => (
-          { KeyValueDBOpen: !state.KeyValueDBOpen }
         ));
         break
       default:
@@ -139,7 +140,7 @@ class Navigator extends React.Component {
         collapseIn: this.state.DatasetsTableOpen,
         children: [
           {
-            id: 'List Dataset',
+            id: 'List Datasets',
             icon: <ListIcon />,
             pathname: "/console/datasets/list-dataset"
           },
@@ -156,7 +157,24 @@ class Navigator extends React.Component {
         ],
       },
       {
-        id: 'Training Jobs',
+        id: 'Model',
+        collapseID: "Models",
+        collapseIn: this.state.ModelsTableOpen,
+        children: [
+          {
+            id: 'List Models',
+            icon: <ListIcon />,
+            pathname: "/console/datasets/list-model"
+          },
+          {
+            id: 'Upload Model',
+            icon: <CloudUpload />,
+            pathname: "/console/datasets/upload-model"
+          },
+        ],
+      },
+      {
+        id: 'TrainJobs',
         collapseID: "Jobs",
         collapseIn: this.state.JobsTableOpen,
         children: [
@@ -166,15 +184,15 @@ class Navigator extends React.Component {
             pathname: "/console/jobs/list-train-jobs"
           },
           {
-            id: 'Create NEW Train',
+            id: 'Create Train Job',
             icon: <CloudUpload />,
             pathname: "/console/jobs/create-train-job"
           },
         ],
       },
       {
-        id: 'Applications',
-        collapseID: "Application",
+        id: 'Application',
+        collapseID: "Applications",
         collapseIn: this.state.DataApplicationOpen,
         children: [
           {
@@ -213,7 +231,7 @@ class Navigator extends React.Component {
                 classes.itemCategory)}
             >
               <img alt="logo" src={Logo} className={classes.logo} />
-              <span className={classes.logoText}>Rafiki</span>
+              <span className={classes.logoText}>Panda-dev</span>
             </ListItem>
          
             {categories.map(({id, collapseID, collapseIn, children }) => (
