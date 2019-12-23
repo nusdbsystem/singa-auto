@@ -13,18 +13,18 @@ const styles = theme => ({
     display: 'flex',
     alignItems: 'center',
     [theme.breakpoints.up('sm')]: {
-      height: `calc(100vh - 70px)`,
+      height: '70vh',
       minHeight: 500,
       maxHeight: 1300,
     },
   },
   layoutBody: {
-    marginTop: theme.spacing(1) * 3,
-    marginBottom: theme.spacing(1) * 14,
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(14),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    paddingTop: 80
+    paddingTop: 30
   },
   backdrop: {
     position: 'absolute',
@@ -49,7 +49,7 @@ const styles = theme => ({
   },
   arrowDown: {
     position: 'absolute',
-    bottom: theme.spacing(1) * 4,
+    bottom: theme.spacing(4),
   },
 });
 

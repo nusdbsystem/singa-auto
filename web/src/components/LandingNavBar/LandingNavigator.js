@@ -102,7 +102,7 @@ class Navigator extends React.Component {
               classes.itemCategory)}
           >
             <img alt="logo" src={Logo} className={classes.logo} />
-            Rafiki
+            Panda-dev
           </ListItem>
           {navLinks.map((link, index) => (
             <ListItem
