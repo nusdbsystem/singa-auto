@@ -19,7 +19,7 @@ class Root extends React.PureComponent {
 
   componentDidMount() {
     this.props.onTryAutoSignup();
-    console.log("HAA", this.props.isAuthenticated)
+    console.log("isAuthenticated check: ", this.props.isAuthenticated)
   }
 
   render() {
