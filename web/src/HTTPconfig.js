@@ -2,6 +2,16 @@
 // build script's process.env.NODE_ENV = 'production';
 // default as development
 
+/*
+web has a .env specifying the custom settings for local dev:
+PORT=$WEB_ADMIN_EXT_PORT
+NODE_PATH=./src
+REACT_APP_API_POINT_HOST=$RAFIKI_ADDR
+REACT_APP_API_POINT_PORT=$ADMIN_EXT_PORT
+===
+for local development, no need to source the env.sh or .env.
+*/
+
 const adminHost = process.env.REACT_APP_API_POINT_HOST
 const adminPort = process.env.REACT_APP_API_POINT_PORT
 
@@ -22,9 +32,10 @@ const HTTPconfig = {
   gateway: `http://${adminHost}:${adminPort}/`
 }
 
-if (process.env.NODE_ENV === "production") {
-  //HTTPconfig.gateway = "http://13.229.126.135/"
-  HTTPconfig.gateway = `http://${adminHost}:${adminPort}/`
+if (process.env.NODE_ENV === "development") {
+  // localhost:3000 is the port exposed by
+  // docker rafiki admin
+  HTTPconfig.gateway = "http://localhost:3000/"
 }
 
 export default HTTPconfig;
