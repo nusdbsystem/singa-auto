@@ -1,22 +1,17 @@
 import { createMuiTheme } from '@material-ui/core/styles';
-import green from '@material-ui/core/colors/green';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
-import deepOrange from '@material-ui/core/colors/deepOrange';
-import cyan from '@material-ui/core/colors/brown';
-
+import { green, grey, red, orange } from '@material-ui/core/colors';
 
 const rawTheme = createMuiTheme({
   palette: {
     primary: {
-      light: cyan[100],
-      main: cyan[800], // almost black
-      dark: cyan[900],
+      light: grey[50],
+      main: grey[800],
+      dark: grey[900],
     },
     secondary: {
-      light: deepOrange[50],
-      main: deepOrange[400],
-      dark: deepOrange[900],
+      light: orange[50],
+      main: orange[500],
+      dark: orange[700],
     },
     warning: {
       main: '#ffc071',
@@ -29,6 +24,7 @@ const rawTheme = createMuiTheme({
     },
     success: {
       xLight: green[50],
+      main: green[500],
       dark: green[700],
     },
     common: {
@@ -46,15 +42,14 @@ const rawTheme = createMuiTheme({
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 700,
-    // Migration to typography v2
-    useNextVariants: true,
+    fontFamilySecondary: "'Roboto Condensed', sans-serif",
   },
 });
 
 const fontHeader = {
   color: rawTheme.palette.text.primary,
   fontWeight: rawTheme.typography.fontWeightMedium,
-  fontFamily: rawTheme.typography.fontFamily,
+  fontFamily: rawTheme.typography.fontFamilySecondary,
   //textTransform: 'uppercase',
 };
 
