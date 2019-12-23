@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import { capitalize } from '@material-ui/core/utils/helpers';
+import { capitalize } from '@material-ui/core/utils';
 
 function round(value) {
   return Math.round(value * 1e4) / 1e4;

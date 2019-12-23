@@ -45,7 +45,7 @@ function AppFooter(props) {
   return (
     <Typography component="footer" className={classes.root}>
       <LayoutBody className={classes.layoutBody} width="large">
-        <Grid container spacing={40}>
+        <Grid container spacing={5}>
           <Grid item xs={12}>
             <Grid
               container
