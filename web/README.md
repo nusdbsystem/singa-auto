@@ -1,15 +1,43 @@
-# Rafiki Dashboard
+# Rafiki/Panda-dev Dashboard
 
-## How to run the app
+> Ensure you are in the `REPO_ROOT/web/` directory
 
+## Set up local development
+
+### Set up Docker orchestration for backend
+- install docker [setupDocker.md](./docsWebDev/seupDocker.md)
+- run `REPO_ROOT/scripts/start.sh`, this will start all the docker-swarm Kafka, Redis, Postgres, Flask, and web
+- **for local web development, we will only make use of the non-web docker images**
+- change the API and port in the `./src/HTTPconfig.js` 
+
+### Install Node Packages
+
+```sh
+yarn install
+```
+
+### Run the create-react-app local development
 ```
 yarn start
 ```
 
+### Push local changes
+- update change to be reflect in the docker image:
+```sh
+rafiki_panda_dev$ bash scripts/build_images.sh
+#(this will create a new ubuntu-based docker image)
+```
+- list docker containers
+```sh
+rafiki_panda_dev$ docker container ls
+```
+
+===
+
 ## How to setup Api End Point (environment parameters)
 
-```
-rafiki $ source env.sh
+```sh
+rafiki_panda_dev/web$ source ../.env.sh
 ```
 
 ```
