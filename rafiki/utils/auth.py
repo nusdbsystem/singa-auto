@@ -51,9 +51,14 @@ def auth(user_types=[]):
     def decorator(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
-            auth_header = request.headers.get('authorization', None)
-            token = extract_token_from_header(auth_header)
-            auth = decode_token(token)
+            # TODO: remove auth for development
+            # auth_header = request.headers.get('authorization', None)
+            # token = extract_token_from_header(auth_header)
+            # auth = decode_token(token)
+            # replace with your own user_id
+            auth = dict()
+            auth['user_id'] = '16c796b1-ead0-4656-a497-9bb0db7725b8'
+            auth['user_type'] = UserType.SUPERADMIN
 
             if auth.get('user_type') not in user_types:
                 raise UnauthorizedError()
