@@ -5,13 +5,9 @@ import { Link } from "react-router-dom";
 import Button from '../LandingComponents/Button';
 import Typography from '../LandingComponents/Typography';
 import ProductHeroLayout from './LandingProductHeroLayout';
-import heroImage from "../../assets/electrical-2476782_960_720.jpg"
+import heroImage from "../../assets/harli-marten-n7a2OJDSZns-unsplash.jpg"
 
 const backgroundImage = heroImage
-  //'https://www.ebetfinder.com/wp-content/uploads/2016/11/dota-2-gameplay-ebetfinder-resized.jpg';
-  //'https://www.comp.nus.edu.sg/~dbsystem/rafiki/pic/stack.jpg'
-  //'https://www.geek.com/wp-content/uploads/2010/12/asfMod_02.jpg'
-  //'https://cdn.pixabay.com/photo/2017/07/06/03/00/electrical-2476782_960_720.jpg'
 
 const styles = theme => ({
   background: {
@@ -23,14 +19,14 @@ const styles = theme => ({
     //minWidth: 200,
   },
   h5: {
-    marginBottom: theme.spacing(1) * 4,
-    marginTop: theme.spacing(1) * 4,
+    marginBottom: theme.spacing(4),
+    marginTop: theme.spacing(4),
     [theme.breakpoints.up('sm')]: {
-      marginTop: theme.spacing(1) * 8,
+      marginTop: theme.spacing(10),
     },
   },
   more: {
-    marginTop: theme.spacing(1) * 2,
+    marginTop: theme.spacing(2),
   },
 });
 
@@ -40,12 +36,13 @@ function ProductHero(props) {
   return (
     <ProductHeroLayout backgroundClassName={classes.background}>
       {/* Increase the network loading priority of the background image. */}
-      <img style={{ display: 'none' }} src={backgroundImage} alt="" />
+      <img style={{ display: 'none' }} src={backgroundImage} alt="increase priority" />
       <Typography color="inherit" align="center" variant="h2" marked="center">
-        Rafiki
+        Panda-dev
       </Typography>
       <Typography color="inherit" align="center" variant="h5" className={classes.h5}>
-        Rafiki is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind. 
+        Panda-dev is a distributed system that trains machine learning (ML) models <br />
+        and deploys trained models, built with ease-of-use in mind. 
       </Typography>
       <Button
         color="secondary"
@@ -55,7 +52,7 @@ function ProductHero(props) {
         component={Link}
         to={`/console`}
       >
-        Try Rafiki
+        Try Panda-dev
       </Button>
       <Typography variant="body2" color="inherit" className={classes.more}>
         Discover the experience

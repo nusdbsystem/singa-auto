@@ -10,9 +10,9 @@ const styles = theme => ({
     backgroundRepeat: 'no-repeat',
   },
   paper: {
-    padding: `${theme.spacing(1) * 4}px ${theme.spacing(1) * 3}px`,
+    padding: `${theme.spacing(4)}px ${theme.spacing(3)}px`,
     [theme.breakpoints.up('md')]: {
-      padding: `${theme.spacing(1) * 10}px ${theme.spacing(1) * 8}px`,
+      padding: `${theme.spacing(10)}px ${theme.spacing(8)}px`,
     },
   },
 });

@@ -9,7 +9,7 @@ import '../LandingMainPage/Overview.css'
 
 const styles = theme => ({
   root: {
-    marginTop: theme.spacing(1) * 8,
+    marginTop: theme.spacing(8),
   },
 })
 

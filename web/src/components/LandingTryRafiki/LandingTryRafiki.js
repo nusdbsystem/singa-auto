@@ -12,9 +12,9 @@ import tryRafiki from "../../assets/tryRafiki.png"
 
 const styles = theme => ({
   root: {
-    marginTop: theme.spacing(1) * 10,
+    marginTop: theme.spacing(10),
     //marginBottom: 0,
-    marginBottom: theme.spacing(1) * 9,
+    marginBottom: theme.spacing(9),
     display: 'flex',
   },
   cardWrapper: {
@@ -23,7 +23,7 @@ const styles = theme => ({
   card: {
     display: 'flex',
     justifyContent: 'center',
-    padding: `${theme.spacing(1) * 8}px ${theme.spacing(1) * 3}px`,
+    padding: `${theme.spacing(8)}px ${theme.spacing(3)}px`,
   },
   cardContent: {
     maxWidth: 400,

@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import MuiTextField from '@material-ui/core/TextField';
-import { capitalize } from '@material-ui/core/utils/helpers';
+import { capitalize } from '@material-ui/core/utils';
 
 const styles = theme => ({
   root: {

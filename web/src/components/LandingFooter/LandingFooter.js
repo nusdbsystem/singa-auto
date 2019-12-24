@@ -45,7 +45,7 @@ function AppFooter(props) {
   return (
     <Typography component="footer" className={classes.root}>
       <LayoutBody className={classes.layoutBody} width="large">
-        <Grid container spacing={40}>
+        <Grid container spacing={5}>
           <Grid item xs={12}>
             <Grid
               container
@@ -62,12 +62,12 @@ function AppFooter(props) {
                   <GithubIcon />
                 </a>
               </Grid>
-              <Grid item>© 2019 Rafiki</Grid>
+              <Grid item>© 2020 Panda-dev</Grid>
             </Grid>
           </Grid>
           <Grid item>
             <Typography variant="caption">
-              {'Rafiki is brought to you by the team from DBsystem NUS School of Computing'}
+              {'Panda-dev is brought to you by the team from DBsystem NUS School of Computing'}
             </Typography>
           </Grid>
         </Grid>
