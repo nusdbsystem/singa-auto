@@ -16,8 +16,8 @@ export function* authLogin(action) {
     const res = yield call(api.requestSignIn, action.authData)
     const user_id = res.data.user_id
     const token = res.data.token
-    // 1 hour expirationTime?
-    const expirationTime = 3600 * 1000
+    // 8 hour expirationTime?
+    const expirationTime = 3600 * 8000
     const expirationDate = new Date(new Date().getTime() + expirationTime);
     localStorage.setItem('user_id', user_id);
     localStorage.setItem('token', token);
