@@ -1,12 +1,12 @@
 import { createMuiTheme } from '@material-ui/core/styles';
-import { green, grey, red, orange } from '@material-ui/core/colors';
+import { green, blueGrey, red, orange } from '@material-ui/core/colors';
 
 const rawTheme = createMuiTheme({
   palette: {
     primary: {
-      light: grey[50],
-      main: grey[800],
-      dark: grey[900],
+      light: blueGrey[100],
+      main: blueGrey[900], // almost black
+      dark: '#1e1e1f',
     },
     secondary: {
       light: orange[50],
@@ -60,7 +60,7 @@ const theme = {
     background: {
       ...rawTheme.palette.background,
       default: rawTheme.palette.common.white,
-      placeholder: grey[200],
+      placeholder: blueGrey[200],
     },
   },
   typography: {
