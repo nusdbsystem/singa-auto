@@ -14,9 +14,7 @@ import LandingNavigator from "./LandingNavigator"
 // for login menu
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import Menu from "@material-ui/core/Menu";
-import Avatar from '@material-ui/core/Avatar';
-import AppBarMenuItems from "./AppBarMenuItems"
+import AvatarRegion from "components/RootComponents/AvatarRegion"
 
 import Toolbar, { styles as toolbarStyles } from '../LandingComponents/Toolbar';
 import Logo from "../../assets/LOGO_Rafiki-4.svg"
@@ -61,7 +59,7 @@ const styles = theme => ({
   rightLink: {
     font: '300 18px Roboto,sans-serif',
     color: theme.palette.common.white,
-    marginLeft: theme.spacing(1) * 5,
+    marginLeft: theme.spacing(5),
     textDecoration: "none",
     '&:hover': {
       color: theme.palette.secondary.main,
@@ -70,25 +68,15 @@ const styles = theme => ({
   rightLinkActive: {
     font: '300 18px Roboto,sans-serif',
     color: theme.palette.secondary.main,
-    marginLeft: theme.spacing(1) * 5,
+    marginLeft: theme.spacing(5),
     textDecoration: "none",
   },
   linkSecondary: {
     color: theme.palette.secondary.main,
   },
-  avatar: {
-    margin: 10,
-    color: '#fff',
-    backgroundColor: theme.palette.secondary.main,
-  },
-  iconButtonAvatar: {
-    padding: 4,
-    marginLeft: theme.spacing(1) * 3,
-    textDecoration: "none"
-  },
   menuButton: {
     marginLeft: -theme.spacing(1),
-    marginRight: theme.spacing(1) * 2,
+    marginRight: theme.spacing(2),
   },
 });
 
@@ -128,39 +116,13 @@ class LandingNavBar extends React.Component {
               {'Go To Console'}
             </Link>
           </Typography>
-          <IconButton
-            aria-haspopup="true"
-            aria-label="More"
-            aria-owns="Open right Menu"
-            color="inherit"
-            id="loginMenuButton"
-            onClick={this.handleMenuOpen}
-            className={classes.iconButtonAvatar}
-          >
-            <Avatar
-              className={classes.avatar}
-              style={{
-                backgroundColor: "orange" //bgColor
-              }}
-            >
-              {"LQ" /*initials*/}
-            </Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={
-              (anchorElId && document.getElementById(anchorElId)) ||
-              document.body
-            }
-            id="menuRight"
-            onClose={this.handleMenuClose}
-            open={!!anchorElId}
-          >
-            <AppBarMenuItems
-              isAuth={isAuthenticated}
-              logout={this.handleLogout}
-              onClick={this.handleMenuClose}
-            />
-          </Menu>
+          <AvatarRegion
+            isAuthenticated={isAuthenticated}
+            anchorElId={anchorElId}
+            openMenu={this.handleMenuOpen}
+            closeMenu={this.handleMenuClose}
+            logOut={this.handleLogout}
+          />
         </Fragment>
       )
       : (
@@ -188,7 +150,7 @@ class LandingNavBar extends React.Component {
         url: "/contact",
         label: "Contact",
       },
-      {
+      {// TODO change the docs link?
         url: "https://nginyc.github.io/rafiki/docs/latest/src/user/index.html",
         label: "Docs",
       },
