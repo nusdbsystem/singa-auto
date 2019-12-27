@@ -12,7 +12,7 @@ import { routerMiddleware } from 'connected-react-router'
 import { ConnectedRouter } from "connected-react-router";
 
 // Material-UI
-import { MuiThemeProvider } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import theme from "./theme"
 import 'typeface-roboto';
@@ -53,7 +53,7 @@ ReactDOM.render(
       <div>An error occurred in this page, please go back and refresh</div>
     )}
   >
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <Provider store={store}>
         <ConnectedRouter history={history}>
@@ -62,7 +62,7 @@ ReactDOM.render(
           </Root>
         </ConnectedRouter>
       </Provider>
-    </MuiThemeProvider>
+    </ThemeProvider>
   </ErrorBoundary>,
   document.getElementById('root')
 );

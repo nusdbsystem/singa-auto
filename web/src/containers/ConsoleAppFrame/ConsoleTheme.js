@@ -1,4 +1,34 @@
-import theme from "../../theme"
+import { createMuiTheme } from '@material-ui/core/styles';
+
+const theme = createMuiTheme({
+  palette: {
+    primary: { // all firebase blue
+      light: '#63ccff',
+      main: '#009be5',
+      dark: '#006db3',
+    },
+  },
+  typography: {
+    h5: {
+      fontWeight: 500,
+      fontSize: 26,
+      letterSpacing: 0.5,
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  props: {
+    MuiTab: {
+      disableRipple: true,
+    },
+  },
+  mixins: {
+    toolbar: {
+      minHeight: 48,
+    },
+  },
+});
 
 const ConsoleTheme = {
   ...theme,
@@ -8,14 +38,9 @@ const ConsoleTheme = {
         backgroundColor: '#18202c',
       },
     },
-    MuiToolbar: {
-      regular: {
-        minHeight: 80,
-      },
-    },
     MuiButton: {
       label: {
-        textTransform: 'initial',
+        textTransform: 'none',
       },
       contained: {
         boxShadow: 'none',
@@ -37,17 +62,13 @@ const ConsoleTheme = {
     },
     MuiTab: {
       root: {
-        textTransform: 'initial',
+        textTransform: 'none',
         margin: '0 16px',
         minWidth: 0,
-        [theme.breakpoints.up('md')]: {
-          minWidth: 0,
-        },
-      },
-      labelContainer: {
         padding: 0,
         [theme.breakpoints.up('md')]: {
           padding: 0,
+          minWidth: 0,
         },
       },
     },
@@ -85,17 +106,6 @@ const ConsoleTheme = {
         width: 32,
         height: 32,
       },
-    },
-  },
-  props: {
-    MuiTab: {
-      disableRipple: true,
-    },
-  },
-  mixins: {
-    ...theme.mixins,
-    toolbar: {
-      minHeight: 48,
     },
   },
 };

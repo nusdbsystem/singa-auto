@@ -1,15 +1,15 @@
-import React from 'react';
+import React from "react"
 import { connect } from "react-redux"
 import { compose } from "redux"
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types"
 import { Switch, Route, Redirect } from "react-router-dom"
 
-import { MuiThemeProvider, withStyles } from '@material-ui/core/styles';
-import Hidden from '@material-ui/core/Hidden';
+import { ThemeProvider, withStyles } from "@material-ui/core/styles"
+import Hidden from "@material-ui/core/Hidden"
 
-import Header from 'components/Console/ConsoleHeader/Header';
-import Navigator from 'components/Console/ConsoleSideBar/Navigator';
-import ConsoleTheme from "./ConsoleTheme"
+import Header from "components/Console/ConsoleHeader/Header"
+import Navigator from "components/Console/ConsoleSideBar/Navigator"
+import theme from "./ConsoleTheme"
 
 // Datasets Component
 import ListDataSet from "../Datasets/ListDataSet"
@@ -24,44 +24,51 @@ import TrialDetails from "../Jobs/TrialsDetails"
 // Inference Jobs Component
 import ApplicationDetails from "../Application/ApplicationDetails"
 import ListApplication from "../Application/ListApplication"
-import CreateInferenceJob from '../Application/CreateInferenceJob';
+import CreateInferenceJob from "../Application/CreateInferenceJob"
 
 import InProgress from "../WorkInProgress/InProgress"
+import Copyright from "components/Console/ConsoleContents/Copyright"
 
 import * as actions from "./actions"
 
-import LoadingBar from 'react-redux-loading-bar'
+import LoadingBar from "react-redux-loading-bar"
 
+const drawerWidth = 256
 
-const drawerWidth = 256;
-
-const styles = theme => ({
+const styles = {
   root: {
-    display: 'flex',
-    minHeight: '100vh',
+    display: "flex",
+    minHeight: "100vh",
   },
   drawer: {
-    [theme.breakpoints.up('md')]: {
+    [theme.breakpoints.up("sm")]: {
       width: drawerWidth,
       flexShrink: 0,
     },
   },
-  appContent: {
+  app: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   },
-})
+  main: {
+    flex: 1,
+    padding: theme.spacing(6, 4),
+    background: "#eaeff1",
+  },
+  footer: {
+    padding: theme.spacing(2),
+    background: "#eaeff1",
+  },
+}
 
 class ConsoleAppFrame extends React.Component {
   static propTypes = {
+    authStatus: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
     mobileOpen: PropTypes.bool,
     headerTitle: PropTypes.string,
     handleDrawerToggle: PropTypes.func,
-    // for StorageBar
-    DBSize: PropTypes.string,
-    StorageBarStatus: PropTypes.string
   }
 
   render() {
@@ -71,30 +78,30 @@ class ConsoleAppFrame extends React.Component {
       handleDrawerToggle,
       headerTitle,
       mobileOpen,
-    } = this.props;
+    } = this.props
 
     if (!authStatus) {
       return <Redirect to="/sign-in" />
     }
 
     return (
-      <MuiThemeProvider theme={ConsoleTheme}>
+      <ThemeProvider theme={theme}>
         <LoadingBar
           // only display if the action took longer than updateTime to finish
           // default updateTime = 200ms
           updateTime={300}
           progressIncrease={10}
           style={{
-            backgroundColor: '#fc6e43',
+            backgroundColor: "#fc6e43",
             height: 8,
             zIndex: 2000,
             position: "fixed",
-            top: 0
+            top: 0,
           }}
         />
         <div className={classes.root}>
           <nav className={classes.drawer}>
-            <Hidden mdUp implementation="js">
+            <Hidden smUp implementation="js">
               <Navigator
                 PaperProps={{ style: { width: drawerWidth } }}
                 variant="temporary"
@@ -102,71 +109,73 @@ class ConsoleAppFrame extends React.Component {
                 onClose={handleDrawerToggle}
               />
             </Hidden>
-            <Hidden smDown implementation="css">
+            <Hidden xsDown implementation="css">
               <Navigator PaperProps={{ style: { width: drawerWidth } }} />
             </Hidden>
           </nav>
-          <div className={classes.appContent}>
-            <Header
-              onDrawerToggle={handleDrawerToggle}
-              title={headerTitle}
-            />
-            <Switch>
-              <Route
-                exact
-                path='/console/datasets/list-dataset'
-                component={ListDataSet}
-              />
-              <Route
-                exact
-                path='/console/datasets/upload-datasets'
-                component={UploadDataset}
-              />
-              <Route
-                exact
-                path='/console/datasets/delete-dataset'
-                component={InProgress}
-              />
-              <Route
-                exact
-                path='/console/jobs/list-train-jobs'
-                component={ListTrainJobs}
-              />
-              <Route
-                exact
-                path='/console/jobs/create-train-job'
-                component={CreateTrainJob}
-              />
-              <Route
-                exact
-                path='/console/jobs/trials/:appId/:app/:appVersion'
-                component={ListTrials}
-              />
-              <Route
-                exact
-                path='/console/jobs/trials/:trialId'
-                component={TrialDetails}
-              />
-              <Route
-                exact
-                path='/console/application/:appId/:app/:appVersion/create_inference_job'
-                component={CreateInferenceJob}
-              />
-              <Route
-                exact
-                path="/console/application/list-applications"
-                component={ListApplication}
-              />
-              <Route
-                exact
-                path='/console/application/running_job/:app/:appVersion'
-                component={ApplicationDetails}
-              />
-            </Switch>
+          <div className={classes.app}>
+            <Header onDrawerToggle={handleDrawerToggle} title={headerTitle} />
+            <main className={classes.main}>
+              <Switch>
+                <Route
+                  exact
+                  path="/console/datasets/list-dataset"
+                  component={ListDataSet}
+                />
+                <Route
+                  exact
+                  path="/console/datasets/upload-datasets"
+                  component={UploadDataset}
+                />
+                <Route
+                  exact
+                  path="/console/datasets/delete-dataset"
+                  component={InProgress}
+                />
+                <Route
+                  exact
+                  path="/console/jobs/list-train-jobs"
+                  component={ListTrainJobs}
+                />
+                <Route
+                  exact
+                  path="/console/jobs/create-train-job"
+                  component={CreateTrainJob}
+                />
+                <Route
+                  exact
+                  path="/console/jobs/trials/:appId/:app/:appVersion"
+                  component={ListTrials}
+                />
+                <Route
+                  exact
+                  path="/console/jobs/trials/:trialId"
+                  component={TrialDetails}
+                />
+                <Route
+                  exact
+                  path="/console/application/:appId/:app/:appVersion/create_inference_job"
+                  component={CreateInferenceJob}
+                />
+                <Route
+                  exact
+                  path="/console/application/list-applications"
+                  component={ListApplication}
+                />
+                <Route
+                  exact
+                  path="/console/application/running_job/:app/:appVersion"
+                  component={ApplicationDetails}
+                />
+              </Switch>
+            </main>
+            <footer className={classes.footer}>
+              <Copyright />
+            </footer>
           </div>
         </div>
-      </MuiThemeProvider>
-    );
+      </ThemeProvider>
+    )
   }
 }
 
@@ -177,14 +186,10 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  handleDrawerToggle: actions.handleDrawerToggle
+  handleDrawerToggle: actions.handleDrawerToggle,
 }
 
-
 export default compose(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(ConsoleAppFrame);
+)(ConsoleAppFrame)
