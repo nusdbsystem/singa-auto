@@ -27,7 +27,8 @@ import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
-import Logo from "assets/Logo-Rafiki-cleaned.png"
+// import Logo from "assets/Logo-Rafiki-cleaned.png"
+import Logo from "assets/LOGO_Rafiki-4.svg"
 
 // Navigator basic color dark blue specified in
 // ConsoleTheme MuiDrawer's paper
@@ -56,9 +57,10 @@ const styles = theme => ({
   firebase: {
     fontSize: 24,
     color: theme.palette.common.white,
+    backgroundColor: theme.palette.primary.main,
   },
   logo: {
-    height: 28,
+    height: 36,
     marginRight: 10
   },
   itemActiveItem: {
