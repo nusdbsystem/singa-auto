@@ -1,11 +1,17 @@
 import { createMuiTheme } from '@material-ui/core/styles';
+import { grey, orange } from '@material-ui/core/colors';
 
 const theme = createMuiTheme({
   palette: {
-    primary: { // all firebase blue
-      light: '#63ccff',
-      main: '#009be5',
-      dark: '#006db3',
+    primary: { // same as landing-page theme
+      light: grey[50],
+      main: grey[800],
+      dark: grey[900],
+    },
+    secondary: {
+      light: orange[50],
+      main: orange[500],
+      dark: orange[700],
     },
   },
   typography: {
