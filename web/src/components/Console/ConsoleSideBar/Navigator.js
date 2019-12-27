@@ -12,12 +12,16 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
-// for icons
-import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
-// row-based table (dataset)
-import ListIcon from '@material-ui/icons/FormatListBulleted'
+// Icons
 import CloudUpload from '@material-ui/icons/CloudUploadOutlined'
-
+// dataset
+import ListDsIcon from '@material-ui/icons/PhotoLibrary';
+// model
+import ListModelsIcon from '@material-ui/icons/LocalLibrary';
+// train jobs
+import ListTrainJobsIcon from '@material-ui/icons/Timeline';
+// application
+import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 // for nested list
 import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
@@ -25,62 +29,47 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import Logo from "assets/Logo-Rafiki-cleaned.png"
 
-// customize scrollbar for the fixed-div navigator
-import SimpleBar from 'simplebar-react';
-import 'simplebar/dist/simplebar.min.css';
-
 // Navigator basic color dark blue specified in
 // ConsoleTheme MuiDrawer's paper
 const styles = theme => ({
   categoryHeader: {
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   categoryHeaderPrimary: {
     color: theme.palette.common.white,
   },
-  categoryHeaderPrimaryActive: {
-    color: 'inherit'
-  },
   item: {
-    paddingTop: 11,
-    paddingBottom: 11,
+    paddingTop: 1,
+    paddingBottom: 1,
     color: 'rgba(255, 255, 255, 0.7)',
+    '&:hover,&:focus': {
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    },
   },
   itemCategory: {
     backgroundColor: '#232f3e',
     boxShadow: '0 -1px 0 #404854 inset',
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   firebase: {
     fontSize: 24,
-    fontFamily: theme.typography.fontFamily,
     color: theme.palette.common.white,
   },
   logo: {
     height: 28,
     marginRight: 10
   },
-  logoText: {
-    // color: "#61ADB1 "
-  },
-  itemActionable: {
-    '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    },
-  },
-  overviewHover: {
-    '&:hover': {
-      backgroundColor: 'rgba(216, 255, 255, 0.1)',
-    },
-  },
   itemActiveItem: {
     color: theme.palette.secondary.main,
   },
   itemPrimary: {
-    color: 'inherit',
-    fontSize: theme.typography.fontSize,
+    fontSize: 'inherit',
+  },
+  itemIcon: {
+    minWidth: 'auto',
+    marginRight: theme.spacing(2),
   },
   divider: {
     marginTop: theme.spacing(2),
@@ -91,7 +80,9 @@ const styles = theme => ({
 class Navigator extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
-    location: PropTypes.object,
+    location: PropTypes.object.isRequired,
+    open: PropTypes.bool,
+    onClose: PropTypes.func,
   }
 
   state = {
@@ -141,7 +132,7 @@ class Navigator extends React.Component {
         children: [
           {
             id: 'List Datasets',
-            icon: <ListIcon />,
+            icon: <ListDsIcon />,
             pathname: "/console/datasets/list-dataset"
           },
           {
@@ -163,7 +154,7 @@ class Navigator extends React.Component {
         children: [
           {
             id: 'List Models',
-            icon: <ListIcon />,
+            icon: <ListModelsIcon />,
             pathname: "/console/datasets/list-model"
           },
           {
@@ -174,13 +165,13 @@ class Navigator extends React.Component {
         ],
       },
       {
-        id: 'TrainJobs',
+        id: 'Train Jobs',
         collapseID: "Jobs",
         collapseIn: this.state.JobsTableOpen,
         children: [
           {
-            id: 'List Train Jobs',
-            icon: <ListIcon />,
+            id: 'List TrainJobs',
+            icon: <ListTrainJobsIcon />,
             pathname: "/console/jobs/list-train-jobs"
           },
           {
@@ -192,7 +183,7 @@ class Navigator extends React.Component {
       },
       {
         id: 'Application',
-        collapseID: "Applications",
+        collapseID: "List Applications",
         collapseIn: this.state.DataApplicationOpen,
         children: [
           {
@@ -220,7 +211,6 @@ class Navigator extends React.Component {
         onClose={onClose}
         {...other}
       >
-        <SimpleBar style={{width: 255}}>
           <List disablePadding>
             <ListItem
               component={Link}
@@ -231,7 +221,7 @@ class Navigator extends React.Component {
                 classes.itemCategory)}
             >
               <img alt="logo" src={Logo} className={classes.logo} />
-              <span className={classes.logoText}>Panda-dev</span>
+              Panda-dev
             </ListItem>
          
             {categories.map(({id, collapseID, collapseIn, children }) => (
@@ -268,15 +258,17 @@ class Navigator extends React.Component {
                       onClick={onClose}
                       component={Link}
                       to={pathname}
-                      dense
                       className={classNames(
                         classes.item,
-                        classes.itemActionable,
                         location.pathname === pathname &&
                         classes.itemActiveItem,
                       )}
                     >
-                      <ListItemIcon>{icon}</ListItemIcon>
+                      <ListItemIcon
+                        className={classes.itemIcon}
+                      >
+                        {icon}
+                      </ListItemIcon>
                       <ListItemText
                         classes={{
                           primary: classes.itemPrimary,
@@ -291,7 +283,6 @@ class Navigator extends React.Component {
               </React.Fragment>
             ))}
           </List>
-        </SimpleBar>
       </Drawer>
     );
   }
