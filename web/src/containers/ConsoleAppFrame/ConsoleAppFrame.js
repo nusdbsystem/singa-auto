@@ -26,7 +26,6 @@ import ApplicationDetails from "../Application/ApplicationDetails"
 import ListApplication from "../Application/ListApplication"
 import CreateInferenceJob from "../Application/CreateInferenceJob"
 
-import InProgress from "../WorkInProgress/InProgress"
 import Copyright from "components/Console/ConsoleContents/Copyright"
 
 import * as actions from "./actions"
@@ -54,7 +53,7 @@ const styles = {
   main: {
     flex: 1,
     padding: theme.spacing(6, 4),
-    background: "#eaeff1",
+    background: '#eaeff1', // light grey
   },
   footer: {
     padding: theme.spacing(2),
@@ -126,11 +125,6 @@ class ConsoleAppFrame extends React.Component {
                   exact
                   path="/console/datasets/upload-datasets"
                   component={UploadDataset}
-                />
-                <Route
-                  exact
-                  path="/console/datasets/delete-dataset"
-                  component={InProgress}
                 />
                 <Route
                   exact
