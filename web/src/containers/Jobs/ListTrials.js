@@ -9,7 +9,7 @@ import { push } from 'connected-react-router'
 // Material UI
 import { Button, Table, Toolbar, Typography, Grid, Tooltip, IconButton, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
-import { Pageview } from '@material-ui/icons'
+import PageviewIcon from '@material-ui/icons/Pageview';
 import RefreshIcon from '@material-ui/icons/Refresh'
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
@@ -181,7 +181,7 @@ class ListTrials extends React.Component {
                                                         .replace(':trialId', x.id)
                                                     this.props.push(link)
                                                 }} >
-                                                    <Pageview />
+                                                    <PageviewIcon />
                                                 </IconButton>
                                             </TableCell>
                                             <TableCell>{x.model_name}</TableCell>

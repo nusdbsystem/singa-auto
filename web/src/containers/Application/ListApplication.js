@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from "react-redux"
 import { compose } from "redux"
 import { push } from 'connected-react-router'
-import { Pageview } from '@material-ui/icons'
+import PageviewIcon from '@material-ui/icons/Pageview';
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as actions from "./actions"
@@ -97,7 +97,7 @@ class ListApplication extends React.Component {
                                                         .replace(':app', x.app).replace(':appVersion', x.app_version)
                                                     this.props.push(link)
                                                 }} >
-                                                    <Pageview />
+                                                    <PageviewIcon />
                                                 </IconButton>
                                             </TableCell>
                                             <TableCell>{x.id.slice(0,8)}</TableCell>

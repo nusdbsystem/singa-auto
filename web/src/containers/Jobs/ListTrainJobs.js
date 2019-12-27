@@ -7,7 +7,7 @@ import { compose } from "redux"
 import { push } from 'connected-react-router'
 
 import { withStyles } from '@material-ui/core/styles'
-import { Pageview } from '@material-ui/icons'
+import PageviewIcon from '@material-ui/icons/Pageview';
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as jobsActions from "./actions"
@@ -140,7 +140,7 @@ class ListJobs extends React.Component {
                                                         .replace(':appVersion', x.app_version);
                                                     this.props.push(link)
                                                 }} >
-                                                    <Pageview />
+                                                    <PageviewIcon />
                                                 </IconButton>
                                             </TableCell>
                                             <TableCell>{x.app}</TableCell>
