@@ -19,8 +19,6 @@ import AvatarRegion from "components/RootComponents/AvatarRegion"
 import Toolbar, { styles as toolbarStyles } from '../LandingComponents/Toolbar';
 import Logo from "../../assets/LOGO_Rafiki-4.svg"
 
-import * as actions from "../../containers/Root/actions"
-
 const styles = theme => ({
   LandingAppBar: {
     // borderBottom: `1px solid ${theme.palette.border}`,

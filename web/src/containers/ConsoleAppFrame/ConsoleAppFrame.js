@@ -28,8 +28,6 @@ import CreateInferenceJob from "../Application/CreateInferenceJob"
 
 import Copyright from "components/Console/ConsoleContents/Copyright"
 
-import * as actions from "./actions"
-
 import LoadingBar from "react-redux-loading-bar"
 
 const drawerWidth = 256
