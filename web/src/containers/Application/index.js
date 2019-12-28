@@ -2,27 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from "react-redux"
 import { compose } from "redux"
-import { Link } from 'react-router-dom'
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 
 import { withStyles } from '@material-ui/core/styles';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
 
 import MainContent from 'components/Console/ConsoleContents/MainContent'
 import ContentBar from "components/Console/ConsoleContents/ContentBar"
 
 
 const styles = theme => ({
-    block: {
-        display: 'block',
-    },
-    addDS: {
-        marginRight: theme.spacing(1),
-    },
     contentWrapper: {
         margin: '40px 16px',
         //position: "relative",
@@ -63,28 +53,13 @@ class ApplicationPage extends React.Component {
         return (
             <React.Fragment>
                 <MainContent>
-                    <ContentBar>
-                        <Toolbar>
-                            <Grid container spacing={10} justify="space-between" alignItems="center">
-                                <Grid item>
-                                    <Typography variant="h5" gutterBottom>
-                                        SomeApplicatioName
-                  </Typography>
-                                </Grid>
-                                <Grid item>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        className={classes.addDS}
-                                        component={Link}
-                                        to="/console/datasets/upload-datasets"
-                                    >
-                                        Open the page
-                  </Button>
-                                </Grid>
-                            </Grid>
-                        </Toolbar>
-                    </ContentBar>
+                    <ContentBar
+                        needToList={true}
+                        barTitle="SomeApplicatioName"
+                        mainBtnText="Open the page"
+                        mainBtnLink="/console/datasets/upload-datasets"
+                        refreshAction={null}
+                    />
                     <div className={classes.contentWrapper}>
                         <Typography color="textSecondary" align="center">
                             Application Details

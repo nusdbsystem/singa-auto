@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { goBack } from "connected-react-router"
 
 // Material UI
-import { Button, Table, Toolbar, Typography, Grid, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core'
+import { Button, Table, Grid, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core'
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as ClientAPI from "services/ClientAPI"
@@ -20,12 +20,6 @@ import MainContent from 'components/Console/ConsoleContents/MainContent'
 import ContentBar from 'components/Console/ConsoleContents/ContentBar'
 
 const styles = theme => ({
-    block: {
-        display: 'block',
-    },
-    addDS: {
-        marginRight: theme.spacing(1),
-    },
     contentWrapper: {
         margin: '40px 16px 0px 16px',
         //position: "relative",
@@ -56,17 +50,13 @@ class ApplicationDetails extends React.Component {
         return (
             <React.Fragment>
                 <MainContent>
-                    <ContentBar>
-                        <Toolbar>
-                            <Grid container spacing={10} justify="space-between" alignItems="center">
-                                <Grid item>
-                                    <Typography variant="h5" gutterBottom>
-                                        Create Train Jobs
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        </Toolbar>
-                    </ContentBar>
+                    <ContentBar
+                        needToList={false}
+                        barTitle="Create Train Jobs"
+                        mainBtnText=""
+                        mainBtnLink=""
+                        refreshAction={null}
+                    />
                     <Grid container spacing={10} justify="center" alignItems="center">
                         <Grid item xs={12} justify="center" alignItems="center">
                             <div className={classes.contentWrapper} >
