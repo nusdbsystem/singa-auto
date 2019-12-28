@@ -10,24 +10,13 @@ const initialState = {
       show: false,
       message: ""
     },
-    dropdownAnchorElId: false,
     RootMobileOpen: false,
 }
 
 
 export const Root = (state = initialState, action) => {
   switch (action.type) {
-    // login menu on appbar
-    case Types.LOGIN_MENU_OPEN:
-      return {
-        ...state,
-        dropdownAnchorElId: action.anchorElId
-      };
-    case Types.LOGIN_MENU_CLOSE:
-      return {
-        ...state,
-        dropdownAnchorElId: false
-      };
+    // login menu on appbar (removed from reducer)
     // for authentications
     case Types.AUTH_START:
       return {

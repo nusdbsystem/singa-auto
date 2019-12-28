@@ -16,8 +16,6 @@ import { withStyles } from '@material-ui/core/styles';
 import IconButton from "@material-ui/core/IconButton";
 import AvatarRegion from "components/RootComponents/AvatarRegion"
 
-import * as actions from "../../../containers/Root/actions"
-
 const lightColor = 'rgba(255, 255, 255, 0.7)';
 
 const styles = theme => ({
@@ -39,19 +37,7 @@ class Header extends React.Component {
     title: PropTypes.string.isRequired,
     onDrawerToggle: PropTypes.func.isRequired,
     isAuthenticated: PropTypes.bool.isRequired,
-    anchorElId: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.bool,
-    ]).isRequired,
   }
-
-  handleMenuOpen = event => {
-    this.props.loginMenuOpen(event.currentTarget.id);
-  };
-
-  handleMenuClose = () => {
-    this.props.loginMenuClose();
-  };
 
   handleLogout = () => {
     // console.log("logging out, clearing token")
@@ -67,7 +53,6 @@ class Header extends React.Component {
       title,
       onDrawerToggle,
       isAuthenticated,
-      anchorElId,
       //initials,
       //bgColor
     } = this.props;
@@ -101,9 +86,6 @@ class Header extends React.Component {
             <Grid item>
               <AvatarRegion
                 isAuthenticated={isAuthenticated}
-                anchorElId={anchorElId}
-                openMenu={this.handleMenuOpen}
-                closeMenu={this.handleMenuClose}
                 logOut={this.handleLogout}
               />
             </Grid>
@@ -115,21 +97,14 @@ class Header extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  anchorElId: state.Root.dropdownAnchorElId,
   isAuthenticated: state.Root.token !== null,
   // initials: state.firebaseReducer.profile.initials,
   // bgColor: state.firebaseReducer.profile.color
 })
 
-const mapDispatchToProps = {
-  loginMenuOpen: actions.loginMenuOpen,
-  loginMenuClose: actions.loginMenuClose,
-}
-
 export default compose(
   connect(
     mapStateToProps,
-    mapDispatchToProps
   ),
   withRouter,
   withStyles(styles)

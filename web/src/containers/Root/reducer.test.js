@@ -12,7 +12,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                dropdownAnchorElId: false,
                 RootMobileOpen: false,
             }
         )
@@ -31,7 +30,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                dropdownAnchorElId: false,
                 RootMobileOpen: false,
             })
     })
@@ -48,7 +46,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            dropdownAnchorElId: false,
             RootMobileOpen: false,
         })
      })
@@ -67,7 +64,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            dropdownAnchorElId: false,
             RootMobileOpen: false,
         })
     })
@@ -80,7 +76,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            dropdownAnchorElId: false,
             RootMobileOpen: false,
         },{
             type:actions.Types.AUTH_LOGOUT,
@@ -94,7 +89,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                dropdownAnchorElId: false,
                 RootMobileOpen: false,
             }
         )

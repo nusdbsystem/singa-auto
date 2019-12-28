@@ -81,14 +81,6 @@ const styles = theme => ({
 });
 
 class LandingNavBar extends React.Component {
-  handleMenuOpen = event => {
-    this.props.loginMenuOpen(event.currentTarget.id);
-  };
-
-  handleMenuClose = () => {
-    this.props.loginMenuClose();
-  };
-
   handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
@@ -98,7 +90,6 @@ class LandingNavBar extends React.Component {
 
   render() {
     const {
-      anchorElId,
       isAuthenticated,
       classes,
       handleDrawerToggle,
@@ -118,9 +109,6 @@ class LandingNavBar extends React.Component {
           </Typography>
           <AvatarRegion
             isAuthenticated={isAuthenticated}
-            anchorElId={anchorElId}
-            openMenu={this.handleMenuOpen}
-            closeMenu={this.handleMenuClose}
             logOut={this.handleLogout}
           />
         </Fragment>
@@ -229,7 +217,6 @@ class LandingNavBar extends React.Component {
 
 
 const mapStateToProps = state => ({
-  anchorElId: state.Root.dropdownAnchorElId,
   isAuthenticated: state.Root.token !== null,
   // initials: state.firebaseReducer.profile.initials,
   // bgColor: state.firebaseReducer.profile.color
@@ -237,8 +224,6 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-  loginMenuOpen: actions.loginMenuOpen,
-  loginMenuClose: actions.loginMenuClose,
   handleDrawerToggle: actions.handleDrawerToggle
 }
 
