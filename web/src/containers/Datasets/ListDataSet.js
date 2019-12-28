@@ -81,51 +81,49 @@ class ListDataSet extends React.Component {
     } = this.props;
 
     return (
-      <React.Fragment>
-        <MainContent>
-          <ContentBar>
-            <Toolbar>
-              <Grid container spacing={10} justify="space-between" alignItems="center">
-                <Grid item>
-                  <Typography variant="h5" gutterBottom>
-                    List Dataset
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.addDS}
-                    component={Link}
-                    to="/console/datasets/upload-datasets"
-                  >
-                    Add Dataset
-                  </Button>
-                  <Tooltip title="Reload">
-                    <IconButton
-                      onClick={this.reloadSizeAndDS}
-                    >
-                      <RefreshIcon className={classes.block} color="inherit" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
+      <MainContent>
+        <ContentBar>
+          <Toolbar>
+            <Grid container spacing={2} justify="space-between" alignItems="center">
+              <Grid item>
+                <Typography variant="h5" gutterBottom>
+                  List Dataset
+                </Typography>
               </Grid>
-            </Toolbar>
-          </ContentBar>
-          <div className={classes.contentWrapper}>
-            <Typography color="textSecondary" align="center">
-              {DatasetList.length === 0
-                  ? "You do not have any dataset"
-                  : "Datasets"
-              }
-            </Typography>
-            <ListDataSetTable
-              Datasets={DatasetList}
-              handleClickHistory={this.handleClickHistory}
-            />
-          </div>
-        </MainContent>
-      </React.Fragment>
+              <Grid item>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.addDS}
+                  component={Link}
+                  to="/console/datasets/upload-datasets"
+                >
+                  Add Dataset
+                </Button>
+                <Tooltip title="Reload">
+                  <IconButton
+                    onClick={this.reloadSizeAndDS}
+                  >
+                    <RefreshIcon className={classes.block} color="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </ContentBar>
+        <div className={classes.contentWrapper}>
+          <Typography color="textSecondary" align="center">
+            {DatasetList.length === 0
+                ? "You do not have any dataset"
+                : "Datasets"
+            }
+          </Typography>
+          <ListDataSetTable
+            Datasets={DatasetList}
+            handleClickHistory={this.handleClickHistory}
+          />
+        </div>
+      </MainContent>
     )
   }
 }

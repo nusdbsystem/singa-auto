@@ -73,7 +73,7 @@ class Header extends React.Component {
     } = this.props;
 
     return (
-      <AppBar color="primary" position="sticky" elevation={0}>
+      <AppBar color="primary" position="sticky">
         <Toolbar>
           <Grid container spacing={1} alignItems="center">
             <Hidden smUp>
