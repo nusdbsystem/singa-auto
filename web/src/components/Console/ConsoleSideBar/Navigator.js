@@ -58,9 +58,10 @@ const styles = theme => ({
     fontSize: 24,
     color: theme.palette.common.white,
     backgroundColor: theme.palette.primary.main,
+    fontFamily: theme.typography.fontFamily,
   },
   logo: {
-    height: 36,
+    height: 28,
     marginRight: 10
   },
   itemActiveItem: {
@@ -97,22 +98,22 @@ class Navigator extends React.Component {
   handleClick = (categoryHeader) => {
     // case is collapseID
     switch(categoryHeader) {
-      case "Datasets":
+      case "CATdatasets":
         this.setState(state => (
           { DatasetsTableOpen: !state.DatasetsTableOpen }
         ));
         break
-      case "Models":
+      case "CATmodels":
         this.setState(state => (
           { ModelsTableOpen: !state.ModelsTableOpen }
         ));
         break
-      case "Jobs":
+      case "CATtrainjobs":
         this.setState(state => (
           { JobsTableOpen: !state.JobsTableOpen }
         ));
         break
-      case "Applications":
+      case "CATapplications":
         this.setState(state => (
           { DataApplicationOpen: !state.DataApplicationOpen }
         ));
@@ -128,8 +129,8 @@ class Navigator extends React.Component {
   render() {
     const categories = [
       {
-        id: 'Dataset',
-        collapseID: "Datasets",
+        id: 'Datasets',
+        collapseID: "CATdatasets",
         collapseIn: this.state.DatasetsTableOpen,
         children: [
           {
@@ -150,8 +151,8 @@ class Navigator extends React.Component {
         ],
       },
       {
-        id: 'Model',
-        collapseID: "Models",
+        id: 'Models',
+        collapseID: "CATmodels",
         collapseIn: this.state.ModelsTableOpen,
         children: [
           {
@@ -168,7 +169,7 @@ class Navigator extends React.Component {
       },
       {
         id: 'Train Jobs',
-        collapseID: "Jobs",
+        collapseID: "CATtrainjobs",
         collapseIn: this.state.JobsTableOpen,
         children: [
           {
@@ -184,12 +185,12 @@ class Navigator extends React.Component {
         ],
       },
       {
-        id: 'Application',
-        collapseID: "List Applications",
+        id: 'Applications',
+        collapseID: "CATapplications",
         collapseIn: this.state.DataApplicationOpen,
         children: [
           {
-            id: 'Applications',
+            id: 'List Applications',
             icon: <DnsRoundedIcon />,
             pathname: "/console/application/list-applications"
           }

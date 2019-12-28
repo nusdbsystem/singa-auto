@@ -17,9 +17,9 @@ const theme = createMuiTheme({
   },
   typography: {
     h5: {
-      fontWeight: 500,
-      fontSize: 26,
-      letterSpacing: 0.5,
+      fontWeight: 300, // top-theme fontWeightLight
+      fontSize: 20, // top-theme h5 fontSize
+      // letterSpacing: 0.5,
     },
   },
   shape: {

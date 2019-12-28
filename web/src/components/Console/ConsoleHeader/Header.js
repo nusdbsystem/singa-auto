@@ -1,4 +1,5 @@
-import React, {Fragment} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom'
 import { connect } from "react-redux"
 import { compose } from "redux"
@@ -13,32 +14,15 @@ import { withStyles } from '@material-ui/core/styles';
 
 // for login menu
 import IconButton from "@material-ui/core/IconButton";
-import Menu from "@material-ui/core/Menu";
-import AppBarMenuItems from "../../LandingNavBar/AppBarMenuItems"
-
-// Icons
-import ExitToApp from "@material-ui/icons/ExitToApp";
+import AvatarRegion from "components/RootComponents/AvatarRegion"
 
 import * as actions from "../../../containers/Root/actions"
-
 
 const lightColor = 'rgba(255, 255, 255, 0.7)';
 
 const styles = theme => ({
-  appBar: {
-    backgroundColor: "#eaeff1",
-    color: "#000"
-  },
-  avatar: {
-    margin: 10,
-    color: '#fff',
-    backgroundColor: theme.palette.secondary.main,
-  },
   menuButton: {
     marginLeft: -theme.spacing(1),
-  },
-  iconButtonAvatar: {
-    padding: 4,
   },
   link: {
     textDecoration: 'none',
@@ -47,12 +31,20 @@ const styles = theme => ({
       color: theme.palette.common.white,
     },
   },
-  button: {
-    borderColor: lightColor,
-  },
 });
 
 class Header extends React.Component {
+  static propTypes = {
+    classes: PropTypes.object.isRequired,
+    title: PropTypes.string.isRequired,
+    onDrawerToggle: PropTypes.func.isRequired,
+    isAuthenticated: PropTypes.bool.isRequired,
+    anchorElId: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.bool,
+    ]).isRequired,
+  }
+
   handleMenuOpen = event => {
     this.props.loginMenuOpen(event.currentTarget.id);
   };
@@ -62,7 +54,7 @@ class Header extends React.Component {
   };
 
   handleLogout = () => {
-    console.log("logging out, clearing token")
+    // console.log("logging out, clearing token")
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
     this.props.history.push(`/`);
@@ -79,63 +71,45 @@ class Header extends React.Component {
       //initials,
       //bgColor
     } = this.props;
-  
+
     return (
-      <Fragment>
-        <AppBar className={classes.appBar} position="sticky" elevation={0}>
-          <Toolbar>
-            <Grid container spacing={8} alignItems="center">
-              <Hidden mdUp>
-                <Grid item>
-                  <IconButton
-                    color="inherit"
-                    aria-label="Open drawer"
-                    onClick={onDrawerToggle}
-                    className={classes.menuButton}
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                </Grid>
-              </Hidden>
-              <Grid item sm>
-                <Typography color="inherit" variant="h5">
-                  {title}
-                </Typography>
-              </Grid>
+      <AppBar color="primary" position="sticky" elevation={0}>
+        <Toolbar>
+          <Grid container spacing={1} alignItems="center">
+            <Hidden smUp>
               <Grid item>
-                <Fragment>
-                  <IconButton
-                    aria-haspopup="true"
-                    aria-label="More"
-                    aria-owns="Open right Menu"
-                    color="inherit"
-                    id="loginMenuButton"
-                    onClick={this.handleMenuOpen}
-                    className={classes.iconButtonAvatar}
-                  >
-                    <ExitToApp />
-                  </IconButton>
-                  <Menu
-                    anchorEl={
-                      (anchorElId && document.getElementById(anchorElId)) ||
-                      document.body
-                    }
-                    id="menuRight"
-                    onClose={this.handleMenuClose}
-                    open={!!anchorElId}
-                  >
-                    <AppBarMenuItems
-                      isAuth={isAuthenticated}
-                      logout={this.handleLogout}
-                      onClick={this.handleMenuClose}
-                    />
-                  </Menu>
-                </Fragment>
+                <IconButton
+                  color="inherit"
+                  aria-label="Open drawer"
+                  onClick={onDrawerToggle}
+                  className={classes.menuButton}
+                >
+                  <MenuIcon />
+                </IconButton>
               </Grid>
+            </Hidden>
+            <Grid item xs>
+              <Typography color="inherit" variant="h5" component="h1">
+                {title}
+              </Typography>
             </Grid>
-          </Toolbar>
-        </AppBar>
-      </Fragment>
+            <Grid item>
+              <Typography className={classes.link} component="a" href="#">
+                Go to docs
+              </Typography>
+            </Grid>
+            <Grid item>
+              <AvatarRegion
+                isAuthenticated={isAuthenticated}
+                anchorElId={anchorElId}
+                openMenu={this.handleMenuOpen}
+                closeMenu={this.handleMenuClose}
+                logOut={this.handleLogout}
+              />
+            </Grid>
+          </Grid>
+        </Toolbar>
+      </AppBar>
     )
   }
 }
