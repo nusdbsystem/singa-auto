@@ -12,7 +12,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                RootMobileOpen: false,
             }
         )
     })
@@ -30,7 +29,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                RootMobileOpen: false,
             })
     })
     it("should handle AUTH_SUCCESS", () => {
@@ -46,7 +44,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            RootMobileOpen: false,
         })
      })
 
@@ -64,7 +61,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            RootMobileOpen: false,
         })
     })
     it("should handle AUTH_LOGOUT", () => { 
@@ -76,7 +72,6 @@ describe("Root Reducer Unit Tests", function () {
                 show: false,
                 message: ""
             },
-            RootMobileOpen: false,
         },{
             type:actions.Types.AUTH_LOGOUT,
         })
@@ -89,7 +84,6 @@ describe("Root Reducer Unit Tests", function () {
                     show: false,
                     message: ""
                 },
-                RootMobileOpen: false,
             }
         )
     })

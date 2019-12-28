@@ -65,18 +65,25 @@ class ConsoleAppFrame extends React.Component {
   static propTypes = {
     authStatus: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
-    mobileOpen: PropTypes.bool,
     headerTitle: PropTypes.string,
-    handleDrawerToggle: PropTypes.func,
+  }
+
+  state = {
+    mobileOpen: false
+  }
+
+  handleDrawerToggle = () => {
+    // must use prevState
+    this.setState(prevState => ({
+      mobileOpen: !prevState.mobileOpen
+    }))
   }
 
   render() {
     const {
       authStatus,
       classes,
-      handleDrawerToggle,
       headerTitle,
-      mobileOpen,
     } = this.props
 
     if (!authStatus) {
@@ -104,8 +111,8 @@ class ConsoleAppFrame extends React.Component {
               <Navigator
                 PaperProps={{ style: { width: drawerWidth } }}
                 variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
+                open={this.state.mobileOpen}
+                onClose={this.handleDrawerToggle}
               />
             </Hidden>
             <Hidden xsDown implementation="css">
@@ -113,7 +120,7 @@ class ConsoleAppFrame extends React.Component {
             </Hidden>
           </nav>
           <div className={classes.app}>
-            <Header onDrawerToggle={handleDrawerToggle} title={headerTitle} />
+            <Header onDrawerToggle={this.handleDrawerToggle} title={headerTitle} />
             <main className={classes.main}>
               <Switch>
                 <Route
@@ -175,15 +182,10 @@ class ConsoleAppFrame extends React.Component {
 
 const mapStateToProps = state => ({
   authStatus: !!state.Root.token,
-  mobileOpen: state.ConsoleAppFrame.mobileOpen,
   headerTitle: state.ConsoleAppFrame.headerTitle,
 })
 
-const mapDispatchToProps = {
-  handleDrawerToggle: actions.handleDrawerToggle,
-}
-
 export default compose(
-  connect(mapStateToProps, mapDispatchToProps),
+  connect(mapStateToProps),
   withStyles(styles)
 )(ConsoleAppFrame)

@@ -81,6 +81,17 @@ const styles = theme => ({
 });
 
 class LandingNavBar extends React.Component {
+  state = {
+    RootMobileOpen: false
+  }
+
+  handleDrawerToggle = () => {
+    // must use prevState
+    this.setState(prevState => ({
+      RootMobileOpen: !prevState.RootMobileOpen
+    }))
+  }
+
   handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
@@ -92,8 +103,6 @@ class LandingNavBar extends React.Component {
     const {
       isAuthenticated,
       classes,
-      handleDrawerToggle,
-      RootMobileOpen,
       location
     } = this.props;
 
@@ -149,8 +158,8 @@ class LandingNavBar extends React.Component {
         <LandingNavigator
           PaperProps={{ style: { width: 250, backgroundColor: "rgb(0,0,0)" } }}
           variant="temporary"
-          open={RootMobileOpen}
-          onClose={handleDrawerToggle}
+          open={this.state.RootMobileOpen}
+          onClose={this.handleDrawerToggle}
         />
         <AppBar position="fixed" className={classes.LandingAppBar}>
           <Toolbar className={classes.toolbar}>
@@ -159,7 +168,7 @@ class LandingNavBar extends React.Component {
                 <IconButton
                   color="inherit"
                   aria-label="Open drawer"
-                  onClick={handleDrawerToggle}
+                  onClick={this.handleDrawerToggle}
                   className={classes.menuButton}
                 >
                   <MenuIcon />
@@ -220,19 +229,10 @@ const mapStateToProps = state => ({
   isAuthenticated: state.Root.token !== null,
   // initials: state.firebaseReducer.profile.initials,
   // bgColor: state.firebaseReducer.profile.color
-  RootMobileOpen: state.Root.RootMobileOpen,
 });
 
-const mapDispatchToProps = {
-  handleDrawerToggle: actions.handleDrawerToggle
-}
-
-
 export default compose(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps),
   withRouter,
   withStyles(styles)
 )(LandingNavBar);
