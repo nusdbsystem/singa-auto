@@ -1,35 +1,35 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom'
+import React from "react"
+import PropTypes from "prop-types"
+import { withRouter } from "react-router-dom"
 import { connect } from "react-redux"
 import { compose } from "redux"
 
-import AppBar from '@material-ui/core/AppBar';
-import Grid from '@material-ui/core/Grid';
-import Hidden from '@material-ui/core/Hidden';
-import MenuIcon from '@material-ui/icons/Menu';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
+import AppBar from "@material-ui/core/AppBar"
+import Grid from "@material-ui/core/Grid"
+import Hidden from "@material-ui/core/Hidden"
+import MenuIcon from "@material-ui/icons/Menu"
+import Toolbar from "@material-ui/core/Toolbar"
+import Typography from "@material-ui/core/Typography"
+import { withStyles } from "@material-ui/core/styles"
 
 // for login menu
-import IconButton from "@material-ui/core/IconButton";
+import IconButton from "@material-ui/core/IconButton"
 import AvatarRegion from "components/RootComponents/AvatarRegion"
 
-const lightColor = 'rgba(255, 255, 255, 0.7)';
+const lightColor = "rgba(255, 255, 255, 0.7)"
 
 const styles = theme => ({
   menuButton: {
     marginLeft: -theme.spacing(1),
   },
   link: {
-    textDecoration: 'none',
+    textDecoration: "none",
     color: lightColor,
-    '&:hover': {
+    "&:hover": {
       color: theme.palette.common.white,
     },
   },
-});
+})
 
 class Header extends React.Component {
   static propTypes = {
@@ -41,10 +41,10 @@ class Header extends React.Component {
 
   handleLogout = () => {
     // console.log("logging out, clearing token")
-    localStorage.removeItem('token');
-    localStorage.removeItem('expirationDate');
-    this.props.history.push(`/`);
-    window.location.reload();
+    localStorage.removeItem("token")
+    localStorage.removeItem("expirationDate")
+    this.props.history.push(`/`)
+    window.location.reload()
   }
 
   render() {
@@ -55,7 +55,7 @@ class Header extends React.Component {
       isAuthenticated,
       //initials,
       //bgColor
-    } = this.props;
+    } = this.props
 
     return (
       <AppBar color="primary" position="sticky">
@@ -103,9 +103,7 @@ const mapStateToProps = state => ({
 })
 
 export default compose(
-  connect(
-    mapStateToProps,
-  ),
+  connect(mapStateToProps),
   withRouter,
   withStyles(styles)
 )(Header)

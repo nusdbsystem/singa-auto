@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { Link } from "react-router-dom";
-import Button from '../LandingComponents/Button';
-import Typography from '../LandingComponents/Typography';
-import ProductHeroLayout from './LandingProductHeroLayout';
+import React from "react"
+import PropTypes from "prop-types"
+import { withStyles } from "@material-ui/core/styles"
+import { Link } from "react-router-dom"
+import Button from "../LandingComponents/Button"
+import Typography from "../LandingComponents/Typography"
+import ProductHeroLayout from "./LandingProductHeroLayout"
 import heroImage from "../../assets/harli-marten-n7a2OJDSZns-unsplash.jpg"
 
 const backgroundImage = heroImage
@@ -12,8 +12,8 @@ const backgroundImage = heroImage
 const styles = theme => ({
   background: {
     backgroundImage: `url(${heroImage})`,
-    backgroundColor: '#333333', // Average color of the background image.
-    backgroundPosition: 'center',
+    backgroundColor: "#333333", // Average color of the background image.
+    backgroundPosition: "center",
   },
   button: {
     //minWidth: 200,
@@ -21,28 +21,38 @@ const styles = theme => ({
   h5: {
     marginBottom: theme.spacing(4),
     marginTop: theme.spacing(4),
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up("sm")]: {
       marginTop: theme.spacing(10),
     },
   },
   more: {
     marginTop: theme.spacing(2),
   },
-});
+})
 
 function ProductHero(props) {
-  const { classes } = props;
+  const { classes } = props
 
   return (
     <ProductHeroLayout backgroundClassName={classes.background}>
       {/* Increase the network loading priority of the background image. */}
-      <img style={{ display: 'none' }} src={backgroundImage} alt="increase priority" />
+      <img
+        style={{ display: "none" }}
+        src={backgroundImage}
+        alt="increase priority"
+      />
       <Typography color="inherit" align="center" variant="h2" marked="center">
         Panda-dev
       </Typography>
-      <Typography color="inherit" align="center" variant="h5" className={classes.h5}>
-        Panda-dev is a distributed system that trains machine learning (ML) models <br />
-        and deploys trained models, built with ease-of-use in mind. 
+      <Typography
+        color="inherit"
+        align="center"
+        variant="h5"
+        className={classes.h5}
+      >
+        Panda-dev is a distributed system that trains machine learning (ML)
+        models <br />
+        and deploys trained models, built with ease-of-use in mind.
       </Typography>
       <Button
         color="secondary"
@@ -58,11 +68,11 @@ function ProductHero(props) {
         Discover the experience
       </Typography>
     </ProductHeroLayout>
-  );
+  )
 }
 
 ProductHero.propTypes = {
   classes: PropTypes.object.isRequired,
-};
+}
 
-export default withStyles(styles)(ProductHero);
+export default withStyles(styles)(ProductHero)

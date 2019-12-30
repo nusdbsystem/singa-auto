@@ -51,7 +51,7 @@ const styles = {
   main: {
     flex: 1,
     padding: theme.spacing(6, 4),
-    background: '#eaeff1', // light grey
+    background: "#eaeff1", // light grey
   },
   footer: {
     padding: theme.spacing(2),
@@ -67,22 +67,18 @@ class ConsoleAppFrame extends React.Component {
   }
 
   state = {
-    mobileOpen: false
+    mobileOpen: false,
   }
 
   handleDrawerToggle = () => {
     // must use prevState
     this.setState(prevState => ({
-      mobileOpen: !prevState.mobileOpen
+      mobileOpen: !prevState.mobileOpen,
     }))
   }
 
   render() {
-    const {
-      authStatus,
-      classes,
-      headerTitle,
-    } = this.props
+    const { authStatus, classes, headerTitle } = this.props
 
     if (!authStatus) {
       return <Redirect to="/sign-in" />
@@ -118,7 +114,10 @@ class ConsoleAppFrame extends React.Component {
             </Hidden>
           </nav>
           <div className={classes.app}>
-            <Header onDrawerToggle={this.handleDrawerToggle} title={headerTitle} />
+            <Header
+              onDrawerToggle={this.handleDrawerToggle}
+              title={headerTitle}
+            />
             <main className={classes.main}>
               <Switch>
                 <Route

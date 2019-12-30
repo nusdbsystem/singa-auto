@@ -1,21 +1,20 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { Field, Form, FormSpy } from 'react-final-form';
-import Typography from '../../components/LandingComponents/Typography';
-import AppFooter from '../../components/LandingFooter/LandingFooter';
-import AppAppBar from '../../components/LandingNavBar/LandingNavBar';
-import AppForm from '../../components/LandingAppForm/LandingAppForm';
-import { email, required } from '../../components/LandingAppForm/validation';
-import RFTextField from '../../components/LandingAppForm/RFTextField';
-import FormButton from '../../components/LandingAppForm/FormButton';
-import FormFeedback from '../../components/LandingAppForm/FormFeedback';
+import React from "react"
+import PropTypes from "prop-types"
+import { withStyles } from "@material-ui/core/styles"
+import { Field, Form, FormSpy } from "react-final-form"
+import Typography from "../../components/LandingComponents/Typography"
+import AppFooter from "../../components/LandingFooter/LandingFooter"
+import AppAppBar from "../../components/LandingNavBar/LandingNavBar"
+import AppForm from "../../components/LandingAppForm/LandingAppForm"
+import { email, required } from "../../components/LandingAppForm/validation"
+import RFTextField from "../../components/LandingAppForm/RFTextField"
+import FormButton from "../../components/LandingAppForm/FormButton"
+import FormFeedback from "../../components/LandingAppForm/FormFeedback"
 
 import { compose } from "redux"
 import { connect } from "react-redux"
 import * as actions from "../Root/actions"
 import { Redirect } from "react-router-dom"
-
 
 const styles = theme => ({
   form: {
@@ -28,48 +27,44 @@ const styles = theme => ({
   feedback: {
     marginTop: theme.spacing(1) * 2,
   },
-});
+})
 
 class SignIn extends React.Component {
   state = {
     sent: false,
-  };
+  }
 
   static propTypes = {
     classes: PropTypes.object,
-  };
+  }
 
   validate = values => {
-    const errors = required(['email', 'password'], values, this.props);
+    const errors = required(["email", "password"], values, this.props)
 
     if (!errors.email) {
-      const emailError = email(values.email, values, this.props);
+      const emailError = email(values.email, values, this.props)
       if (emailError) {
-        errors.email = email(values.email, values, this.props);
+        errors.email = email(values.email, values, this.props)
       }
     }
 
-    return errors;
-  };
+    return errors
+  }
 
-  handleSubmit = (values) => {
+  handleSubmit = values => {
     console.log(values)
     const authData = Object.assign(
       {},
       {
         email: values.email,
-        password: values.password
+        password: values.password,
       }
     )
     this.props.signInRequest(authData)
-  };
+  }
 
   render() {
-    const {
-      classes,
-      authError,
-      authStatus
-    } = this.props;
+    const { classes, authError, authStatus } = this.props
 
     //const { sent } = this.state;
 
@@ -82,12 +77,17 @@ class SignIn extends React.Component {
         <AppAppBar />
         <AppForm>
           <React.Fragment>
-            <Typography variant="h3" gutterBottom marked="center" align="center">
+            <Typography
+              variant="h3"
+              gutterBottom
+              marked="center"
+              align="center"
+            >
               Sign In
             </Typography>
             <Typography variant="body2" align="center">
-              {'Not a user yet? '}
-                Contact the administrator to create an account for you first.
+              {"Not a user yet? "}
+              Contact the administrator to create an account for you first.
             </Typography>
           </React.Fragment>
           {authError && "Log in Error " + authError}
@@ -95,7 +95,7 @@ class SignIn extends React.Component {
             onSubmit={this.handleSubmit}
             subscription={{
               submitting: true,
-              valid: true
+              valid: true,
             }}
             validate={this.validate}
           >
@@ -141,7 +141,7 @@ class SignIn extends React.Component {
                   color="secondary"
                   fullWidth
                 >
-                  {submitting ? 'In progress…' : 'Sign In'}
+                  {submitting ? "In progress…" : "Sign In"}
                 </FormButton>
               </form>
             )}
@@ -149,10 +149,9 @@ class SignIn extends React.Component {
         </AppForm>
         <AppFooter />
       </React.Fragment>
-    );
+    )
   }
 }
-
 
 const mapStateToProps = state => ({
   authError: state.Root.error,
@@ -160,14 +159,10 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  signInRequest: actions.signInRequest
+  signInRequest: actions.signInRequest,
 }
 
-
 export default compose(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(SignIn);
+)(SignIn)

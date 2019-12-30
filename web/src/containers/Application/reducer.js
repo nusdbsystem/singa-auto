@@ -1,23 +1,20 @@
 import { Types } from "./actions"
 
-const StatesToReset = {
-}
+const StatesToReset = {}
 
 const initialState = {
   // MODEL-List
   ApplicationList: [],
   SelectedApplication: {},
-  ...StatesToReset
-};
+  ...StatesToReset,
+}
 
 export const ApplicationsReducer = (state = initialState, action) => {
   switch (action.type) {
     case Types.POPULATE_INFERENCEJOB:
       return {
         ...state,
-        ApplicationList: action.jobs.length === 0
-          ? []
-          : action.jobs
+        ApplicationList: action.jobs.length === 0 ? [] : action.jobs,
       }
     default:
       return state

@@ -47,6 +47,7 @@
   "scripts": {
     "start": "PORT=65432 BROWSER=none react-scripts start",
     "build": "react-scripts build",
+    "format": "prettier --write src/**/*.{js,jsx}",
     "test": "react-scripts test --env=jsdom --verbose=false",
     "test:debug": "react-scripts inspect --inspect-brk test --runInBand --no-cache --no-watch",
     "test:inspect": "react-scripts --inspect-brk test --runInBand --no-cache --no-watch",

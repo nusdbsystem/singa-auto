@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '../LandingComponents/Typography';
+import React from "react"
+import PropTypes from "prop-types"
+import classNames from "classnames"
+import { withStyles } from "@material-ui/core/styles"
+import Typography from "../LandingComponents/Typography"
 
 const styles = theme => ({
   root: {
@@ -16,20 +16,23 @@ const styles = theme => ({
     backgroundColor: theme.palette.success.xLight,
     color: theme.palette.success.dark,
   },
-});
+})
 
 function FormFeedback(props) {
   return (
     <div
       className={classNames(
         props.classes.root,
-        { [props.classes.error]: props.error, [props.classes.success]: props.success },
-        props.className,
+        {
+          [props.classes.error]: props.error,
+          [props.classes.success]: props.success,
+        },
+        props.className
       )}
     >
       <Typography color="inherit">{props.children}</Typography>
     </div>
-  );
+  )
 }
 
 FormFeedback.propTypes = {
@@ -38,6 +41,6 @@ FormFeedback.propTypes = {
   className: PropTypes.string,
   error: PropTypes.bool,
   success: PropTypes.bool,
-};
+}
 
-export default withStyles(styles)(FormFeedback);
+export default withStyles(styles)(FormFeedback)

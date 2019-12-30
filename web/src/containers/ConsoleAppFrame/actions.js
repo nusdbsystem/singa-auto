@@ -6,10 +6,10 @@ export const Types = {
 
 export const handleHeaderTitleChange = headerTitle => ({
   type: Types.CHANGE_HEADER_TITLE,
-  headerTitle
+  headerTitle,
 })
 
 // clear redux-loading-bar when route unmount
 export const resetLoadingBar = () => ({
-  type: Types.RESET_LOADING_BAR
+  type: Types.RESET_LOADING_BAR,
 })

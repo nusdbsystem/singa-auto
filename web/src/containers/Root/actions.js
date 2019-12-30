@@ -18,45 +18,45 @@ export const Types = {
 }
 
 export const handleDrawerToggle = () => ({
-  type: Types.DRAWER_TOGGLE
-});
+  type: Types.DRAWER_TOGGLE,
+})
 
 // for notification area
 export const notificationShow = message => ({
   type: Types.NOTIFICATION_SHOW,
-  message
-});
+  message,
+})
 
 export const notificationHide = () => ({
-  type: Types.NOTIFICATION_HIDE
-});
+  type: Types.NOTIFICATION_HIDE,
+})
 
 // for authentication actions
 export const authStart = () => ({
-  type: Types.AUTH_START
+  type: Types.AUTH_START,
 })
 
 export const authSuccess = (token, user_id) => ({
   type: Types.AUTH_SUCCESS,
   token,
-  user_id
+  user_id,
 })
 
 export const authFail = error => ({
   type: Types.AUTH_FAIL,
-  error
+  error,
 })
 
 export const logout = () => ({
-    type: Types.AUTH_LOGOUT
+  type: Types.AUTH_LOGOUT,
 })
 
 // for sagas
-export const signInRequest = (authData) => ({
+export const signInRequest = authData => ({
   type: Types.SIGN_IN_REQUEST,
-  authData
-});
+  authData,
+})
 
 export const authCheckState = () => ({
-  type: Types.AUTH_CHECK_STATE
+  type: Types.AUTH_CHECK_STATE,
 })

@@ -14,21 +14,20 @@ for local development, no need to source the env.sh or .env.
 const adminHost = process.env.REACT_APP_API_POINT_HOST
 const adminPort = process.env.REACT_APP_API_POINT_PORT
 
-
 const HTTPconfig = {
   // the client tells server data-type json is actually sent.
   HTTP_HEADER: {
     "Content-Type": "application/json",
   },
   UPLOAD_FILE: {
-    'Content-Type':'multipart/form-data',
+    "Content-Type": "multipart/form-data",
   },
   // need a working server for axios uploadprogress to work
   // gateway: "http://localhost:5000/",
   // gateway: "http://ncrs.d2.comp.nus.edu.sg:3000/"
   adminHost: `${adminHost}`,
   adminPort: `${adminPort}`,
-  gateway: `http://${adminHost}:${adminPort}/`
+  gateway: `http://${adminHost}:${adminPort}/`,
 }
 
 if (process.env.NODE_ENV === "development") {
@@ -37,4 +36,4 @@ if (process.env.NODE_ENV === "development") {
   HTTPconfig.gateway = "http://localhost:3000/"
 }
 
-export default HTTPconfig;
+export default HTTPconfig

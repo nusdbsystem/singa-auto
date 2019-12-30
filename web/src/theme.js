@@ -1,12 +1,12 @@
-import { createMuiTheme } from '@material-ui/core/styles';
-import { green, blueGrey, red, orange } from '@material-ui/core/colors';
+import { createMuiTheme } from "@material-ui/core/styles"
+import { green, blueGrey, red, orange } from "@material-ui/core/colors"
 
 const rawTheme = createMuiTheme({
   palette: {
     primary: {
       light: blueGrey[100],
       main: blueGrey[900], // almost black
-      dark: '#1e1e1f',
+      dark: "#1e1e1f",
     },
     secondary: {
       light: orange[50],
@@ -14,8 +14,8 @@ const rawTheme = createMuiTheme({
       dark: orange[700],
     },
     warning: {
-      main: '#ffc071',
-      dark: '#ffb25e',
+      main: "#ffc071",
+      dark: "#ffb25e",
     },
     error: {
       xLight: red[50],
@@ -28,13 +28,13 @@ const rawTheme = createMuiTheme({
       dark: green[700],
     },
     common: {
-      black: '#000',
-      white: '#fff',
-      neutral: '#E4E7EB',
-      muted: '#9EA0A4'
+      black: "#000",
+      white: "#fff",
+      neutral: "#E4E7EB",
+      muted: "#9EA0A4",
     },
-    border: '#DFE3E8',
-    divider: '#DFE3E8'
+    border: "#DFE3E8",
+    divider: "#DFE3E8",
   },
   typography: {
     fontFamily: "'Roboto', sans-serif",
@@ -44,14 +44,14 @@ const rawTheme = createMuiTheme({
     fontWeightMedium: 700,
     fontFamilySecondary: "'Roboto Condensed', sans-serif",
   },
-});
+})
 
 const fontHeader = {
   color: rawTheme.palette.text.primary,
   fontWeight: rawTheme.typography.fontWeightMedium,
   fontFamily: rawTheme.typography.fontFamilySecondary,
   //textTransform: 'uppercase',
-};
+}
 
 const theme = {
   ...rawTheme,
@@ -111,6 +111,6 @@ const theme = {
       fontSize: 14,
     },
   },
-};
+}
 
-export default theme;
+export default theme

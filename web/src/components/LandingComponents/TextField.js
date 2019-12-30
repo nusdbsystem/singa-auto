@@ -1,27 +1,27 @@
-import React from 'react';
-import classNames from 'classnames';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import MuiTextField from '@material-ui/core/TextField';
-import { capitalize } from '@material-ui/core/utils';
+import React from "react"
+import classNames from "classnames"
+import PropTypes from "prop-types"
+import { withStyles } from "@material-ui/core/styles"
+import MuiTextField from "@material-ui/core/TextField"
+import { capitalize } from "@material-ui/core/utils"
 
 const styles = theme => ({
   root: {
     padding: 0,
-    'label + &': {
+    "label + &": {
       marginTop: theme.spacing(1) * 3,
     },
   },
   input: {
     minWidth: theme.spacing(1) * 6,
     backgroundColor: theme.palette.common.white,
-    '&$disabled': {
+    "&$disabled": {
       backgroundColor: theme.palette.divider,
     },
   },
   inputBorder: {
-    border: '1px solid #e9ddd0',
-    '&:focus': {
+    border: "1px solid #e9ddd0",
+    "&:focus": {
       borderColor: theme.palette.secondary.main,
     },
   },
@@ -50,20 +50,23 @@ const styles = theme => ({
     fontSize: 18,
   },
   select: {
-    height: 'auto',
+    height: "auto",
     borderRadius: 0,
   },
   selectIcon: {
-    top: '50%',
+    top: "50%",
     marginTop: -12,
   },
-});
+})
 
 function TextField(props) {
   const {
     classes,
     InputProps: {
-      classes: { input: InputPropsClassesInput, ...InputPropsClassesOther } = {},
+      classes: {
+        input: InputPropsClassesInput,
+        ...InputPropsClassesOther
+      } = {},
       ...InputPropsOther
     } = {},
     InputLabelProps,
@@ -71,7 +74,7 @@ function TextField(props) {
     size,
     SelectProps,
     ...other
-  } = props;
+  } = props
 
   return (
     <MuiTextField
@@ -85,7 +88,7 @@ function TextField(props) {
             {
               [classes.inputBorder]: !noBorder,
             },
-            InputPropsClassesInput,
+            InputPropsClassesInput
           ),
           disabled: classes.disabled,
           ...InputPropsClassesOther,
@@ -106,7 +109,7 @@ function TextField(props) {
       }}
       {...other}
     />
-  );
+  )
 }
 
 TextField.propTypes = {
@@ -115,12 +118,12 @@ TextField.propTypes = {
   InputProps: PropTypes.object,
   noBorder: PropTypes.bool,
   SelectProps: PropTypes.object,
-  size: PropTypes.oneOf(['small', 'medium', 'large', 'xlarge']),
-};
+  size: PropTypes.oneOf(["small", "medium", "large", "xlarge"]),
+}
 
 TextField.defaultProps = {
   noBorder: false,
-  size: 'medium',
-};
+  size: "medium",
+}
 
-export default withStyles(styles)(TextField);
+export default withStyles(styles)(TextField)

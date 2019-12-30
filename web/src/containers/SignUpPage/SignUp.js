@@ -1,17 +1,17 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Link from '@material-ui/core/Link';
-import { Field, Form, FormSpy } from 'react-final-form';
-import Typography from '../../components/LandingComponents/Typography';
-import AppFooter from '../../components/LandingFooter/LandingFooter';
-import AppAppBar from '../../components/LandingNavBar/LandingNavBar';
-import AppForm from '../../components/LandingAppForm/LandingAppForm';
-import { email, required } from '../../components/LandingAppForm/validation';
-import RFTextField from '../../components/LandingAppForm/RFTextField';
-import FormButton from '../../components/LandingAppForm/FormButton';
-import FormFeedback from '../../components/LandingAppForm/FormFeedback';
+import React from "react"
+import PropTypes from "prop-types"
+import { withStyles } from "@material-ui/core/styles"
+import Grid from "@material-ui/core/Grid"
+import Link from "@material-ui/core/Link"
+import { Field, Form, FormSpy } from "react-final-form"
+import Typography from "../../components/LandingComponents/Typography"
+import AppFooter from "../../components/LandingFooter/LandingFooter"
+import AppAppBar from "../../components/LandingNavBar/LandingNavBar"
+import AppForm from "../../components/LandingAppForm/LandingAppForm"
+import { email, required } from "../../components/LandingAppForm/validation"
+import RFTextField from "../../components/LandingAppForm/RFTextField"
+import FormButton from "../../components/LandingAppForm/FormButton"
+import FormFeedback from "../../components/LandingAppForm/FormFeedback"
 
 const styles = theme => ({
   form: {
@@ -24,38 +24,47 @@ const styles = theme => ({
   feedback: {
     marginTop: theme.spacing(1) * 2,
   },
-});
+})
 
 class SignUp extends React.Component {
   state = {
     sent: false,
-  };
+  }
 
   validate = values => {
-    const errors = required(['firstName', 'lastName', 'email', 'password'], values, this.props);
+    const errors = required(
+      ["firstName", "lastName", "email", "password"],
+      values,
+      this.props
+    )
 
     if (!errors.email) {
-      const emailError = email(values.email, values, this.props);
+      const emailError = email(values.email, values, this.props)
       if (emailError) {
-        errors.email = email(values.email, values, this.props);
+        errors.email = email(values.email, values, this.props)
       }
     }
 
-    return errors;
-  };
+    return errors
+  }
 
-  handleSubmit = () => {};
+  handleSubmit = () => {}
 
   render() {
-    const { classes } = this.props;
-    const { sent } = this.state;
+    const { classes } = this.props
+    const { sent } = this.state
 
     return (
       <React.Fragment>
         <AppAppBar />
         <AppForm>
           <React.Fragment>
-            <Typography variant="h3" gutterBottom marked="center" align="center">
+            <Typography
+              variant="h3"
+              gutterBottom
+              marked="center"
+              align="center"
+            >
               Sign Up
             </Typography>
             <Typography variant="body2" align="center">
@@ -130,7 +139,7 @@ class SignUp extends React.Component {
                   color="secondary"
                   fullWidth
                 >
-                  {submitting ? 'In progress…' : 'Sign Up'}
+                  {submitting ? "In progress…" : "Sign Up"}
                 </FormButton>
               </form>
             )}
@@ -138,12 +147,12 @@ class SignUp extends React.Component {
         </AppForm>
         <AppFooter />
       </React.Fragment>
-    );
+    )
   }
 }
 
 SignUp.propTypes = {
   classes: PropTypes.object.isRequired,
-};
+}
 
-export default withStyles(styles)(SignUp);
+export default withStyles(styles)(SignUp)

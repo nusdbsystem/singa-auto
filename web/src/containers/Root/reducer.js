@@ -1,17 +1,15 @@
 import { Types } from "./actions"
 
-
 const initialState = {
-    token: null,
-    user_id: null, 
-    error: null, 
-    loading: false,
-    notification: {
-      show: false,
-      message: ""
-    },
+  token: null,
+  user_id: null,
+  error: null,
+  loading: false,
+  notification: {
+    show: false,
+    message: "",
+  },
 }
-
 
 export const Root = (state = initialState, action) => {
   switch (action.type) {
@@ -21,7 +19,7 @@ export const Root = (state = initialState, action) => {
       return {
         ...state,
         error: null,
-        loading: true
+        loading: true,
       }
     case Types.AUTH_SUCCESS:
       return {
@@ -29,18 +27,18 @@ export const Root = (state = initialState, action) => {
         token: action.token,
         user_id: action.user_id,
         error: null,
-        loading: false
+        loading: false,
       }
     case Types.AUTH_FAIL:
       return {
         ...state,
         error: action.error,
-        loading: false
+        loading: false,
       }
     case Types.AUTH_LOGOUT:
       return {
         ...state,
-        token: null
+        token: null,
       }
     // for notification area
     case Types.NOTIFICATION_SHOW:
@@ -48,18 +46,18 @@ export const Root = (state = initialState, action) => {
         ...state,
         notification: {
           show: true,
-          message: action.message
-        }
-      };
+          message: action.message,
+        },
+      }
     case Types.NOTIFICATION_HIDE:
       return {
         ...state,
         notification: {
           show: false,
-          message: ""
-        }
-      };
+          message: "",
+        },
+      }
     default:
-      return state;
+      return state
   }
-};
+}

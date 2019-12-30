@@ -1,27 +1,26 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react"
+import PropTypes from "prop-types"
 import { connect } from "react-redux"
 import { compose } from "redux"
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as actions from "./actions"
 
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { withStyles } from "@material-ui/core/styles"
+import Typography from "@material-ui/core/Typography"
 
-import MainContent from 'components/Console/ConsoleContents/MainContent'
+import MainContent from "components/Console/ConsoleContents/MainContent"
 import ContentBar from "components/Console/ConsoleContents/ContentBar"
 
-import ListDataSetTable from '../../components/Console/ConsoleContents/ListDataSetTable'
+import ListDataSetTable from "../../components/Console/ConsoleContents/ListDataSetTable"
 
 const styles = theme => ({
   contentWrapper: {
-    margin: '40px 16px',
+    margin: "40px 16px",
     //position: "relative",
     minHeight: 200,
   },
 })
-
 
 class ListDataSet extends React.Component {
   static propTypes = {
@@ -41,19 +40,14 @@ class ListDataSet extends React.Component {
     this.props.requestListDS()
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    
-  }
+  componentDidUpdate(prevProps, prevState) {}
 
   componentWillUnmount() {
     this.props.resetLoadingBar()
   }
 
   render() {
-    const {
-      classes,
-      DatasetList,
-    } = this.props;
+    const { classes, DatasetList } = this.props
 
     return (
       <MainContent>
@@ -67,9 +61,8 @@ class ListDataSet extends React.Component {
         <div className={classes.contentWrapper}>
           <Typography color="textSecondary" align="center">
             {DatasetList.length === 0
-                ? "You do not have any dataset"
-                : "Datasets"
-            }
+              ? "You do not have any dataset"
+              : "Datasets"}
           </Typography>
           <ListDataSetTable
             Datasets={DatasetList}

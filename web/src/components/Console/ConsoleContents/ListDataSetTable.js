@@ -1,23 +1,23 @@
-import React, { Fragment } from "react";
-import PropTypes from "prop-types";
+import React, { Fragment } from "react"
+import PropTypes from "prop-types"
 
-import withStyles from "@material-ui/core/styles/withStyles";
+import withStyles from "@material-ui/core/styles/withStyles"
 
 // table
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import Table from "@material-ui/core/Table"
+import TableBody from "@material-ui/core/TableBody"
+import TableCell from "@material-ui/core/TableCell"
+import TableHead from "@material-ui/core/TableHead"
+import TableRow from "@material-ui/core/TableRow"
 
 // table icons
-import * as moment from 'moment';
+import * as moment from "moment"
 
 const styles = theme => ({
   button: {
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
   },
-  tableButtons : {
+  tableButtons: {
     margin: 3,
   },
   chip: {
@@ -26,7 +26,7 @@ const styles = theme => ({
   DsName: {
     fontSize: theme.typography.fontSize,
     fontWeight: theme.typography.fontWeightNormal,
-  }
+  },
 })
 
 class ListDataSetTable extends React.Component {
@@ -38,14 +38,14 @@ class ListDataSetTable extends React.Component {
   state = {
     menuAnchor: null,
     currentDataset: "",
-    currentBranch: ""
+    currentBranch: "",
   }
 
   onShowChipMenu = (datasetName, branchName, e) => {
     this.setState({
       menuAnchor: e.target,
       currentDataset: datasetName,
-      currentBranch: branchName
+      currentBranch: branchName,
     })
   }
 
@@ -53,29 +53,26 @@ class ListDataSetTable extends React.Component {
     this.setState({
       menuAnchor: false,
       currentDataset: "",
-      currentBranch: ""
+      currentBranch: "",
     })
   }
-  
+
   onShowEditMenu = (datasetName, e) => {
     this.setState({
       menuAnchor: e.target,
-      currentDataset: datasetName
+      currentDataset: datasetName,
     })
   }
 
   onCloseEditMenu = () => {
     this.setState({
       menuAnchor: false,
-      currentDataset: ""
+      currentDataset: "",
     })
   }
 
   render() {
-    const {
-      classes,
-      Datasets
-    } = this.props
+    const { classes, Datasets } = this.props
 
     return (
       <Fragment>
@@ -90,23 +87,22 @@ class ListDataSetTable extends React.Component {
             </TableRow>
           </TableHead>
           <TableBody>
-          {Datasets.map(x => {
-            return (
-              <TableRow key={x.id} hover>
-                <TableCell>{x.id.slice(0,8)}</TableCell>
-                <TableCell>{x.name}</TableCell>
-                <TableCell>{x.task}</TableCell>
-                <TableCell>{x.size_bytes} bytes</TableCell>
-                <TableCell>{moment(x.datetime_created).fromNow()}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+            {Datasets.map(x => {
+              return (
+                <TableRow key={x.id} hover>
+                  <TableCell>{x.id.slice(0, 8)}</TableCell>
+                  <TableCell>{x.name}</TableCell>
+                  <TableCell>{x.task}</TableCell>
+                  <TableCell>{x.size_bytes} bytes</TableCell>
+                  <TableCell>{moment(x.datetime_created).fromNow()}</TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
         </Table>
-       
       </Fragment>
     )
   }
 }
 
-export default withStyles(styles)(ListDataSetTable);
+export default withStyles(styles)(ListDataSetTable)

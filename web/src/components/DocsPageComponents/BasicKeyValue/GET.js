@@ -1,11 +1,14 @@
-import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
+import React from "react"
+import { withStyles } from "@material-ui/core/styles"
+import Card from "@material-ui/core/Card"
+import CardContent from "@material-ui/core/CardContent"
+import Typography from "@material-ui/core/Typography"
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { gruvboxDark, solarizedLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import SyntaxHighlighter from "react-syntax-highlighter"
+import {
+  gruvboxDark,
+  solarizedLight,
+} from "react-syntax-highlighter/dist/esm/styles/hljs"
 
 import { GeneralOptions, UtilityOptions } from "../Options"
 
@@ -13,44 +16,38 @@ const styles = {
   card: {
     maxWidth: "100%",
   },
-};
+}
 
 function DocsCard(props) {
-  const { classes } = props;
+  const { classes } = props
   return (
     <Card className={classes.card}>
       <CardContent>
         <Typography gutterBottom variant="h3" component="h1">
           Get
         </Typography>
-        <Typography component="p">
-          Get the value based on the key
-        </Typography>
+        <Typography component="p">Get the value based on the key</Typography>
         <br />
 
         <Typography variant="h5" gutterBottom>
           Syntax
         </Typography>
-        <SyntaxHighlighter language='javascript' style={solarizedLight}>
-          {'GET{_ALL} -k <key> [-b <branch> | -v <version>] {<file>}'}
+        <SyntaxHighlighter language="javascript" style={solarizedLight}>
+          {"GET{_ALL} -k <key> [-b <branch> | -v <version>] {<file>}"}
         </SyntaxHighlighter>
-        <Typography component="p">
-          Parameters:
-        </Typography>
+        <Typography component="p">Parameters:</Typography>
         {GeneralOptions._k}
         {GeneralOptions._b}
         {GeneralOptions._v}
         {GeneralOptions._file}
-        <Typography component="p">
-          Utility Options:
-        </Typography>
+        <Typography component="p">Utility Options:</Typography>
         {UtilityOptions._1}
         <br />
 
         <Typography variant="h5" gutterBottom>
           Examples
         </Typography>
-        <SyntaxHighlighter language='javascript' style={gruvboxDark}>
+        <SyntaxHighlighter language="javascript" style={gruvboxDark}>
           {`
 ustore> get -k myfirstKey -b master
 [SUCCESS: GET] Value<Blob>: "this is the first key i put into the rafiki"
@@ -69,8 +66,7 @@ ustore> get -k File1 -b master ./download.dat
         </SyntaxHighlighter>
       </CardContent>
     </Card>
-  );
+  )
 }
 
-
-export default withStyles(styles)(DocsCard);
+export default withStyles(styles)(DocsCard)

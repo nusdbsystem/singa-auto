@@ -1,7 +1,7 @@
-import { combineReducers } from 'redux';
+import { combineReducers } from "redux"
 
 // LoadingBar
-import { loadingBarReducer } from 'react-redux-loading-bar'
+import { loadingBarReducer } from "react-redux-loading-bar"
 
 import { Root } from "../containers/Root/reducer"
 import { ConsoleAppFrame } from "../containers/ConsoleAppFrame/reducer"
@@ -9,15 +9,13 @@ import { ConsoleAppFrame } from "../containers/ConsoleAppFrame/reducer"
 // Models
 import { DatasetsReducer } from "../containers/Datasets/reducer"
 import { JobsReducer } from "containers/Jobs/reducer"
-import { ModelsReducer } from "containers/Models/reducer";
+import { ModelsReducer } from "containers/Models/reducer"
 import { ApplicationsReducer } from "containers/Application/reducer"
 
 // Router
-import { connectRouter } from 'connected-react-router'
+import { connectRouter } from "connected-react-router"
 
-
-
-const rootReducer = (history) => {
+const rootReducer = history => {
   return combineReducers({
     loadingBar: loadingBarReducer,
     router: connectRouter(history),
@@ -27,8 +25,8 @@ const rootReducer = (history) => {
     DatasetsReducer,
     JobsReducer,
     ModelsReducer,
-    ApplicationsReducer
+    ApplicationsReducer,
   })
 }
 
-export default rootReducer;
+export default rootReducer

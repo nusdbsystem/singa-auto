@@ -1,22 +1,22 @@
-import React, { Fragment } from "react";
-import { Link, withRouter } from 'react-router-dom'
-import { compose } from "redux";
-import { connect } from "react-redux";
+import React, { Fragment } from "react"
+import { Link, withRouter } from "react-router-dom"
+import { compose } from "redux"
+import { connect } from "react-redux"
 
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from "@material-ui/core/styles"
 import Typography from "@material-ui/core/Typography"
-import AppBar from '../LandingComponents/AppBar';
-import Grid from '@material-ui/core/Grid';
-import Hidden from '@material-ui/core/Hidden';
-import MenuIcon from '@material-ui/icons/Menu';
+import AppBar from "../LandingComponents/AppBar"
+import Grid from "@material-ui/core/Grid"
+import Hidden from "@material-ui/core/Hidden"
+import MenuIcon from "@material-ui/icons/Menu"
 import LandingNavigator from "./LandingNavigator"
 
 // for login menu
-import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
+import Button from "@material-ui/core/Button"
+import IconButton from "@material-ui/core/IconButton"
 import AvatarRegion from "components/RootComponents/AvatarRegion"
 
-import Toolbar, { styles as toolbarStyles } from '../LandingComponents/Toolbar';
+import Toolbar, { styles as toolbarStyles } from "../LandingComponents/Toolbar"
 import Logo from "../../assets/LOGO_Rafiki-4.svg"
 
 const styles = theme => ({
@@ -26,45 +26,45 @@ const styles = theme => ({
     zIndex: theme.zIndex.drawer + 1,
   },
   title: {
-    font: '500 25px Roboto,sans-serif',
+    font: "500 25px Roboto,sans-serif",
     cursor: "pointer",
     color: "#FFF",
     textDecoration: "none",
-    marginRight: 20
+    marginRight: 20,
   },
   placeholder: toolbarStyles(theme).root,
   toolbar: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   left: {
     flex: 1,
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: "center"
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   logo: {
     height: 36,
-    marginRight: 10
+    marginRight: 10,
   },
   leftLinkActive: {
     color: theme.palette.secondary.dark,
   },
   right: {
     flex: 1,
-    display: 'flex',
-    justifyContent: 'flex-end',
+    display: "flex",
+    justifyContent: "flex-end",
   },
   rightLink: {
-    font: '300 18px Roboto,sans-serif',
+    font: "300 18px Roboto,sans-serif",
     color: theme.palette.common.white,
     marginLeft: theme.spacing(5),
     textDecoration: "none",
-    '&:hover': {
+    "&:hover": {
       color: theme.palette.secondary.main,
     },
   },
   rightLinkActive: {
-    font: '300 18px Roboto,sans-serif',
+    font: "300 18px Roboto,sans-serif",
     color: theme.palette.secondary.main,
     marginLeft: theme.spacing(5),
     textDecoration: "none",
@@ -76,65 +76,60 @@ const styles = theme => ({
     marginLeft: -theme.spacing(1),
     marginRight: theme.spacing(2),
   },
-});
+})
 
 class LandingNavBar extends React.Component {
   state = {
-    RootMobileOpen: false
+    RootMobileOpen: false,
   }
 
   handleDrawerToggle = () => {
     // must use prevState
     this.setState(prevState => ({
-      RootMobileOpen: !prevState.RootMobileOpen
+      RootMobileOpen: !prevState.RootMobileOpen,
     }))
   }
 
   handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('expirationDate');
-    this.props.history.push(`/`);
-    window.location.reload();
-  };
+    localStorage.removeItem("token")
+    localStorage.removeItem("expirationDate")
+    this.props.history.push(`/`)
+    window.location.reload()
+  }
 
   render() {
-    const {
-      isAuthenticated,
-      classes,
-      location
-    } = this.props;
+    const { isAuthenticated, classes, location } = this.props
 
-    const links = isAuthenticated
-      ? (
-        <Fragment>
-          <Typography
-            variant="h6"
+    const links = isAuthenticated ? (
+      <Fragment>
+        <Typography variant="h6">
+          <Link
+            to="/console/datasets/list-dataset"
+            className={classes.rightLink}
           >
-            <Link to="/console/datasets/list-dataset" className={classes.rightLink}>
-              {'Go To Console'}
-            </Link>
-          </Typography>
-          <AvatarRegion
-            isAuthenticated={isAuthenticated}
-            logOut={this.handleLogout}
-          />
-        </Fragment>
-      )
-      : (
-        <Fragment>
-          <Button
-            color="inherit"
-            style={{
-              textDecoration: "none",
-              fontSize: 16,
-            }}
-            component={Link}
-            to={"/sign-in"}
-          >
-            {"Sign in"}
-          </Button>
-        </Fragment>
-      )
+            {"Go To Console"}
+          </Link>
+        </Typography>
+        <AvatarRegion
+          isAuthenticated={isAuthenticated}
+          logOut={this.handleLogout}
+        />
+      </Fragment>
+    ) : (
+      <Fragment>
+        <Button
+          color="inherit"
+          style={{
+            textDecoration: "none",
+            fontSize: 16,
+          }}
+          component={Link}
+          to={"/sign-in"}
+        >
+          {"Sign in"}
+        </Button>
+      </Fragment>
+    )
 
     const navLinks = [
       /*{
@@ -145,7 +140,8 @@ class LandingNavBar extends React.Component {
         url: "/contact",
         label: "Contact",
       },
-      {// TODO change the docs link?
+      {
+        // TODO change the docs link?
         url: "https://nginyc.github.io/rafiki/docs/latest/src/user/index.html",
         label: "Docs",
       },
@@ -178,39 +174,36 @@ class LandingNavBar extends React.Component {
                 <img alt="logo" src={Logo} className={classes.logo} />
               </Link>
               <Link to="/" className={classes.title}>
-                {'Panda-dev'}
+                {"Panda-dev"}
               </Link>
               <Hidden smDown>
-                {navLinks.map((link, index) => (
-                  /^https?:\/\//.test(link.url) ? // test if the url is external 
-                    <a key={index} href={link.url} className={
-                      location.pathname === link.url
-                        ? (
-                          classes.rightLinkActive
-                        )
-                        : (
-                          classes.rightLink
-                        )
-                    }>
+                {navLinks.map((link, index) =>
+                  /^https?:\/\//.test(link.url) ? ( // test if the url is external
+                    <a
+                      key={index}
+                      href={link.url}
+                      className={
+                        location.pathname === link.url
+                          ? classes.rightLinkActive
+                          : classes.rightLink
+                      }
+                    >
                       {link.label}
                     </a>
-                    :
+                  ) : (
                     <Link
                       key={index}
                       to={link.url}
                       className={
                         location.pathname === link.url
-                          ? (
-                            classes.rightLinkActive
-                          )
-                          : (
-                            classes.rightLink
-                          )
+                          ? classes.rightLinkActive
+                          : classes.rightLink
                       }
                     >
                       {link.label}
                     </Link>
-                ))}
+                  )
+                )}
               </Hidden>
             </div>
             {links}
@@ -222,15 +215,14 @@ class LandingNavBar extends React.Component {
   }
 }
 
-
 const mapStateToProps = state => ({
   isAuthenticated: state.Root.token !== null,
   // initials: state.firebaseReducer.profile.initials,
   // bgColor: state.firebaseReducer.profile.color
-});
+})
 
 export default compose(
   connect(mapStateToProps),
   withRouter,
   withStyles(styles)
-)(LandingNavBar);
+)(LandingNavBar)
