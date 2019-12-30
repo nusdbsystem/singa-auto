@@ -38,7 +38,6 @@
     "react-select": "^3.0.4",
     "react-stylable-diff": "^2.0.0",
     "react-sweet-progress": "^1.1.2",
-    "react-syntax-highlighter": "^12.2.1",
     "redux": "^4.0.5",
     "redux-saga": "^1.0.1",
     "typeface-roboto": "^0.0.75",
