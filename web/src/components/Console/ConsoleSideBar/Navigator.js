@@ -20,6 +20,7 @@ import ListDsIcon from "@material-ui/icons/PhotoLibrary"
 import ListModelsIcon from "@material-ui/icons/LocalLibrary"
 // train jobs
 import ListTrainJobsIcon from "@material-ui/icons/Timeline"
+import CreateTrainJobIcon from '@material-ui/icons/PostAdd';
 // application
 import DnsRoundedIcon from "@material-ui/icons/DnsRounded"
 // for nested list
@@ -172,7 +173,7 @@ class Navigator extends React.Component {
           },
           {
             id: "Create Train Job",
-            icon: <CloudUpload />,
+            icon: <CreateTrainJobIcon />,
             pathname: "/console/jobs/create-train-job",
           },
         ],
