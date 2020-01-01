@@ -30,7 +30,8 @@ class RafikiClient {
     Initializes the Client to connect to a running 
     Rafiki Admin instance that the Client connects to.
   */
-  constructor(adminHost = "localhost", adminPort = 3000, storage?) {
+  constructor(adminHost="localhost", adminPort=3000, storage) {
+    // js default paramter is undefined
     this._storage = this._initializeStorage(storage)
     this._adminHost = adminHost
     this._adminPort = adminPort
