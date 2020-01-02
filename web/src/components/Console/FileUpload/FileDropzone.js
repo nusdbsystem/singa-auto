@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import PropTypes from 'prop-types';
 
 import {useDropzone} from 'react-dropzone';
@@ -29,23 +29,31 @@ const useStyles = makeStyles({
 
 // for file dropzone
 const baseStyle = {
-  width: "100%",
-  maxWidth: 360,
-  height: 100,
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
   borderWidth: 2,
-  borderColor: '#666',
-  borderStyle: 'dashed',
   borderRadius: 5,
-  margin: "0 auto"
+  borderColor: '#eeeeee',
+  borderStyle: 'dashed',
+  backgroundColor: '#fafafa',
+  color: '#263238',
+  outline: 'none',
+  transition: 'border .24s ease-in-out'
 };
 const activeStyle = {
   borderStyle: 'solid',
-  borderColor: '#6c6',
+  borderColor: '#2196f3',
   backgroundColor: '#eee'
+};
+const acceptStyle = {
+  borderColor: '#00e676'
 };
 const rejectStyle = {
   borderStyle: 'solid',
-  borderColor: '#c66',
+  borderColor: '#ff1744',
   backgroundColor: '#eee'
 };
 
@@ -66,9 +74,28 @@ function FileDropzone(props) {
     isDragActive,
     isDragReject
   } = useDropzone({
-    // Do something with the acceptedFiles
-    onDrop: onCsvDrop
+    // Note that the onDrop callback will
+    // always be invoked regardless if the
+    // dropped files were accepted or rejected.
+    // If you'd like to react to a specific scenario,
+    // use the onDropAccepted/onDropRejected props.
+    onDropAccepted: onCsvDrop,
+    multiple: false,
+    // MIME type for zip
+    // https://stackoverflow.com/questions/6977544/rar-zip-files-mime-type
+    accept: "application/zip, application/octet-stream, application/x-zip-compressed, multipart/x-zip",
   });
+
+  const style = useMemo(() => ({
+    ...baseStyle,
+    ...(isDragActive ? activeStyle : {}),
+    ...(isDragAccept ? acceptStyle : {}),
+    ...(isDragReject ? rejectStyle : {})
+  }), [
+    isDragActive,
+    isDragAccept,
+    isDragReject
+  ]);
 
   const reformatFileSize = fileSize => {
     if (fileSize < 1024) {
@@ -79,9 +106,15 @@ function FileDropzone(props) {
       return (fileSize/1048576).toFixed(2) + " MB"
   }
   
-  const FileList = (
+  const FileList = files.length === 0 ? (
     <List
-      subheader={<ListSubheader>CSV File:</ListSubheader>}
+      subheader={<ListSubheader>No file chosen</ListSubheader>}
+      className={classes.root}
+    ></List>
+  )
+  :  (
+    <List
+      subheader={<ListSubheader>Dataset File:</ListSubheader>}
       className={classes.root}
     >
       {files.map(file => (
@@ -117,15 +150,22 @@ function FileDropzone(props) {
   )
 
   return (
-    <section className="container">
-      <div {...getRootProps({className: 'dropzone'})}>
+    <>
+      <div {...getRootProps({style})}>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop some files here, or click to select files</p>
+        <p>Drag 'n' drop dataset zip here, or click to select your file</p>
+        <em>(Only *.zip archive format will be accepted)</em>
+        <br />
+        <br />
+        <Typography variant="body1" gutterBottom align="center">
+          {isDragAccept ? 'Drop' : 'Drag'} dataset zip here...
+        </Typography>
       </div>
+      {isDragReject && <b>Unsupported file type...</b>}
       <aside>
         {FileList}
       </aside>
-    </section>
+    </>
   );
 }
 
