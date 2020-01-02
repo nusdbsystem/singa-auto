@@ -11,23 +11,25 @@ class UploadProgressBar extends React.Component {
   static propTypes = {
     percentCompleted: PropTypes.number.isRequired,
     fileName: PropTypes.string,
-    uploaded: PropTypes.bool,
-    //formState: PropTypes.string,
+    dataset: PropTypes.string,
+    formState: PropTypes.string,
   }
 
   render() {
-    const { percentCompleted, fileName, uploaded } = this.props
+    const { percentCompleted, fileName, formState, dataset } = this.props
 
     return (
       <React.Fragment>
-
+        {formState !== "init" &&
           <Grid
             container
             direction="row"
             justify="flex-start"
             alignItems="center"
           >
-            <Typography component="p">{fileName ? "Uploading " + fileName : "No file chosen"}</Typography>
+            <Typography component="p">
+              {fileName ? "Upload " + fileName : "No file chosen"}
+            </Typography>
             <Progress
               theme={{
                 error: {
@@ -47,10 +49,15 @@ class UploadProgressBar extends React.Component {
                 },
               }}
               percent={percentCompleted}
-              status={uploaded ? "success" : "active"}
+              status={formState === "loading" ? "active" : "success"}
             />
+            {(formState === "idle") &&
+              <Typography component="p">
+                {dataset} created
+              </Typography>
+            }
           </Grid>
-
+        }
       </React.Fragment>
     )
   }
