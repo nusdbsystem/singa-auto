@@ -7,9 +7,6 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as actions from "./actions"
 
 import { withStyles } from "@material-ui/core/styles"
-import Toolbar from "@material-ui/core/Toolbar"
-import Typography from "@material-ui/core/Typography"
-import Grid from "@material-ui/core/Grid"
 
 import UploadDatasetsForm from "components/Console/ConsoleContents/UploadDatasetsForm"
 
@@ -17,12 +14,6 @@ import MainContent from "components/Console/ConsoleContents/MainContent"
 import ContentBar from "components/Console/ConsoleContents/ContentBar"
 
 const styles = theme => ({
-  block: {
-    display: "block",
-  },
-  addDS: {
-    marginRight: theme.spacing(1),
-  },
   contentWrapper: {
     // position: "relative",
     // display: "flex",
@@ -58,23 +49,10 @@ class UploadDataSet extends React.Component {
     return (
       <React.Fragment>
         <MainContent>
-          <ContentBar>
-            <Toolbar>
-              <Grid
-                container
-                spacing={10}
-                justify="space-between"
-                alignItems="center"
-              >
-                <Grid item>
-                  <Typography variant="h5" gutterBottom>
-                    {" "}
-                    New Dataset{" "}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Toolbar>
-          </ContentBar>
+          <ContentBar
+            needToList={false}
+            barTitle="Upload Dataset"
+          />
           <div className={classes.contentWrapper}>
             <UploadDatasetsForm />
           </div>

@@ -1,59 +1,17 @@
-import React, { Fragment } from "react"
+import React from "react"
 import { bindActionCreators, compose } from "redux"
 import PropTypes from "prop-types"
 import { connect } from "react-redux"
 import * as actions from "containers/Datasets/actions"
 
-import { Button, Grid } from "@material-ui/core"
-import { makeStyles } from "@material-ui/styles"
 
 // Third part dependencies
-import { Form, Field } from "react-final-form"
-import { useDropzone } from "react-dropzone"
-import { FormTextField, FormSwitchField } from "mui-form-fields"
+//import { Form, Field } from "react-final-form"
 
-const useStyles = makeStyles({
-  dropzoneWrapper: {
-    border: "1px solid black",
-    borderRadius: 1,
-    padding: "5px",
-    margin: "10px",
-    textAlign: "center",
-  },
-})
+//import { FormTextField, FormSwitchField } from "mui-form-fields"
 
-function DatasetsDropzone(props) {
-  const classes = useStyles()
-  const {
-    getRootProps,
-    getInputProps,
-    //acceptedFiles,
-    isDragActive,
-  } = useDropzone()
+import FileUpload from "../FileUpload/FileUpload"
 
-  return (
-    <Field name="dataset" lable="Upload Datasets from your Computer">
-      {({ input, meta }) => {
-        //React.useEffect(
-        //  () => {
-        //      input.onChange(acceptedFiles)
-        //  }
-        //  , [acceptedFiles])
-        return (
-          <div className={classes.dropzoneWrapper} {...getRootProps()}>
-            <input {...getInputProps()}></input>
-            {isDragActive ? (
-              <p>Drop the files here ...</p>
-            ) : (
-              <p>Drag 'n' drop some files here, or click to select files</p>
-            )}
-            <Button>Click to Upload</Button>
-          </div>
-        )
-      }}
-    </Field>
-  )
-}
 
 class UploadDatasetsForm extends React.Component {
   static propTypes = {
@@ -62,13 +20,16 @@ class UploadDatasetsForm extends React.Component {
   }
 
   state = {
-    fromLocal: false,
+    selectedFile: null,
   }
 
   onSubmit = values => {
     console.log("submit values", values)
     // Dispatch actions
     if (this.state.fromLocal) {
+      // for redux actions const postCreateDataset
+      // = (name, task, file, dataset_url)
+      // for API service postCreateDataset, + token
       this.props.postCreateDataset(
         values.name,
         "IMAGE_CLASSIFICATION",
@@ -82,68 +43,21 @@ class UploadDatasetsForm extends React.Component {
         values.dataset_url
       )
     }
+    console.log("selectedFile: ", this.state.selectedFile)
   }
+
 
   render() {
     return (
       <div style={{ textAlign: "center" }}>
-        <Form onSubmit={this.onSubmit}>
-          {({ handleSubmit, values, invalid }) => {
-            return (
-              <Fragment>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} lg={7}>
-                    <FormTextField
-                      icon="chrome_reader_mode"
-                      name="name"
-                      label="Dataset Name"
-                    />
-                    <FormSwitchField
-                      icon="attach_file"
-                      onClick={event => {
-                        const value = Boolean(event.target.checked)
-                        this.setState({ fromLocal: value })
-                      }}
-                      name="fromLocal"
-                      label="Upload from Computer"
-                    />
-                    {this.state.fromLocal ? (
-                      <DatasetsDropzone />
-                    ) : (
-                      <FormTextField
-                        icon="cloud_upload"
-                        name="dataset_url"
-                        label="Upload Datasets From url"
-                      />
-                    )}
-                    <Button
-                      style={{ width: "200px" }}
-                      variant="contained"
-                      color="primary"
-                      disabled={invalid}
-                      onClick={event => {
-                        handleSubmit(event)
-                      }}
-                    >
-                      Submit
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} lg={4}>
-                    <div style={{ background: "#ddd" }}>
-                      <p>{JSON.stringify(values, null, 2)}</p>
-                    </div>
-                  </Grid>
-                </Grid>
-              </Fragment>
-            )
-          }}
-        </Form>
+        <FileUpload />
       </div>
     )
   }
 }
 
 function mapDispatchToProps(dispatch) {
+  // TODO: move this to container redux
   return bindActionCreators(
     { postCreateDataset: actions.postCreateDataset },
     dispatch

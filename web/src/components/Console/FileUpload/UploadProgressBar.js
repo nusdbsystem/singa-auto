@@ -9,24 +9,25 @@ import "react-sweet-progress/lib/style.css"
 
 class UploadProgressBar extends React.Component {
   static propTypes = {
-    percentCompleted: PropTypes.number,
+    percentCompleted: PropTypes.number.isRequired,
     fileName: PropTypes.string,
-    formState: PropTypes.string,
+    uploaded: PropTypes.bool,
+    //formState: PropTypes.string,
   }
 
   render() {
-    const { percentCompleted, fileName, formState } = this.props
+    const { percentCompleted, fileName, uploaded } = this.props
 
     return (
       <React.Fragment>
-        {formState !== "init" && (
+
           <Grid
             container
             direction="row"
             justify="flex-start"
             alignItems="center"
           >
-            <Typography component="p">Upload CSV</Typography>
+            <Typography component="p">{fileName ? "Uploading " + fileName : "No file chosen"}</Typography>
             <Progress
               theme={{
                 error: {
@@ -46,13 +47,10 @@ class UploadProgressBar extends React.Component {
                 },
               }}
               percent={percentCompleted}
-              status={formState === "loading" ? "active" : "success"}
+              status={uploaded ? "success" : "active"}
             />
-            {fileName && (
-              <Typography component="p">{fileName} uploaded</Typography>
-            )}
           </Grid>
-        )}
+
       </React.Fragment>
     )
   }

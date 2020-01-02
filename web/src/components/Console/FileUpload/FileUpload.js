@@ -13,6 +13,8 @@ const FileUpload = () => {
   const [message, setMessage] = useState('')
   const [uploadPercentage, setUploadPercentage] = useState(0);
 
+  const [uploadSuccess, setUploadStatus] = useState(false)
+
   // for dataset
   const [name, setName] = useState('Sample-DS-1')
   const [task, setTask] = useState("IMAGE_CLASSIFICATION")
@@ -59,18 +61,18 @@ const FileUpload = () => {
             )
             console.log("From EventEmiiter, file Uploaded: ", percentCompleted)
             setUploadPercentage(percentCompleted);
-  
-            // Clear percentage
-            setTimeout(() => setUploadPercentage(0), 10000);
           }
         }
       );
       // res.data is the object sent back from the server
       console.log("file uploaded, res.data: ", res.data)
 
-      setMessage('File Uploaded')
+      setUploadStatus(true)
+
+      setMessage(selectedFiles[0]["name"] + ' Uploaded')
     } catch (err) {
       console.error(err, "error")
+      setUploadStatus(false)
       setMessage("upload failed")
     }
   };
@@ -90,6 +92,12 @@ const FileUpload = () => {
       </form>
       <UploadProgressBar
         percentCompleted={uploadPercentage}
+        fileName={
+          selectedFiles.length !== 0
+          ? selectedFiles[0]["name"]
+          : ""
+        }
+        uploaded={uploadSuccess}
       />
       {message ? <span>{message}</span> : null}
     </Fragment>
