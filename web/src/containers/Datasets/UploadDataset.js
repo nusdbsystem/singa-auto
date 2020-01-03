@@ -129,11 +129,12 @@ class UploadDataSet extends React.Component {
 
     try {
       const res = await axios.post(
-        `${HTTPconfig.gateway}api/upload-csv`,
+        `${HTTPconfig.gateway}datasets`,
         formData, 
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            "Authorization": `Bearer ${this.props.reduxToken}`
           },
           onUploadProgress: progressEvent => {
             // progressEvent will contain loaded and total
