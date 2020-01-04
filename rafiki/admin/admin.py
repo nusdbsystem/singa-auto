@@ -747,7 +747,27 @@ class Admin(object):
             }
             for model in models
         ]
-    
+
+    def get_recommend_models(self, user_id, dataset_id):
+        dataset = self._meta_store.get_dataset(dataset_id)
+        task = dataset.task
+        models = self._meta_store.get_available_models(user_id, task)
+        
+        for model in models:
+            if model.name == 'resnet':
+                return [
+                    {
+                        'id': model.id,
+                        'user_id': model.user_id,
+                        'name': model.name,
+                        'task': model.task,
+                        'datetime_created': model.datetime_created,
+                        'dependencies': model.dependencies,
+                        'access_right': model.access_right
+                    }
+                ]
+
+        
     ####################################
     # Private / Users
     ####################################

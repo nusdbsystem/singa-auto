@@ -383,6 +383,14 @@ def get_available_models(auth):
     with admin:
         return jsonify(admin.get_available_models(auth['user_id'], **params))
 
+@app.route('/models/recommended', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_recommend_models(auth):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+            return jsonify(admin.get_recommend_models(auth['user_id'], **params))
+            
 @app.route('/models/<model_id>', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
 def get_model(auth, model_id):
