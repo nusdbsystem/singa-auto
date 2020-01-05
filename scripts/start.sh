@@ -45,5 +45,5 @@ bash ./scripts/start_admin.sh || exit 1
 bash ./scripts/start_web_admin.sh || exit 1
 
 echo "To use Rafiki, use Rafiki Client in the Python CLI"
-echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/docs/src/user/quickstart.html"
-echo "To configure Rafiki, refer to Rafiki's developer docs at https://nginyc.github.io/rafiki/docs/latest/docs/src/dev/setup.html"
+echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/src/user/quickstart.html"
+echo "To configure Rafiki, refer to Rafiki's developer docs at https://nginyc.github.io/rafiki/docs/latest/src/dev/setup.html"
