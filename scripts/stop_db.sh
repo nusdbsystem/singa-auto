@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -21,7 +22,7 @@ LOG_FILEPATH=$PWD/logs/stop.log
 
 source ./scripts/utils.sh
 
-title "Dumping database..." 
+title "Dumping database..."
 bash ./scripts/save_db.sh
 
 # If database dump previously failed, prompt whether to continue script

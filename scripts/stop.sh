@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -51,4 +52,3 @@ title "Stopping Rafiki's Web Admin..."
 docker rm -f $WEB_ADMIN_HOST || echo "Failed to stop Rafiki's Web Admin"
 
 echo "You'll need to destroy your machine's Docker swarm manually"
-

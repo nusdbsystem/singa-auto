@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -43,7 +44,7 @@ export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. o
 export POSTGRES_USER=rafiki
 export POSTGRES_DB=rafiki
 
-# Internal hosts & ports and configuration for Rafiki's components 
+# Internal hosts & ports and configuration for Rafiki's components
 export POSTGRES_HOST=rafiki_db
 export POSTGRES_PORT=5432
 export ADMIN_HOST=rafiki_admin
@@ -77,4 +78,4 @@ export IMAGE_KAFKA=wurstmeister/kafka:2.12-2.1.1
 
 # Utility configuration
 export PYTHONPATH=$PWD # Ensures that `rafiki` module can be imported at project root
-export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly 
+export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly
