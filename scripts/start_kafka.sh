@@ -18,7 +18,7 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/logs/start_kafka.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_kafka.log
 
 source ./scripts/utils.sh
 

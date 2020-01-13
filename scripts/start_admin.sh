@@ -18,7 +18,7 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/logs/start_admin.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_admin.log
 
 # Mount whole project folder with code for dev for shorter iterations
 if [ $APP_MODE = "DEV" ]; then
