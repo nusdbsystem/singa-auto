@@ -20,6 +20,15 @@
 
 REBROW_PORT=5001
 
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
+
 docker run --rm --name rafiki_rebrow \
   --network $DOCKER_NETWORK \
   -e REBROW_PORT=$REBROW_PORT \

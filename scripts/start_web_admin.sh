@@ -23,6 +23,16 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_web_admin.log
 source ./scripts/utils.sh
 
 title "Starting Rafiki's Web Admin..."
+
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
+
 (docker run --rm --name $WEB_ADMIN_HOST \
   --network $DOCKER_NETWORK \
   -e RAFIKI_ADDR=$RAFIKI_ADDR \

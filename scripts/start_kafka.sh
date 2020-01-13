@@ -23,6 +23,16 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_kafka.log
 source ./scripts/utils.sh
 
 title "Starting Rafiki's Kafka..."
+
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
+
 (docker run --rm --name $KAFKA_HOST \
   --network $DOCKER_NETWORK \
   -e KAFKA_ZOOKEEPER_CONNECT=$ZOOKEEPER_HOST:$ZOOKEEPER_PORT \
