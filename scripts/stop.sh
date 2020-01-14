@@ -26,7 +26,10 @@ source ./scripts/utils.sh
 source ./.env.sh
 
 title "Stopping any existing jobs..."
-python ./scripts/stop_all_jobs.py
+echo $(which python3)
+pyv="$(python3 -V 2>&1)"
+echo $pyv
+python3 ./scripts/stop_all_jobs.py
 
 # Prompt if should stop DB
 if prompt "Should stop Rafiki's DB?"
