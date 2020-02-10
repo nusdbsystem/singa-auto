@@ -11,7 +11,6 @@ class Root extends React.PureComponent {
       PropTypes.arrayOf(PropTypes.node),
       PropTypes.node,
     ]),
-    isAuthenticated: PropTypes.bool.isRequired,
     notification: PropTypes.object,
     handleNotificationClose: PropTypes.func,
     onTryAutoSignup: PropTypes.func,
@@ -19,11 +18,12 @@ class Root extends React.PureComponent {
 
   componentDidMount() {
     this.props.onTryAutoSignup()
-    console.log("isAuthenticated check: ", this.props.isAuthenticated)
   }
 
   render() {
     const { children, notification, handleNotificationClose } = this.props
+
+    // console.log("reduxToken: ", this.props.reduxToken)
 
     return (
       <Fragment>
@@ -39,7 +39,7 @@ class Root extends React.PureComponent {
 }
 
 const mapStateToProps = state => ({
-  isAuthenticated: state.Root.token !== null,
+  // reduxToken: state.Root.token,
   notification: state.Root.notification,
 })
 

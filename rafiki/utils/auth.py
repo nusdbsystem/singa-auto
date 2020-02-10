@@ -36,6 +36,8 @@ def generate_token(user):
         'user_type': user['user_type'],
         'exp': datetime.utcnow() + timedelta(hours=TOKEN_EXPIRATION_HOURS)
     }
+    # TODO: if backend using jwt, how come frontend still
+    # needs to configure token in localStorage?
     token = jwt.encode(payload, APP_SECRET, algorithm='HS256')
     return token.decode('utf-8')
 
