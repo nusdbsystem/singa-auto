@@ -34,22 +34,29 @@ export const requestDatasetList = (params, token) => {
   return _getWithToken("/datasets", params, token)
 }
 
-export const postCreateDataset = (name, task, file, dataset_url, token) => {
+// moved the axios and uploadprogress and formstate
+// to web/src/containers/Datasets/UploadDataset.js Jan03-2020
+/* export const postCreateDataset = (name, task, file, dataset_url, token) => {
   // This function returns an Axios Promise object
-  console.log("arguments", name, task, file, dataset_url)
+  // console.log("arguments", name, task, file, dataset_url)
+  // construct form data for sending
+  // FormData() is default native JS object
   const formData = new FormData()
+  // append(<whatever name>, value, <namePropterty>)
+  console.log("file is: ", file)
   if (file !== undefined) {
-    console.log("submiting file")
-    formData.append("dataset", file)
+    // flask createDS endpoint will look for
+    // 'dataset' in request.files
+    formData.append("dataset", file, file.name)
   } else {
-    console.log("submiting url")
+    // console.log("submiting url")
     formData.append("dataset_url", dataset_url)
   }
   formData.append("name", name)
   formData.append("task", task)
-  console.log("dataset_url", formData.get("dataset_url"))
+  // console.log("dataset_url", formData.get("dataset_url"))
   return _postFormWithToken("/datasets", formData, token)
-}
+} */
 
 /* ========== Models ============= */
 export const requestModelList = (params, token) => {
@@ -85,7 +92,8 @@ export const createInferenceJob = (app, appVersion, budget, token) => {
 }
 
 // Private
-export function _makeUrl(urlPath, params = {}) {
+// TODO: RafikiClient duplicate
+const _makeUrl = (urlPath, params = {}) => {
   const query = Object.keys(params)
     .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
     .join("&")
@@ -95,7 +103,9 @@ export function _makeUrl(urlPath, params = {}) {
   return url.toString()
 }
 
-export function _getHeader(token) {
+// TODO: RafikiClient duplicate
+// TODO: get rid of the typescript and params
+const _getHeader = (token) => {
   if (token) {
     return {
       Authorization: `Bearer ${token}`,
@@ -105,18 +115,16 @@ export function _getHeader(token) {
   }
 }
 
-export const _getWithToken = (url, params, token) => {
+const _getWithToken = (url, params, token) => {
   return axios({
-    // Axios(config) is a promise
     method: "get",
     url: _makeUrl(url, params), // Use _makeUrl function to get the url
     headers: _getHeader(token),
   })
 }
 
-export const _postFormWithToken = (url, formData, token, params = {}) => {
+const _postFormWithToken = (url, formData, token, params = {}) => {
   return axios({
-    // Axios(config) is a promise
     method: "post",
     url: _makeUrl(url, params), // Use _makeUrl function to make the url
     headers: {
@@ -126,7 +134,7 @@ export const _postFormWithToken = (url, formData, token, params = {}) => {
   })
 }
 
-export const _postJsonWithToken = (url, json, token, params = {}) => {
+const _postJsonWithToken = (url, json, token, params = {}) => {
   return axios({
     method: "post",
     url: _makeUrl(url, params),

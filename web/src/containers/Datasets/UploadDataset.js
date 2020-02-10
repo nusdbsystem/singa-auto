@@ -289,7 +289,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
-  postCreateDataset: actions.postCreateDataset,
+  // postCreateDataset: actions.postCreateDataset,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
 }
 

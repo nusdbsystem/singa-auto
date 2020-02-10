@@ -14,10 +14,12 @@ export const populateDSList = DatasetList => ({
   DatasetList,
 })
 
-export const postCreateDataset = (name, task, file, dataset_url) => ({
-  type: Types.CREATE_DATASET,
-  name,
-  task,
-  file,
-  dataset_url,
-})
+// moved the axios and uploadprogress and formstate
+// to web/src/containers/Datasets/UploadDataset.js Jan03-2020
+// export const postCreateDataset = (name, task, file, dataset_url) => ({
+//   type: Types.CREATE_DATASET,
+//   name,
+//   task,
+//   file,
+//   dataset_url,
+// })
