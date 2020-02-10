@@ -6,10 +6,11 @@ export function* authLogin(action) {
   try {
     yield put(actions.authStart())
     const res = yield call(api.requestSignIn, action.authData)
+    // console.log("response data: ", res.data)
     const user_id = res.data.user_id
     const token = res.data.token
-    // 8 hour expirationTime?
-    const expirationTime = 3600 * 8000
+    // 24 hour expirationTime?
+    const expirationTime = 3600 * 24000
     const expirationDate = new Date(new Date().getTime() + expirationTime)
     localStorage.setItem("user_id", user_id)
     localStorage.setItem("token", token)
@@ -34,15 +35,15 @@ function* checkAuthState(action) {
     const token = localStorage.getItem("token")
     const user_id = localStorage.getItem("user_id")
     if (!token) {
-      console.log("token not found")
+      // console.log("token not found")
       yield put(actions.logout())
     } else {
       const expirationDate = new Date(localStorage.getItem("expirationDate"))
       if (expirationDate <= new Date()) {
-        console.log("token expired")
+        // console.log("token expired")
         yield put(actions.logout())
       } else {
-        console.log("token found")
+        // console.log("token found")
         yield put(actions.authSuccess(token, user_id))
         // after expiration auto logout
         yield delay(expirationDate.getTime() - new Date().getTime())
@@ -64,7 +65,7 @@ function* watchAuthStateRequest() {
 
 function* autoHideNotification() {
   yield delay(3000)
-  console.log("Auto Hide the Notification area")
+  // console.log("Auto Hide the Notification area")
   yield put(actions.notificationHide())
 }
 

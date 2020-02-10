@@ -52,7 +52,7 @@ class SignIn extends React.Component {
   }
 
   handleSubmit = values => {
-    console.log(values)
+    // console.log(values)
     const authData = Object.assign(
       {},
       {
