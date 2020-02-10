@@ -18,12 +18,13 @@
 #
 
 import os
-
+# configure_logging will generate flask_log in
+# logs folder, using python native logging
 from rafiki.utils.log import configure_logging
 from rafiki.admin import Admin
 from rafiki.admin.app import app
 
-configure_logging('admin')
+configure_logging(process_name='admin')
 
 if __name__ == "__main__":
     # Run seed logic for admin at start-up
@@ -32,6 +33,6 @@ if __name__ == "__main__":
 
     # Run Flask app
     app.run(
-        host='0.0.0.0', 
-        port=os.getenv('ADMIN_PORT', 3000), 
+        host='0.0.0.0',
+        port=os.getenv('ADMIN_PORT', 3000),
         threaded=True)

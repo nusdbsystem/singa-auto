@@ -19,17 +19,29 @@
 
 import os
 import logging
-import tempfile
-from datetime import datetime
-import json
-import traceback
-import time
 
+# use module-level loggers by passing __name__
+# as the name parameter to getLogger()
 logger = logging.getLogger(__name__)
 
+
 def configure_logging(process_name):
-    # Configure all logging to a log file
-    logs_folder_path = os.path.join(os.environ['WORKDIR_PATH'], os.environ['LOGS_DIR_PATH'])
-    logging.basicConfig(level=logging.INFO, 
-                    format='%(asctime)s %(name)s %(levelname)s %(message)s', 
-                    filename='{}/{}.log'.format(logs_folder_path, process_name))
+    """
+    Configure all logging to a log file
+    ===
+    %(asctime)s Human-readable time
+    %(name)s Name of the logger used to log the call.
+    """
+    logs_folder_path = os.path.join(
+        os.environ['WORKDIR_PATH'],
+        os.environ['LOGS_DIR_PATH']
+    )
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(name)s %(levelname)s %(message)s',
+        datefmt='%d-%b-%y %H:%M:%S',
+        filename='{}/process_name_{}.log'.format(
+            logs_folder_path,
+            process_name
+        )
+    )
