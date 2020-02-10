@@ -18,6 +18,17 @@
 # under the License.
 #
 
+#Open Docker, only if is not running
+if (! docker stats --no-stream ); then
+  service docker start # Ubuntu/Debian
+  #Wait until Docker daemon is running and has completed initialisation
+while (! docker stats --no-stream ); do
+  # Docker takes a few seconds to initialize
+  echo "Waiting for Docker to launch..."
+  sleep 1
+done
+fi
+
 source ./scripts/utils.sh
 
 # Read from shell configuration file
