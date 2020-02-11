@@ -12,7 +12,8 @@ import Typography from "@material-ui/core/Typography"
 import MainContent from "components/Console/ConsoleContents/MainContent"
 import ContentBar from "components/Console/ConsoleContents/ContentBar"
 
-import ListDataSetTable from "../../components/Console/ConsoleContents/ListDataSetTable"
+import ListDataSetTable from "components/Console/ConsoleContents/MUITable"
+
 
 const styles = theme => ({
   contentWrapper: {
@@ -49,6 +50,15 @@ class ListDataSet extends React.Component {
   render() {
     const { classes, DatasetList } = this.props
 
+    const headCells = [
+      { id: 'ID', numeric: false, disablePadding: true, label: 'ID' },
+      { id: 'Name', numeric: false, disablePadding: false, label: 'Name' },
+      { id: 'Task', numeric: false, disablePadding: false, label: 'Task' },
+      { id: 'Size', numeric: true, disablePadding: false, label: 'Size (bytes)' },
+      { id: 'UploadedAt', numeric: false, disablePadding: false, label: 'Uploaded At' },
+      { id: 'ViewMore', numeric: false, disablePadding: true, label: 'View More'}
+    ]
+
     return (
       <MainContent>
         <ContentBar
@@ -65,7 +75,8 @@ class ListDataSet extends React.Component {
               : "Datasets"}
           </Typography>
           <ListDataSetTable
-            Datasets={DatasetList}
+            headCells={headCells}
+            rows={DatasetList}
           />
         </div>
       </MainContent>
