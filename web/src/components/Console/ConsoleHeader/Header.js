@@ -58,7 +58,7 @@ class Header extends React.Component {
     } = this.props
 
     return (
-      <AppBar color="primary" position="sticky">
+      <AppBar color="primary" position="sticky" style={{zIndex: 1101}}>
         <Toolbar>
           <Grid container spacing={1} alignItems="center">
             <Hidden smUp>
