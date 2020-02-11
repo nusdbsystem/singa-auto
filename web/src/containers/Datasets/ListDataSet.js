@@ -66,7 +66,6 @@ class ListDataSet extends React.Component {
           </Typography>
           <ListDataSetTable
             Datasets={DatasetList}
-            handleClickHistory={this.handleClickHistory}
           />
         </div>
       </MainContent>

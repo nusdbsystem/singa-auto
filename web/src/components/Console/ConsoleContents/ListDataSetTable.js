@@ -32,7 +32,6 @@ const styles = theme => ({
 class ListDataSetTable extends React.Component {
   static propTypes = {
     DatasetList: PropTypes.array,
-    handleClickHistory: PropTypes.func,
   }
 
   state = {

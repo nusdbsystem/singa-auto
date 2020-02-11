@@ -6,7 +6,6 @@ import { connect } from "react-redux"
 import { compose } from "redux"
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
-import * as actions from "./actions"
 
 import { withStyles } from "@material-ui/core/styles"
 import Typography from '@material-ui/core/Typography';

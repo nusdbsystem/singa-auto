@@ -50,7 +50,7 @@ class MainContent extends React.Component {
               className={classes.fab}
               color="primary"
               component={Link}
-              to="/console/datasets/upload-datasets?addNewDS=TRUE"
+              to="/console/datasets/upload-datasets"
             >
               <AddIcon />
             </Fab>

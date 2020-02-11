@@ -123,7 +123,7 @@ const _getWithToken = (url, params, token) => {
   })
 }
 
-const _postFormWithToken = (url, formData, token, params = {}) => {
+/* const _postFormWithToken = (url, formData, token, params = {}) => {
   return axios({
     method: "post",
     url: _makeUrl(url, params), // Use _makeUrl function to make the url
@@ -132,7 +132,7 @@ const _postFormWithToken = (url, formData, token, params = {}) => {
     },
     data: formData,
   })
-}
+} */
 
 const _postJsonWithToken = (url, json, token, params = {}) => {
   return axios({

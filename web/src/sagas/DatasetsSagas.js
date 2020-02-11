@@ -4,7 +4,6 @@ import * as actions from "../containers/Datasets/actions"
 import { notificationShow } from "../containers/Root/actions.js"
 import * as api from "../services/ClientAPI"
 import { getToken } from "./utils"
-import { push } from "connected-react-router"
 
 // List Datasets
 function* watchGetDSListRequest() {
