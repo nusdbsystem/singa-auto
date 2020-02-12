@@ -46,6 +46,9 @@ def decode_token(token):
     return payload
 
 def auth(user_types=[]):
+    """
+    authenticate using Bearer Token from the requests
+    """
     from flask import request
     
     user_types.append(UserType.SUPERADMIN)
