@@ -44,13 +44,13 @@ class MainContent extends React.Component {
     return (
       <Paper className={classes.paper}>
         {children}
-        {location.pathname === "/console/datasets/list-dataset" ? (
+        {location.pathname === "/console/datasets/list-datasets" ? (
           <Zoom in={true} unmountOnExit>
             <Fab
               className={classes.fab}
               color="primary"
               component={Link}
-              to="/console/datasets/upload-datasets"
+              to="/console/datasets/upload-dataset"
             >
               <AddIcon />
             </Fab>
@@ -62,7 +62,7 @@ class MainContent extends React.Component {
               className={classes.fab}
               color="primary"
               component={Link}
-              to="/console/datasets/list-dataset"
+              to="/console/datasets/list-datasets"
             >
               <ListDSIcon className={classes.extendedIcon} />
               List Dataset

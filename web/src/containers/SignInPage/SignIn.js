@@ -69,7 +69,7 @@ class SignIn extends React.Component {
     //const { sent } = this.state;
 
     if (authStatus) {
-      return <Redirect to="/console/datasets/list-dataset" />
+      return <Redirect to="/console/datasets/list-datasets" />
     }
 
     return (

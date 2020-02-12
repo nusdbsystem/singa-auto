@@ -104,7 +104,7 @@ class LandingNavBar extends React.Component {
       <Fragment>
         <Typography variant="h6">
           <Link
-            to="/console/datasets/list-dataset"
+            to="/console/datasets/list-datasets"
             className={classes.rightLink}
           >
             {"Go To Console"}

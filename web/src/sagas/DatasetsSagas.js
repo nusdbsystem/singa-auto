@@ -44,7 +44,7 @@ function* getDatasetList() {
 //     console.log("Create Dataset success")
 //     yield alert("Create Dataset success")
 //     yield put(notificationShow("Create Dataset Success")) // no need to write test for this
-//     yield push("console/datasets/list-dataset")
+//     yield push("console/datasets/list-datasets")
 //     yield put(hideLoading())
 //   } catch (e) {
 //     console.error(e.response)

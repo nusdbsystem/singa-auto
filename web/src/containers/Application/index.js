@@ -50,7 +50,7 @@ class ApplicationPage extends React.Component {
             needToList={true}
             barTitle="SomeApplicatioName"
             mainBtnText="Open the page"
-            mainBtnLink="/console/datasets/upload-datasets"
+            mainBtnLink="/console/datasets/upload-dataset"
             refreshAction={null}
           />
           <div className={classes.contentWrapper}>

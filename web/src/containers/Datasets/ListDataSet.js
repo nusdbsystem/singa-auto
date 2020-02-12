@@ -65,7 +65,7 @@ class ListDataSet extends React.Component {
           needToList={true}
           barTitle="List Dataset"
           mainBtnText="Add Dataset"
-          mainBtnLink="/console/datasets/upload-datasets"
+          mainBtnLink="/console/datasets/upload-dataset"
           refreshAction={this.reloadSizeAndDS}
         />
         <div className={classes.contentWrapper}>

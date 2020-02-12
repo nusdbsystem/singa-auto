@@ -130,12 +130,12 @@ class Navigator extends React.Component {
           {
             id: "List Datasets",
             icon: <ListDsIcon />,
-            pathname: "/console/datasets/list-dataset",
+            pathname: "/console/datasets/list-datasets",
           },
           {
             id: "Upload Dataset",
             icon: <CloudUpload />,
-            pathname: "/console/datasets/upload-datasets",
+            pathname: "/console/datasets/upload-dataset",
           },
           // {
           //   id: 'Delete Dataset',
