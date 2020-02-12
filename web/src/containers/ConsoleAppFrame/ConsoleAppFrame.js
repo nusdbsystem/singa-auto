@@ -120,16 +120,35 @@ class ConsoleAppFrame extends React.Component {
             />
             <main className={classes.main}>
               <Switch>
+                {/* ***************************************
+                  * Datasets
+                  * ***************************************/}
                 <Route
                   exact
-                  path="/console/datasets/list-dataset"
+                  path="/console/datasets/list-datasets"
                   component={ListDataSet}
                 />
                 <Route
                   exact
-                  path="/console/datasets/upload-datasets"
+                  path="/console/datasets/upload-dataset"
                   component={UploadDataset}
                 />
+                {/* ***************************************
+                  * Models
+                  * ***************************************/}
+                <Route
+                  exact
+                  path="/console/models/list-models"
+                  component={ListDataSet}
+                />
+                <Route
+                  exact
+                  path="/console/models/upload-model"
+                  component={UploadDataset}
+                />
+                {/* ***************************************
+                  * Train Jobs
+                  * ***************************************/}
                 <Route
                   exact
                   path="/console/jobs/list-train-jobs"
@@ -140,6 +159,9 @@ class ConsoleAppFrame extends React.Component {
                   path="/console/jobs/create-train-job"
                   component={CreateTrainJob}
                 />
+                {/* ***************************************
+                  * Trials
+                  * ***************************************/}
                 <Route
                   exact
                   path="/console/jobs/trials/:appId/:app/:appVersion"
@@ -150,6 +172,9 @@ class ConsoleAppFrame extends React.Component {
                   path="/console/jobs/trials/:trialId"
                   component={TrialDetails}
                 />
+                {/* ***************************************
+                  * Inference Jobs
+                  * ***************************************/}
                 <Route
                   exact
                   path="/console/application/:appId/:app/:appVersion/create_inference_job"

@@ -152,12 +152,12 @@ class Navigator extends React.Component {
           {
             id: "List Models",
             icon: <ListModelsIcon />,
-            pathname: "/console/datasets/list-model",
+            pathname: "/console/models/list-models",
           },
           {
             id: "Upload Model",
             icon: <CloudUpload />,
-            pathname: "/console/datasets/upload-model",
+            pathname: "/console/models/upload-model",
           },
         ],
       },

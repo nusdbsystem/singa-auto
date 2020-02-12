@@ -41,34 +41,89 @@ class MainContent extends React.Component {
 
   render() {
     const { classes, children, location } = this.props
+
+    const customizeZoomIcon = pathname => {
+      switch (pathname) {
+        case "/console/datasets/list-datasets":
+          console.log("pathname is list-datasets: ", pathname)
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/datasets/upload-dataset"
+              >
+                <AddIcon />
+              </Fab>
+            </Zoom>
+          )
+        case "/console/datasets/upload-dataset":
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                variant="extended"
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/datasets/list-datasets"
+              >
+                <ListDSIcon className={classes.extendedIcon} />
+                List Dataset
+              </Fab>
+            </Zoom>
+          )
+        case "/console/models/list-models":
+          console.log("pathname is about models: ", pathname)
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/models/upload-model"
+              >
+                <AddIcon />
+              </Fab>
+            </Zoom>
+          )
+          case "/console/models/upload-model":
+            return (
+              <Zoom in={true} unmountOnExit>
+                <Fab
+                  variant="extended"
+                  className={classes.fab}
+                  color="primary"
+                  component={Link}
+                  to="/console/models/list-models"
+                >
+                  <ListDSIcon className={classes.extendedIcon} />
+                  List Models
+                </Fab>
+              </Zoom>
+            )
+        default:
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                variant="extended"
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/datasets/list-datasets"
+              >
+                <ListDSIcon className={classes.extendedIcon} />
+                List Dataset
+              </Fab>
+            </Zoom>
+          )
+      }
+    }
+
     return (
       <Paper className={classes.paper}>
         {children}
-        {location.pathname === "/console/datasets/list-datasets" ? (
-          <Zoom in={true} unmountOnExit>
-            <Fab
-              className={classes.fab}
-              color="primary"
-              component={Link}
-              to="/console/datasets/upload-dataset"
-            >
-              <AddIcon />
-            </Fab>
-          </Zoom>
-        ) : (
-          <Zoom in={true} unmountOnExit>
-            <Fab
-              variant="extended"
-              className={classes.fab}
-              color="primary"
-              component={Link}
-              to="/console/datasets/list-datasets"
-            >
-              <ListDSIcon className={classes.extendedIcon} />
-              List Dataset
-            </Fab>
-          </Zoom>
-        )}
+        {customizeZoomIcon(location.pathname)}
       </Paper>
     )
   }
