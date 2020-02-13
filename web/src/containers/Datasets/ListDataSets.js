@@ -32,7 +32,7 @@ class ListDataSets extends React.Component {
     resetLoadingBar: PropTypes.func,
   }
 
-  reloadSizeAndDS = () => {
+  reloadListDS = () => {
     this.props.requestListDS()
   }
 
@@ -51,7 +51,7 @@ class ListDataSets extends React.Component {
     const { classes, DatasetList } = this.props
 
     const headCells = [
-      { id: 'ID', numeric: false, disablePadding: true, label: 'ID' },
+      { id: 'DatasetID', numeric: false, disablePadding: true, label: 'Dataset-ID' },
       { id: 'Name', numeric: false, disablePadding: false, label: 'Name' },
       { id: 'Task', numeric: false, disablePadding: false, label: 'Task' },
       { id: 'Size', numeric: true, disablePadding: false, label: 'Size (bytes)' },
@@ -66,7 +66,7 @@ class ListDataSets extends React.Component {
           barTitle="List Datasets"
           mainBtnText="Add Dataset"
           mainBtnLink="/console/datasets/upload-dataset"
-          refreshAction={this.reloadSizeAndDS}
+          refreshAction={this.reloadListDS}
         />
         <div className={classes.contentWrapper}>
           <Typography color="textSecondary" align="center">

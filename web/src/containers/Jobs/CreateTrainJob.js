@@ -83,7 +83,7 @@ const mapDispatchToProps = {
   postCreateTrainJob: actions.createTrainJob,
   requestDatasetsList: DatasetActions.requestListDS,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
-  requestModelList: ModelActions.requestModelList,
+  requestModelList: ModelActions.requestAvailableModelList,
 }
 
 export default compose(

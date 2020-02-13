@@ -1,6 +1,7 @@
 import { takeLatest, call, put, fork, select } from "redux-saga/effects"
-import { showLoading, hideLoading } from "react-redux-loading-bar"
+import { showLoading, hideLoading, resetLoading } from "react-redux-loading-bar"
 import * as actions from "../containers/Datasets/actions"
+import * as ConsoleActions from "../containers/ConsoleAppFrame/actions"
 import { notificationShow } from "../containers/Root/actions.js"
 import * as api from "../services/ClientAPI"
 import { getToken } from "./utils"
@@ -54,8 +55,22 @@ function* getDatasetList() {
 //   }
 // }
 
+/* reset loadingBar caused by List Dataset command */
+function* callResetLoadingBar() {
+  try{
+    yield put(resetLoading())
+  } catch(e) {
+    console.error(e)
+  }
+}
+
+function* watchResetLoadingBar() {
+  yield takeLatest(ConsoleActions.Types.RESET_LOADING_BAR, callResetLoadingBar)
+}
+
 // fork is for process creation, run in separate processes
 export default [
   fork(watchGetDSListRequest),
-  //fork(watchPostDatasetsRequest)
+  //fork(watchPostDatasetsRequest),
+  fork(watchResetLoadingBar),
 ]
