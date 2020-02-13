@@ -1,30 +1,35 @@
 import { takeLatest, call, put, fork, select } from "redux-saga/effects"
-import { showLoading, hideLoading } from "react-redux-loading-bar"
+import { showLoading, hideLoading, resetLoading } from "react-redux-loading-bar"
 import * as actions from "../containers/Models/actions"
+import * as ConsoleActions from "../containers/ConsoleAppFrame/actions"
 import { notificationShow } from "../containers/Root/actions.js"
 import * as api from "../services/ClientAPI"
 import { getToken } from "./utils"
 
-// Watch action request Model list and run generator getModelList
-function* watchGetModelListRequest() {
-  yield takeLatest(actions.Types.REQUEST_MODEL_LIST, getModelList)
+// Watch action request {available} Model list and run generator getModelList
+function* watchGetAvailableModelListRequest() {
+  yield takeLatest(
+    actions.Types.REQUEST_AVAILABLE_MODEL_LIST,
+    getAvailableModelList)
 }
 
-/* for List Model command */
-function* getModelList() {
+/* for List Available Model command */
+function* getAvailableModelList() {
   try {
-    console.log("Start to load models")
+    // console.log("Start to load available models")
     yield put(showLoading())
     const token = yield select(getToken)
-    // TODO: implement API requestListModel
-    const models = yield call(api.requestModelList, {}, token)
-    console.log("Model loaded", models.data)
-    yield put(actions.populateModelList(models.data))
+    // get models/available need auth+task
+    // for NOW, task can be left blank, since we
+    // only using available?task=IMAGE_CLASSIFICATION
+    const models = yield call(api.getAvailableModels, {}, token)
+    console.log("Available Model loaded", models.data)
+    yield put(actions.populateAvailableModelList(models.data))
     yield put(hideLoading())
   } catch (e) {
     console.error(e.response)
     console.error(e)
-    yield put(notificationShow("Failed to Fetch Model List"))
+    yield put(notificationShow("Failed to Fetch Available Model List"))
     // TODO: implement notification for success and error of api actions
     // yield put(actions.getErrorStatus("failed to deleteUser"))
   }
@@ -51,5 +56,21 @@ function* getModelList() {
 //     }
 // }
 
+/* reset loadingBar caused by List Dataset command */
+function* callResetLoadingBar() {
+  try{
+    yield put(resetLoading())
+  } catch(e) {
+    console.error(e)
+  }
+}
+
+function* watchResetLoadingBar() {
+  yield takeLatest(ConsoleActions.Types.RESET_LOADING_BAR, callResetLoadingBar)
+}
+
 // fork is for process creation, run in separate processes
-export default [fork(watchGetModelListRequest)]
+export default [
+  fork(watchGetAvailableModelListRequest),
+  fork(watchResetLoadingBar),
+]

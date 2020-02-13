@@ -1,19 +1,18 @@
 import { Types } from "./actions"
 
-const StatesToReset = {}
-
 const initialState = {
-  // MODEL-List
-  ModelList: [],
-  ...StatesToReset,
+  // Available MODEL-List
+  AvailableModelList: [],
 }
 
 export const ModelsReducer = (state = initialState, action) => {
   switch (action.type) {
-    case Types.POPULATE_MODELLIST:
+    case Types.POPULATE_AVAILABLE_MODEL_LIST:
       return {
         ...state,
-        ModelList: action.models.length === 0 ? [] : action.models,
+        AvailableModelList: action.AvailableModels.length === 0
+          ? []
+          : action.AvailableModels,
       }
     default:
       return state

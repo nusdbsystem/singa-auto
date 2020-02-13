@@ -59,8 +59,7 @@ export const requestDatasetList = (params, token) => {
 } */
 
 /* ========== Models ============= */
-export const requestModelList = (params, token) => {
-  // http://rafiki.nus:3000/models/available
+export const getAvailableModels = (params, token) => {
   return _getWithToken("/models/available", params, token)
 }
 

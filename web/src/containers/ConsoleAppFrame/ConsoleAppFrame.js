@@ -15,6 +15,10 @@ import theme from "./ConsoleTheme"
 import ListDataSets from "../Datasets/ListDataSets"
 import UploadDataset from "../Datasets/UploadDataset"
 
+// Models Component
+import ListAvailableModels from "../Models/ListAvailableModels"
+import UploadModel from "../Models/UploadModel"
+
 // Trainjobs Component
 import ListTrainJobs from "../Jobs/ListTrainJobs"
 import CreateTrainJob from "../Jobs/CreateTrainJob"
@@ -139,12 +143,12 @@ class ConsoleAppFrame extends React.Component {
                 <Route
                   exact
                   path="/console/models/list-models"
-                  component={ListDataSets}
+                  component={ListAvailableModels}
                 />
                 <Route
                   exact
                   path="/console/models/upload-model"
-                  component={UploadDataset}
+                  component={UploadModel}
                 />
                 {/* ***************************************
                   * Train Jobs
