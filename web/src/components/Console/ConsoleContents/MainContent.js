@@ -69,7 +69,7 @@ class MainContent extends React.Component {
                 to="/console/datasets/list-datasets"
               >
                 <ListDSIcon className={classes.extendedIcon} />
-                List Dataset
+                List Datasets
               </Fab>
             </Zoom>
           )
@@ -113,7 +113,7 @@ class MainContent extends React.Component {
                 to="/console/datasets/list-datasets"
               >
                 <ListDSIcon className={classes.extendedIcon} />
-                List Dataset
+                List Datasets
               </Fab>
             </Zoom>
           )

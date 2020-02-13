@@ -12,7 +12,7 @@ import Navigator from "components/Console/ConsoleSideBar/Navigator"
 import theme from "./ConsoleTheme"
 
 // Datasets Component
-import ListDataSet from "../Datasets/ListDataSet"
+import ListDataSets from "../Datasets/ListDataSets"
 import UploadDataset from "../Datasets/UploadDataset"
 
 // Trainjobs Component
@@ -126,7 +126,7 @@ class ConsoleAppFrame extends React.Component {
                 <Route
                   exact
                   path="/console/datasets/list-datasets"
-                  component={ListDataSet}
+                  component={ListDataSets}
                 />
                 <Route
                   exact
@@ -139,7 +139,7 @@ class ConsoleAppFrame extends React.Component {
                 <Route
                   exact
                   path="/console/models/list-models"
-                  component={ListDataSet}
+                  component={ListDataSets}
                 />
                 <Route
                   exact

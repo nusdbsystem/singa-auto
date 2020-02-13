@@ -23,7 +23,7 @@ const styles = theme => ({
   },
 })
 
-class ListDataSet extends React.Component {
+class ListDataSets extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     handleHeaderTitleChange: PropTypes.func,
@@ -37,7 +37,7 @@ class ListDataSet extends React.Component {
   }
 
   componentDidMount() {
-    this.props.handleHeaderTitleChange("Dataset > List Dataset")
+    this.props.handleHeaderTitleChange("Dataset > List Datasets")
     this.props.requestListDS()
   }
 
@@ -63,7 +63,7 @@ class ListDataSet extends React.Component {
       <MainContent>
         <ContentBar
           needToList={true}
-          barTitle="List Dataset"
+          barTitle="List Datasets"
           mainBtnText="Add Dataset"
           mainBtnLink="/console/datasets/upload-dataset"
           refreshAction={this.reloadSizeAndDS}
@@ -97,4 +97,4 @@ const mapDispatchToProps = {
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(ListDataSet)
+)(ListDataSets)
