@@ -21,6 +21,18 @@ curl -i http://localhost:3000/tokens \
 
 export TOKEN="<your token from above>"
 
+#####################################
+# Datasets
+#####################################
+
+# POST a new dataset from a file
+curl -i http://localhost:3000/datasets \
+  -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -F name="dummyDS-$RANDOM" \
+  -F task="IMAGE_CLASSIFICATION" \
+  -F dataset=@"/home/svd/Downloads/Solutions.zip"
+
 # GET datasets with authentication (Bearer Token)
 # returns an array of objects
 curl -i http://localhost:3000/datasets \
@@ -32,17 +44,31 @@ curl -i http://localhost:3000/datasets \
 # {"datetime_created":"Tue, 11 Feb 2020 07:00:09 GMT","id":"804a6828-7583-437e-93b0-9e75055350c8","name":"asdfasdfasdfasdfasdf","size_bytes":953,"stat":{"feature A":500,"feature B":5000,"feature C":1000},"store_dataset_id":"883ca65c-b630-49f2-8170-e5b6f830fbc2.data","task":"IMAGE_CLASSIFICATION"}
 #]
 
-# POST a new dataset from a file
-curl -i http://localhost:3000/datasets \
+#####################################
+# Models
+#####################################
+
+# POST a new model from a file
+# no need to include user_id again
+curl -i http://localhost:3000/models \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
-  -F name="dummyDS-$RANDOM" \
+  -F name="dummyModel-$RANDOM" \
   -F task="IMAGE_CLASSIFICATION" \
-  -F dataset=@"/home/svd/Downloads/Solutions.zip"
+  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification" \
+  -F model_class="IDONTKNOW" \
+
+# GET a single model through model_id
+curl -i http://localhost:3000/models/2c46d0ca-6b07-4a0e-9f45-a8e3a6f7dc1c \
+  -H "Authorization: Bearer $TOKEN"
 
 # GET available models with Bearer Token
 # returns an array
 curl -i http://localhost:3000/models/available \
+  -H "Authorization: Bearer $TOKEN"
+
+# GET available models with specific task
+curl -i http://localhost:3000/models/available?task=IMAGE_CLASSIFICATION \
   -H "Authorization: Bearer $TOKEN"
 
 # GET recommended models with Bearer Token
@@ -51,9 +77,6 @@ curl -i http://localhost:3000/models/recommended \
   -H "Authorization: Bearer $TOKEN"
   -...
 
-
-# POST a new model from a file
-curl -i http://localhost:3000/models \
-  -X POST \
-  -H "Authorization: Bearer $TOKEN" \
-  -d ...
+#####################################
+# ...
+#####################################
