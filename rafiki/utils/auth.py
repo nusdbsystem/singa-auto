@@ -25,7 +25,8 @@ from datetime import datetime, timedelta
 from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
 
-TOKEN_EXPIRATION_HOURS = 1
+# extend JWT expiration to 1 day!
+TOKEN_EXPIRATION_HOURS = 24
 
 class UnauthorizedError(Exception): pass
 class InvalidAuthorizationHeaderError(Exception): pass
