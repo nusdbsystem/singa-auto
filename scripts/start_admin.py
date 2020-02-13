@@ -24,7 +24,7 @@ from rafiki.utils.log import configure_logging
 from rafiki.admin import Admin
 from rafiki.admin.app import app
 
-configure_logging(process_name='admin')
+configure_logging(process_name='flask-web-admin')
 
 if __name__ == "__main__":
     # Run seed logic for admin at start-up
