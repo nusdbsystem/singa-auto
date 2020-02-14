@@ -9,10 +9,10 @@ import * as actions from "./actions"
 import { withStyles } from "@material-ui/core/styles"
 import Typography from "@material-ui/core/Typography"
 
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
 
-import AvailableModelsTable from "components/Console/ConsoleContents/MUITable"
+import AvailableModelsTable from "components/ConsoleContents/MUITable"
 
 
 const styles = theme => ({

@@ -13,13 +13,13 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import FileDropzone from "components/Console/FileUpload/FileDropzone"
-import UploadProgressBar from 'components/Console/FileUpload/UploadProgressBar';
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
-import DatasetName from "components/Console/ConsoleContents/DatasetName"
-import TaskName from "components/Console/ConsoleContents/TaskName"
-import ForkbaseStatus from "components/Console/ConsoleContents/ForkbaseStatus"
+import FileDropzone from "components/FileUpload/FileDropzone"
+import UploadProgressBar from 'components/FileUpload/UploadProgressBar';
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
+import DatasetName from "components/ConsoleContents/DatasetName"
+import TaskName from "components/ConsoleContents/TaskName"
+import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 
 // RegExp rules
 import { validDsAndBranch } from "regexp-rules";

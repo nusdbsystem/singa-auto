@@ -13,10 +13,10 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as actions from "./actions"
 
 // Import Layout
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
 
-import CreateTrainJobForm from "components/Console/ConsoleForms/CreateTrainJobForm"
+import CreateTrainJobForm from "components/ConsoleForms/CreateTrainJobForm"
 
 const styles = theme => ({
   block: {

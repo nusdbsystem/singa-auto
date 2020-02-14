@@ -8,8 +8,8 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import { withStyles } from "@material-ui/core/styles"
 import Typography from "@material-ui/core/Typography"
 
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
 
 const styles = theme => ({
   contentWrapper: {

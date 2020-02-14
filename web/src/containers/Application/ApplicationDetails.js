@@ -24,8 +24,8 @@ import * as ClientAPI from "services/ClientAPI"
 import * as moment from "moment"
 
 // Import Layout
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
 
 const styles = theme => ({
   contentWrapper: {

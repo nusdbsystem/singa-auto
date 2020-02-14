@@ -29,8 +29,8 @@ import {
 import RefreshIcon from "@material-ui/icons/Refresh"
 
 // Import Layout
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
 
 // Third parts
 import * as moment from "moment"

@@ -7,8 +7,8 @@ import { Switch, Route, Redirect } from "react-router-dom"
 import { ThemeProvider, withStyles } from "@material-ui/core/styles"
 import Hidden from "@material-ui/core/Hidden"
 
-import Header from "components/Console/ConsoleHeader/Header"
-import Navigator from "components/Console/ConsoleSideBar/Navigator"
+import Header from "components/ConsoleHeader/Header"
+import Navigator from "components/ConsoleSideBar/Navigator"
 import theme from "./ConsoleTheme"
 
 // Datasets Component
@@ -30,7 +30,7 @@ import ApplicationDetails from "../Application/ApplicationDetails"
 import ListApplication from "../Application/ListApplication"
 import CreateInferenceJob from "../Application/CreateInferenceJob"
 
-import Copyright from "components/Console/ConsoleContents/Copyright"
+import Copyright from "components/ConsoleContents/Copyright"
 
 import LoadingBar from "react-redux-loading-bar"
 
