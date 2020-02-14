@@ -13,13 +13,14 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import FileDropzone from "components/Console/FileUpload/FileDropzone"
-import UploadProgressBar from 'components/Console/FileUpload/UploadProgressBar';
-import MainContent from "components/Console/ConsoleContents/MainContent"
-import ContentBar from "components/Console/ConsoleContents/ContentBar"
-import DatasetName from "components/Console/ConsoleContents/DatasetName"
-import TaskName from "components/Console/ConsoleContents/TaskName"
-import ForkbaseStatus from "components/Console/ConsoleContents/ForkbaseStatus"
+import FileDropzone from "components/FileUpload/FileDropzone"
+import UploadProgressBar from 'components/FileUpload/UploadProgressBar';
+import MainContent from "components/ConsoleContents/MainContent"
+import ContentBar from "components/ConsoleContents/ContentBar"
+import ModelName from "components/ConsoleContents/ModelName"
+import TaskName from "components/ConsoleContents/TaskName"
+import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
+import ModelClassSelect from "components/ConsoleContents/ModelClassSelect"
 
 // RegExp rules
 import { validDsAndBranch } from "regexp-rules";
@@ -47,7 +48,7 @@ class UploadModel extends React.Component {
    * That is to say, the dependency is needed when uploading every new model.
    */
   state = {
-    newDataset:"",
+    newModel:"",
     validDsName: true,
     FormIsValid: false,
     formState: "init",
@@ -58,6 +59,12 @@ class UploadModel extends React.Component {
     message: "",
     uploadPercentage: 0,
     task: "IMAGE_CLASSIFICATION",
+    // model_class, for Feb 2020, use two sample model files
+    // their model-classes are:
+    modelClass: [
+      "PyPandaVgg",
+      "PyPandaDenseNet",
+    ]
   }
 
   static propTypes = {
@@ -86,7 +93,7 @@ class UploadModel extends React.Component {
   }
 
   handleChange = name => event => {
-    if (name === "newDataset") {
+    if (name === "newModel") {
       if (
         validDsAndBranch.test(event.target.value) &&
         event.target.value.length <= 50
@@ -127,7 +134,7 @@ class UploadModel extends React.Component {
     // flask createDS endpoint will look for
     // 'dataset' in request.files
     formData.append("dataset", this.state.selectedFiles[0])
-    formData.append("name", this.state.newDataset)
+    formData.append("name", this.state.newModel)
     formData.append("task", this.state.task)
 
     try {
@@ -174,11 +181,11 @@ class UploadModel extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     // if form's states have changed
     if (
-      this.state.newDataset !== prevState.newDataset ||
+      this.state.newModel !== prevState.newModel ||
       this.state.selectedFiles !== prevState.selectedFiles
     ) {
       if (
-        this.state.newDataset &&
+        this.state.newModel &&
         this.state.validDsName &&
         this.state.selectedFiles.length !== 0 &&
         this.state.task
@@ -206,14 +213,14 @@ class UploadModel extends React.Component {
       <MainContent>
         <ContentBar
           needToList={false}
-          barTitle="Upload Dataset"
+          barTitle="Upload Model"
         />
         <div className={classes.contentWrapper}>
           <Grid container spacing={6}>
             <Grid item xs={6}>
-              <DatasetName
-                title="1. Dataset Name"
-                newDataset={this.state.newDataset}
+              <ModelName
+                title="1. Model Name"
+                newModel={this.state.newModel}
                 onHandleChange={this.handleChange}
                 isCorrectInput={this.state.validDsName}
               />
@@ -225,14 +232,27 @@ class UploadModel extends React.Component {
               />
               <br />
               <Typography variant="h5" gutterBottom align="center">
-                3. Upload Dataset
+                3. Upload Model
               </Typography>
               <FileDropzone
                 files={this.state.selectedFiles}
                 onCsvDrop={this.onDrop}
                 onRemoveCSV={this.handleRemoveCSV}
+                AcceptedMIMEtypes={`
+                  application/x-python-code,
+                  text/x-python
+                `}
+                MIMEhelperText={`
+                (Only *.py script files will be accepted)
+                `}
+                UploadType={`Model`}
               />
               <br />
+              <ModelClassSelect
+                title="4. Model Class"
+                modelClass={this.state.modelClass}
+                onHandleChange={this.handleChange}
+              />
               <Grid
                 container
                 direction="row"
@@ -269,7 +289,7 @@ class UploadModel extends React.Component {
                     : ""
                   }
                   formState={this.state.formState}
-                  dataset={this.state.newDataset}
+                  dataset={this.state.newModel}
                 />
                 <br />
                 <Typography component="p">
