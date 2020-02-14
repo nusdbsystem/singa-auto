@@ -24,6 +24,7 @@ import EnhancedTableHead from "./MUItableHead"
 
 import MUItableDialog from "./MUItableDialog"
 
+var moment = require('moment');
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -50,6 +51,7 @@ function EnhancedTable(props) {
   const {
     headCells,
     rows,
+    mode,
   } = props
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('UploadedAt');
@@ -86,6 +88,29 @@ function EnhancedTable(props) {
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
+  const CustomizeRows = (mode, row) => {
+    switch (mode) {
+      case "ListDatasets":
+        return (
+          <>
+            <TableCell align="right">{row.name}</TableCell>
+            <TableCell align="right">{row.task}</TableCell>
+            <TableCell align="right">{row.size_bytes}</TableCell>
+            <TableCell align="right">{moment(row.datetime_created).calendar()}</TableCell>
+          </>
+        )
+      case "ListModels":
+        return (
+          <>
+            <TableCell align="right">{row.name}</TableCell>
+            <TableCell align="right">{row.task}</TableCell>
+            <TableCell align="right">{JSON.stringify(row.dependencies)}</TableCell>
+            <TableCell align="right">{moment(row.datetime_created).calendar()}</TableCell>
+          </>
+        )
+    }
+  }
+
   return (
     <div className={classes.root}>
       <TableContainer>
@@ -118,10 +143,7 @@ function EnhancedTable(props) {
                         {row.id.slice(0, 8)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">{row.name}</TableCell>
-                    <TableCell align="right">{row.task}</TableCell>
-                    <TableCell align="right">{row.size_bytes}</TableCell>
-                    <TableCell align="right">{row.datetime_created}</TableCell>
+                    {CustomizeRows(mode, row)}
                     <TableCell padding="checkbox">
                       <IconButton
                         onClick={event => handleViewMoreClick(event, row)}
@@ -154,6 +176,7 @@ function EnhancedTable(props) {
         open={open}
         handleClose={handleClose}
         row={selected}
+        mode={mode}
       />
     </div>
   );
@@ -162,6 +185,7 @@ function EnhancedTable(props) {
 EnhancedTable.propTypes = {
   headCells: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
+  mode: PropTypes.string.isRequired,
 }
 
 export default EnhancedTable
