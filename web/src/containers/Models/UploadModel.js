@@ -37,10 +37,15 @@ const styles = theme => ({
 })
 
 class UploadModel extends React.Component {
-  /* a sample Model.py to upload is the
-    PyPandaVgg.py in the examples\models\image_classification
-  */
-
+  /**
+   * a sample Model.py to upload is the
+   * PyPandaVgg.py in the examples\models\image_classification
+   * other sample Model to upload can be PyPandaDenseNet.py
+   *
+   * The other models have their own dependency too.
+   * (should be designated by the model builder as well)
+   * That is to say, the dependency is needed when uploading every new model.
+   */
   state = {
     newDataset:"",
     validDsName: true,
@@ -58,12 +63,7 @@ class UploadModel extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     handleHeaderTitleChange: PropTypes.func,
-    // TODO figure out this:
-    resetResponses: PropTypes.func,
     resetLoadingBar: PropTypes.func,
-    // TODO: check for duplicate ds name
-    DatasetList: PropTypes.array,
-    // TODO: use token for axios
     reduxToken: PropTypes.string.isRequired,
   }
 
@@ -287,7 +287,6 @@ class UploadModel extends React.Component {
 
 const mapStateToProps = state => ({
   reduxToken: state.Root.token,
-  DatasetList: state.DatasetsReducer.DatasetList,
 })
 
 const mapDispatchToProps = {

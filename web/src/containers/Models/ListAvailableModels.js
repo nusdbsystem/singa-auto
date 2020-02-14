@@ -81,6 +81,7 @@ class ListAvailableModels extends React.Component {
           <AvailableModelsTable
             headCells={headCells}
             rows={AvailableModels}
+            mode={"ListModels"}
           />
         </div>
       </MainContent>

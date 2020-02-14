@@ -54,12 +54,7 @@ class UploadDataSet extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     handleHeaderTitleChange: PropTypes.func,
-    // TODO figure out this:
-    resetResponses: PropTypes.func,
     resetLoadingBar: PropTypes.func,
-    // TODO: check for duplicate ds name
-    DatasetList: PropTypes.array,
-    // TODO: use token for axios
     reduxToken: PropTypes.string.isRequired,
   }
 
@@ -283,7 +278,6 @@ class UploadDataSet extends React.Component {
 
 const mapStateToProps = state => ({
   reduxToken: state.Root.token,
-  DatasetList: state.DatasetsReducer.DatasetList,
 })
 
 const mapDispatchToProps = {

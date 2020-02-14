@@ -77,6 +77,7 @@ class ListDataSets extends React.Component {
           <ListDataSetTable
             headCells={headCells}
             rows={DatasetList}
+            mode={"ListDatasets"}
           />
         </div>
       </MainContent>

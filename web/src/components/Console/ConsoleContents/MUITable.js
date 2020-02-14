@@ -108,6 +108,10 @@ function EnhancedTable(props) {
             <TableCell align="right">{moment(row.datetime_created).calendar()}</TableCell>
           </>
         )
+      default:
+        return (
+          <TableCell colSpan={6} />
+        )
     }
   }
 

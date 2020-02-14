@@ -45,6 +45,10 @@ function AlertDialog(props) {
             ))}
           </React.Fragment>
         )
+      default:
+        return (
+          <b>No data to display</b>
+        )
     }
   }
 
