@@ -63,7 +63,10 @@ function FileDropzone(props) {
   const {
     onCsvDrop,
     files,
-    onRemoveCSV
+    onRemoveCSV,
+    AcceptedMIMEtypes,
+    MIMEhelperText,
+    UploadType,
   } = props
 
   const {
@@ -83,7 +86,7 @@ function FileDropzone(props) {
     multiple: false,
     // MIME type for zip
     // https://stackoverflow.com/questions/6977544/rar-zip-files-mime-type
-    accept: "application/zip, application/octet-stream, application/x-zip-compressed, multipart/x-zip",
+    accept: AcceptedMIMEtypes,
   });
 
   const style = useMemo(() => ({
@@ -114,7 +117,7 @@ function FileDropzone(props) {
   )
   :  (
     <List
-      subheader={<ListSubheader>Dataset File:</ListSubheader>}
+      subheader={<ListSubheader>{UploadType} File:</ListSubheader>}
       className={classes.root}
     >
       {files.map(file => (
@@ -153,12 +156,12 @@ function FileDropzone(props) {
     <>
       <div {...getRootProps({style})}>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop dataset zip here, or click to select your file</p>
-        <em>(Only *.zip archive format will be accepted)</em>
+        <p>Drag 'n' drop {UploadType} here, or click to select your file</p>
+        <em>{MIMEhelperText}</em>
         <br />
         <br />
         <Typography variant="body1" gutterBottom align="center">
-          {isDragAccept ? 'Drop' : 'Drag'} dataset zip here...
+          {isDragAccept ? 'Drop' : 'Drag'} {UploadType} here...
         </Typography>
       </div>
       {isDragReject && <b>Unsupported file type...</b>}
@@ -173,6 +176,9 @@ FileDropzone.propTypes = {
   onCsvDrop: PropTypes.func.isRequired,
   files: PropTypes.array.isRequired,
   onRemoveCSV: PropTypes.func.isRequired,
+  AcceptedMIMEtypes: PropTypes.string.isRequired,
+  MIMEhelperText: PropTypes.string.isRequired,
+  UploadType: PropTypes.string.isRequired,
 }
 
 export default FileDropzone

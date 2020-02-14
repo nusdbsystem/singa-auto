@@ -222,6 +222,16 @@ class UploadDataSet extends React.Component {
                 files={this.state.selectedFiles}
                 onCsvDrop={this.onDrop}
                 onRemoveCSV={this.handleRemoveCSV}
+                AcceptedMIMEtypes={`
+                  application/zip,
+                  application/octet-stream,
+                  application/x-zip-compressed,
+                  multipart/x-zip
+                `}
+                MIMEhelperText={`
+                (Only *.zip archive format will be accepted)
+                `}
+                UploadType={`Dataset`}
               />
               <br />
               <Grid
