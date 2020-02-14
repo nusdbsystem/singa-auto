@@ -55,8 +55,9 @@ curl -i http://localhost:3000/models \
   -H "Authorization: Bearer $TOKEN" \
   -F name="dummyModel-$RANDOM" \
   -F task="IMAGE_CLASSIFICATION" \
-  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification" \
-  -F model_class="IDONTKNOW" \
+  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/PyPandaVgg.py" \
+  -F model_class="PyPandaVgg" \
+  -F dependencies='{"torch":"2.0.1","torchvision":"0.2.2"}'
 
 # GET a single model through model_id
 curl -i http://localhost:3000/models/2c46d0ca-6b07-4a0e-9f45-a8e3a6f7dc1c \
