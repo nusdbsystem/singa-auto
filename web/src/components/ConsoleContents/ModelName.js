@@ -58,7 +58,7 @@ class ModelName extends React.Component {
                 ? ""
                 :"invalid model name"
               }
-            />              
+            />
           </Grid>
         </Grid>
       </React.Fragment>

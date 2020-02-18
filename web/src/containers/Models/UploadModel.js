@@ -13,6 +13,14 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
+// for checkboxes of dependencies
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Checkbox from '@material-ui/core/Checkbox';
+
 import FileDropzone from "components/FileUpload/FileDropzone"
 import UploadProgressBar from 'components/FileUpload/UploadProgressBar';
 import MainContent from "components/ConsoleContents/MainContent"
@@ -34,6 +42,13 @@ const styles = theme => ({
     margin: "10px 16px",
     //position: "relative",
     minHeight: 200,
+  },
+  // for checkboxes of dependencies
+  root: {
+    display: 'flex',
+  },
+  formControl: {
+    margin: theme.spacing(3),
   },
 })
 
@@ -64,7 +79,13 @@ class UploadModel extends React.Component {
     modelClass: [
       "PyPandaVgg",
       "PyPandaDenseNet",
-    ]
+    ],
+    selectedModelClass: "PyPandaVgg",
+    // dependencies
+    torch101: false,
+    torchvision022: false,
+    scikitLearn0200: false,
+    tensorflow1120: false,
   }
 
   static propTypes = {
@@ -93,6 +114,7 @@ class UploadModel extends React.Component {
   }
 
   handleChange = name => event => {
+    // console.log("handleCHANGE NAME: ", name)
     if (name === "newModel") {
       if (
         validDsAndBranch.test(event.target.value) &&
@@ -113,7 +135,14 @@ class UploadModel extends React.Component {
     });
   };
 
+  hancleCheckboxClick = name => event => {
+    this.setState({
+      [name]: event.target.checked
+    });
+  };
+
   handleCommit = async e => {
+    // console.log("THIS STATE: ", this.state)
     e.preventDefault();
     // reset the right-hand side
     // reset the ForkBase Status field:
@@ -130,16 +159,52 @@ class UploadModel extends React.Component {
     // FormData() is default native JS object
     const formData = new FormData()
     // append(<whatever name>, value, <namePropterty>)
-    console.log("selectedFiles[0]: ", this.state.selectedFiles[0])
-    // flask createDS endpoint will look for
-    // 'dataset' in request.files
-    formData.append("dataset", this.state.selectedFiles[0])
+    // console.log("selectedFiles[0]: ", this.state.selectedFiles[0])
+    // flask /models (create_model in app.py) endpoint will look for
+    // 'model_file_bytes' in request.files
+    formData.append("model_file_bytes", this.state.selectedFiles[0])
     formData.append("name", this.state.newModel)
     formData.append("task", this.state.task)
+    formData.append("model_class", this.state.selectedModelClass)
+    // flask /models (create_model in app.py) endpoint also
+    // checks for dependencies
+    let depState = {}
+    depState["torch101"] = this.state.torch101
+    depState["torchvision022"] = this.state.torchvision022
+    depState["scikitLearn0200"] = this.state.scikitLearn0200
+    depState["tensorflow1120"] = this.state.tensorflow1120
+    //console.log("depState: ", depState)
+
+    const checkedDep = Object.keys(depState)
+      .filter(key => depState[key])
+
+    //console.log("checkedDep: ", checkedDep)
+
+    let depToPOST = {}
+    checkedDep.map(v => {
+      switch(v) {
+        case "torch101":
+          depToPOST["torch"] = "2.0.1"
+          return "torch101"
+        case "torchvision022":
+          depToPOST["torchvision"] = "0.2.2"
+          return "torchvision022"
+        case "scikitLearn0200":
+          depToPOST["scikit-learn"] = "0.20.0"
+          return "scikitLearn0200"
+        case "tensorflow1120":
+          depToPOST["tensorflow"] = "1.12.0"
+          return "tensorflow1120"
+        default:
+          return "NA"
+      }
+    })
+    // console.log("depTOPOST stringified: ", JSON.stringify(depToPOST))
+    formData.append("dependencies", JSON.stringify(depToPOST))
 
     try {
       const res = await axios.post(
-        `${HTTPconfig.gateway}datasets`,
+        `${HTTPconfig.gateway}models`,
         formData, 
         {
           headers: {
@@ -182,13 +247,26 @@ class UploadModel extends React.Component {
     // if form's states have changed
     if (
       this.state.newModel !== prevState.newModel ||
-      this.state.selectedFiles !== prevState.selectedFiles
+      this.state.selectedFiles !== prevState.selectedFiles ||
+      // make sure dependencies selected
+      this.state.torch101 !== prevState.torch101 ||
+      this.state.torchvision022 !== prevState.torchvision022 ||
+      this.state.scikitLearn0200 !== prevState.scikitLearn0200 ||
+      this.state.tensorflow1120 !== prevState.tensorflow1120
     ) {
+      const noDependencies = [
+        this.state.torch101,
+        this.state.torchvision022,
+        this.state.scikitLearn0200,
+        this.state.tensorflow1120
+      ].filter(v => v).length === 0;
+
       if (
         this.state.newModel &&
         this.state.validDsName &&
         this.state.selectedFiles.length !== 0 &&
-        this.state.task
+        this.state.task &&
+        !noDependencies
       ) {
         this.setState({
           FormIsValid: true
@@ -208,6 +286,20 @@ class UploadModel extends React.Component {
 
   render() {
     const { classes } = this.props
+
+    const {
+      torch101,
+      torchvision022,
+      scikitLearn0200,
+      tensorflow1120
+    } = this.state
+
+    const error = [
+      torch101,
+      torchvision022,
+      scikitLearn0200,
+      tensorflow1120
+    ].filter(v => v).length === 0;
 
     return (
       <MainContent>
@@ -251,8 +343,50 @@ class UploadModel extends React.Component {
               <ModelClassSelect
                 title="4. Model Class"
                 modelClass={this.state.modelClass}
+                selectedModelClass={this.state.selectedModelClass}
                 onHandleChange={this.handleChange}
               />
+              <br />
+              <Typography variant="h5" gutterBottom align="center">
+                5. Dependencies
+              </Typography>
+              <Grid
+                container
+                direction="row"
+                justify="space-evenly"
+                alignItems="center"
+              >
+                <Grid item>
+                  <div className={classes.root}>
+                    <FormControl required error={error} component="fieldset" className={classes.formControl}>
+                      <FormLabel component="legend">
+                        Required
+                      </FormLabel>
+                      <FormGroup>
+                        <FormControlLabel
+                          control={<Checkbox checked={torch101} onChange={this.hancleCheckboxClick('torch101')} value="torch101" />}
+                          label="torch 1.0.1"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={torchvision022} onChange={this.hancleCheckboxClick('torchvision022')} value="torchvision022" />}
+                          label="torchvision 0.2.2"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={scikitLearn0200} onChange={this.hancleCheckboxClick('scikitLearn0200')} value="scikitLearn0200" />}
+                          label="scikit-learn 0.20.0"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox checked={tensorflow1120} onChange={this.hancleCheckboxClick('tensorflow1120')} value="tensorflow1120" />
+                          }
+                          label="tensorflow 1.12.0"
+                        />
+                      </FormGroup>
+                      <FormHelperText>Can choose multiple</FormHelperText>
+                    </FormControl>
+                  </div>
+                </Grid>
+              </Grid>
               <Grid
                 container
                 direction="row"

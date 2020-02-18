@@ -27,6 +27,7 @@ class ModelClassSelect extends React.Component {
     title: PropTypes.string,
     modelClass: PropTypes.array,
     onHandleChange: PropTypes.func,
+    selectedModelClass: PropTypes.string.isRequired,
   }
 
   render() {
@@ -34,6 +35,7 @@ class ModelClassSelect extends React.Component {
       classes,
       title,
       modelClass,
+      selectedModelClass,
       onHandleChange,
     } = this.props;
 
@@ -54,8 +56,8 @@ class ModelClassSelect extends React.Component {
               select
               label="Model Class"
               className={classes.textField}
-              value={modelClass[0]}
-              onChange={onHandleChange("modelClass")}
+              value={selectedModelClass}
+              onChange={onHandleChange("selectedModelClass")}
               SelectProps={{
                 MenuProps: {
                   className: classes.menu,

@@ -360,6 +360,7 @@ def create_model(auth):
     params['model_file_bytes'] = model_file_bytes
 
     # Expect model dependencies as dict
+    # TODO: ??? str or dict??? json is serialized string by default
     if 'dependencies' in params and isinstance(params['dependencies'], str):
         params['dependencies'] = json.loads(params['dependencies'])
 
