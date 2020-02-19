@@ -23,8 +23,12 @@ import os
 from rafiki.utils.log import configure_logging
 from rafiki.admin import Admin
 from rafiki.admin.app import app
+from datetime import datetime
 
-configure_logging(process_name='flask-web-admin')
+curr_time = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
+flask_admin_logname = 'flask-web-admin' + '-' + curr_time
+
+configure_logging(process_name=flask_admin_logname)
 
 if __name__ == "__main__":
     # Run seed logic for admin at start-up
@@ -35,4 +39,5 @@ if __name__ == "__main__":
     app.run(
         host='0.0.0.0',
         port=os.getenv('ADMIN_PORT', 3000),
+        debug=True, # enable debug in development
         threaded=True)
