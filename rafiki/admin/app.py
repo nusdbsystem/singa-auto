@@ -174,6 +174,10 @@ def create_train_job(auth):
     admin = get_admin()
     params = get_request_params()
 
+    # json dump to a file for local debug
+    # with open('trainjobsPOST.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
+
     with admin:
         # Ensure that datasets are owned by current user
         dataset_attrs = ['train_dataset_id', 'val_dataset_id']
@@ -192,7 +196,7 @@ def get_train_jobs_by_user(auth):
     admin = get_admin()
     params = get_request_params()
 
-    assert 'user_id' in params
+    # assert 'user_id' in params
 
     # Non-admins can only get their own jobs
     if auth['user_type'] in [UserType.APP_DEVELOPER, UserType.MODEL_DEVELOPER] \
@@ -200,7 +204,7 @@ def get_train_jobs_by_user(auth):
         raise UnauthorizedError()
 
     with admin:
-        return jsonify(admin.get_train_jobs_by_user(**params))
+        return jsonify(admin.get_train_jobs_by_user(auth['user_id'], **params))
 
 @app.route('/train_jobs/<app>', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
