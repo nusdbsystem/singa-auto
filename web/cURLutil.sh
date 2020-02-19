@@ -59,8 +59,23 @@ curl -i http://localhost:3000/models \
   -F model_class="PyPandaVgg" \
   -F dependencies='{"torch":"2.0.1","torchvision":"0.2.2"}'
 
+curl -i http://localhost:3000/models \
+  -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -F name='TfFeedForward' \
+  -F task='IMAGE_CLASSIFICATION' \
+  -F model_file_bytes=@'/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/TfFeedForward.py' \
+  -F model_class='TfFeedForward' \
+  -F dependencies='{ "tensorflow": "1.12.0" }'
+
 # GET a single model through model_id
 curl -i http://localhost:3000/models/2c46d0ca-6b07-4a0e-9f45-a8e3a6f7dc1c \
+  -X GET \
+  -H "Authorization: Bearer $TOKEN"
+
+# DELETE a model by model_id
+curl -i http://localhost:3000/models/0d09ea27-f595-411b-b3ff-dbdab3f0c53c  \
+  -X DELETE \
   -H "Authorization: Bearer $TOKEN"
 
 # GET available models with Bearer Token
@@ -79,5 +94,21 @@ curl -i http://localhost:3000/models/recommended \
   -...
 
 #####################################
-# ...
+# Train Jobs
 #####################################
+
+# POST Train Jobs
+curl -i http://localhost:3000/train_jobs \
+  -H "Authorization: Bearer $TOKEN" \
+  -F app="dummyTrainJobs-$RANDOM-app" \
+  -F task="IMAGE_CLASSIFICATION" \
+  -F train_dataset_id="fb20d7a1-0e35-4963-8aa2-3bfbdfe7c02b" \
+  -F val_dataset_id="832318a9-842d-43ab-92c3-febc9f0b8841" \
+  -F budget='{ "MODEL_TRIAL_COUNT": "5" }' \
+  -F model_ids='96faa415-0095-48ea-8ea9-44857fb90d88' \
+  -F train_args='{}'
+
+# GET Train JObs
+curl -i http://localhost:3000/train_jobs \
+  -H "Authorization: Bearer $TOKEN"
+
