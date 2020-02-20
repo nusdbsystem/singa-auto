@@ -23,6 +23,7 @@ import bcrypt
 import pandas as pd
 import zipfile
 import tempfile
+import json # for budget in train_jobs
 from rafiki.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
 from rafiki.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from rafiki.meta_store import MetaStore
@@ -233,17 +234,54 @@ class Admin(object):
     # Train Job
     ####################################
 
-    def create_train_job(self, user_id, app, task, train_dataset_id, 
-                        val_dataset_id, budget, model_ids, train_args={}):
+    def create_train_job(
+        self, user_id, app, task,
+        train_dataset_id, val_dataset_id,
+        budget, model_ids: str, train_args={}):
+        """
+        Creates and starts a train job on Rafiki. 
+
+        A train job is uniquely identified by user, its associated app, and the app version (returned in output).
         
+        Only admins, model developers & app developers can manage train jobs. Model developers & app developers can only manage their own train jobs.
+
+        :param app: Name of the app associated with the train job
+        :param task: Task associated with the train job, 
+            the train job will train models associated with the task
+        :param train_dataset_id: ID of the train dataset, previously created on Rafiki
+        :param val_dataset_id: ID of the validation dataset, previously created on Rafiki
+        :param budget: Budget for train job
+                The following describes the budget options available:
+
+        =====================       =====================
+        **Budget Option**             **Description**
+        ---------------------       ---------------------
+        ``TIME_HOURS``              Max no. of hours to train (soft target). Defaults to 0.1.
+        ``GPU_COUNT``               No. of GPUs to allocate for training, across all models. Defaults to 0.
+        ``MODEL_TRIAL_COUNT``       Max no. of trials to conduct for each model (soft target). -1 for unlimited. Defaults to -1.
+        =====================       =====================
+        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where 
+        ``<budget_type>`` is one of :class:`rafiki.constants.BudgetOption` and 
+        ``<budget_amount>`` specifies the amount for the associated budget option.
+       
+        :param model_ids: comma separated IDs of model to use for train job.
+        :param train_args: Additional arguments to pass to models during training, if any. 
+            Refer to the task's specification for appropriate arguments  
+        :returns: Created train job as dictionary
+        """
         # Ensure there is no existing train job for app
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
         if any([x.status in [TrainJobStatus.RUNNING, TrainJobStatus.STARTED] for x in train_jobs]):
             raise InvalidTrainJobError('Another train job for app "{}" is still running!'.format(app))
         
+        # parse the model_ids from str to list
+        model_ids = model_ids.split(',')
         # Ensure at least 1 model
         if len(model_ids) == 0:
             raise NoModelsForTrainJobError()
+
+        # convert budget from str to dict
+        budget = json.loads(budget)
 
         # Compute auto-incremented app version
         app_version = max([x.app_version for x in train_jobs], default=0) + 1
@@ -254,7 +292,8 @@ class Admin(object):
         # Warn if there are no models for task  
         if len(avail_model_ids) == 0:
             raise InvalidModelError(f'No models are available for task "{task}"')
-
+        with open("debug.txt", 'a') as fa:
+            fa.write(str(model_ids))
         # Ensure all specified models are available
         for model_id in model_ids:
             if model_id not in avail_model_ids:
@@ -321,6 +360,11 @@ class Admin(object):
         }
             
     def get_train_job(self, user_id, app, app_version=-1): # by app ver
+        """
+        get_train_job() is called by:
+        @app.route('/train_jobs/<app>/<app_version>',
+        methods=['GET'])
+        """
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
@@ -339,6 +383,11 @@ class Admin(object):
         }
 
     def get_train_jobs_by_app(self, user_id, app):
+        """
+        unlike get_train_jobs_by_user,
+        get_train_jobs_by_app is for:
+        GET /train_jobs/{app}
+        """
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
         return [
             {
@@ -358,6 +407,11 @@ class Admin(object):
         ]
 
     def get_train_jobs_by_user(self, user_id):
+        """
+        unlike get_train_jobs_by_app,
+        get_train_jobs_by_user is called by:
+        @app.route('/train_jobs', methods=['GET'])
+        """
         train_jobs = self._meta_store.get_train_jobs_by_user(user_id)
         return [
             {
