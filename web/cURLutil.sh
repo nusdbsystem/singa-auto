@@ -55,9 +55,9 @@ curl -i http://localhost:3000/models \
   -H "Authorization: Bearer $TOKEN" \
   -F name="dummyModel-$RANDOM" \
   -F task="IMAGE_CLASSIFICATION" \
-  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/PyPandaVgg.py" \
-  -F model_class="PyPandaVgg" \
-  -F dependencies='{"torch":"2.0.1","torchvision":"0.2.2"}'
+  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/PyPandaDenseNet.py" \
+  -F model_class="PyPandaDenseNet" \
+  -F dependencies='{"torch":"2.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
 
 curl -i http://localhost:3000/models \
   -X POST \
@@ -112,3 +112,18 @@ curl -i http://localhost:3000/train_jobs \
 curl -i http://localhost:3000/train_jobs \
   -H "Authorization: Bearer $TOKEN"
 
+# GET Train JObs by app name
+curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app \
+  -H "Authorization: Bearer $TOKEN"
+
+# GET Train JObs by app name and app_version
+curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1 \
+  -H "Authorization: Bearer $TOKEN"
+
+#####################################
+# Trials
+#####################################
+
+# GET a trial from train_jobs
+curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1/trials \
+  -H "Authorization: Bearer $TOKEN"
