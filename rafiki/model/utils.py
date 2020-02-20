@@ -59,6 +59,10 @@ def parse_model_install_command(dependencies, enable_gpu=False):
     conda_env = os.environ.get('CONDA_ENVIORNMENT')
     commands = []
 
+    with open("parse_model_install_debug.txt", 'w') as fc:
+        fc.write("\ndependencies: "+str(dependencies))
+        fc.write("\ndependencies.items(): "+str(dependencies.items()))
+
     # Determine install commands for each dependency
     for (dep, ver) in dependencies.items():
         if dep == ModelDependency.KERAS:
@@ -87,6 +91,10 @@ def parse_model_install_command(dependencies, enable_gpu=False):
         else:
             # Assume that dependency is the exact PIP package name
             commands.append('pip install {}=={}'.format(dep, ver))
+
+    with open("parse_model_install_debug2.txt", 'w') as fc:
+        fc.write("\nHELP!!")
+        fc.write("\ncommands: "+str(commands))
 
     return '; '.join(commands)
 

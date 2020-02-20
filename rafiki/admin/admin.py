@@ -292,7 +292,7 @@ class Admin(object):
         # Warn if there are no models for task  
         if len(avail_model_ids) == 0:
             raise InvalidModelError(f'No models are available for task "{task}"')
-        with open("debug.txt", 'a') as fa:
+        with open("admin-create_train_job_debug.txt", 'w') as fa:
             fa.write(str(model_ids))
         # Ensure all specified models are available
         for model_id in model_ids:
