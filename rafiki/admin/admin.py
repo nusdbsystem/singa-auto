@@ -24,6 +24,7 @@ import pandas as pd
 import zipfile
 import tempfile
 import json # for budget in train_jobs
+import ast # for model_ids type conversion in train_jobs
 from rafiki.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
 from rafiki.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from rafiki.meta_store import MetaStore
@@ -237,7 +238,7 @@ class Admin(object):
     def create_train_job(
         self, user_id, app, task,
         train_dataset_id, val_dataset_id,
-        budget, model_ids: str, train_args={}):
+        budget, model_ids, train_args={}):
         """
         Creates and starts a train job on Rafiki. 
 
@@ -264,7 +265,9 @@ class Admin(object):
         ``<budget_type>`` is one of :class:`rafiki.constants.BudgetOption` and 
         ``<budget_amount>`` specifies the amount for the associated budget option.
        
-        :param model_ids: comma separated IDs of model to use for train job.
+        :param model_ids: List of IDs of model to use for train job.
+        NOTE: only client.py defaults to all models if model_ids is None!
+
         :param train_args: Additional arguments to pass to models during training, if any. 
             Refer to the task's specification for appropriate arguments  
         :returns: Created train job as dictionary
@@ -273,15 +276,43 @@ class Admin(object):
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
         if any([x.status in [TrainJobStatus.RUNNING, TrainJobStatus.STARTED] for x in train_jobs]):
             raise InvalidTrainJobError('Another train job for app "{}" is still running!'.format(app))
-        
+
+        # requests json somehow preserve the type of 
+        with open("admin-create_train_job_debug.txt", 'w') as fa:
+            fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
+            fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
+            fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
+            fa.write("\nadmin train_args: "+str(train_args)+"type: "+str(type(train_args)))
+
         # parse the model_ids from str to list
-        model_ids = model_ids.split(',')
+        if isinstance(model_ids, list):
+            pass
+        else:
+            model_ids = ast.literal_eval(model_ids)
+
         # Ensure at least 1 model
         if len(model_ids) == 0:
             raise NoModelsForTrainJobError()
 
         # convert budget from str to dict
-        budget = json.loads(budget)
+        if isinstance(budget, dict):
+            pass
+        else:
+            budget = json.loads(budget)
+
+        # convert train_args from str to dict
+        if isinstance(train_args, dict):
+            pass
+        else:
+            train_args = json.loads(train_args)
+
+        with open("admin-create_train_job_debugPostProcess.txt", 'w') as fa:
+            fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
+            fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
+            fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
+            fa.write("\nadmin train_args: "+str(train_args)+"type: "+str(type(train_args)))
+
+        # assert False
 
         # Compute auto-incremented app version
         app_version = max([x.app_version for x in train_jobs], default=0) + 1
@@ -292,8 +323,7 @@ class Admin(object):
         # Warn if there are no models for task  
         if len(avail_model_ids) == 0:
             raise InvalidModelError(f'No models are available for task "{task}"')
-        with open("admin-create_train_job_debug.txt", 'w') as fa:
-            fa.write(str(model_ids))
+
         # Ensure all specified models are available
         for model_id in model_ids:
             if model_id not in avail_model_ids:

@@ -25,13 +25,21 @@ export TOKEN="<your token from above>"
 # Datasets
 #####################################
 
-# POST a new dataset from a file
+# POST a train dataset from a file
 curl -i http://localhost:3000/datasets \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
-  -F name="dummyDS-$RANDOM" \
+  -F name="DS-Train55-$(date +%F_%H-%M-%S)" \
   -F task="IMAGE_CLASSIFICATION" \
-  -F dataset=@"/home/svd/Downloads/Solutions.zip"
+  -F dataset=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki//rafiki_panda_dev/OneDrive-2020-02-18/train55.zip"
+
+# POST a test/val dataset from a file
+curl -i http://localhost:3000/datasets \
+  -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -F name="DS-Val55-$(date +%F_%H-%M-%S)" \
+  -F task="IMAGE_CLASSIFICATION" \
+  -F dataset=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/OneDrive-2020-02-18/val55.zip"
 
 # GET datasets with authentication (Bearer Token)
 # returns an array of objects
@@ -53,11 +61,20 @@ curl -i http://localhost:3000/datasets \
 curl -i http://localhost:3000/models \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
-  -F name="dummyModel-$RANDOM" \
+  -F name="PyPandaDenseNet-Model-$(date +%F_%H-%M-%S)" \
   -F task="IMAGE_CLASSIFICATION" \
   -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/PyPandaDenseNet.py" \
   -F model_class="PyPandaDenseNet" \
-  -F dependencies='{"torch":"2.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
+  -F dependencies='{"torch":"1.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
+
+curl -i http://localhost:3000/models \
+  -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -F name="PyPandaVgg-Model-$(date +%F_%H-%M-%S)" \
+  -F task="IMAGE_CLASSIFICATION" \
+  -F model_file_bytes=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/models/image_classification/PyPandaVgg.py" \
+  -F model_class="PyPandaVgg" \
+  -F dependencies='{"torch":"1.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
 
 curl -i http://localhost:3000/models \
   -X POST \
@@ -98,14 +115,16 @@ curl -i http://localhost:3000/models/recommended \
 #####################################
 
 # POST Train Jobs
+# budget values MUST NOT be in quotes!
+# model_ids should be literal list!
 curl -i http://localhost:3000/train_jobs \
   -H "Authorization: Bearer $TOKEN" \
-  -F app="dummyTrainJobs-$RANDOM-app" \
+  -F app="TrainJobs-$(date +%F_%H-%M-%S)-app" \
   -F task="IMAGE_CLASSIFICATION" \
-  -F train_dataset_id="fb20d7a1-0e35-4963-8aa2-3bfbdfe7c02b" \
-  -F val_dataset_id="832318a9-842d-43ab-92c3-febc9f0b8841" \
-  -F budget='{ "MODEL_TRIAL_COUNT": "5" }' \
-  -F model_ids='96faa415-0095-48ea-8ea9-44857fb90d88' \
+  -F train_dataset_id="278927ac-e87d-485b-98d9-eb101f787b2f" \
+  -F val_dataset_id="fc72f670-8d25-4bbe-a7e7-dff9e00e3666" \
+  -F budget='{ "MODEL_TRIAL_COUNT": 5 }' \
+  -F model_ids='["338a6ebd-ecf2-459b-8a6c-86493321eb90"]' \
   -F train_args='{}'
 
 # GET Train JObs
@@ -113,7 +132,7 @@ curl -i http://localhost:3000/train_jobs \
   -H "Authorization: Bearer $TOKEN"
 
 # GET Train JObs by app name
-curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app \
+curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app \
   -H "Authorization: Bearer $TOKEN"
 
 # GET Train JObs by app name and app_version
@@ -125,5 +144,5 @@ curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1 \
 #####################################
 
 # GET a trial from train_jobs
-curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1/trials \
+curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/trials \
   -H "Authorization: Bearer $TOKEN"
