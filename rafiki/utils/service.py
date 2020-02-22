@@ -21,16 +21,20 @@ import os
 import signal
 import traceback
 import logging
+from datetime import datetime
 
 from rafiki.utils.log import configure_logging
 
 logger = logging.getLogger(__name__)
 
+curr_time = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
+
 def run_worker(meta_store, start_worker, stop_worker):
     service_id = os.environ['RAFIKI_SERVICE_ID']
     service_type = os.environ['RAFIKI_SERVICE_TYPE']
     container_id = os.environ.get('HOSTNAME', 'localhost')
-    configure_logging('service-{}-worker-{}'.format(service_id, container_id))
+    configure_logging('{}-ServiceID-{}-ContainerID-{}'
+        .format(curr_time, service_id, container_id))
 
     def _sigterm_handler(_signo, _stack_frame):
         logger.warn("Terminal signal received: %s, %s" % (_signo, _stack_frame))
