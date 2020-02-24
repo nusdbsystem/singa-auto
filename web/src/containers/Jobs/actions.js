@@ -22,8 +22,10 @@ export function createTrainJob(json) {
 
 /*=== request jobs list ===*/
 
-/* This action is to request job list from remote server, would call
-   dispatch action Types.POPULATE_TRAINJOBSLIST on success. */
+/* This action is to request job list from remote server,
+  this triggers watchRequestJobsList() in JobsSagas.js
+  would call dispatch action
+  Types.POPULATE_TRAINJOBSLIST on success. */
 export function requestJobsList() {
   return {
     type: Types.REQUEST_TRAIN_JOBSLIST,

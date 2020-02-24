@@ -87,21 +87,49 @@ class MainContent extends React.Component {
               </Fab>
             </Zoom>
           )
-          case "/console/models/upload-model":
-            return (
-              <Zoom in={true} unmountOnExit>
-                <Fab
-                  variant="extended"
-                  className={classes.fab}
-                  color="primary"
-                  component={Link}
-                  to="/console/models/list-models"
-                >
-                  <ListDSIcon className={classes.extendedIcon} />
-                  List Models
+        case "/console/models/upload-model":
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                variant="extended"
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/models/list-models"
+              >
+                <ListDSIcon className={classes.extendedIcon} />
+                List Models
                 </Fab>
-              </Zoom>
-            )
+            </Zoom>
+          )
+        case "/console/jobs/list-train-jobs":
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/jobs/create-train-job"
+              >
+                <AddIcon />
+              </Fab>
+            </Zoom>
+          )
+        case "/console/jobs/create-train-job":
+          return (
+            <Zoom in={true} unmountOnExit>
+              <Fab
+                variant="extended"
+                className={classes.fab}
+                color="primary"
+                component={Link}
+                to="/console/jobs/list-train-jobs"
+              >
+                <ListDSIcon className={classes.extendedIcon} />
+                List Train Jobs
+                </Fab>
+            </Zoom>
+          )
         default:
           return (
             <Zoom in={true} unmountOnExit>

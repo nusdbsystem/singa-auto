@@ -1,4 +1,4 @@
-import { getToken, getUserId } from "./utils"
+import { getToken } from "./utils"
 import { fork, takeLatest, put, call, select } from "redux-saga/effects"
 import * as actions from "containers/Jobs/actions"
 import { showLoading, hideLoading } from "react-redux-loading-bar"
@@ -17,10 +17,12 @@ export function* getJobsList(action) {
     // console.log("Getting jobs List")
     yield put(showLoading())
     const token = yield select(getToken)
-    const user_id = yield select(getUserId)
+    // since Feb2020, user_id will no longer be
+    // passed as a query param
+    // const user_id = yield select(getUserId)
     const TrainJobsList = yield call(
       api.requestTrainJobsList,
-      { user_id },
+      {},
       token
     )
     yield put(actions.populateJobsList(TrainJobsList.data))

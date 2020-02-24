@@ -1,6 +1,5 @@
 import React from "react"
 import PropTypes from "prop-types"
-import { Link } from "react-router-dom"
 
 import { connect } from "react-redux"
 import { compose } from "redux"
@@ -13,20 +12,15 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as jobsActions from "./actions"
 
 // Material UI
-import {
-  Table,
-  Toolbar,
-  Typography,
-  Grid,
-  Button,
-  Tooltip,
-  IconButton,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@material-ui/core"
-import RefreshIcon from "@material-ui/icons/Refresh"
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
+import TableBody from '@material-ui/core/TableBody';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+
+import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
 
 // Import Layout
 import MainContent from "components/ConsoleContents/MainContent"
@@ -35,23 +29,20 @@ import ContentBar from "components/ConsoleContents/ContentBar"
 // Third parts
 import * as moment from "moment"
 
-/* ListJobs are able to view trials and Trial details*/
+/* ListTrainJobs are able to view trials and Trial details*/
 
 const styles = theme => ({
-  block: {
-    display: "block",
-  },
-  add: {
-    marginRight: theme.spacing(1),
-  },
   contentWrapper: {
     margin: "40px 16px",
     //position: "relative",
     minHeight: 200,
   },
+  table: {
+    minWidth: 750,
+  },
 })
 
-class ListJobs extends React.Component {
+class ListTrainJobs extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     handleHeaderTitleChange: PropTypes.func,
@@ -60,12 +51,8 @@ class ListJobs extends React.Component {
     resetLoadingBar: PropTypes.func,
   }
 
-  state = {
-    jobsSelected: "",
-  }
-
   reloadJobs = () => {
-    // TODO
+    this.props.requestJobsList()
   }
 
   componentDidMount() {
@@ -85,47 +72,30 @@ class ListJobs extends React.Component {
     return (
       <React.Fragment>
         <MainContent>
-          <ContentBar>
-            <Toolbar>
-              <Grid
-                container
-                spacing={10}
-                justify="space-between"
-                alignItems="center"
-              >
-                <Grid item>
-                  <Typography variant="h5" gutterBottom>
-                    Training Jobs
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.add}
-                    component={Link}
-                    to="/console/jobs/create-train-job"
-                  >
-                    Create New jobs
-                  </Button>
-                  <Tooltip title="Reload">
-                    <IconButton onClick={console.log}>
-                      <RefreshIcon className={classes.block} color="inherit" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
-              </Grid>
-            </Toolbar>
-          </ContentBar>
+          <ContentBar
+            needToList={true}
+            barTitle="Train Jobs by user"
+            mainBtnText="Create Train Job"
+            mainBtnLink="/console/jobs/create-train-job"
+            refreshAction={this.reloadJobs}
+          />
           <div className={classes.contentWrapper}>
             <Typography color="textSecondary" align="center">
-              {JobsList.length === 0 ? "You do not have any jobs" : "Jobs"}
+              {JobsList.length === 0
+                ? "You do not have any train jobs"
+                : "Train Jobs"}
             </Typography>
-            <Table>
+            <TableContainer>
+              <Table
+                className={classes.table}
+                aria-labelledby="tableTitle"
+                size={'medium'}
+                aria-label="enhanced table"
+              >
               <TableHead>
                 <TableRow>
-                  <TableCell> # </TableCell>
-                  <TableCell> App </TableCell>
+                  <TableCell> View Trials </TableCell>
+                  <TableCell> App Name </TableCell>
                   <TableCell> App Version</TableCell>
                   <TableCell> Task </TableCell>
                   <TableCell> Budget </TableCell>
@@ -169,6 +139,7 @@ class ListJobs extends React.Component {
                 })}
               </TableBody>
             </Table>
+            </TableContainer>
           </div>
         </MainContent>
       </React.Fragment>
@@ -190,4 +161,4 @@ const mapDispatchToProps = {
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(ListJobs)
+)(ListTrainJobs)

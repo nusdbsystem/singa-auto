@@ -17,7 +17,9 @@ export const getTrainJob = (params, token, app, appVersion) => {
   return _getWithToken(url, params, token)
 }
 
+/* Get all train jobs for List Train Jobs */
 export const requestTrainJobsList = (params, token) => {
+  // this is for getJobsList in JobsSagas.js
   return _getWithToken("/train_jobs", params, token)
 }
 
