@@ -58,11 +58,11 @@ def load_model_class(model_file_bytes, model_class, temp_mod_name=None) -> Type[
 def parse_model_install_command(dependencies, enable_gpu=False):
     conda_env = os.environ.get('CONDA_ENVIORNMENT')
     commands = []
-
+    """for local dev only
     with open("parse_model_install_debug.txt", 'w') as fc:
         fc.write("\ndependencies: "+str(dependencies))
         fc.write("\ndependencies.items(): "+str(dependencies.items()))
-
+    """
     # Determine install commands for each dependency
     for (dep, ver) in dependencies.items():
         if dep == ModelDependency.KERAS:
@@ -91,11 +91,11 @@ def parse_model_install_command(dependencies, enable_gpu=False):
         else:
             # Assume that dependency is the exact PIP package name
             commands.append('pip install {}=={}'.format(dep, ver))
-
+    """for local dev
     with open("parse_model_install_debug2.txt", 'w') as fc:
         fc.write("\nHELP!!")
         fc.write("\ncommands: "+str(commands))
-
+    """
     return '; '.join(commands)
 
 def parse_ctc_decoder_url(ver):

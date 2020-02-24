@@ -277,12 +277,14 @@ class Admin(object):
         if any([x.status in [TrainJobStatus.RUNNING, TrainJobStatus.STARTED] for x in train_jobs]):
             raise InvalidTrainJobError('Another train job for app "{}" is still running!'.format(app))
 
+        """for local dev only
         # requests json somehow preserve the type of 
         with open("admin-create_train_job_debug.txt", 'w') as fa:
             fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
             fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
             fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
             fa.write("\nadmin train_args: "+str(train_args)+"type: "+str(type(train_args)))
+        """
 
         # parse the model_ids from str to list
         if isinstance(model_ids, list):
@@ -306,11 +308,13 @@ class Admin(object):
         else:
             train_args = json.loads(train_args)
 
+        """for local dev only
         with open("admin-create_train_job_debugPostProcess.txt", 'w') as fa:
             fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
             fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
             fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
             fa.write("\nadmin train_args: "+str(train_args)+"type: "+str(type(train_args)))
+        """
 
         # assert False
 
