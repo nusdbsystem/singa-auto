@@ -30,6 +30,9 @@ from rafiki.predictor import Prediction, Query
 
 logger = logging.getLogger(__name__)
 
+# logger_kafka = logging.getLogger('kafka')
+# logger_kafka.setLevel(logging.DEBUG)
+
 RUNNING_INFERENCE_WORKERS = 'INFERENCE_WORKERS'
 QUERIES_QUEUE = 'QUERIES'
 PREDICTIONS_QUEUE = 'PREDICTIONS'
@@ -43,7 +46,7 @@ class InferenceCache(object):
         hostlist = hosts.split(',')
         portlist = ports.split(',')
         self.connection_url = [f'{host}:{port}' for host, port in zip(hostlist, portlist)]
-        self.producer = KafkaProducer(bootstrap_servers=self.connection_url)   
+        self.producer = KafkaProducer(bootstrap_servers=self.connection_url, max_request_size=134217728, buffer_memory=134217728)   
 
     def add_predictions_for_worker(self, worker_id: str, predictions: List[Prediction]):
         logger.info(f'Adding {len(predictions)} prediction(s) for worker "{worker_id}"')
@@ -72,6 +75,14 @@ class InferenceCache(object):
     def add_queries_for_worker(self, worker_id: str, queries: List[Query]):
         name = f'workers_{worker_id}_queries'
         queries = [pickle.dumps(x) for x in queries]
+        try:
+            logger.info("inference_cache.py: add queries for worker: queries type {}".format(type(queries)))
+            logger.info("inference_cache.py: add queries for worker: queries len {}".format(len(queries)))
+            logger.info("inference_cache.py: add queries for worker: queries[0]{}".format(queries[0].__dict__))
+            logger.info("inference_cache.py: add queries for worker: queries[0].query type{}".format(type(queries[0].query)))
+            logger.info("inference_cache.py: add queries for worker: queries[0].query len{}".format(len(queries[0].query)))
+        except Exception:
+            logger.info("{}".format(Exception))
         logger.info(f'Adding {len(queries)} querie(s) for worker "{worker_id}"...')
         for query in queries:
             self.producer.send(name, key=name.encode('utf-8'), value=query)
