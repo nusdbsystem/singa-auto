@@ -71,7 +71,7 @@ class TrialDetails extends React.Component {
   constructor(props) {
     super(props)
     this.state = { logs: null, trial: null }
-    this.chart = []
+    this.chart = [] //TODO: what is this chart doing?
     const adminHost = HTTPconfig.adminHost || "localhost"
     const adminPort = HTTPconfig.adminPort || 3000
     this.rafikiClient = new RafikiClient(adminHost, adminPort)
@@ -93,6 +93,7 @@ class TrialDetails extends React.Component {
   }
 
   componentDidUpdate() {
+    // TODO: how can this plot??
     this.updatePlots()
   }
 

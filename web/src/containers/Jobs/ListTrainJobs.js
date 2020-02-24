@@ -108,7 +108,7 @@ class ListTrainJobs extends React.Component {
                 {JobsList.map(x => {
                   return (
                     <TableRow key={x.id} hover>
-                      <TableCell padding="none">
+                      <TableCell padding="default">
                         <IconButton
                           onClick={() => {
                             const link = "/console/jobs/trials/:appId/:app/:appVersion"

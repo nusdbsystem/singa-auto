@@ -146,3 +146,7 @@ curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1 \
 # GET a trial from train_jobs
 curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/trials \
   -H "Authorization: Bearer $TOKEN"
+
+# rafikiClient is calling const data = await this._get(`/trials/${trialId}/logs`)
+# rafikiClient is calling const data = await this._get(`/trials/${trialId}`)
+# in web/src/containers/Jobs/TrialsDetails.js
