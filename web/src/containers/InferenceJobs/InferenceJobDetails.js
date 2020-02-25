@@ -35,11 +35,11 @@ const styles = theme => ({
   },
 })
 
-class ApplicationDetails extends React.Component {
-  state = { selectedApplication: {} }
+class InferenceJobDetails extends React.Component {
+  state = { selectedInferenceJob: {} }
 
   async componentDidMount() {
-    this.props.handleHeaderTitleChange("Application > List Application")
+    this.props.handleHeaderTitleChange("Inference Jobs > List Inference Jobs > Inference Job Details")
     const { app, appVersion } = this.props.match.params
     const { token } = this.props
     const response = await ClientAPI.get_running_inference_jobs(
@@ -48,15 +48,15 @@ class ApplicationDetails extends React.Component {
       {},
       token
     )
-    const application = response.data
-    this.setState({ selectedApplication: application })
+    const inferenceJob = response.data
+    this.setState({ selectedInferenceJob: inferenceJob })
   }
 
   render() {
     const { classes } = this.props
 
     const { app, appVersion } = this.props.match.params
-    const x = this.state.selectedApplication
+    const x = this.state.selectedInferenceJob
 
     return (
       <React.Fragment>
@@ -132,7 +132,6 @@ class ApplicationDetails extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  // ApplicationList: state.ApplicationReducer.JobsList,
   token: state.Root.token,
 })
 
@@ -145,4 +144,4 @@ const mapDispatchToProps = {
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(ApplicationDetails)
+)(InferenceJobDetails)

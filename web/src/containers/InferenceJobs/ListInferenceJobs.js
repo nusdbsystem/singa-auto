@@ -39,7 +39,7 @@ const styles = theme => ({
   },
 })
 
-class ListApplication extends React.Component {
+class ListInferenceJobs extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     handleHeaderTitleChange: PropTypes.func,
@@ -47,8 +47,8 @@ class ListApplication extends React.Component {
   }
 
   componentDidMount() {
-    this.props.handleHeaderTitleChange("Application > List Application")
-    this.props.getApplicationList()
+    this.props.handleHeaderTitleChange("Inference Jobs > List Inference Jobs")
+    this.props.getInferenceJobsList()
   }
 
   componentDidUpdate(prevProps, prevState) {}
@@ -58,7 +58,7 @@ class ListApplication extends React.Component {
   }
 
   render() {
-    const { classes, ApplicationList } = this.props
+    const { classes, InferenceJobsList } = this.props
 
     return (
       <React.Fragment>
@@ -69,9 +69,9 @@ class ListApplication extends React.Component {
           />
           <div className={classes.contentWrapper}>
             <Typography color="textSecondary" align="center">
-              {ApplicationList.length === 0
-                ? "You do not have any applications for this user"
-                : "Applications"}
+              {InferenceJobsList.length === 0
+                ? "You do not have any inference jobs for this user"
+                : "Inference Jobs"}
             </Typography>
             <Table>
               <TableHead>
@@ -87,13 +87,13 @@ class ListApplication extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ApplicationList.map(x => {
+                {InferenceJobsList.map(x => {
                   return (
                     <TableRow key={x.id} hover>
                       <TableCell padding="default">
                         <IconButton
                           onClick={() => {
-                            const link = "/console/application/running_job/:app/:appVersion"
+                            const link = "/console/inferencejobs/running_job/:app/:appVersion"
                               .replace(":app", x.app)
                               .replace(":appVersion", x.app_version)
                             this.props.push(link)
@@ -128,17 +128,17 @@ class ListApplication extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  ApplicationList: state.ApplicationsReducer.ApplicationList,
+  InferenceJobsList: state.InferenceJobsReducer.InferenceJobsList,
 })
 
 const mapDispatchToProps = {
   handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
-  getApplicationList: actions.fetchGetInferencejob,
+  getInferenceJobsList: actions.fetchGetInferencejob,
   push: push,
 }
 
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
-)(ListApplication)
+)(ListInferenceJobs)

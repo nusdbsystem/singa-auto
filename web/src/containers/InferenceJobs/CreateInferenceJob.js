@@ -47,7 +47,7 @@ class CreateInferenceJob extends React.Component {
             <Grid item>
               <div className={classes.contentWrapper}>
                 <Typography>
-                  Are you sure want to create an application for app: {app} |
+                  Are you sure want to create an inference job for app: {app} |
                   appVersion: {appVersion}
                 </Typography>
               </div>
@@ -88,7 +88,6 @@ class CreateInferenceJob extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  // ApplicationList: state.ApplicationReducer.JobsList,
   location: state.router.location,
 })
 

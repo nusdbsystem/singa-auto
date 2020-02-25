@@ -26,9 +26,9 @@ import ListTrials from "../Jobs/ListTrials"
 import TrialDetails from "../Jobs/TrialsDetails"
 
 // Inference Jobs Component
-import ApplicationDetails from "../Application/ApplicationDetails"
-import ListApplication from "../Application/ListApplication"
-import CreateInferenceJob from "../Application/CreateInferenceJob"
+import InferenceJobDetails from "../InferenceJobs/InferenceJobDetails"
+import ListInferenceJobs from "../InferenceJobs/ListInferenceJobs"
+import CreateInferenceJob from "../InferenceJobs/CreateInferenceJob"
 
 import Copyright from "components/ConsoleContents/Copyright"
 
@@ -181,18 +181,18 @@ class ConsoleAppFrame extends React.Component {
                   * ***************************************/}
                 <Route
                   exact
-                  path="/console/application/:appId/:app/:appVersion/create_inference_job"
+                  path="/console/inferencejobs/:appId/:app/:appVersion/create_inference_job"
                   component={CreateInferenceJob}
                 />
                 <Route
                   exact
-                  path="/console/application/list-applications"
-                  component={ListApplication}
+                  path="/console/inferencejobs/list-inferencejobs"
+                  component={ListInferenceJobs}
                 />
                 <Route
                   exact
-                  path="/console/application/running_job/:app/:appVersion"
-                  component={ApplicationDetails}
+                  path="/console/inferencejobs/running_job/:app/:appVersion"
+                  component={InferenceJobDetails}
                 />
               </Switch>
             </main>

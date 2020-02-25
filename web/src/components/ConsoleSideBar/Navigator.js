@@ -21,7 +21,7 @@ import ListModelsIcon from "@material-ui/icons/LocalLibrary"
 // train jobs
 import ListTrainJobsIcon from "@material-ui/icons/Timeline"
 import CreateTrainJobIcon from '@material-ui/icons/PostAdd';
-// application
+// inference jobs
 import DnsRoundedIcon from "@material-ui/icons/DnsRounded"
 // for nested list
 import Collapse from "@material-ui/core/Collapse"
@@ -92,7 +92,7 @@ class Navigator extends React.Component {
     DatasetsTableOpen: true,
     ModelsTableOpen: true,
     JobsTableOpen: true,
-    DataApplicationOpen: true,
+    InferenceJobsTableOpen: true,
   }
 
   handleClick = categoryHeader => {
@@ -110,9 +110,9 @@ class Navigator extends React.Component {
       case "CATtrainjobs":
         this.setState(state => ({ JobsTableOpen: !state.JobsTableOpen }))
         break
-      case "CATapplications":
+      case "CATinferencejobs":
         this.setState(state => ({
-          DataApplicationOpen: !state.DataApplicationOpen,
+          InferenceJobsTableOpen: !state.InferenceJobsTableOpen,
         }))
         break
       default:
@@ -180,14 +180,14 @@ class Navigator extends React.Component {
         ],
       },
       {
-        id: "Applications",
-        collapseID: "CATapplications",
-        collapseIn: this.state.DataApplicationOpen,
+        id: "Inference Jobs",
+        collapseID: "CATinferencejobs",
+        collapseIn: this.state.InferenceJobsTableOpen,
         children: [
           {
-            id: "List Applications",
+            id: "List Inference Jobs",
             icon: <DnsRoundedIcon />,
-            pathname: "/console/application/list-applications",
+            pathname: "/console/inferencejobs/list-inferencejobs",
           },
         ],
       },

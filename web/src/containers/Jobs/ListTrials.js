@@ -21,7 +21,7 @@ import PageviewIcon from "@material-ui/icons/Pageview"
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as jobsActions from "./actions"
-import * as applicationActions from "../Application/actions"
+import * as inferenceJobActions from "../InferenceJobs/actions"
 
 // Import Layout
 import MainContent from "components/ConsoleContents/MainContent"
@@ -89,7 +89,7 @@ class ListTrials extends React.Component {
             needToList={true}
             barTitle="Selected Train Job"
             mainBtnText="Create Inference Job"
-            mainBtnLink={`/console/application/${appId}/${app}/${appVersion}/create_inference_job`}
+            mainBtnLink={`/console/inferencejobs/${appId}/${app}/${appVersion}/create_inference_job`}
             refreshAction={this.reloadListOfTrials}
           />
             <Table>
@@ -180,7 +180,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  createInferenceJob: applicationActions.postCreateInferenceJob,
+  createInferenceJob: inferenceJobActions.postCreateInferenceJob,
   handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
   requestTrialsListOfJob: jobsActions.requestTrialsListOfJob,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
