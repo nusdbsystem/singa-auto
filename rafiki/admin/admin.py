@@ -280,6 +280,7 @@ class Admin(object):
         """for local dev only
         # requests json somehow preserve the type of 
         with open("admin-create_train_job_debug.txt", 'w') as fa:
+            fa.write("\nadmin appname: "+str(app)+"type: "+str(type(app)))
             fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
             fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
             fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
@@ -310,6 +311,7 @@ class Admin(object):
 
         """for local dev only
         with open("admin-create_train_job_debugPostProcess.txt", 'w') as fa:
+            fa.write("\nadmin appname: "+str(app)+"type: "+str(type(app)))
             fa.write("\nadmin train_dataset_id: "+str(train_dataset_id)+"type: "+str(type(train_dataset_id)))
             fa.write("\nadmin model_ids: "+str(model_ids)+"type: "+str(type(model_ids)))
             fa.write("\nadmin budget: "+str(budget)+"type: "+str(type(budget)))
