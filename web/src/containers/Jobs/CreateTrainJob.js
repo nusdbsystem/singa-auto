@@ -34,12 +34,12 @@ const styles = theme => ({
 
 class CreateTrainJob extends React.Component {
   componentDidMount() {
-    this.props.requestDatasetsList()
-    this.props.requestModelList()
+    this.props.requestListDS()
+    this.props.requestAvailableModelList()
   }
 
   render() {
-    const { classes, DatasetsList, ModelsList } = this.props
+    const { classes, DatasetsList, AvailableModelList } = this.props
 
     return (
       <React.Fragment>
@@ -63,7 +63,7 @@ class CreateTrainJob extends React.Component {
           <div className={classes.contentWrapper}>
             <CreateTrainJobForm
               datasets={DatasetsList}
-              models={ModelsList}
+              models={AvailableModelList}
               postCreateTrainJob={this.props.postCreateTrainJob}
             />
           </div>
@@ -75,15 +75,15 @@ class CreateTrainJob extends React.Component {
 
 const mapStateToProps = state => ({
   DatasetsList: state.DatasetsReducer.DatasetList,
-  ModelsList: state.ModelsReducer.ModelList,
+  AvailableModelList: state.ModelsReducer.AvailableModelList,
 })
 
 const mapDispatchToProps = {
   handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
   postCreateTrainJob: actions.createTrainJob,
-  requestDatasetsList: DatasetActions.requestListDS,
+  requestListDS: DatasetActions.requestListDS,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
-  requestModelList: ModelActions.requestAvailableModelList,
+  requestAvailableModelList: ModelActions.requestAvailableModelList,
 }
 
 export default compose(
