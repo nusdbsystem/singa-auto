@@ -60,7 +60,7 @@ function ProductHero(props) {
         size="large"
         className={classes.button}
         component={Link}
-        to={`/console`}
+        to={`/console/datasets/list-datasets`}
       >
         Try Panda-dev
       </Button>

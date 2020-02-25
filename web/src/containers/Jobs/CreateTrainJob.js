@@ -19,8 +19,6 @@ import * as actions from "./actions"
 import MainContent from "components/ConsoleContents/MainContent"
 import ContentBar from "components/ConsoleContents/ContentBar"
 
-import CreateTrainJobForm from "components/ConsoleForms/CreateTrainJobForm"
-
 // form fields components
 import AppName from "components/ConsoleContents/AppName"
 import TaskName from "components/ConsoleContents/TaskName"
@@ -255,11 +253,6 @@ class CreateTrainJob extends React.Component {
             </Grid>
           </Grid>
         </div>
-        <CreateTrainJobForm
-            datasets={DatasetsList}
-            models={AvailableModelList}
-            postCreateTrainJob={this.props.postCreateTrainJob}
-          />
       </MainContent>
     )
   }

@@ -23,7 +23,6 @@
     "is-plain-object": "^3.0.0",
     "jss": "^10.0.4",
     "moment": "^2.24.0",
-    "mui-form-fields": "^0.1.0",
     "query-string": "^6.2.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",

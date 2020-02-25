@@ -27,6 +27,10 @@ class ListAvailableModels extends React.Component {
   /* use models/available first, 
     then ask @Xiong Yiyuan if he is ready with models/recommended,
     you will switch to models/recommended eventually
+
+    Update from Feiyi Feb 25 2020:
+      ideally, recommended model will be a top recommendation,
+      automatically recommended based on dataset_id (training dataset id)
   */
   static propTypes = {
     classes: PropTypes.object.isRequired,
