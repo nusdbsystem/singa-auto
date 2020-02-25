@@ -25,6 +25,8 @@ import CreateTrainJobForm from "components/ConsoleForms/CreateTrainJobForm"
 import AppName from "components/ConsoleContents/AppName"
 import TaskName from "components/ConsoleContents/TaskName"
 import DatasetSelect from "components/ConsoleContents/DatasetSelect"
+import ModelSelect from "components/ConsoleContents/ModelSelect"
+import BudgetInputs from "components/ConsoleContents/BudgetInputs"
 import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 
 // RegExp rules
@@ -49,6 +51,10 @@ class CreateTrainJob extends React.Component {
     task: "IMAGE_CLASSIFICATION",
     selectedTrainingDS: "",
     selectedValidationDS: "",
+    selectedModel: "",
+    Budget_TIME_HOURS: 0.1,
+    Budget_GPU_COUNT: 0,
+    Budget_MODEL_TRIAL_COUNT: -1,
   }
 
   componentDidMount() {
@@ -59,6 +65,40 @@ class CreateTrainJob extends React.Component {
 
   componentWillUnmount() {
     this.props.resetLoadingBar()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // if form's states have changed
+    if (
+      this.state.newAppName !== prevState.newAppName ||
+      this.state.selectedTrainingDS !== prevState.selectedTrainingDS ||
+      this.state.selectedValidationDS !== prevState.selectedValidationDS ||
+      this.state.selectedModel !== prevState.selectedModel ||
+      this.state.Budget_GPU_COUNT !== prevState.Budget_GPU_COUNT ||
+      this.state.Budget_TIME_HOURS !== prevState.Budget_TIME_HOURS ||
+      this.state.Budget_MODEL_TRIAL_COUNT !== prevState.Budget_MODEL_TRIAL_COUNT
+    ) {
+      if (
+        this.state.newAppName &&
+        this.state.validDsName &&
+        this.state.task &&
+        this.state.selectedTrainingDS &&
+        this.state.selectedValidationDS &&
+        this.state.selectedModel &&
+        this.state.Budget_TIME_HOURS !== "" &&
+        this.state.Budget_GPU_COUNT !== "" &&
+        this.state.Budget_MODEL_TRIAL_COUNT !== ""
+      ) {
+        this.setState({
+          FormIsValid: true
+        })
+      // otherwise disable COMMIT button
+      } else {
+        this.setState({
+          FormIsValid: false
+        })
+      }
+    }
   }
 
   handleChange = name => event => {
@@ -82,6 +122,27 @@ class CreateTrainJob extends React.Component {
       [name]: event.target.value,
     });
   };
+
+   handleCommit = () => {
+    let createTrainJobJSON = {}
+    createTrainJobJSON.app = this.state.newAppName
+    console.log("***************createTrainJobJSON: ", createTrainJobJSON)
+    const gatheredValue = {
+      app: this.state.newAppName,
+      task: this.state.task,
+      train_dataset_id: this.state.selectedTrainingDS,
+      val_dataset_id: this.state.selectedValidationDS,
+      budget: {
+        TIME_HOURS: parseFloat(this.state.Budget_TIME_HOURS),
+        GPU_COUNT: parseInt(this.state.Budget_GPU_COUNT),
+        MODEL_TRIAL_COUNT: parseInt(this.state.Budget_MODEL_TRIAL_COUNT),
+      },
+      model_ids: [this.state.selectedModel],
+      train_args: {},
+    }
+    console.log("***************gatheredValue: ", gatheredValue)
+    this.props.postCreateTrainJob(gatheredValue)
+  }
 
   render() {
     const { classes, DatasetsList, AvailableModelList } = this.props
@@ -142,6 +203,38 @@ class CreateTrainJob extends React.Component {
                 onHandleChange={this.handleChange}
               />
               <br />
+              <BudgetInputs
+                title="5. Budget"
+                value_time_hours={this.state.Budget_TIME_HOURS}
+                value_gpu_count={this.state.Budget_GPU_COUNT}
+                value_model_trial_count={this.state.Budget_MODEL_TRIAL_COUNT}
+                onHandleChange={this.handleChange}
+              />
+              <br />
+              <ModelSelect
+                title="6. Model"
+                modelList={modelOptions}
+                selectedModel={this.state.selectedModel}
+                onHandleChange={this.handleChange}
+              />
+              <br />
+              <Grid
+                container
+                direction="row"
+                justify="flex-end"
+                alignItems="center"
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={this.handleCommit}
+                  disabled={
+                    !this.state.FormIsValid ||
+                    this.state.formState === "loading"}
+                >
+                  COMMIT
+                </Button>
+              </Grid>
             </Grid>
             <Grid item xs={6}>
               <ForkbaseStatus
