@@ -17,8 +17,9 @@
   under the License.
  */
 
-import * as React from "react"
-import { Route } from "react-router-dom"
+import React from "react"
+import { compose } from "redux"
+import { Route, withRouter } from "react-router-dom"
 import { withStyles } from "@material-ui/core/styles"
 import * as moment from "moment"
 import PlotManager from "app/PlotManager"
@@ -37,6 +38,7 @@ import {
   CircularProgress,
   ListItemText,
   TableCell,
+  Button
 } from "@material-ui/core"
 
 /* interface Props {
@@ -45,9 +47,36 @@ import {
   trialId: string;
 } */
 
+const styles = theme => ({
+  headerSub: {
+    fontSize: theme.typography.h4.fontSize,
+    margin: theme.spacing(2),
+  },
+  detailsPaper: {
+    margin: theme.spacing(2),
+  },
+  messagesPaper: {
+    margin: theme.spacing(2),
+  },
+  plotPaper: {
+    width: "100%",
+    maxWidth: 800,
+    height: 500,
+    padding: theme.spacing(1),
+    paddingTop: theme.spacing(2),
+    margin: theme.spacing(4),
+  },
+  divider: {
+    margin: theme.spacing(4),
+  },
+  mainBtn: {
+    marginLeft: theme.spacing(5),
+  },
+})
+
 class TrialDetailPage extends React.Component {
   render() {
-    const { classes, appUtils } = this.props
+    const { classes, appUtils, history } = this.props
 
     return (
       <Route
@@ -59,6 +88,7 @@ class TrialDetailPage extends React.Component {
               trialId={trialId}
               classes={classes}
               appUtils={appUtils}
+              history={history}
             />
           )
         }}
@@ -79,6 +109,8 @@ class TrialDetails extends React.Component {
   }
 
   async componentDidMount() {
+    // TODO: Why write this thing as a render component for Route??!
+    // Re-write TrialDetailPage!
     const { trialId } = this.props
 
     try {
@@ -119,7 +151,7 @@ class TrialDetails extends React.Component {
           Details
         </Typography>
         <Paper className={classes.detailsPaper}>
-          <Table padding="dense">
+          <Table>
             <TableBody>
               <TableRow>
                 <TableCell>ID</TableCell>
@@ -178,6 +210,14 @@ class TrialDetails extends React.Component {
             </TableBody>
           </Table>
         </Paper>
+        <Button
+          variant="contained"
+          color="secondary"
+          className={classes.mainBtn}
+          onClick={() => this.props.history.goBack()}
+        >
+          Go Back
+        </Button>
       </React.Fragment>
     )
   }
@@ -305,28 +345,7 @@ function getPlotDetails(plot, metrics) {
   return { series: Object.values(seriesByName), plotOption }
 }
 
-const styles = theme => ({
-  headerSub: {
-    fontSize: theme.typography.h4.fontSize,
-    margin: theme.spacing.unit * 2,
-  },
-  detailsPaper: {
-    margin: theme.spacing.unit * 2,
-  },
-  messagesPaper: {
-    margin: theme.spacing.unit * 2,
-  },
-  plotPaper: {
-    width: "100%",
-    maxWidth: 800,
-    height: 500,
-    padding: theme.spacing.unit,
-    paddingTop: theme.spacing.unit * 2,
-    margin: theme.spacing.unit * 4,
-  },
-  divider: {
-    margin: theme.spacing.unit * 4,
-  },
-})
-
-export default withStyles(styles)(TrialDetailPage)
+export default compose(
+  withRouter,
+  withStyles(styles)
+)(TrialDetailPage)

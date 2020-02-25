@@ -209,6 +209,7 @@ class CreateTrainJob extends React.Component {
                 onHandleChange={this.handleChange}
               />
               <br />
+              {/* TODO: UI notify user of recommended model */}
               <ModelSelect
                 title="6. Model"
                 modelList={modelOptions}
