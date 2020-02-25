@@ -84,6 +84,8 @@ class UploadModel extends React.Component {
     // dependencies
     torch101: false,
     torchvision022: false,
+    matplotlib310: false,
+    lime01136: false,
     scikitLearn0200: false,
     tensorflow1120: false,
   }
@@ -171,6 +173,8 @@ class UploadModel extends React.Component {
     let depState = {}
     depState["torch101"] = this.state.torch101
     depState["torchvision022"] = this.state.torchvision022
+    depState["matplotlib310"] = this.state.matplotlib310
+    depState["lime01136"] = this.state.lime01136
     depState["scikitLearn0200"] = this.state.scikitLearn0200
     depState["tensorflow1120"] = this.state.tensorflow1120
     //console.log("depState: ", depState)
@@ -184,11 +188,17 @@ class UploadModel extends React.Component {
     checkedDep.map(v => {
       switch(v) {
         case "torch101":
-          depToPOST["torch"] = "2.0.1"
+          depToPOST["torch"] = "1.0.1"
           return "torch101"
         case "torchvision022":
           depToPOST["torchvision"] = "0.2.2"
           return "torchvision022"
+        case "matplotlib310":
+          depToPOST["matplotlib"] = "3.1.0"
+          return "matplotlib310"
+        case "lime01136":
+          depToPOST["lime"] = "0.1.1.36"
+          return "lime01136"
         case "scikitLearn0200":
           depToPOST["scikit-learn"] = "0.20.0"
           return "scikitLearn0200"
@@ -251,12 +261,16 @@ class UploadModel extends React.Component {
       // make sure dependencies selected
       this.state.torch101 !== prevState.torch101 ||
       this.state.torchvision022 !== prevState.torchvision022 ||
+      this.state.matplotlib310 !== prevState.matplotlib310 ||
+      this.state.lime01136 !== prevState.lime01136 ||
       this.state.scikitLearn0200 !== prevState.scikitLearn0200 ||
       this.state.tensorflow1120 !== prevState.tensorflow1120
     ) {
       const noDependencies = [
         this.state.torch101,
         this.state.torchvision022,
+        this.state.matplotlib310,
+        this.state.lime01136,
         this.state.scikitLearn0200,
         this.state.tensorflow1120
       ].filter(v => v).length === 0;
@@ -290,6 +304,8 @@ class UploadModel extends React.Component {
     const {
       torch101,
       torchvision022,
+      matplotlib310,
+      lime01136,
       scikitLearn0200,
       tensorflow1120
     } = this.state
@@ -297,6 +313,8 @@ class UploadModel extends React.Component {
     const error = [
       torch101,
       torchvision022,
+      matplotlib310,
+      lime01136,
       scikitLearn0200,
       tensorflow1120
     ].filter(v => v).length === 0;
@@ -370,6 +388,14 @@ class UploadModel extends React.Component {
                         <FormControlLabel
                           control={<Checkbox checked={torchvision022} onChange={this.hancleCheckboxClick('torchvision022')} value="torchvision022" />}
                           label="torchvision 0.2.2"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={matplotlib310} onChange={this.hancleCheckboxClick('matplotlib310')} value="matplotlib310" />}
+                          label="matplotlib 3.1.0"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={lime01136} onChange={this.hancleCheckboxClick('lime01136')} value="lime01136" />}
+                          label="lime 0.1.1.36"
                         />
                         <FormControlLabel
                           control={<Checkbox checked={scikitLearn0200} onChange={this.hancleCheckboxClick('scikitLearn0200')} value="scikitLearn0200" />}
