@@ -63,16 +63,13 @@ class ApplicationDetails extends React.Component {
         <MainContent>
           <ContentBar
             needToList={false}
-            barTitle="Create Train Jobs"
-            mainBtnText=""
-            mainBtnLink=""
-            refreshAction={null}
+            barTitle="Running Inference Job"
           />
           <Grid container spacing={10} justify="center" alignItems="center">
-            <Grid item xs={12} justify="center" alignItems="center">
+            <Grid item xs={12}>
               <div className={classes.contentWrapper}>
                 <p>
-                  List of running inference jobs for <b>{app}</b> | appVersion:{" "}
+                  Running inference job for <b>{app}</b> | appVersion:{" "}
                   <b>{appVersion}</b>
                 </p>
               </div>
@@ -81,15 +78,11 @@ class ApplicationDetails extends React.Component {
               <Table>
                 <TableHead>
                   <TableRow>
-                    {[
-                      "ID",
-                      "App",
-                      "App Version",
-                      "Started",
-                      "Prediction Host",
-                    ].map(label => (
-                      <TableCell>{label}</TableCell>
-                    ))}
+                    <TableCell>Inference Job ID</TableCell>
+                    <TableCell>App Name</TableCell>
+                    <TableCell>App Version</TableCell>
+                    <TableCell>Started</TableCell>
+                    <TableCell>Prediction Host</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

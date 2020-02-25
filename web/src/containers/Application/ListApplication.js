@@ -11,9 +11,7 @@ import * as actions from "./actions"
 import { withStyles } from "@material-ui/core/styles"
 import {
   Table,
-  Toolbar,
   Typography,
-  Grid,
   IconButton,
   TableHead,
   TableBody,
@@ -65,22 +63,10 @@ class ListApplication extends React.Component {
     return (
       <React.Fragment>
         <MainContent>
-          <ContentBar>
-            <Toolbar>
-              <Grid
-                container
-                spacing={10}
-                justify="space-between"
-                alignItems="center"
-              >
-                <Grid item>
-                  <Typography variant="h5" gutterBottom>
-                    List Application
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Toolbar>
-          </ContentBar>
+          <ContentBar
+            needToList={false}
+            barTitle="List Inference Jobs"
+          />
           <div className={classes.contentWrapper}>
             <Typography color="textSecondary" align="center">
               {ApplicationList.length === 0
@@ -90,25 +76,21 @@ class ListApplication extends React.Component {
             <Table>
               <TableHead>
                 <TableRow>
-                  {[
-                    "#",
-                    "ID",
-                    "App",
-                    "App Version",
-                    "Status",
-                    "Started",
-                    "Stopped",
-                    "Train Job ID",
-                  ].map(label => (
-                    <TableCell>{label}</TableCell>
-                  ))}
+                  <TableCell>View</TableCell>
+                  <TableCell>Inference Job ID</TableCell>
+                  <TableCell>App Name</TableCell>
+                  <TableCell>App Version</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Started</TableCell>
+                  <TableCell>Stopped</TableCell>
+                  <TableCell>Train Job ID</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {ApplicationList.map(x => {
                   return (
                     <TableRow key={x.id} hover>
-                      <TableCell padding="none">
+                      <TableCell padding="default">
                         <IconButton
                           onClick={() => {
                             const link = "/console/application/running_job/:app/:appVersion"

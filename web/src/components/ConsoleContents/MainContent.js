@@ -131,20 +131,7 @@ class MainContent extends React.Component {
             </Zoom>
           )
         default:
-          return (
-            <Zoom in={true} unmountOnExit>
-              <Fab
-                variant="extended"
-                className={classes.fab}
-                color="primary"
-                component={Link}
-                to="/console/datasets/list-datasets"
-              >
-                <ListDSIcon className={classes.extendedIcon} />
-                List Datasets
-              </Fab>
-            </Zoom>
-          )
+          return
       }
     }
 
