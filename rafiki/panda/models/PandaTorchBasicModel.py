@@ -460,8 +460,10 @@ class PandaTorchBasicModel(PandaModel):
         method = self._knobs.get("explanation_method")
         if method == 'lime':
             self._lime = Lime(self._model)
-            self._lime.explain(queries, self._normalize_mean, self._normalize_std)
-        return None
+            img_explained = self._lime.explain(queries, self._normalize_mean, self._normalize_std)
+            return img_explained
+        else:
+            return None
 
     def dump_parameters(self):
         """

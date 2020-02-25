@@ -58,4 +58,5 @@ class Lime():
             io.imsave(str(index) +".png",img)
             io.imsave(str(index) +"lime_top5.png",img_boundry)
             index += 1
+        return img_boundry
 
