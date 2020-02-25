@@ -854,6 +854,20 @@ class Admin(object):
                         'access_right': model.access_right
                     }
                 ]
+        # If we can not found resnet, return the first model
+        for model in models:
+            return [
+                {
+                    'id': model.id,
+                    'user_id': model.user_id,
+                    'name': model.name,
+                    'task': model.task,
+                    'datetime_created': model.datetime_created,
+                    'dependencies': model.dependencies,
+                    'access_right': model.access_right
+                }
+            ]
+
 
         
     ####################################
