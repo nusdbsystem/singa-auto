@@ -106,9 +106,8 @@ curl -i http://localhost:3000/models/available?task=IMAGE_CLASSIFICATION \
 
 # GET recommended models with Bearer Token
 # returns an array
-curl -i http://localhost:3000/models/recommended \
+curl -i http://localhost:3000/models/recommended?dataset_id=xxx \
   -H "Authorization: Bearer $TOKEN"
-  -...
 
 #####################################
 # Train Jobs
