@@ -23,6 +23,8 @@ import CreateTrainJobForm from "components/ConsoleForms/CreateTrainJobForm"
 
 // form fields components
 import AppName from "components/ConsoleContents/AppName"
+import TaskName from "components/ConsoleContents/TaskName"
+import DatasetSelect from "components/ConsoleContents/DatasetSelect"
 import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 
 // RegExp rules
@@ -45,6 +47,8 @@ class CreateTrainJob extends React.Component {
     // formState => init | loading | idle
     message: "",
     task: "IMAGE_CLASSIFICATION",
+    selectedTrainingDS: "",
+    selectedValidationDS: "",
   }
 
   componentDidMount() {
@@ -82,6 +86,24 @@ class CreateTrainJob extends React.Component {
   render() {
     const { classes, DatasetsList, AvailableModelList } = this.props
 
+    // Options for datasets
+    const datasetOptions = DatasetsList.map(dataset => {
+      return {
+        value: dataset.id,
+        label: dataset.name + "(" + dataset.id + ")",
+      }
+    })
+
+    // Options for models
+    const modelOptions = AvailableModelList.map(model => {
+      return {
+        value: model.id,
+        label: model.name + "(" + model.id + ")",
+      }
+    })
+
+    console.log(">>>>>>CreateTrainJob State: ", this.state)
+
     return (
       <MainContent>
         <ContentBar
@@ -96,6 +118,28 @@ class CreateTrainJob extends React.Component {
                 newAppName={this.state.newAppName}
                 onHandleChange={this.handleChange}
                 isCorrectInput={this.state.validDsName}
+              />
+              <br />
+              <TaskName
+                title="2. Task Name"
+                task={this.state.task}
+                onHandleChange={this.handleChange}
+              />
+              <br />
+              <DatasetSelect
+                title="3. Dataset for Training"
+                purpose="Training"
+                datasetList={datasetOptions}
+                selectedDataset={this.state.selectedTrainingDS}
+                onHandleChange={this.handleChange}
+              />
+              <br />
+              <DatasetSelect
+                title="4. Dataset for Validation"
+                purpose="Validation"
+                datasetList={datasetOptions}
+                selectedDataset={this.state.selectedValidationDS}
+                onHandleChange={this.handleChange}
               />
               <br />
             </Grid>
