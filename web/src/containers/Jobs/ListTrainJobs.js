@@ -70,79 +70,77 @@ class ListTrainJobs extends React.Component {
     const { classes, JobsList } = this.props
 
     return (
-      <React.Fragment>
-        <MainContent>
-          <ContentBar
-            needToList={true}
-            barTitle="Train Jobs by user"
-            mainBtnText="Create Train Job"
-            mainBtnLink="/console/jobs/create-train-job"
-            refreshAction={this.reloadJobs}
-          />
-          <div className={classes.contentWrapper}>
-            <Typography color="textSecondary" align="center">
-              {JobsList.length === 0
-                ? "You do not have any train jobs"
-                : "Train Jobs"}
-            </Typography>
-            <TableContainer>
-              <Table
-                className={classes.table}
-                aria-labelledby="tableTitle"
-                size={'medium'}
-                aria-label="enhanced table"
-              >
-              <TableHead>
-                <TableRow>
-                  <TableCell> View Trials </TableCell>
-                  <TableCell> App Name </TableCell>
-                  <TableCell> App Version</TableCell>
-                  <TableCell> Task </TableCell>
-                  <TableCell> Budget </TableCell>
-                  <TableCell> Started</TableCell>
-                  <TableCell> Stopped </TableCell>
-                  <TableCell> Status </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {JobsList.map(x => {
-                  return (
-                    <TableRow key={x.id} hover>
-                      <TableCell padding="default">
-                        <IconButton
-                          onClick={() => {
-                            const link = "/console/jobs/trials/:appId/:app/:appVersion"
-                              .replace(":appId", x.id)
-                              .replace(":app", x.app)
-                              .replace(":appVersion", x.app_version)
-                            this.props.push(link)
-                          }}
-                        >
-                          <PageviewIcon />
-                        </IconButton>
-                      </TableCell>
-                      <TableCell>{x.app}</TableCell>
-                      <TableCell>{x.app_version}</TableCell>
-                      <TableCell>{x.task}</TableCell>
-                      <TableCell>{JSON.stringify(x.budget)}</TableCell>
-                      <TableCell>
-                        {moment(x.datetime_started).fromNow()}
-                      </TableCell>
-                      <TableCell>
-                        {x.datetime_stopped
-                          ? moment(x.datetime_stopped).fromNow()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>{x.status}</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-            </TableContainer>
-          </div>
-        </MainContent>
-      </React.Fragment>
+      <MainContent>
+        <ContentBar
+          needToList={true}
+          barTitle="Train Jobs by user"
+          mainBtnText="Create Train Job"
+          mainBtnLink="/console/jobs/create-train-job"
+          refreshAction={this.reloadJobs}
+        />
+        <div className={classes.contentWrapper}>
+          <Typography color="textSecondary" align="center">
+            {JobsList.length === 0
+              ? "You do not have any train jobs"
+              : "Train Jobs"}
+          </Typography>
+          <TableContainer>
+            <Table
+              className={classes.table}
+              aria-labelledby="tableTitle"
+              size={'medium'}
+              aria-label="enhanced table"
+            >
+            <TableHead>
+              <TableRow>
+                <TableCell> View Trials </TableCell>
+                <TableCell> App Name </TableCell>
+                <TableCell> App Version</TableCell>
+                <TableCell> Task </TableCell>
+                <TableCell> Budget </TableCell>
+                <TableCell> Started</TableCell>
+                <TableCell> Stopped </TableCell>
+                <TableCell> Status </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {JobsList.map(x => {
+                return (
+                  <TableRow key={x.id} hover>
+                    <TableCell padding="default">
+                      <IconButton
+                        onClick={() => {
+                          const link = "/console/jobs/trials/:appId/:app/:appVersion"
+                            .replace(":appId", x.id)
+                            .replace(":app", x.app)
+                            .replace(":appVersion", x.app_version)
+                          this.props.push(link)
+                        }}
+                      >
+                        <PageviewIcon />
+                      </IconButton>
+                    </TableCell>
+                    <TableCell>{x.app}</TableCell>
+                    <TableCell>{x.app_version}</TableCell>
+                    <TableCell>{x.task}</TableCell>
+                    <TableCell>{JSON.stringify(x.budget)}</TableCell>
+                    <TableCell>
+                      {moment(x.datetime_started).fromNow()}
+                    </TableCell>
+                    <TableCell>
+                      {x.datetime_stopped
+                        ? moment(x.datetime_stopped).fromNow()
+                        : "-"}
+                    </TableCell>
+                    <TableCell>{x.status}</TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+          </TableContainer>
+        </div>
+      </MainContent>
     )
   }
 }

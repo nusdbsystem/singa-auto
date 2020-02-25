@@ -92,12 +92,13 @@ class Navigator extends React.Component {
     DatasetsTableOpen: true,
     ModelsTableOpen: true,
     JobsTableOpen: true,
-    DataApplicationOpen: false,
+    DataApplicationOpen: true,
   }
 
   handleClick = categoryHeader => {
     // case is collapseID
     switch (categoryHeader) {
+      // CATxxx stands for Category xxx
       case "CATdatasets":
         this.setState(state => ({
           DatasetsTableOpen: !state.DatasetsTableOpen,
