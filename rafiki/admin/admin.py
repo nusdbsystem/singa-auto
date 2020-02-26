@@ -618,10 +618,14 @@ class Admin(object):
     def stop_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
         if inference_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._services_manager.stop_inference_services(inference_job.id)
@@ -636,10 +640,14 @@ class Admin(object):
     def get_running_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
         if inference_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
         
         predictor_service = self._meta_store.get_service(inference_job.predictor_service_id) \

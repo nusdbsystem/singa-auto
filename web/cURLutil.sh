@@ -149,3 +149,16 @@ curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/tri
 # rafikiClient is calling const data = await this._get(`/trials/${trialId}/logs`)
 # rafikiClient is calling const data = await this._get(`/trials/${trialId}`)
 # in web/src/containers/Jobs/TrialsDetails.js
+
+#####################################
+# Inference Jobs
+#####################################
+
+# GET an inference job by appName and appVersion
+curl -i http://localhost:3000/inference_jobs/PandaApp/1 \
+  -H "Authorization: Bearer $TOKEN"
+
+# POST stop an inference job by appName and appVersion
+curl -i http://localhost:3000/inference_jobs/PandaApp/1/stop \
+  -H "Authorization: Bearer $TOKEN" \
+  -X POST

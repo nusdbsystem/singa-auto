@@ -336,6 +336,8 @@ def get_inference_jobs_of_app(auth, app):
 def get_running_inference_job(auth, app, app_version):
     admin = get_admin()
     params = get_request_params()
+    # with open('get_inferenceJob_debug.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
 
     with admin:
         return jsonify(admin.get_running_inference_job(auth['user_id'], app, app_version=int(app_version), **params))
@@ -345,6 +347,8 @@ def get_running_inference_job(auth, app, app_version):
 def stop_inference_job(auth, app, app_version=-1):
     admin = get_admin()
     params = get_request_params()
+    # with open('stop_inferenceJob_debug.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
 
     with admin:
         return jsonify(admin.stop_inference_job(auth['user_id'], app, app_version=int(app_version), **params))

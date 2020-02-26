@@ -4,18 +4,22 @@ import { withStyles } from "@material-ui/core/styles"
 import { compose } from "redux"
 import { connect } from "react-redux"
 
+// temp use axios in containers level,
+// TODO: use sagas and service in future
+import axios from 'axios';
+import HTTPconfig from "HTTPconfig"
+
 import { goBack } from "connected-react-router"
 
 // Material UI
-import {
-  Button,
-  Table,
-  Grid,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@material-ui/core"
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as ClientAPI from "services/ClientAPI"
@@ -36,7 +40,10 @@ const styles = theme => ({
 })
 
 class InferenceJobDetails extends React.Component {
-  state = { selectedInferenceJob: {} }
+  state = {
+    selectedInferenceJob: {},
+    message: "N.A.",
+  }
 
   async componentDidMount() {
     this.props.handleHeaderTitleChange("Inference Jobs > List Inference Jobs > Inference Job Details")
@@ -50,6 +57,33 @@ class InferenceJobDetails extends React.Component {
     )
     const inferenceJob = response.data
     this.setState({ selectedInferenceJob: inferenceJob })
+  }
+
+  handleClickStopInferenceJob = async () => {
+    const { app, appVersion } = this.props.match.params
+    const { token } = this.props
+    try {
+      const res = await axios({
+        method: "post",
+        url: `${HTTPconfig.gateway}inference_jobs/${app}/${appVersion}/stop`,
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+      });
+
+      // res.data is the object sent back from the server
+      console.log("axios res.data: ", res.data)
+      console.log("axios full response schema: ", res)
+
+      this.setState(prevState => ({
+        message: "Stop Inference Job Success"
+      }))
+    } catch (err) {
+      console.error(err, "error")
+      this.setState({
+        message: "Failed to stop inference job"
+      })
+    }
   }
 
   render() {
@@ -92,7 +126,9 @@ class InferenceJobDetails extends React.Component {
                       <TableCell>{x.app}</TableCell>
                       <TableCell>{x.app_version}</TableCell>
                       <TableCell>
-                        {moment(x.datetime_started).fromNow()}
+                        {x.datetime_started
+                          ? moment(x.datetime_started).fromNow()
+                          : "Stopped"}
                       </TableCell>
                       <TableCell>{x.predictor_host}</TableCell>
                     </TableRow>
@@ -110,11 +146,11 @@ class InferenceJobDetails extends React.Component {
             alignItems="center"
             style={{ minHeight: "100px" }}
           >
-            {/* <Grid item >
-                            <Button onClick={this.onClick} color="primary" variant="contained">
-                                Stop Inference Job
-                            </Button>
-                        </Grid> */}
+            <Grid item >
+              <Button onClick={this.handleClickStopInferenceJob} color="primary" variant="contained">
+                Stop Inference Job
+              </Button>
+            </Grid>
             <Grid item>
               <Button
                 color="default"
@@ -123,6 +159,17 @@ class InferenceJobDetails extends React.Component {
               >
                 Go Back
               </Button>
+            </Grid>
+            <Grid
+              container
+              spacing={5}
+              justify="center"
+              alignItems="center"
+              style={{ minHeight: "100px" }}
+            >
+            <Typography component="p">
+              System Message: <b>{this.state.message}</b>
+            </Typography>
             </Grid>
           </Grid>
         </MainContent>

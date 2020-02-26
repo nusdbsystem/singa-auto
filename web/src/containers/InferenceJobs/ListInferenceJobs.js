@@ -107,7 +107,9 @@ class ListInferenceJobs extends React.Component {
                       <TableCell>{x.app_version}</TableCell>
                       <TableCell>{x.status}</TableCell>
                       <TableCell>
-                        {moment(x.datetime_started).fromNow()}
+                        {x.datetime_started
+                          ? moment(x.datetime_started).fromNow()
+                          : "-"}
                       </TableCell>
                       <TableCell>
                         {x.datetime_stopped
