@@ -89,13 +89,20 @@ class MetaStore(object):
     # Datasets
     ####################################
 
-    def create_dataset(self, name, task, size_bytes, store_dataset_id, owner_id):
+    def create_dataset(self, name, task, size_bytes, store_dataset_id, owner_id, stat):#num_samples, num_p, num_n, ratio_p, ratio_n, img_size):
         dataset = Dataset(
             name=name,
             task=task,
             size_bytes=size_bytes,
             store_dataset_id=store_dataset_id,
-            owner_id=owner_id
+            owner_id=owner_id,
+            stat=stat,
+            # num_samples=num_samples,
+            # num_p=num_p,
+            # num_n=num_n,
+            # ratio_p=ratio_p,
+            # ratio_n=ratio_n,
+            # img_size=img_size,
         )
         self._session.add(dataset)
         return dataset

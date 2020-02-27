@@ -25,6 +25,7 @@ import zipfile
 import tempfile
 import json # for budget in train_jobs
 import ast # for model_ids type conversion in train_jobs
+from PIL import Image # for image size info
 from rafiki.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
 from rafiki.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from rafiki.meta_store import MetaStore
@@ -138,64 +139,73 @@ class Admin(object):
     def create_dataset(self, user_id, name, task, data_file_path):
         # Store dataset in data folder
         store_dataset = self._data_store.save(data_file_path)
-
-        # Get metadata for dataset
+        # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
-        owner_id = user_id
 
-        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, owner_id)
+        # create tempdir to store unziped csv and a sample image
+        dir_path = tempfile.mkdtemp()
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
+        dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
+        num_samples=len(dataset_zipfile.namelist()) -1
+
+        # obtain csv file
+        for fileName in dataset_zipfile.namelist():
+           if fileName.endswith('.csv'):
+               # Extract a single file from zip
+               csv_path = dataset_zipfile.extract(fileName,path=dir_path)
+
+        # obtain a sample
+        sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
+        if task == 'IMAGE_CLASSIFICATION':
+            img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+            img = Image.open(img_path)
+            img_size = img.size
+            os.unlink(img_path)     
+        # close dataset zipfile
+        dataset_zipfile.close()
+        csv = pd.read_csv(csv_path)
+
+        # labels=pd.read_csv(csv_path,nrows=0).columns[1::].to_list()
+        # num_classes = len(labels)
+
+        num_p = int((csv[csv.columns[1::]] == 1).astype(int).sum(axis=0))
+        num_n = int((csv[csv.columns[1::]] == 0).astype(int).sum(axis=0))
+        ratio_p = num_p / num_samples
+        ratio_n = num_n / num_samples
+        os.unlink(csv_path)
+        
+        # if task == 'IMAGE_CLASSIFICATION':
+        stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n, 'img_size':img_size}
+        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)#num_samples, ratio_p, ratio_n, num_p, num_n, img_size)
         self._meta_store.commit()
-        ### dataset path, store_dataset_id
+
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
             'size_bytes': dataset.size_bytes,
-           #
-           #  'data_file_path' : data_file_path,
-           #  'store_dataset_id' : store_dataset_id,
-           #  'number_of_classes': dataset.num_classes,
-           #  'labels' : dataset.labels,
-           #  'number_of_samples' : dataset.num_samples,
-           #  'stat' : dataset.stat
+            'store_dataset_id' : dataset.store_dataset_id,
+            'owner_id' : dataset.owner_id,
+            'stat': dataset.stat,
         }
 
-    def get_dataset(self, dataset_id): # by id
+    def get_dataset(self, dataset_id):
         dataset = self._meta_store.get_dataset(dataset_id)
         if dataset is None:
             raise InvalidDatasetError()
 
-        datasetdict={
+        return {
             'id': dataset.id,
             'name': dataset.name,
-            'task': dataset.task,
-            'datetime_created': dataset.datetime_created,
+            # 'task': dataset.task,
+            # 'datetime_created': dataset.datetime_created,
             'size_bytes': dataset.size_bytes,
-            'owner_id': dataset.owner_id
+            # 'owner_id': dataset.owner_id,
+            'stat': dataset.stat,
         }
-        # # modified here
-        # if dataset.task == 'IMAGE_CLASSIFICATION':
-        #     datapath=os.path.join(os.getcwd(),dataset.store_dataset_id+'.data')
-        #     dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-        #     num_samples=len(dataset_zipfile.filelist) -1
-        #     dir_path = tempfile.mkdtemp()
-        #     if not os.path.exists(dir_path):
-        #         os.makedirs(dir_path)
-        #     images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-        #     dataset_zipfile.close()
-        #     labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-        #     os.unlink(os.path.join(dir_path,'images.csv'))
-
-        #     datasetdict['store_dataset_id'] = dataset.store_dataset_id
-        #     datasetdict['number_of_classes'] =  len(labels)
-        #     datasetdict['labels'] = labels
-        #     datasetdict['number_of_samples'] =  num_samples
-        #     datasetdict['stat'] =  dataset.stat
-        #
-        # else:
-        #     pass
-        return datasetdict
 
     def get_datasets(self, user_id, task=None):
         datasets = self._meta_store.get_datasets(user_id, task)
@@ -209,7 +219,7 @@ class Admin(object):
                 'datetime_created': x.datetime_created,
                 'size_bytes': x.size_bytes,
                 'store_dataset_id' : x.store_dataset_id,
-                'stat' : x.stat
+                'stat': x.stat,
             }
             # if x.task == 'IMAGE_CLASSIFICATION':
             #     datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)

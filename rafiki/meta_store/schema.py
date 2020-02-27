@@ -64,11 +64,15 @@ class Dataset(Base):
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
     datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
 
-    ### modified here
-    num_classes=int(4)
-    labels={'disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000}
-    num_samples=int(10000)
-    stat={'feature A': 500, 'feature B': 5000, 'feature C': 1000}
+    # # define scheme 
+    stat = Column(JSON, default={}) #)# default=None) 
+    # num_samples=Column(BigInteger, default=None)
+    # img_size = Column(JSON, default=None)
+    # ratio_p = Column(Float, default=None)
+    # ratio_n = Column(Float, default=None)
+    # num_p = Column(BigInteger, default=None)
+    # num_n = Column(BigInteger, default=None)
+
 
 
 

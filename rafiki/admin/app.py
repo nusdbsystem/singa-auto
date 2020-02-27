@@ -161,7 +161,6 @@ def get_dataset(auth, id):
     admin = get_admin()
     params = get_request_params()
     with admin:
-        # would delete datasets
         return jsonify(admin.get_dataset_by_id(auth['user_id'], id ,**params))
 
 ####################################
