@@ -63,16 +63,7 @@ class Dataset(Base):
     size_bytes = Column(BigInteger, default=0)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
     datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
-
-    # # define scheme 
-    stat = Column(JSON, default={}) #)# default=None) 
-    # num_samples=Column(BigInteger, default=None)
-    # img_size = Column(JSON, default=None)
-    # ratio_p = Column(Float, default=None)
-    # ratio_n = Column(Float, default=None)
-    # num_p = Column(BigInteger, default=None)
-    # num_n = Column(BigInteger, default=None)
-
+    stat = Column(JSON, default={})
 
 
 

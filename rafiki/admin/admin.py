@@ -162,7 +162,7 @@ class Admin(object):
         if task == 'IMAGE_CLASSIFICATION':
             img_path = dataset_zipfile.extract(sample_name, path=dir_path)
             img = Image.open(img_path)
-            img_size = img.size
+            img_size = str(img.size)
             os.unlink(img_path)     
         # close dataset zipfile
         dataset_zipfile.close()
@@ -177,9 +177,12 @@ class Admin(object):
         ratio_n = num_n / num_samples
         os.unlink(csv_path)
         
-        # if task == 'IMAGE_CLASSIFICATION':
-        stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n, 'img_size':img_size}
-        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)#num_samples, ratio_p, ratio_n, num_p, num_n, img_size)
+        if task == 'IMAGE_CLASSIFICATION':
+            stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n, 'img_size':img_size}
+        else:
+            stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n}
+
+        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
         self._meta_store.commit()
 
         return {
@@ -200,10 +203,10 @@ class Admin(object):
         return {
             'id': dataset.id,
             'name': dataset.name,
-            # 'task': dataset.task,
-            # 'datetime_created': dataset.datetime_created,
+            'task': dataset.task,
+            'datetime_created': dataset.datetime_created,
             'size_bytes': dataset.size_bytes,
-            # 'owner_id': dataset.owner_id,
+            'owner_id': dataset.owner_id,
             'stat': dataset.stat,
         }
 
@@ -221,22 +224,6 @@ class Admin(object):
                 'store_dataset_id' : x.store_dataset_id,
                 'stat': x.stat,
             }
-            # if x.task == 'IMAGE_CLASSIFICATION':
-            #     datapath=os.path.join(os.environ.get('DATA_DIR_PATH'),x.store_dataset_id)
-            #     dataset_zipfile = zipfile.ZipFile(datapath, 'r')
-            #     num_samples=len(dataset_zipfile.filelist) -1
-            #     dir_path = tempfile.mkdtemp()
-            #     if not os.path.exists(dir_path):
-            #         os.makedirs(dir_path)
-            #     images_csv_path=dataset_zipfile.extract('images.csv',path=dir_path) ### return a path
-            #     dataset_zipfile.close()
-            #     labels=pd.read_csv(images_csv_path,nrows=0).columns[1::].to_list()
-            #     os.unlink(os.path.join(dir_path,'images.csv'))
-            #     datasetdict['labels'] = labels
-            #     datasetdict['number_of_samples'] =  num_samples
-            #     datasetdict['number_of_classes'] = len(labels)
-            # else:
-            #     pass
             datasetdicts.append(datasetdict)
 
         return datasetdicts
