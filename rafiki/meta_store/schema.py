@@ -63,12 +63,7 @@ class Dataset(Base):
     size_bytes = Column(BigInteger, default=0)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
     datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
-
-    ### modified here
-    num_classes=int(4)
-    labels={'disease A': 500, 'disease B': 5000, 'disease C': 1000, 'healthy': 2000}
-    num_samples=int(10000)
-    stat={'feature A': 500, 'feature B': 5000, 'feature C': 1000}
+    stat = Column(JSON, default={})
 
 
 
