@@ -38,7 +38,8 @@ def start_worker(service_id, service_type, container_id):
 
     app.run(host='0.0.0.0', 
             port=os.getenv('PREDICTOR_PORT', 3003), 
-            threaded=True)
+            threaded=True,
+            debug=True)
 
 def stop_worker():
     global global_predictor
