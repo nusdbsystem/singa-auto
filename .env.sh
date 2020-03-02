@@ -25,11 +25,11 @@ export APP_SECRET=rafiki
 
 # Core external configuration for Rafiki
 export DOCKER_NETWORK=rafiki
-export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
+export DOCKER_SWARM_ADVERTISE_ADDR=ncrs.d2.comp.nus.edu.sg
 export RAFIKI_VERSION=0.2.0
-export RAFIKI_ADDR=127.0.0.1
+export RAFIKI_ADDR=ncrs.d2.comp.nus.edu.sg
 export ADMIN_EXT_PORT=3000
-export WEB_ADMIN_EXT_PORT=3001
+export WEB_ADMIN_EXT_PORT=33001
 export POSTGRES_EXT_PORT=5433
 export REDIS_EXT_PORT=6380
 export ZOOKEEPER_EXT_PORT=2181

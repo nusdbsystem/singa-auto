@@ -173,14 +173,16 @@ class Admin(object):
 
         num_p = int((csv[csv.columns[1::]] == 1).astype(int).sum(axis=0))
         num_n = int((csv[csv.columns[1::]] == 0).astype(int).sum(axis=0))
+        num_labeled_samples = num_p + num_n
+        num_unlabeled_samples = num_samples - num_labeled_samples
         ratio_p = num_p / num_samples
         ratio_n = num_n / num_samples
         os.unlink(csv_path)
         
         if task == 'IMAGE_CLASSIFICATION':
-            stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n, 'img_size':img_size}
+            stat = {'num_labeled_samples':num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n, 'img_size':img_size}
         else:
-            stat = {'num_samples':num_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n}
+            stat = {'num_labeled_samples':num_labeled_samples,'num_unlabeled_samples' : num_unlabeled_samples, 'num_p':num_p, 'num_n':num_n, 'ratio_p':ratio_p, 'ratio_n':ratio_n}
 
         dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
         self._meta_store.commit()
