@@ -82,7 +82,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'gm_prior_regularization_param_upt_freq':FixedKnob(50),
             
             # Explanation
-            'enable_explanation':FixedKnob(False),
+            'enable_explanation':FixedKnob(True),
             'explanation_method':FixedKnob('lime'),
 
             # Model Slicing
@@ -93,8 +93,8 @@ class PyPandaVgg(PandaTorchBasicModel):
             'model_slicing_randnum':FixedKnob(1),
 
             # MC Dropout
-            'enable_mc_dropout':FixedKnob(False),
-            'mc_trials_n':FixedKnob(1000)
+            'enable_mc_dropout':FixedKnob(True),
+            'mc_trials_n':FixedKnob(10)
         }
 
 if __name__ == '__main__':

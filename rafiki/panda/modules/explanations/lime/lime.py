@@ -46,6 +46,7 @@ class Lime():
         self._preprocess_transform = self.get_preprocess_transform()
         self._transf=self.get_pil_transform()
         index = 0
+        outputs = []
         for img in quires:
             top_labels = 5
             hide_color = 0
@@ -55,8 +56,11 @@ class Lime():
             temp, mask = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=5, hide_rest=False)
             img_boundry = mark_boundaries(temp/255.0, mask)
             # integrate with front end later
-            io.imsave(str(index) +".png",img)
-            io.imsave(str(index) +"lime_top5.png",img_boundry)
-            index += 1
-        return img_boundry
+            # io.imsave(str(index) +".png",img)
+            # io.imsave(str(index) +"lime_top5.png",img_boundry)
+            # index += 1
+            outputs.append(img_boundry.tolist())
+            print(outputs)
+        return outputs
+
 

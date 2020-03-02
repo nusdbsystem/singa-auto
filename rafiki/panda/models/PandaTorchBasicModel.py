@@ -418,7 +418,6 @@ class PandaTorchBasicModel(PandaModel):
             except Exception:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2)
             
-
             if self._knobs.get("enable_mc_dropout"):
                 print("MC Dropout Enabled")
                 trials_n = self._knobs.get("mc_trials_n")
@@ -435,16 +434,19 @@ class PandaTorchBasicModel(PandaModel):
                     out = torch.sigmoid(out).cpu()
 
                 outs.append(out.numpy())
-    
+        result = dict()
+        result['out'] = np.asarray(outs).tolist()
+        result['explanation'] = []
+        result['mc_dropout'] = []
         if self._knobs.get("enable_explanation"):
-            self.local_explain(queries)
-
+            exp = self.local_explain(queries, {})
+            if exp:
+                result['explanation'] = exp
         if self._knobs.get("enable_mc_dropout"):
             outs = np.asarray(outs)
             print("mean {}, var {}".format(np.mean(outs, axis=0), np.var(outs, axis=0)))
-            return np.mean(outs, axis=0).tolist()
-        else:
-            return out.tolist()
+            result['mc_dropout'] = np.mean(outs, axis=0).tolist()
+        return [result]
 
     def local_explain(self, queries: List[Any], params: Params) -> List[Any]:
         """
@@ -460,10 +462,10 @@ class PandaTorchBasicModel(PandaModel):
         method = self._knobs.get("explanation_method")
         if method == 'lime':
             self._lime = Lime(self._model)
-            img_explained = self._lime.explain(queries, self._normalize_mean, self._normalize_std)
-            return img_explained
+            imgs_explained = self._lime.explain(queries, self._normalize_mean, self._normalize_std)
+            return imgs_explained
         else:
-            return None
+            return []
 
     def dump_parameters(self):
         """
