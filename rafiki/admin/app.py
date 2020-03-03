@@ -144,6 +144,25 @@ def get_datasets(auth):
     with admin:
         return jsonify(admin.get_datasets(auth['user_id'], **params))
 
+# TODO:New METHOD Delete Dataset
+@app.route('/datasets/<id>', methods=['DELETE'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def del_dataset(auth, id):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        # would delete dataset
+        return jsonify(admin.del_datasets(auth['user_id'], id ,**params))
+
+# TODO:New METHOD get Dataset by ID
+@app.route('/datasets/<id>', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_dataset(auth, id):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        return jsonify(admin.get_dataset_by_id(auth['user_id'], id ,**params))
+
 ####################################
 # Train Jobs
 ####################################
@@ -153,6 +172,10 @@ def get_datasets(auth):
 def create_train_job(auth):
     admin = get_admin()
     params = get_request_params()
+
+    # json dump to a file for local debug
+    # with open('trainjobsPOST.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
 
     with admin:
         # Ensure that datasets are owned by current user
@@ -172,7 +195,7 @@ def get_train_jobs_by_user(auth):
     admin = get_admin()
     params = get_request_params()
 
-    assert 'user_id' in params
+    # assert 'user_id' in params
 
     # Non-admins can only get their own jobs
     if auth['user_type'] in [UserType.APP_DEVELOPER, UserType.MODEL_DEVELOPER] \
@@ -180,7 +203,7 @@ def get_train_jobs_by_user(auth):
         raise UnauthorizedError()
 
     with admin:
-        return jsonify(admin.get_train_jobs_by_user(**params))
+        return jsonify(admin.get_train_jobs_by_user(auth['user_id'], **params))
 
 @app.route('/train_jobs/<app>', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
@@ -312,6 +335,8 @@ def get_inference_jobs_of_app(auth, app):
 def get_running_inference_job(auth, app, app_version):
     admin = get_admin()
     params = get_request_params()
+    # with open('get_inferenceJob_debug.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
 
     with admin:
         return jsonify(admin.get_running_inference_job(auth['user_id'], app, app_version=int(app_version), **params))
@@ -321,6 +346,8 @@ def get_running_inference_job(auth, app, app_version):
 def stop_inference_job(auth, app, app_version=-1):
     admin = get_admin()
     params = get_request_params()
+    # with open('stop_inferenceJob_debug.txt', 'w') as outfile:
+    #     json.dump(params, outfile)
 
     with admin:
         return jsonify(admin.stop_inference_job(auth['user_id'], app, app_version=int(app_version), **params))
@@ -340,11 +367,21 @@ def create_model(auth):
     params['model_file_bytes'] = model_file_bytes
 
     # Expect model dependencies as dict
+    # TODO: ??? str or dict??? json is serialized string by default
     if 'dependencies' in params and isinstance(params['dependencies'], str):
         params['dependencies'] = json.loads(params['dependencies'])
 
     with admin:
         return jsonify(admin.create_model(auth['user_id'], **params))
+
+# TODO:New METHOD get model of specific task
+@app.route('/models/<task>/available', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_available_models_of_taks(auth, task):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+        return jsonify(admin.get_available_models(auth['user_id'], task, **params))
 
 @app.route('/models/available', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
@@ -354,6 +391,14 @@ def get_available_models(auth):
     with admin:
         return jsonify(admin.get_available_models(auth['user_id'], **params))
 
+@app.route('/models/recommended', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_recommend_models(auth):
+    admin = get_admin()
+    params = get_request_params()
+    with admin:
+            return jsonify(admin.get_recommend_models(auth['user_id'], **params))
+            
 @app.route('/models/<model_id>', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
 def get_model(auth, model_id):

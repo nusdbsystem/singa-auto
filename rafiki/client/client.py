@@ -401,7 +401,11 @@ class Client():
             **budget
         }
 
-        data = self._post('/train_jobs', json={
+        # TODO: figure out why requests.post(json) preserves the TYPE!?
+        # client use json=json, and somehow this passes the TYPE of the values
+        # but restAPI should be just using JSON as strings!
+        # Solution Feb2020: change the type handling and conversion at admin.py
+        postJSON = {
             'app': app,
             'task': task,
             'train_dataset_id': train_dataset_id,
@@ -409,7 +413,12 @@ class Client():
             'budget': budget,
             'model_ids': models,
             'train_args': train_args
-        })
+        }
+
+        print("postJSON: ", postJSON)
+        # print will show up in docker exec terminal
+
+        data = self._post('/train_jobs', json=postJSON)
         return data
 
     def get_train_jobs_by_user(self, user_id: str) -> List[Dict[str, Any]]:

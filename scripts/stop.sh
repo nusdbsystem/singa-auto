@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,7 @@
 # under the License.
 #
 
-LOG_FILEPATH=$PWD/logs/stop.log
+LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
 
 source ./scripts/utils.sh
 
@@ -25,7 +26,10 @@ source ./scripts/utils.sh
 source ./.env.sh
 
 title "Stopping any existing jobs..."
-python ./scripts/stop_all_jobs.py
+echo $(which python3)
+pyv="$(python3 -V 2>&1)"
+echo $pyv
+python3 ./scripts/stop_all_jobs.py
 
 # Prompt if should stop DB
 if prompt "Should stop Rafiki's DB?"
@@ -51,4 +55,3 @@ title "Stopping Rafiki's Web Admin..."
 docker rm -f $WEB_ADMIN_HOST || echo "Failed to stop Rafiki's Web Admin"
 
 echo "You'll need to destroy your machine's Docker swarm manually"
-

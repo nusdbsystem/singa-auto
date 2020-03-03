@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -22,7 +23,7 @@ then
     DOCS_DIR=$1
 else
     DOCS_DIR=$RAFIKI_VERSION
-fi 
+fi
 
 pip install sphinx sphinx_rtd_theme
 rm -rf docs/$DOCS_DIR/

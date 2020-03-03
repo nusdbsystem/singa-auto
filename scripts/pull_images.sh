@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -21,20 +22,23 @@ source ./scripts/utils.sh
 
 pull_image()
 {
+    # -q == --quiet, Only display numeric IDs
     if [[ ! -z $(docker images -q $1) ]]
     then
-        echo "$1 already exists locally"
-    else 
-        docker pull $1 || exit 1 
+        echo "$1 already exists locally, thus will not pull. Using local version of $1"
+    else
+        docker pull $1 || exit 1
     fi
 }
 
 title "Pulling images..."
 echo "Pulling images required by Rafiki from Docker Hub..."
+# Docker images for dependent services
 pull_image $IMAGE_POSTGRES
 pull_image $IMAGE_REDIS
 pull_image $IMAGE_KAFKA
 pull_image $IMAGE_ZOOKEEPER
+# Docker images for Rafiki's custom components
 pull_image $RAFIKI_IMAGE_ADMIN:$RAFIKI_VERSION
 pull_image $RAFIKI_IMAGE_WORKER:$RAFIKI_VERSION
 pull_image $RAFIKI_IMAGE_PREDICTOR:$RAFIKI_VERSION

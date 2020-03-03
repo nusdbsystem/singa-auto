@@ -17,7 +17,7 @@
 # under the License.
 #
 
-FROM node:11.1-alpine
+FROM node:13.5.0-alpine3.11
 
 ARG DOCKER_WORKDIR_PATH
 RUN mkdir -p $DOCKER_WORKDIR_PATH
@@ -37,4 +37,4 @@ COPY web/ web/
 
 EXPOSE 3001
 
-CMD cd web/ && yarn build && node app.js
+CMD cd web/ && yarn build && node serveBuilt.js

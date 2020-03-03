@@ -22,6 +22,8 @@ import os
 from rafiki.client import Client
 from rafiki.config import SUPERADMIN_EMAIL
 
+print("\npython3 ./scripts/stop_all_jobs.py ---->")
+
 if __name__ == '__main__':
     rafiki_host = os.environ.get('RAFIKI_HOST', 'localhost')
     admin_port = int(os.environ.get('ADMIN_EXT_PORT', 3000))
@@ -31,4 +33,4 @@ if __name__ == '__main__':
     # Initialize client
     client = Client(admin_host=rafiki_host, admin_port=admin_port)
     client.login(email=user_email, password=user_password)
-    print(client.stop_all_jobs())
+    print("\nclient.stop_all_jobs(): ", client.stop_all_jobs())

@@ -55,7 +55,7 @@ class InferenceJobWorker(Base):
 
 class Dataset(Base):
     __tablename__ = 'dataset'
-
+    # mark to be modified
     id = Column(String, primary_key=True, default=generate_uuid)
     name = Column(String, nullable=False)
     task = Column(String, nullable=False)
@@ -63,6 +63,10 @@ class Dataset(Base):
     size_bytes = Column(BigInteger, default=0)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
     datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
+    stat = Column(JSON, default={})
+
+
+
 
 class Model(Base):
     __tablename__ = 'model'
@@ -131,7 +135,7 @@ class SubTrainJob(Base):
     train_job_id = Column(String, ForeignKey('train_job.id'))
     model_id = Column(String, ForeignKey('model.id'))
     datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
-    train_job_id = Column(String, ForeignKey('train_job.id'))
+    # train_job_id = Column(String, ForeignKey('train_job.id'))
     status = Column(String, nullable=False, default=TrainJobStatus.STARTED)
     datetime_stopped = Column(DateTime, default=None)
     advisor_service_id = Column(String, ForeignKey('service.id'))

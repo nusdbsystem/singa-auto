@@ -1,53 +1,53 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React from "react"
+import { Link } from "react-router-dom"
 
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Hidden from '@material-ui/core/Hidden';
-import Typography from '../LandingComponents/Typography';
-import LayoutBody from '../LandingComponents/LayoutBody';
-import Button from '../LandingComponents/Button';
+import { withStyles } from "@material-ui/core/styles"
+import Grid from "@material-ui/core/Grid"
+import Hidden from "@material-ui/core/Hidden"
+import Typography from "../LandingComponents/Typography"
+import LayoutBody from "../LandingComponents/LayoutBody"
+import Button from "../LandingComponents/Button"
 
 import tryRafiki from "../../assets/tryRafiki.png"
 
 const styles = theme => ({
   root: {
-    marginTop: theme.spacing(1) * 10,
+    marginTop: theme.spacing(10),
     //marginBottom: 0,
-    marginBottom: theme.spacing(1) * 9,
-    display: 'flex',
+    marginBottom: theme.spacing(9),
+    display: "flex",
   },
   cardWrapper: {
     zIndex: 1,
   },
   card: {
-    display: 'flex',
-    justifyContent: 'center',
-    padding: `${theme.spacing(1) * 8}px ${theme.spacing(1) * 3}px`,
+    display: "flex",
+    justifyContent: "center",
+    padding: `${theme.spacing(8)}px ${theme.spacing(3)}px`,
   },
   cardContent: {
     maxWidth: 400,
   },
   button: {
-    width: '100%',
+    width: "100%",
   },
   imagesWrapper: {
-    position: 'relative',
+    position: "relative",
   },
   image: {
-    position: 'absolute',
+    position: "absolute",
     top: -28,
     left: -28,
     right: 0,
     bottom: 0,
-    width: '100%',
+    width: "100%",
     maxWidth: 600,
   },
-});
+})
 
 class LandingTryRafiki extends React.Component {
   render() {
-    const { classes } = this.props;
+    const { classes } = this.props
 
     return (
       <LayoutBody className={classes.root} component="section" width="large">
@@ -59,7 +59,8 @@ class LandingTryRafiki extends React.Component {
                   Try rafiki
                 </Typography>
                 <Typography variant="h5">
-                a distributed system that trains machine learning (ML) models and deploys trained models
+                  a distributed system that trains machine learning (ML) models
+                  and deploys trained models
                 </Typography>
                 <br />
                 <Button
@@ -77,17 +78,13 @@ class LandingTryRafiki extends React.Component {
           </Grid>
           <Grid item xs={12} md={6} className={classes.imagesWrapper}>
             <Hidden smDown>
-              <img
-                src={tryRafiki}
-                alt="tryRafiki"
-                className={classes.image}
-              />
+              <img src={tryRafiki} alt="tryRafiki" className={classes.image} />
             </Hidden>
           </Grid>
         </Grid>
       </LayoutBody>
-    );
+    )
   }
 }
 
-export default withStyles(styles)(LandingTryRafiki);
+export default withStyles(styles)(LandingTryRafiki)

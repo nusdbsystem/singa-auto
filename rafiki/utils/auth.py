@@ -25,7 +25,8 @@ from datetime import datetime, timedelta
 from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
 
-TOKEN_EXPIRATION_HOURS = 1
+# extend JWT expiration to 1 day!
+TOKEN_EXPIRATION_HOURS = 24
 
 class UnauthorizedError(Exception): pass
 class InvalidAuthorizationHeaderError(Exception): pass
@@ -36,6 +37,8 @@ def generate_token(user):
         'user_type': user['user_type'],
         'exp': datetime.utcnow() + timedelta(hours=TOKEN_EXPIRATION_HOURS)
     }
+    # TODO: if backend using jwt, how come frontend still
+    # needs to configure token in localStorage?
     token = jwt.encode(payload, APP_SECRET, algorithm='HS256')
     return token.decode('utf-8')
 
@@ -44,6 +47,9 @@ def decode_token(token):
     return payload
 
 def auth(user_types=[]):
+    """
+    authenticate using Bearer Token from the requests
+    """
     from flask import request
     
     user_types.append(UserType.SUPERADMIN)
@@ -51,6 +57,7 @@ def auth(user_types=[]):
     def decorator(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
+            # auth user_id is needed for model and dataset
             auth_header = request.headers.get('authorization', None)
             token = extract_token_from_header(auth_header)
             auth = decode_token(token)
