@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 
 # Panda Modules Dependency
 from rafiki.panda.modules.explanations.lime.lime import Lime
+from rafiki.panda.modules.explanations.gradcam import GradCam
 from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
@@ -464,6 +465,15 @@ class PandaTorchBasicModel(PandaModel):
             self._lime = Lime(self._model)
             imgs_explained = self._lime.explain(queries, self._normalize_mean, self._normalize_std)
             return imgs_explained
+        elif method == 'gradcam':
+            gc = GradCam(self._model, 'vgg')
+            cams = []
+            images = utils.dataset.transform_images(queries, image_size=self._image_size, mode='RGB')
+            (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
+            for img in images:
+                cam = gc.generate_cam(img)
+                cams.append(cam)
+            return cams
         else:
             return []
 

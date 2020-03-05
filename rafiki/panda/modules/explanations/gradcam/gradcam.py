@@ -15,8 +15,9 @@ class GradCam(BaseExplanation):
         Produces class activation map
     """
     def __init__(self, model, model_arch, target_layer):
-        self.model = model.model_ft
-        self.model.eval()
+        #self.model = model.model_ft
+        self.model = model
+        #self.model.eval()
         self.model_arch = model_arch
         # Define extractor
         if model_arch == 'densenet':
