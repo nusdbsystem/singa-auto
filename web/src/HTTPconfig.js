@@ -36,7 +36,7 @@ const LocalGateways = {
 if (process.env.NODE_ENV === "development") {
   // set the gateway for local development here:
   HTTPconfig.gateway = LocalGateways.panda
-  // set the Host and Port for TrialsDetails.js
+  // set the Host and Port for TrialDetails.js
   HTTPconfig.adminHost = `panda.d2.comp.nus.edu.sg`
   HTTPconfig.adminPort = `3000`
 }

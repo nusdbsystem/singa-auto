@@ -150,13 +150,13 @@ curl -i "${URL}train_jobs/dummyTrainJobs-24182-app/1" \
 curl -i "${URL}train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/trials" \
   -H "Authorization: Bearer $TOKEN"
 
-# in web/src/containers/Jobs/TrialsDetails.js
+# in web/src/containers/Jobs/TrialDetails.js
 # rafikiClient is calling const data = await this._get(`/trials/${trialId}/logs`)
 # GET the "logs" from a trial
 curl -i "${URL}trials/{trial_id}/logs" \
   -H "Authorization: Bearer $TOKEN"
 
-# in web/src/containers/Jobs/TrialsDetails.js
+# in web/src/containers/Jobs/TrialDetails.js
 # rafikiClient is calling const data = await this._get(`/trials/${trialId}`)
 # GET trial xxx
 curl -i "${URL}trials/{trial_id}" \

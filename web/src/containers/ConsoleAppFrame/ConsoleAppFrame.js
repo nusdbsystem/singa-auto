@@ -23,7 +23,7 @@ import UploadModel from "../Models/UploadModel"
 import ListTrainJobs from "../Jobs/ListTrainJobs"
 import CreateTrainJob from "../Jobs/CreateTrainJob"
 import ListTrials from "../Jobs/ListTrials"
-import TrialDetails from "../Jobs/TrialsDetails"
+import TrialDetails from "../Jobs/TrialDetails"
 
 // Inference Jobs Component
 import InferenceJobDetails from "../InferenceJobs/InferenceJobDetails"

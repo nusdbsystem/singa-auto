@@ -19,8 +19,8 @@
 
 import React from "react"
 import { compose } from "redux"
-import { Route, withRouter } from "react-router-dom"
-import { withStyles } from "@material-ui/core/styles"
+import { withRouter } from "react-router-dom"
+
 import * as moment from "moment"
 
 import PlotManager from "app/PlotManager"
@@ -29,26 +29,20 @@ import getPlotDetails from "app/getPlotDetails"
 
 import HTTPconfig from "HTTPconfig"
 
-import {
-  Paper,
-  List,
-  ListItem,
-  Typography,
-  Divider,
-  Table,
-  TableBody,
-  TableRow,
-  CircularProgress,
-  ListItemText,
-  TableCell,
-  Button
-} from "@material-ui/core"
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem'
+import ListItemText from '@material-ui/core/ListItemText';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow'
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import Button from '@material-ui/core/Button';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
-/* interface Props {
-  classes: { [s: string]: any };
-  appUtils: AppUtils;
-  trialId: string;
-} */
 
 const styles = theme => ({
   headerSub: {
@@ -77,34 +71,12 @@ const styles = theme => ({
   },
 })
 
-class TrialDetailPage extends React.Component {
-  render() {
-    const { classes, appUtils, history } = this.props
-
-    return (
-      <Route
-        path={"/console/jobs/trials/:trialId"}
-        render={props => {
-          const { trialId } = props.match.params
-          return (
-            <TrialDetails
-              trialId={trialId}
-              classes={classes}
-              appUtils={appUtils}
-              history={history}
-            />
-          )
-        }}
-      />
-    )
-  }
-}
 
 class TrialDetails extends React.Component {
   constructor(props) {
     super(props)
     this.state = { logs: null, trial: null }
-    this.chart = [] //TODO: what is this chart doing?
+    this.chart = []
     const adminHost = HTTPconfig.adminHost || "localhost"
     const adminPort = HTTPconfig.adminPort || 3000
     console.log("adminHost: ", adminHost)
@@ -115,9 +87,7 @@ class TrialDetails extends React.Component {
   }
 
   async componentDidMount() {
-    // TODO: Why write this thing as a render component for Route??!
-    // Re-write TrialDetailPage!
-    const { trialId } = this.props
+    const { trialId } = this.props.match.params
 
     try {
       const [logs, trial] = await Promise.all([
@@ -160,7 +130,7 @@ class TrialDetails extends React.Component {
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>ID</TableCell>
+                <TableCell>Trial ID</TableCell>
                 <TableCell>{trial.id}</TableCell>
               </TableRow>
               <TableRow>
@@ -282,7 +252,8 @@ class TrialDetails extends React.Component {
   }
 
   render() {
-    const { classes, trialId } = this.props
+    const { classes } = this.props
+    const { trialId } = this.props.match.params
     const { logs, trial } = this.state
 
     return (
@@ -304,7 +275,9 @@ class TrialDetails extends React.Component {
             <Divider className={classes.divider} />
           )}
         {logs && logs.messages && this.renderLogsMessages()}
-        {!(trial && logs) && <CircularProgress />}
+        {!(trial && logs) &&
+          <LinearProgress color="secondary" />
+        }
       </React.Fragment>
     )
   }
@@ -314,4 +287,4 @@ class TrialDetails extends React.Component {
 export default compose(
   withRouter,
   withStyles(styles)
-)(TrialDetailPage)
+)(TrialDetails)
