@@ -140,11 +140,9 @@ class ListTrials extends React.Component {
                           <IconButton
                             onClick={() => {
                               // click to see individual trial
-                              const link = "/console/jobs/trials/:trialId".replace(
-                                ":trialId",
-                                x.id
+                              this.props.push(
+                                `/console/jobs/trials/${x.id}`
                               )
-                              this.props.push(link)
                             }}
                           >
                             <PageviewIcon />

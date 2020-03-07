@@ -110,11 +110,9 @@ class ListTrainJobs extends React.Component {
                     <TableCell padding="default">
                       <IconButton
                         onClick={() => {
-                          const link = "/console/jobs/trials/:appId/:app/:appVersion"
-                            .replace(":appId", x.id)
-                            .replace(":app", x.app)
-                            .replace(":appVersion", x.app_version)
-                          this.props.push(link)
+                          this.props.push(
+                            `/console/jobs/trials/${x.id}/${x.app}/${x.app_version}`
+                          )
                         }}
                       >
                         <PageviewIcon />

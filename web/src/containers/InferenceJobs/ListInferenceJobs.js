@@ -93,9 +93,10 @@ class ListInferenceJobs extends React.Component {
                       <TableCell padding="default">
                         <IconButton
                           onClick={() => {
-                            const link = "/console/inferencejobs/running_job/:app/:appVersion"
-                              .replace(":app", x.app)
-                              .replace(":appVersion", x.app_version)
+                            const link = ("/console/inferencejobs/running_job/" +
+                              `${x.app}/` +
+                              `${x.app_version}`
+                            )
                             this.props.push(link)
                           }}
                         >
