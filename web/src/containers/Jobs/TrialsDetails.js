@@ -104,6 +104,9 @@ class TrialDetails extends React.Component {
     this.chart = [] //TODO: what is this chart doing?
     const adminHost = HTTPconfig.adminHost || "localhost"
     const adminPort = HTTPconfig.adminPort || 3000
+    console.log("adminHost: ", adminHost)
+    console.log("HTTPconfig.adminHost: ", HTTPconfig.adminHost)
+    console.log("adminPort: ", adminPort)
     this.rafikiClient = new RafikiClient(adminHost, adminPort)
     this.plotManager = new PlotManager()
   }
@@ -120,7 +123,7 @@ class TrialDetails extends React.Component {
       ])
       this.setState({ logs, trial })
     } catch (error) {
-      alert(error, "Failed to retrieve trial & its logs")
+      console.log(error, "Failed to retrieve trial & its logs")
     }
   }
 
@@ -168,7 +171,7 @@ class TrialDetails extends React.Component {
               {trial.score !== null && (
                 <TableRow>
                   <TableCell>Score</TableCell>
-                  <TableCell>{trial.score}</TableCell>
+                  <TableCell>{parseFloat(trial.score).toFixed(3)}</TableCell>
                 </TableRow>
               )}
               {trial.proposal && (
@@ -196,13 +199,11 @@ class TrialDetails extends React.Component {
                   <TableRow>
                     <TableCell>Duration</TableCell>
                     <TableCell>
-                      {// @ts-ignore
-                      moment
+                      {moment
                         .duration(
                           trial.datetime_stopped - trial.datetime_started
                         )
-                        .asMinutes()}{" "}
-                      min
+                        .humanize()}
                     </TableCell>
                   </TableRow>
                 </React.Fragment>

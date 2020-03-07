@@ -152,7 +152,9 @@ class ListTrials extends React.Component {
                         </TableCell>
                         <TableCell>{x.model_name}</TableCell>
                         <TableCell>{x.no}</TableCell>
-                        <TableCell>{x.score !== null ? x.score : "-"}</TableCell>
+                        <TableCell>
+                          {x.score !== null ? parseFloat(x.score).toFixed(3) : "-"}
+                        </TableCell>
                         <TableCell>{x.status}</TableCell>
                         <TableCell>
                           {moment(x.datetime_started).fromNow()}

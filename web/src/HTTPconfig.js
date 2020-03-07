@@ -36,6 +36,9 @@ const LocalGateways = {
 if (process.env.NODE_ENV === "development") {
   // set the gateway for local development here:
   HTTPconfig.gateway = LocalGateways.panda
+  // set the Host and Port for TrialsDetails.js
+  HTTPconfig.adminHost = `panda.d2.comp.nus.edu.sg`
+  HTTPconfig.adminPort = `3000`
 }
 // otherwise, the docker build will set NODE_ENV to production
 
