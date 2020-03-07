@@ -1,13 +1,17 @@
 # common cURL commands for testing REST APIs
 
+# first set the URL you want to send requests to
+# export URL="http://localhost:3000/"
+export URL="http://panda.d2.comp.nus.edu.sg:3000/"
+
 # GET the root, no need authentication
 curl -i -H "Accept: application/json" \
   -H "Content-Type: application/json" \
   -X GET \
-  http://localhost:3000/
+  $URL
 
 # GET the token
-curl -i http://localhost:3000/tokens \
+curl -i "${URL}tokens" \
   -X POST \
   -d 'email=superadmin@rafiki' \
   -d 'password=rafiki'
@@ -26,7 +30,7 @@ export TOKEN="<your token from above>"
 #####################################
 
 # POST a train dataset from a file
-curl -i http://localhost:3000/datasets \
+curl -i "${URL}datasets" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -F name="DS-Train55-$(date +%F_%H-%M-%S)" \
@@ -34,7 +38,7 @@ curl -i http://localhost:3000/datasets \
   -F dataset=@"/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki//rafiki_panda_dev/OneDrive-2020-02-18/train55.zip"
 
 # POST a test/val dataset from a file
-curl -i http://localhost:3000/datasets \
+curl -i "${URL}datasets" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -F name="DS-Val55-$(date +%F_%H-%M-%S)" \
@@ -43,7 +47,7 @@ curl -i http://localhost:3000/datasets \
 
 # GET datasets with authentication (Bearer Token)
 # returns an array of objects
-curl -i http://localhost:3000/datasets \
+curl -i "${URL}datasets" \
   -H "Authorization: Bearer $TOKEN"
 
 #[
@@ -58,7 +62,7 @@ curl -i http://localhost:3000/datasets \
 
 # POST a new model from a file
 # no need to include user_id again
-curl -i http://localhost:3000/models \
+curl -i "${URL}models" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -F name="PyPandaDenseNet-Model-$(date +%F_%H-%M-%S)" \
@@ -67,7 +71,7 @@ curl -i http://localhost:3000/models \
   -F model_class="PyPandaDenseNet" \
   -F dependencies='{"torch":"1.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
 
-curl -i http://localhost:3000/models \
+curl -i "${URL}models" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -F name="PyPandaVgg-Model-$(date +%F_%H-%M-%S)" \
@@ -76,7 +80,7 @@ curl -i http://localhost:3000/models \
   -F model_class="PyPandaVgg" \
   -F dependencies='{"torch":"1.0.1","torchvision":"0.2.2","matmatplotlib":"3.1.0","lime":"0.1.1.36"}'
 
-curl -i http://localhost:3000/models \
+curl -i "${URL}models" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -F name='TfFeedForward' \
@@ -86,27 +90,27 @@ curl -i http://localhost:3000/models \
   -F dependencies='{ "tensorflow": "1.12.0" }'
 
 # GET a single model through model_id
-curl -i http://localhost:3000/models/2c46d0ca-6b07-4a0e-9f45-a8e3a6f7dc1c \
+curl -i "${URL}models/2c46d0ca-6b07-4a0e-9f45-a8e3a6f7dc1c" \
   -X GET \
   -H "Authorization: Bearer $TOKEN"
 
 # DELETE a model by model_id
-curl -i http://localhost:3000/models/0d09ea27-f595-411b-b3ff-dbdab3f0c53c  \
+curl -i "${URL}models/0d09ea27-f595-411b-b3ff-dbdab3f0c53c"  \
   -X DELETE \
   -H "Authorization: Bearer $TOKEN"
 
 # GET available models with Bearer Token
 # returns an array
-curl -i http://localhost:3000/models/available \
+curl -i "${URL}models/available" \
   -H "Authorization: Bearer $TOKEN"
 
 # GET available models with specific task
-curl -i http://localhost:3000/models/available?task=IMAGE_CLASSIFICATION \
+curl -i "${URL}models/available?task=IMAGE_CLASSIFICATION" \
   -H "Authorization: Bearer $TOKEN"
 
 # GET recommended models with Bearer Token
 # returns an array
-curl -i http://localhost:3000/models/recommended?dataset_id=xxx \
+curl -i "${URL}models/recommended?dataset_id=xxx" \
   -H "Authorization: Bearer $TOKEN"
 
 #####################################
@@ -116,7 +120,7 @@ curl -i http://localhost:3000/models/recommended?dataset_id=xxx \
 # POST Train Jobs
 # budget values MUST NOT be in quotes!
 # model_ids should be literal list!
-curl -i http://localhost:3000/train_jobs \
+curl -i "${URL}train_jobs" \
   -H "Authorization: Bearer $TOKEN" \
   -F app="TrainJobs-$(date +%F_%H-%M-%S)-app" \
   -F task="IMAGE_CLASSIFICATION" \
@@ -127,15 +131,15 @@ curl -i http://localhost:3000/train_jobs \
   -F train_args='{}'
 
 # GET Train JObs
-curl -i http://localhost:3000/train_jobs \
+curl -i "${URL}train_jobs" \
   -H "Authorization: Bearer $TOKEN"
 
 # GET Train JObs by app name
-curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app \
+curl -i "${URL}train_jobs/TrainJobs-2020-02-22_11-46-46-app" \
   -H "Authorization: Bearer $TOKEN"
 
 # GET Train JObs by app name and app_version
-curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1 \
+curl -i "${URL}train_jobs/dummyTrainJobs-24182-app/1" \
   -H "Authorization: Bearer $TOKEN"
 
 #####################################
@@ -143,22 +147,30 @@ curl -i http://localhost:3000/train_jobs/dummyTrainJobs-24182-app/1 \
 #####################################
 
 # GET a trial from train_jobs
-curl -i http://localhost:3000/train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/trials \
+curl -i "${URL}train_jobs/TrainJobs-2020-02-22_11-46-46-app/1/trials" \
   -H "Authorization: Bearer $TOKEN"
 
-# rafikiClient is calling const data = await this._get(`/trials/${trialId}/logs`)
-# rafikiClient is calling const data = await this._get(`/trials/${trialId}`)
 # in web/src/containers/Jobs/TrialsDetails.js
+# rafikiClient is calling const data = await this._get(`/trials/${trialId}/logs`)
+# GET the "logs" from a trial
+curl -i "${URL}trials/{trial_id}/logs" \
+  -H "Authorization: Bearer $TOKEN"
+
+# in web/src/containers/Jobs/TrialsDetails.js
+# rafikiClient is calling const data = await this._get(`/trials/${trialId}`)
+# GET trial xxx
+curl -i "${URL}trials/{trial_id}" \
+  -H "Authorization: Bearer $TOKEN"
 
 #####################################
 # Inference Jobs
 #####################################
 
 # GET an inference job by appName and appVersion
-curl -i http://localhost:3000/inference_jobs/PandaApp/1 \
+curl -i "${URL}inference_jobs/PandaApp/1" \
   -H "Authorization: Bearer $TOKEN"
 
 # POST stop an inference job by appName and appVersion
-curl -i http://localhost:3000/inference_jobs/PandaApp/1/stop \
+curl -i "${URL}inference_jobs/PandaApp/1/stop" \
   -H "Authorization: Bearer $TOKEN" \
   -X POST
