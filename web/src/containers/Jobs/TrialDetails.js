@@ -18,6 +18,7 @@
  */
 
 import React from "react"
+import { connect } from "react-redux"
 import { compose } from "redux"
 import { withRouter } from "react-router-dom"
 
@@ -26,6 +27,8 @@ import * as moment from "moment"
 import PlotManager from "app/PlotManager"
 import RafikiClient from "app/RafikiClient"
 import getPlotDetails from "app/getPlotDetails"
+
+import * as ConsoleActions from "../ConsoleAppFrame/actions"
 
 import HTTPconfig from "HTTPconfig"
 
@@ -88,6 +91,7 @@ class TrialDetails extends React.Component {
 
   async componentDidMount() {
     const { trialId } = this.props.match.params
+    this.props.handleHeaderTitleChange("Training Jobs > Jobs List > List Trials > Trial Details")
 
     try {
       const [logs, trial] = await Promise.all([
@@ -98,6 +102,10 @@ class TrialDetails extends React.Component {
     } catch (error) {
       console.log(error, "Failed to retrieve trial & its logs")
     }
+  }
+
+  componentWillUnmount() {
+    this.props.resetLoadingBar()
   }
 
   componentDidUpdate() {
@@ -283,8 +291,14 @@ class TrialDetails extends React.Component {
   }
 }
 
+const mapDispatchToProps = {
+  handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
+  resetLoadingBar: ConsoleActions.resetLoadingBar,
+}
+
 
 export default compose(
+  connect(null, mapDispatchToProps),
   withRouter,
-  withStyles(styles)
+  withStyles(styles),
 )(TrialDetails)
