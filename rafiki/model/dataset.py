@@ -343,27 +343,49 @@ class ImageFilesDatasetLazy(ModelDataset):
             (self._full_image_paths, self._image_classes) = self._shuffle(self._full_image_paths, self._image_classes)
 
     def __getitem__(self, index):
-        pil_images = _load_pil_images([self._full_image_paths[index]], mode=self.mode)[0]
-        (image, image_size) = self._preprocess(pil_images, self.min_image_size, self.max_image_size)
+        extracted_item_path = self._extract_item(self.path, self._full_image_paths[index])
+        pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+        (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
         image_class = self._image_classes[index]
         return (image, image_class)
 
-    def _preprocess(self, pil_images, min_image_size, max_image_size):
-        if len(pil_images) == 0:
-            raise InvalidDatasetFormatException('Dataset should contain at least 1 image!')
+    def _preprocess(self, pil_image, min_image_size, max_image_size):
+        # if len(pil_images) == 0:
+        #     raise InvalidDatasetFormatException('Dataset should contain 1 image for ImageFilesDatasetLazy loading!')
+
+        (width, height) = pil_image.size
+
+        # crop rectangular image into square 
+        left = (width - min(width, height))/2
+        right = (width + min(width, height))/2
+        top = (height - min(width, height))/2
+        bottom = (height + min(width, height))/2
+        crop_pil_image = pil_image.crop((left, top, right, bottom))
 
         # Decide on image size, adhering to min/max, making it square and trying not to stretch it
-        (width, height) = pil_images[0].size
         image_size = max(min([width, height, max_image_size or width]), min_image_size or 0)
 
         # Resize all images
-        pil_images = [x.resize([image_size, image_size]) for x in pil_images]
+        resized_pil_image = crop_pil_image.resize([image_size, image_size]) 
 
         # Convert to numpy arrays
-        images = [np.asarray(x) for x in pil_images]
+        images = np.asarray(resized_pil_image) 
 
         return (images, image_size)
+
+
+    def _extract_item(self, dataset_path, item_path):
+        # Create temp directory to unzip to extract 1 item 
+        dir_path = tempfile.mkdtemp()
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+        extracted_item_path=dataset_zipfile.extract(item_path,path=dir_path)
+        dataset_zipfile.close()
+
+        return extracted_item_path
     
+
     def _extract_zip(self, dataset_path):
         # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
         with tempfile.TemporaryDirectory() as d:
@@ -387,12 +409,11 @@ class ImageFilesDatasetLazy(ModelDataset):
                 raise InvalidDatasetFormatException()
 
 
-        full_image_paths = [os.path.join(d, x) for x in image_paths]
         num_classes = image_classes.shape[1] 
         num_labeled_samples = image_paths.shape[0]
         image_classes=tuple(np.array(image_classes).tolist())
-        # image_paths=tuple(image_paths)
-        return (full_image_paths, image_classes, num_labeled_samples, num_classes)
+        image_paths=tuple(image_paths)
+        return (image_paths, image_classes, num_labeled_samples, num_classes)
 
     def _load(self, dataset_path, mode):
         # Create temp directory to unzip to all files
