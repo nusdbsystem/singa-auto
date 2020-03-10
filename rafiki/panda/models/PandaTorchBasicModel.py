@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 # Panda Modules Dependency
 from rafiki.panda.modules.explanations.lime.lime import Lime
-# from rafiki.panda.modules.explanations.gradcam.gradcam import GradCam
+from rafiki.panda.modules.explanations.gradcam.gradcam import GradCam
 from rafiki.panda.modules.mod_modelslicing.models import create_sr_scheduler, upgrade_dynamic_layers
 from rafiki.panda.modules.mod_gmreg.gm_prior_optimizer_pytorch import GMOptimizer
 from rafiki.panda.modules.mod_driftadapt import LabelDriftAdapter
