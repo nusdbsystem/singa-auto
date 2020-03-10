@@ -4,3 +4,5 @@ Pillow==5.3.0
 tqdm==4.28.1
 msgpack==0.6.1
 pandas==0.24.2
+opencv-python==3.2.0.8
+#opencv-contrib-python-headless
