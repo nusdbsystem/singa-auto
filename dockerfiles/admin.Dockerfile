@@ -19,7 +19,7 @@
 
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get -y upgrade
+RUN apt-get update && apt-get -y upgrade && apt install -y libglib2.0 libsm6 libxext6 libxrender-dev libxrender1 libfontconfig1 
 
 # Install conda with pip and python 3.6
 ARG CONDA_ENVIORNMENT
