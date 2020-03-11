@@ -376,11 +376,13 @@ class ImageFilesDatasetLazy(ModelDataset):
 
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item 
-        dir_path = tempfile.mkdtemp()
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+        try:
+            os.path.exists(self.dir_path)
+        except NameError:
+            self.dir_path = tempfile.mkdtemp()
+
         dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
-        extracted_item_path=dataset_zipfile.extract(item_path,path=dir_path)
+        extracted_item_path=dataset_zipfile.extract(item_path,path=self.dir_path)
         dataset_zipfile.close()
 
         return extracted_item_path
@@ -455,15 +457,9 @@ class ImageFilesDatasetLazy(ModelDataset):
         return (images, classes)
         
     def __del__(self):
-        dir_path = os.path.dirname(self._full_image_paths[0])
-        print("dataset destructor: cleaning {}".format(dir_path))
-        for image_path in os.listdir(dir_path):
-            os.remove(os.path.join(dir_path, image_path))
-        """
-        for image_path in self._full_image_paths:
-            os.remove(image_path)
-        """
-        # os.removedirs(dir_path)
+        print("dataset destructor: cleaning {}".format(self.dir_path))
+        for image_path in os.listdir(self.dir_path):
+            os.remove(os.path.join(self.dir_path, image_path))
     
     def get_item(self, index):
         return self.__getitem__(index)
