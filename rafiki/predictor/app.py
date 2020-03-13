@@ -19,9 +19,12 @@
 
 import os
 import logging
+import tempfile
+
 from flask import Flask, jsonify, request, g
 
 from .predictor import Predictor
+from ..model import utils
 
 service_id = os.environ['RAFIKI_SERVICE_ID']
 
@@ -61,26 +64,42 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    predictor = get_predictor()
-    params = get_request_params()
+    print('get predication requests')
+    try:
+        predictor = get_predictor()
 
-    # Must either have `query` or `queries` key
-    if not 'query' in params and not 'queries' in params:
-        raise InvalidQueryFormatError('Must have either `query` or `queries` attribute')
-
-    # Either do single prediction or bulk predictions 
-    if 'queries' in params:
-        predictions = predictor.predict(params['queries'])
-        return jsonify({
-            'prediction': None,
-            'predictions': predictions
-        })
-    else:
-        predictions = predictor.predict([params['query']])
+        with tempfile.NamedTemporaryFile() as f:
+            if 'img' in request.files:
+                # Save img data in request body
+                try:
+                    file_storage = request.files['img']
+                    file_storage.save(f.name)
+                    query = utils.dataset.load_images([f.name]).tolist()[0]
+                    file_storage.close()
+                except:
+                    return jsonify({'ErrorMsg': 'can not read img'}), 400
+            else:
+                return jsonify({'ErrorMsg': 'No image provided'}), 400
+        predictions = predictor.predict([query])
         assert len(predictions) == 1
-        return jsonify({
-            'prediction': predictions[0],
-            'predictions': []
-        })
+        return jsonify({'prediction': predictions[0][0]}), 200
+    except Exception as e:
+        logger.error(str(e))
+        return jsonify({'ErrorMsg': 'Server Error'}), 500
+
+    # Either do single prediction or bulk predictions
+    # if 'queries' in params:
+    #     predictions = predictor.predict(params['queries'])
+    #     return jsonify({
+    #         'prediction': None,
+    #         'predictions': predictions
+    #     })
+    # else:
+    #     predictions = predictor.predict([params['query']])
+    #     assert len(predictions) == 1
+    #     return jsonify({
+    #         'prediction': predictions[0],
+    #         'predictions': []
+    #     })
 
 

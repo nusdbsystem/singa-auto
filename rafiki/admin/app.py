@@ -111,6 +111,7 @@ def generate_user_token():
 # Datasets
 ####################################
 
+
 @app.route('/datasets', methods=['POST'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
 def create_dataset(auth):
@@ -136,6 +137,7 @@ def create_dataset(auth):
         with admin:
             return jsonify(admin.create_dataset(auth['user_id'], **params))
 
+
 @app.route('/datasets', methods=['GET'])
 @auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
 def get_datasets(auth):
@@ -143,6 +145,7 @@ def get_datasets(auth):
     params = get_request_params()
     with admin:
         return jsonify(admin.get_datasets(auth['user_id'], **params))
+
 
 # TODO:New METHOD Delete Dataset
 @app.route('/datasets/<id>', methods=['DELETE'])
@@ -442,7 +445,6 @@ def download_model_file(auth, model_id):
             if auth['user_id'] != model['user_id']:
                 raise UnauthorizedError()  
 
-
         model_file = admin.get_model_file(model_id, **params)
 
     res = make_response(model_file)
@@ -484,6 +486,7 @@ def handle_event(auth, name):
 def handle_error(error):
     return traceback.format_exc(), 500
 
+
 # Extract request params from Flask request
 def get_request_params():
     # Get params from body as JSON
@@ -501,6 +504,7 @@ def get_request_params():
     params = {**params, **query_params}
 
     return params
+
 
 def get_admin():
     # Allow multiple threads to each have their own instance of admin

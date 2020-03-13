@@ -455,7 +455,7 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = 'rafiki_service_{}'.format(service.id)
+            container_service_name = 'rafiki_svc_{}_{}'.format(service_type, service.id)
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image, 

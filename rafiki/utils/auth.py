@@ -22,6 +22,8 @@ import jwt
 from functools import wraps
 from datetime import datetime, timedelta
 
+from flask import jsonify
+
 from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
 
@@ -58,14 +60,16 @@ def auth(user_types=[]):
         @wraps(f)
         def wrapped(*args, **kwargs):
             # auth user_id is needed for model and dataset
-            auth_header = request.headers.get('authorization', None)
-            token = extract_token_from_header(auth_header)
-            auth = decode_token(token)
+            try:
+                auth_header = request.headers.get('authorization', None)
+                token = extract_token_from_header(auth_header)
+                auth = decode_token(token)
 
-            if auth.get('user_type') not in user_types:
-                raise UnauthorizedError()
-
-            return f(auth, *args, **kwargs)
+                if auth.get('user_type') not in user_types:
+                    raise UnauthorizedError()
+                return f(auth, *args, **kwargs)
+            except Exception as e:
+                return jsonify({'ErrorMsg': e.__class__.__name__ + ' ' + str(e)}), 400
 
         return wrapped
     return decorator

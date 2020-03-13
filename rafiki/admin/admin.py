@@ -149,13 +149,13 @@ class Admin(object):
             os.makedirs(dir_path)
         # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
         dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
-        num_samples=len(dataset_zipfile.namelist()) -1
+        num_samples = len(dataset_zipfile.namelist()) -1
 
         # obtain csv file
         for fileName in dataset_zipfile.namelist():
            if fileName.endswith('.csv'):
                # Extract a single file from zip
-               csv_path = dataset_zipfile.extract(fileName,path=dir_path)
+               csv_path = dataset_zipfile.extract(fileName, path=dir_path)
 
         # obtain a sample
         sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
@@ -163,18 +163,17 @@ class Admin(object):
             img_path = dataset_zipfile.extract(sample_name, path=dir_path)
             img = Image.open(img_path)
             img_size = str(img.size)
-            os.unlink(img_path)     
+            os.unlink(img_path)
         # close dataset zipfile
         dataset_zipfile.close()
         csv = pd.read_csv(csv_path)
-
 
         # num_classes = len(labels)
         if 'class' in csv.columns:
             class_count = csv['class'].value_counts()
         else:
-            labels=pd.read_csv(csv_path,nrows=0).columns[1::].to_list()
-            class_count = (csv[csv.columns[1::]]==1).astype(int).sum(axis=0)
+            labels = pd.read_csv(csv_path, nrows=0).columns[1::].to_list()
+            class_count = (csv[csv.columns[1::]] == 1).astype(int).sum(axis=0)
 
         num_labeled_samples = len(csv[csv.columns[0]].unique())
         ratio = class_count / num_labeled_samples
@@ -182,9 +181,9 @@ class Admin(object):
         os.unlink(csv_path)
         
         if task == 'IMAGE_CLASSIFICATION':
-            stat = {'num_labeled_samples':num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size':img_size}
+            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size':img_size}
         else:
-            stat = {'num_labeled_samples':num_labeled_samples,'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
+            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
 
         dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
         self._meta_store.commit()
@@ -466,6 +465,7 @@ class Admin(object):
             }
             for x in train_jobs
         ]
+
     def stop_all_train_jobs(self):
         train_jobs = self._meta_store.get_train_jobs_by_statuses(
                     [TrainJobStatus.STARTED, TrainJobStatus.RUNNING])

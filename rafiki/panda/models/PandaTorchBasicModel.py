@@ -8,7 +8,9 @@ import tempfile
 import json
 import argparse
 from typing import Union, Dict, Optional, Any, List
-
+import traceback
+import io
+from collections import Counter
 # Rafiki Dependency
 from rafiki.model import PandaModel, FloatKnob, CategoricalKnob, FixedKnob, IntegerKnob, PolicyKnob, utils
 from rafiki.model.knob import BaseKnob
@@ -28,8 +30,12 @@ from torch.utils.data import Dataset, DataLoader
 # Misc Third-party Machine-Learning Dependency
 import sklearn.metrics
 import numpy as np
+import numpy
 import matplotlib.pyplot as plt
-
+import copy
+import numpy as np
+from PIL import Image, ImageDraw
+import matplotlib.cm as mpl_color_map
 # Panda Modules Dependency
 from rafiki.panda.modules.explanations.lime.lime import Lime
 from rafiki.panda.modules.explanations.gradcam.gradcam import GradCam
@@ -65,6 +71,7 @@ class PandaTorchBasicModel(PandaModel):
         self._normalize_mean = []
         self._normalize_std = []
         self._num_classes = 2
+        self.label_mapper = dict()
 
     @abc.abstractclassmethod
     def _create_model(self, scratch: bool, num_classes: int):
@@ -115,7 +122,8 @@ class PandaTorchBasicModel(PandaModel):
             
             # Explanation
             'enable_explanation':FixedKnob(False),
-            'explanation_method':FixedKnob('lime'),
+            'explanation_gradcam': FixedKnob(True),
+            'explanation_lime': FixedKnob(True),
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(False),
@@ -195,6 +203,7 @@ class PandaTorchBasicModel(PandaModel):
         # self._normalize_std = [0.07271624, 0.07271624, 0.07271624]
 
         self._num_classes = dataset.classes
+        self.label_mapper = dataset.label_mapper
 
         # construct the model
         self._model = self._create_model(
@@ -244,10 +253,9 @@ class PandaTorchBasicModel(PandaModel):
             shuffle=True)
 
         #Setup Criterion
-        if self._num_classes == 2:
-            self.train_criterion = nn.CrossEntropyLoss() ### type(torch.LongTensor)
-        else:
-            self.train_criterion = nn.MultiLabelSoftMarginLoss() ### type(torch.FloatTensor)
+        print("self._num_classes is :   ", self._num_classes)
+
+        self.train_criterion = nn.MultiLabelSoftMarginLoss() ### type(torch.FloatTensor)
 
         #Setup Optimizer
         if self._knobs.get("optimizer") == "adam":
@@ -287,7 +295,7 @@ class PandaTorchBasicModel(PandaModel):
             print("Epoch {}/{}".format(epoch, self._knobs.get("max_epochs")))
             batch_losses = []
             for batch_idx, (raw_indices, traindata, batch_classes) in enumerate(train_dataloader):
-                inputs, labels = self._transform_data(traindata, batch_classes, train=True)  
+                inputs, labels = self._transform_data(traindata, batch_classes, train=True)
                 optimizer.zero_grad()
                 
                 if self._knobs.get("enable_model_slicing"):
@@ -299,7 +307,6 @@ class PandaTorchBasicModel(PandaModel):
                 else:
                     outputs = self._model(inputs)
                     trainloss = self.train_criterion(outputs, labels)
-
 
                     trainloss.backward()
 
@@ -364,7 +371,7 @@ class PandaTorchBasicModel(PandaModel):
         gts = []
         with torch.no_grad():
             for batch_idx, (raw_indices, batch_data, batch_classes) in enumerate(torch_dataloader):
-                inputs, labels = self._transform_data(batch_data, batch_classes, train=True)  
+                inputs, labels = self._transform_data(batch_data, batch_classes, train=True)
                 outputs = self._model(inputs)
                 loss = self.train_criterion(outputs, labels)
                 batch_losses.append(loss.item())
@@ -404,19 +411,20 @@ class PandaTorchBasicModel(PandaModel):
         Return:
             outs: list of numbers indicating scores of classes
         """
-        images = utils.dataset.transform_images(queries, image_size=128, mode='RGB')
-        (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
+        print('begin to predict')
+        print('mean and std', self._normalize_mean, self._normalize_std)
+        ndarray_images, pil_images = utils.dataset.transform_images(queries, image_size=128, mode='RGB')
+        (images, _, _) = utils.dataset.normalize_images(ndarray_images, self._normalize_mean, self._normalize_std)
 
+        print(self._use_gpu)
         if self._use_gpu:
             self._model.cuda()
-
         self._model.eval()
-
         # images are size of (B, W, H, C)
         with torch.no_grad():
-            try:
+            if self._use_gpu:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2).cuda()
-            except Exception:
+            else:
                 images = torch.FloatTensor(images).permute(0, 3, 1, 2)
             
             if self._knobs.get("enable_mc_dropout"):
@@ -424,58 +432,93 @@ class PandaTorchBasicModel(PandaModel):
                 trials_n = self._knobs.get("mc_trials_n")
             else:
                 trials_n = 1
-            
             outs = list()
+
             for i in range(trials_n):
                 out = self._model(images)
-
                 if self._knobs.get("enable_label_adaptation"):
-                    out = self._label_drift_adapter.adapt(out)
+                    out = self._label_drift_adapter.adapt(out).squeeze()
+                    print('trail_num: ', i)
+                    print('out is ', out)
+                    print('==' * 100)
                 else:
-                    out = torch.sigmoid(out).cpu()
-
+                    out = torch.sigmoid(out).cpu().squeeze()
+                    print('trail_num: ', i)
+                    print('out is ', out)
+                    print('==' * 100)
                 outs.append(out.numpy())
+
         result = dict()
         result['out'] = np.asarray(outs).tolist()
-        result['explanation'] = []
+        result['explaination'] = {}
         result['mc_dropout'] = []
+
         if self._knobs.get("enable_explanation"):
-            exp = self.local_explain(queries, {})
+            exp = self.local_explain(org_imgs=pil_images, images=ndarray_images, params={})
             if exp:
-                result['explanation'] = exp
+                result['explaination'] = exp
         if self._knobs.get("enable_mc_dropout"):
+            mean_var_eles = dict()
             outs = np.asarray(outs)
             print("mean {}, var {}".format(np.mean(outs, axis=0), np.var(outs, axis=0)))
-            result['mc_dropout'] = np.mean(outs, axis=0).tolist()
+            label_index = 0
+            for mean, var in zip(np.mean(outs, axis=0).squeeze().tolist(), np.var(outs, axis=0).squeeze().tolist()):
+                mean_var_ele = dict()
+                mean_var_ele['label'] = self.label_mapper[str(label_index)] if self.label_mapper.get(str(label_index)) \
+                                                                               is not None else str(label_index)
+                mean_var_ele['mean'] = mean
+                mean_var_ele['std'] = var
+                mean_var_eles['class_{}'.format(label_index)] = mean_var_ele
+                label_index += 1
+
+            result['mc_dropout'] = [mean_var_eles]
         return [result]
 
-    def local_explain(self, queries: List[Any], params: Params) -> List[Any]:
+    def local_explain(self, org_imgs: Image, images: List[Any], params: Params) -> Dict:
         """
         Override PandaModel.local_explain
 
         Parameters:
-            queries: list of queries
+            org_imgs: list of PIL.image
+            images: list of images(ndarray)
             params: parameters 
         
         Return:
             explanations: list of explanations
         """
-        method = self._knobs.get("explanation_method")
-        if method == 'lime':
-            self._lime = Lime(self._model)
-            imgs_explained = self._lime.explain(queries, self._normalize_mean, self._normalize_std)
-            return imgs_explained
-        elif method == 'gradcam':
-            gc = GradCam(self._model, 'vgg')
-            cams = []
-            images = utils.dataset.transform_images(queries, image_size=self._image_size, mode='RGB')
-            (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
-            for img in images:
-                cam = gc.generate_cam(img)
-                cams.append(cam)
-            return cams
-        else:
-            return []
+        print('begin local_explain')
+        enable_gradcam = self._knobs.get("explanation_gradcam")
+        enable_lime = self._knobs.get("explanation_lime")
+        print('get method:', enable_gradcam, enable_lime)
+
+        explanation = dict()
+        explanation['lime_img'] = ''
+        explanation['gradcam_img'] = ''
+
+        if enable_lime:
+            try:
+                self._lime = Lime(self._model, self._image_size, self._normalize_mean, self._normalize_std, self._use_gpu)
+                imgs_explained = self._lime.explain(images)
+                explanation['lime_exp'] = imgs_explained.tolist()
+                imgs_explained = self.convert_img_to_str(imgs_explained)
+                explanation['lime_img'] = imgs_explained
+            except:
+                traceback.print_exc(file=sys.stdout)
+
+        if enable_gradcam:
+            try:
+                gc = GradCam(self._model, 'vgg', None)
+                (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
+                images = images.swapaxes(3,1)
+                images = images.swapaxes(2,3)
+                cam = gc.generate_cam(images)
+                combined_gradcam = self.combine_images(org_im=org_imgs[0], activation=cam)
+                explanation['gradcam_exp'] = combined_gradcam.tolist()
+                combined_gradcam = self.convert_img_to_str(combined_gradcam)
+                explanation['gradcam_img'] = combined_gradcam
+            except:
+                traceback.print_exc(file=sys.stdout)
+        return explanation
 
     def dump_parameters(self):
         """
@@ -503,6 +546,7 @@ class PandaTorchBasicModel(PandaModel):
         params['normalize_mean'] = json.dumps(self._normalize_mean.tolist())
         params['normalize_std'] = json.dumps(self._normalize_std.tolist())
         params['num_classes'] = self._num_classes
+        params['label_mapper'] = json.dumps(self.label_mapper)
 
         if self._knobs.get("enable_label_adaptation"):
             params[self._label_drift_adapter.get_mod_name()] = self._label_drift_adapter.dump_parameters()
@@ -522,6 +566,7 @@ class PandaTorchBasicModel(PandaModel):
         self._normalize_mean = np.array(json.loads(params['normalize_mean']))
         self._normalize_std = np.array(json.loads(params['normalize_std']))
         self._num_classes = params['num_classes']
+        self.label_mapper = json.loads(params['label_mapper'])
 
         with tempfile.NamedTemporaryFile() as tmp:
             # Convert back to bytes & write to temp file
@@ -556,12 +601,43 @@ class PandaTorchBasicModel(PandaModel):
         Send data to GPU
         """
         inputs = data
-        ### modified here
-        # labels = labels.type(torch.LongTensor)
-        labels = labels.type(torch.FloatTensor)
+        labels = labels.type(torch.LongTensor)
+        one_hot_labels = torch.zeros(labels.shape[0], 2)
+        one_hot_labels[range(one_hot_labels.shape[0]), labels.squeeze()] = 1
+        one_hot_labels = one_hot_labels.type(torch.FloatTensor)
         if self._use_gpu:
             inputs, labels = inputs.cuda(), labels.cuda()
+
         inputs = Variable(inputs, requires_grad=False)
-        labels = Variable(labels, requires_grad=False)
-        return inputs, labels
-    
+        one_hot_labels = Variable(one_hot_labels, requires_grad=False)
+        return inputs, one_hot_labels
+
+    def combine_images(self,  org_im, activation, colormap_name='hsv'):
+        '''
+        org_im: PIL.Image, should be the same size with activation
+        return:  list
+        '''
+
+        color_map = mpl_color_map.get_cmap(colormap_name)
+        no_trans_heatmap = color_map(activation)
+
+        heatmap = copy.copy(no_trans_heatmap)
+        heatmap[:, :, 3] = 0.4
+        heatmap = Image.fromarray((heatmap*255).astype(np.uint8))
+        no_trans_heatmap = Image.fromarray((no_trans_heatmap*255).astype(np.uint8))
+
+        # Apply heatmap on iamge
+        heatmap_on_image = Image.new("RGBA", org_im.size)
+        heatmap_on_image = Image.alpha_composite(heatmap_on_image, org_im.convert('RGBA'))
+        heatmap_on_image = Image.alpha_composite(heatmap_on_image, heatmap)
+
+        return numpy.asarray(heatmap_on_image)
+
+    def convert_img_to_str(self, arr):
+        im = Image.fromarray(arr.astype("uint8"))
+        rawBytes = io.BytesIO()
+        encoding = 'utf-8'
+        im.save(rawBytes, "PNG")
+        rawBytes.seek(0)
+        return base64.b64encode(rawBytes.read()).decode(encoding)
+

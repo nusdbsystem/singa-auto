@@ -157,6 +157,6 @@ class PandaModel(BaseModel):
         super().__init__(**knobs)
 
     @abc.abstractmethod
-    def local_explain(self, queries, params: Params):
+    def local_explain(self, org_imgs, images, params: Params):
         raise NotImplementedError()
     

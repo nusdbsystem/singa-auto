@@ -37,12 +37,12 @@ logger = logging.getLogger(__name__)
 _Node = namedtuple('_Node', ['id', 'available_gpus', 'num_services'])
 _Deployment = namedtuple('_Deployment', ['node_id', 'gpu_nos'])
 
+
 class DockerSwarmContainerManager(ContainerManager):
     def __init__(self,
         network=os.environ.get('DOCKER_NETWORK', 'rafiki'),
         label_num_services=os.environ.get('DOCKER_NODE_LABEL_NUM_SERVICES', 'num_services'), 
         label_available_gpus=os.environ.get('DOCKER_NODE_LABEL_AVAILABLE_GPUS', 'available_gpus')):
-
         self._network = network
         self._client = docker.from_env()
         self._label_num_services = label_num_services

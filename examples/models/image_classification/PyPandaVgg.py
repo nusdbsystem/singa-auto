@@ -24,6 +24,7 @@ KnobConfig = Dict[str, BaseKnob]
 Knobs = Dict[str, Any]
 Params = Dict[str, Union[str, int, float, np.ndarray]]
 
+
 class PyPandaVgg(PandaTorchBasicModel):
     """
     Implementation of PyTorch DenseNet
@@ -82,8 +83,9 @@ class PyPandaVgg(PandaTorchBasicModel):
             'gm_prior_regularization_param_upt_freq':FixedKnob(50),
             
             # Explanation
-            'enable_explanation':FixedKnob(True),
-            'explanation_method':FixedKnob('lime'),
+            'enable_explanation': FixedKnob(True),
+            'explanation_gradcam': FixedKnob(True),
+            'explanation_lime': FixedKnob(True),
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(False),

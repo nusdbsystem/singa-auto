@@ -6,15 +6,17 @@ Created on Thu Oct 26 11:06:51 2017
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 
-from extractor import CamExtractorAlexNet, CamExtractorDenseNet, CamExtractorResNet, CamExtractorVGG
+from rafiki.panda.modules.explanations.gradcam.extractor import CamExtractorAlexNet, CamExtractorDenseNet, CamExtractorResNet, CamExtractorVGG
 from rafiki.panda.modules.explanations.explanation import BaseExplanation
 
-class GradCam(BaseExplanation):
+class GradCam():
     """
         Produces class activation map
     """
     def __init__(self, model, model_arch, target_layer):
+        super().__init__()
         #self.model = model.model_ft
         self.model = model
         #self.model.eval()
@@ -29,6 +31,7 @@ class GradCam(BaseExplanation):
         elif model_arch == 'vgg':
             self.extractor = CamExtractorVGG(self.model, target_layer)
         else:
+            print('init gradcum error')
             raise Exception()
 
     def generate_cam(self, input_image, target_class=None):
@@ -97,7 +100,9 @@ class GradCam(BaseExplanation):
         cam = np.maximum(cam, 0)
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
         cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
-        cv2.resize(cam, dsize=(input_image.shape[2], input_image.shape[3]), interpolation=cv2.INTER_CUBIC)
+        print(cam.tolist())
+        # print(cam.astype(np.float32))
+        cam = np.uint8(Image.fromarray(cam).resize((input_image.shape[2], input_image.shape[3]), Image.ANTIALIAS))/255
         return cam
 
 if __name__ == '__main__':

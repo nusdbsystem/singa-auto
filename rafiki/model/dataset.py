@@ -69,7 +69,7 @@ class DatasetUtils():
         return CorpusDataset(dataset_path, tags or ['tag'], split_by)
 
     def load_dataset_of_image_files(self, dataset_path, min_image_size=None,
-                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=True):
+                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=False):
         '''
             Loads dataset for the task ``IMAGE_CLASSIFICATION``.
 
@@ -140,7 +140,7 @@ class DatasetUtils():
         if mode is not None:
             images = [x.convert(mode) for x in images]
 
-        return np.asarray([np.asarray(x) for x in images])
+        return np.asarray([np.asarray(x) for x in images]), images
 
     def load_images(self, image_paths: List[str], mode: str = 'RGB') -> np.ndarray:
         '''
@@ -336,9 +336,11 @@ class ImageFilesDatasetLazy(ModelDataset):
     def __init__(self, dataset_path, min_image_size=None, max_image_size=None, mode='RGB', if_shuffle=False):
         super().__init__(dataset_path)
         self.mode = mode
+        self.dir_path = None
         (self._full_image_paths, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
+        self.label_mapper = dict()
         if if_shuffle:
             (self._full_image_paths, self._image_classes) = self._shuffle(self._full_image_paths, self._image_classes)
 
@@ -366,27 +368,20 @@ class ImageFilesDatasetLazy(ModelDataset):
         image_size = max(min([width, height, max_image_size or width]), min_image_size or 0)
 
         # Resize all images
-        resized_pil_image = crop_pil_image.resize([image_size, image_size]) 
-
-        # Convert to numpy arrays
-        images = np.asarray(resized_pil_image) 
+        images = crop_pil_image.resize([image_size, image_size])
 
         return (images, image_size)
 
-
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item 
-        try:
-            os.path.exists(self.dir_path)
-        except NameError:
+        if not (self.dir_path and os.path.exists(self.dir_path)):
             self.dir_path = tempfile.mkdtemp()
 
         dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
-        extracted_item_path=dataset_zipfile.extract(item_path,path=self.dir_path)
+        extracted_item_path = dataset_zipfile.extract(item_path, path=self.dir_path)
         dataset_zipfile.close()
 
         return extracted_item_path
-    
 
     def _extract_zip(self, dataset_path):
         # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
@@ -396,25 +391,31 @@ class ImageFilesDatasetLazy(ModelDataset):
             for fileName in dataset_zipfile.namelist():
                if fileName.endswith('.csv'):
                    # Extract a single csv file from zip
-                   images_csv_path = dataset_zipfile.extract(fileName,path=d)
+                   images_csv_path = dataset_zipfile.extract(fileName, path=d)
             dataset_zipfile.close()
 
             image_paths = []
             image_classes = []
 
             try:
-                reader=pd.read_csv(images_csv_path)
-                image_classes=reader[reader.columns[1:]]
-                image_paths=reader[reader.columns[0]]
+                reader = pd.read_csv(images_csv_path)
+                image_classes = reader[reader.columns[1:]]
+                image_paths = reader[reader.columns[0]]
+                titles = reader.columns[1:].to_list()
+                if 'class' in titles and len(titles) == 1:
+                    self.label_mapper = {'0': '0', '1': '1'}
+                else:
+                    self.label_mapper = {str(k): v for k, v in enumerate(titles)}
             except:
                 traceback.print_stack()
                 raise InvalidDatasetFormatException()
 
-
-        num_classes = image_classes.shape[1] 
+        num_classes = image_classes.shape[1]
+        if num_classes == 1:
+            num_classes = 2
         num_labeled_samples = image_paths.shape[0]
-        image_classes=tuple(np.array(image_classes).tolist())
-        image_paths=tuple(image_paths)
+        image_classes = tuple(np.array(image_classes).tolist())
+        image_paths = tuple(image_paths)
         return (image_paths, image_classes, num_labeled_samples, num_classes)
 
     def _load(self, dataset_path, mode):
@@ -433,7 +434,7 @@ class ImageFilesDatasetLazy(ModelDataset):
             image_classes = []
             
             try:
-                reader=pd.read_csv(images_csv_path)
+                reader = pd.read_csv(images_csv_path)
                 image_classes=reader[reader.columns[1:]]
                 image_paths=reader[reader.columns[0]]
             except:
@@ -455,7 +456,7 @@ class ImageFilesDatasetLazy(ModelDataset):
         random.shuffle(zipped)
         (images, classes) = zip(*zipped)
         return (images, classes)
-        
+
     def __del__(self):
         print("dataset destructor: cleaning {}".format(self.dir_path))
         for image_path in os.listdir(self.dir_path):
@@ -465,6 +466,7 @@ class ImageFilesDatasetLazy(ModelDataset):
         return self.__getitem__(index)
 
     def get_stat(self):
+        x = 0
         for i in range(self.size):
             image = np.array(self.get_item(i)[0])
             mu_i = np.mean(image, axis=(0,1))
