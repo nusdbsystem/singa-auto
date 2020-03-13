@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from rafiki.panda.modules.explanations.gradcam.extractor import CamExtractorAlexNet, CamExtractorDenseNet, CamExtractorResNet, CamExtractorVGG
+from .extractor import CamExtractorAlexNet, CamExtractorDenseNet, CamExtractorResNet, CamExtractorVGG
 from rafiki.panda.modules.explanations.explanation import BaseExplanation
 
 class GradCam():

@@ -122,7 +122,8 @@ if __name__ == '__main__':
         task='IMAGE_CLASSIFICATION',
         dependencies={ 
             ModelDependency.TORCH: '1.0.1',
-            ModelDependency.TORCHVISION: '0.2.2'
+            ModelDependency.TORCHVISION: '0.2.2',
+            ModelDependency.CV2: '4.2.0.32'
         },
         train_dataset_path=args.train_path,
         val_dataset_path=args.val_path,

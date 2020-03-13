@@ -83,3 +83,4 @@ class ModelDependency():
     SINGA = 'singa'
     XGBOOST = 'xgboost'
     DS_CTCDECODER = 'ds-ctcdecoder'
+    CV2 = 'opencv-contrib-python-headless'

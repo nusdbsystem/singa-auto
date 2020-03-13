@@ -345,8 +345,8 @@ class ImageFilesDatasetLazy(ModelDataset):
             (self._full_image_paths, self._image_classes) = self._shuffle(self._full_image_paths, self._image_classes)
 
     def __getitem__(self, index):
-        extracted_item_path = self._extract_item(self.path, self._full_image_paths[index])
-        pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+        pil_image = self._extract_item(self.path, self._full_image_paths[index])
+        # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
         (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
         image_class = self._image_classes[index]
         return (image, image_class)
@@ -374,14 +374,14 @@ class ImageFilesDatasetLazy(ModelDataset):
 
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item 
-        if not (self.dir_path and os.path.exists(self.dir_path)):
-            self.dir_path = tempfile.mkdtemp()
+        with tempfile.TemporaryDirectory() as d:
+            dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+            extracted_item_path=dataset_zipfile.extract(item_path, path=d)
+            dataset_zipfile.close()
 
-        dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
-        extracted_item_path = dataset_zipfile.extract(item_path, path=self.dir_path)
-        dataset_zipfile.close()
+            pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
 
-        return extracted_item_path
+        return pil_image
 
     def _extract_zip(self, dataset_path):
         # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
@@ -457,11 +457,6 @@ class ImageFilesDatasetLazy(ModelDataset):
         (images, classes) = zip(*zipped)
         return (images, classes)
 
-    def __del__(self):
-        print("dataset destructor: cleaning {}".format(self.dir_path))
-        for image_path in os.listdir(self.dir_path):
-            os.remove(os.path.join(self.dir_path, image_path))
-    
     def get_item(self, index):
         return self.__getitem__(index)
 

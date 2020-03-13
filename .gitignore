@@ -5,6 +5,7 @@
 env/
 envs/
 venv/
+.env.sh
 
 # Visual Studio Code config
 .vscode/
