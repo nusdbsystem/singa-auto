@@ -290,9 +290,11 @@ class PandaTorchBasicModel(PandaModel):
                 sr_list=[0.5, 0.75, 1.0],
                 sr_prob=None
             )
-        
+        utils.logger.define_plot('Loss Over Epochs', ['loss', 'epoch_accuracy'], x_axis='epoch')
+        utils.logger.log(loss=0.0, epoch_accuracy=0.0, epoch=0)
         for epoch in range(1, self._knobs.get("max_epochs") + 1):
             print("Epoch {}/{}".format(epoch, self._knobs.get("max_epochs")))
+            bach_accuracy = []
             batch_losses = []
             for batch_idx, (raw_indices, traindata, batch_classes) in enumerate(train_dataloader):
                 inputs, labels = self._transform_data(traindata, batch_classes, train=True)
@@ -302,14 +304,13 @@ class PandaTorchBasicModel(PandaModel):
                     for sr_idx in next(sr_scheduler):
                         self._model.update_sr_idx(sr_idx)
                         outputs = self._model(inputs)
+                        print('output is ', outputs)
                         trainloss = self.train_criterion(outputs, labels)
                         trainloss.backward()
                 else:
                     outputs = self._model(inputs)
                     trainloss = self.train_criterion(outputs, labels)
-
                     trainloss.backward()
-
                 if self._knobs.get("enable_gm_prior_regularization"):
                     for name, f in self._model.named_parameters():
                         self._gm_optimizer.apply_GM_regularizer_constraint(
@@ -328,9 +329,15 @@ class PandaTorchBasicModel(PandaModel):
                 optimizer.step()
                 print("Epoch: {:d} Batch: {:d} Train Loss: {:.6f}".format(epoch, batch_idx, trainloss.item()))
                 sys.stdout.flush()
-                batch_losses.append(trainloss.item())
 
+                transfered_labels = torch.max(labels.data, 1)
+                transfered_outpus = torch.max(torch.sigmoid(outputs).cpu(), 1)
+                bach_accuracy.append(transfered_labels[1].eq(transfered_outpus[1]).sum().item()/
+                                     transfered_labels[1].size(0))
+                batch_losses.append(trainloss.item())
             train_loss = np.mean(batch_losses)
+            bach_accuracy_mean = np.mean(bach_accuracy)
+            utils.logger.log(loss=train_loss, epoch_accuracy=bach_accuracy_mean, epoch=epoch)
             print("Training Loss: {:.6f}".format(train_loss))
             if self._knobs.get("enable_spl"):
                 train_dataset.update_score_threshold(
@@ -438,14 +445,8 @@ class PandaTorchBasicModel(PandaModel):
                 out = self._model(images)
                 if self._knobs.get("enable_label_adaptation"):
                     out = self._label_drift_adapter.adapt(out).squeeze()
-                    print('trail_num: ', i)
-                    print('out is ', out)
-                    print('==' * 100)
                 else:
                     out = torch.sigmoid(out).cpu().squeeze()
-                    print('trail_num: ', i)
-                    print('out is ', out)
-                    print('==' * 100)
                 outs.append(out.numpy())
 
         result = dict()
@@ -499,7 +500,7 @@ class PandaTorchBasicModel(PandaModel):
             try:
                 self._lime = Lime(self._model, self._image_size, self._normalize_mean, self._normalize_std, self._use_gpu)
                 imgs_explained = self._lime.explain(images)
-                explanation['lime_exp'] = imgs_explained.tolist()
+                # explanation['lime_exp'] = imgs_explained.tolist()
                 imgs_explained = self.convert_img_to_str(imgs_explained)
                 explanation['lime_img'] = imgs_explained
             except:
@@ -513,7 +514,7 @@ class PandaTorchBasicModel(PandaModel):
                 images = images.swapaxes(2,3)
                 cam = gc.generate_cam(images)
                 combined_gradcam = self.combine_images(org_im=org_imgs[0], activation=cam)
-                explanation['gradcam_exp'] = combined_gradcam.tolist()
+                # explanation['gradcam_exp'] = combined_gradcam.tolist()
                 combined_gradcam = self.convert_img_to_str(combined_gradcam)
                 explanation['gradcam_img'] = combined_gradcam
             except:

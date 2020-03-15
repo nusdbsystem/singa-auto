@@ -175,7 +175,6 @@ curl -i "${URL}inference_jobs/PandaApp/1/stop" \
   -H "Authorization: Bearer $TOKEN" \
   -X POST
 
-curl -i http://localhost:5000/predict \
+curl -i http://panda.d2.comp.nus.edu.sg:53353/predict \
   -X POST \
   -F img=@'/Users/nailixing/Downloads/data/train/person878_bacteria_2801.jpeg' \
-  -F img=@'/Users/nailixing/Downloads/data/train/IM-0119-0001.jpeg'

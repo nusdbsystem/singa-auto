@@ -30,7 +30,6 @@ class Lime():
         self._hide_color = 0
 
     def batch_predict(self, images):
-        print('lime running')
         (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
 
         self._model.eval()
@@ -38,26 +37,21 @@ class Lime():
         # images are size of (B, W, H, C)
         with torch.no_grad():
             images = torch.FloatTensor(images).permute(0, 3, 1, 2)
-        print('get lime')
         logits = self._model(images)
         probs = F.softmax(logits, dim=1)
 
         return probs.detach().cpu().numpy()
 
     def explain(self, images):
-        print('begin lim')
         img_boundry = []
         for img in images:
             explanation = self._explainer.explain_instance(img, self.batch_predict, self._top_labels, self._hide_color,
                                                            self._num_samples)
-            print('finish explanation')
             temp, mask = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=5,
                                                         hide_rest=False)
             # (M, N, 3) array of float
             img_boundry = mark_boundaries(temp / 255.0, mask)
-            print("img_boundry is   ", img_boundry)
-            print('finish')
-        return img_boundry
+        return img_boundry*255
 
 
 '''

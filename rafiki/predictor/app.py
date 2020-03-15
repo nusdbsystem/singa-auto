@@ -82,9 +82,13 @@ def predict():
                 return jsonify({'ErrorMsg': 'No image provided'}), 400
         predictions = predictor.predict([query])
         assert len(predictions) == 1
+        print(predictions)
         return jsonify({'prediction': predictions[0][0]}), 200
     except Exception as e:
         logger.error(str(e))
+        print('error', str(e))
+        import sys, traceback
+        traceback.print_exc(file=sys.stdout)
         return jsonify({'ErrorMsg': 'Server Error'}), 500
 
     # Either do single prediction or bulk predictions
