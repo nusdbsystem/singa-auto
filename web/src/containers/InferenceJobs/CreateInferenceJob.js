@@ -6,7 +6,7 @@ import { connect } from "react-redux"
 
 import { Link } from "react-router-dom"
 
-import { goBack } from "connected-react-router"
+import { goBack, push } from "connected-react-router"
 
 // Material UI
 import { Typography, Grid, Button } from "@material-ui/core"
@@ -32,6 +32,7 @@ class CreateInferenceJob extends React.Component {
     const { app, appVersion } = this.props.match.params
     const budget = { GPU_COUNT: 0 }
     this.props.postCreateInferenceJob(app, appVersion, budget) // action.json
+    this.props.push('/console/inferencejobs/list-inferencejobs')
   }
 
   render() {
@@ -96,6 +97,7 @@ const mapDispatchToProps = {
   postCreateInferenceJob: actions.postCreateInferenceJob,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
   goBack: goBack,
+  push: push,
 }
 
 export default compose(
