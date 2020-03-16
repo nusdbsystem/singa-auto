@@ -9,15 +9,13 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import * as actions from "./actions"
 
 import { withStyles } from "@material-ui/core/styles"
-import {
-  Table,
-  Typography,
-  IconButton,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@material-ui/core"
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import TableHead from '@material-ui/core/TableHead';
+import Typography from "@material-ui/core/Typography"
+import IconButton from "@material-ui/core/IconButton"
 
 // Third parts
 import * as moment from "moment"
