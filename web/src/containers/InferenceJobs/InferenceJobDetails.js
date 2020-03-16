@@ -9,7 +9,7 @@ import { connect } from "react-redux"
 import axios from 'axios';
 import HTTPconfig from "HTTPconfig"
 
-import { goBack } from "connected-react-router"
+import { goBack, push } from "connected-react-router"
 
 // Material UI
 import Typography from '@material-ui/core/Typography';
@@ -86,6 +86,19 @@ class InferenceJobDetails extends React.Component {
     }
   }
 
+  handleClickRunPrediction = () => {
+    const { app, appVersion } = this.props.match.params
+    const x = this.state.selectedInferenceJob
+
+    const url = (`/console/inferencejobs/run-prediction` +
+      `?app=${app}` +
+      `&appVersion=${appVersion}` +
+      `&predictorHost=${x.predictor_host}`)
+
+    console.log("redirect url: ", url)
+    this.props.push(url)
+  }
+
   render() {
     const { classes } = this.props
 
@@ -116,7 +129,7 @@ class InferenceJobDetails extends React.Component {
                     <TableCell>App Name</TableCell>
                     <TableCell>App Version</TableCell>
                     <TableCell>Started</TableCell>
-                    <TableCell>Prediction Host</TableCell>
+                    <TableCell>Predictor Host</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -147,7 +160,20 @@ class InferenceJobDetails extends React.Component {
             style={{ minHeight: "100px" }}
           >
             <Grid item >
-              <Button onClick={this.handleClickStopInferenceJob} color="primary" variant="contained">
+              <Button
+                onClick={this.handleClickRunPrediction}
+                color="secondary"
+                variant="contained"
+              >
+                Predict
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                onClick={this.handleClickStopInferenceJob}
+                color="primary"
+                variant="contained"
+              >
                 Stop Inference Job
               </Button>
             </Grid>
@@ -186,6 +212,7 @@ const mapDispatchToProps = {
   handleHeaderTitleChange: ConsoleActions.handleHeaderTitleChange,
   resetLoadingBar: ConsoleActions.resetLoadingBar,
   goBack: goBack,
+  push: push,
 }
 
 export default compose(
