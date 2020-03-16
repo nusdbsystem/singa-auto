@@ -30,7 +30,7 @@ const styles = theme => ({
     // display: "flex",
     // alignItems: "center",
     // justifyContent: "center"
-    margin: "10px 16px",
+    margin: "40px 16px",
     //position: "relative",
     minHeight: 200,
   },
