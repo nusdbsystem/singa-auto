@@ -8,19 +8,15 @@ import { compose } from "redux"
 import { push } from "connected-react-router"
 
 import * as ConsoleActions from "../ConsoleAppFrame/actions"
-import * as actions from "./actions"
 
 import { withStyles } from "@material-ui/core/styles"
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import TableHead from '@material-ui/core/TableHead';
 import Typography from "@material-ui/core/Typography"
-import IconButton from "@material-ui/core/IconButton"
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
+
+// for display of response
+import Grid from '@material-ui/core/Grid';
 
 import MainContent from "components/ConsoleContents/MainContent"
 import ContentBar from "components/ConsoleContents/ContentBar"
@@ -48,6 +44,15 @@ const styles = theme => ({
   pos: {
     marginBottom: 12,
   },
+  // for response display
+  response: {
+    flexGrow: 1,
+    marginTop: "20px",
+  },
+  explainImg: {
+    margin: "0 auto",
+    width: "90%",
+  }
 })
 
 class RunPrediction extends React.Component {
@@ -70,6 +75,11 @@ class RunPrediction extends React.Component {
     message: "",
     uploadPercentage: 0,
     formState: "init",
+    // populate the response
+    predictionDone: false,
+    gradcamImg: "",
+    limeImg: "",
+    mcDropout: [],
   }
 
   componentDidMount() {
@@ -120,6 +130,12 @@ class RunPrediction extends React.Component {
     // this.props.resetResponses()
     // first reset COMMIT disabled
     this.setState({
+      // reset previous response, if any
+      predictionDone: false,
+      gradcamImg: "",
+      limeImg: "",
+      mcDropout: [],
+      // upload
       uploadPercentage: 0,
       FormIsValid: false,
       // set formState to loading
@@ -162,7 +178,11 @@ class RunPrediction extends React.Component {
 
       this.setState(prevState => ({
         formState: "idle",
-        message: "Upload and prediction done"
+        message: "Upload and prediction done",
+        predictionDone: true,
+        gradcamImg: res.data.prediction.explaination.gradcam_img,
+        limeImg: res.data.prediction.explaination.lime_img,
+        mcDropout: res.data.prediction.mc_dropout,
       }))
     } catch (err) {
       console.error(err, "error")
@@ -195,6 +215,7 @@ class RunPrediction extends React.Component {
   }
 
   render() {
+    console.log("STATE: ", this.state)
     const { classes } = this.props
 
     if (this.state.noPredictorSelected) {
@@ -258,6 +279,7 @@ class RunPrediction extends React.Component {
             >
               Predict
             </Button>
+            <br />
             <ForkbaseStatus
               formState={this.state.formState}
             >
@@ -283,6 +305,33 @@ class RunPrediction extends React.Component {
                 <br />
               </Typography>
             </ForkbaseStatus>
+            <br />
+            {this.state.predictionDone &&
+              <div className={classes.response}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="h5" gutterBottom align="center">
+                      Gradcam Image:
+                    </Typography>
+                    <img
+                      className={classes.explainImg}
+                      src={`data:image/jpeg;base64,${this.state.gradcamImg}`}
+                      alt="GradcamImg"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="h5" gutterBottom align="center">
+                      Lime Image:
+                    </Typography>
+                    <img
+                      className={classes.explainImg}
+                      src={`data:image/jpeg;base64,${this.state.limeImg}`}
+                      alt="LimeImg"
+                    />
+                  </Grid>
+                </Grid>
+              </div>
+            }
           </div>
         </MainContent>
       </React.Fragment>
