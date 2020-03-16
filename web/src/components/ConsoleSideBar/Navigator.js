@@ -23,6 +23,7 @@ import ListTrainJobsIcon from "@material-ui/icons/Timeline"
 import CreateTrainJobIcon from '@material-ui/icons/PostAdd';
 // inference jobs
 import DnsRoundedIcon from "@material-ui/icons/DnsRounded"
+import TrackChangesIcon from '@material-ui/icons/TrackChanges';
 // for nested list
 import Collapse from "@material-ui/core/Collapse"
 import ExpandLess from "@material-ui/icons/ExpandLess"
@@ -188,6 +189,11 @@ class Navigator extends React.Component {
             id: "List Inference Jobs",
             icon: <DnsRoundedIcon />,
             pathname: "/console/inferencejobs/list-inferencejobs",
+          },
+          {
+            id: "Run Prediction",
+            icon: <TrackChangesIcon />,
+            pathname: "/console/inferencejobs/run-prediction",
           },
         ],
       },

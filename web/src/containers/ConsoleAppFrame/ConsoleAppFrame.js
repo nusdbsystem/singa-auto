@@ -29,6 +29,7 @@ import TrialDetails from "../Jobs/TrialDetails"
 import InferenceJobDetails from "../InferenceJobs/InferenceJobDetails"
 import ListInferenceJobs from "../InferenceJobs/ListInferenceJobs"
 import CreateInferenceJob from "../InferenceJobs/CreateInferenceJob"
+import Prediction from "../InferenceJobs/Prediction"
 
 import Copyright from "components/ConsoleContents/Copyright"
 
@@ -193,6 +194,11 @@ class ConsoleAppFrame extends React.Component {
                   exact
                   path="/console/inferencejobs/running_job/:app/:appVersion"
                   component={InferenceJobDetails}
+                />
+                <Route
+                  exact
+                  path="/console/inferencejobs/run-prediction"
+                  component={Prediction}
                 />
               </Switch>
             </main>
