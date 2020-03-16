@@ -435,7 +435,7 @@ class UploadModel extends React.Component {
               <ForkbaseStatus
                 formState={this.state.formState}
               >
-                {this.state.stylesformState === "loading" &&
+                {this.state.formState === "loading" &&
                   <React.Fragment>
                     <LinearProgress color="secondary" />
                     <br />
