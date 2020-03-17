@@ -378,8 +378,8 @@ class ImageFilesDatasetLazy(ModelDataset):
             dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
             extracted_item_path=dataset_zipfile.extract(item_path, path=d)
             dataset_zipfile.close()
-
             pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+
 
         return pil_image
 
@@ -417,12 +417,16 @@ class ImageFilesDatasetLazy(ModelDataset):
             image_paths = tuple(image_paths)
 
         else:
-            with tempfile.TemporaryDirectory() as d:
+            # with tempfile.TemporaryDirectory() as d:
                 num_labeled_samples = len(dataset_zipfile.namelist())
-                image_paths = dataset_zipfile.namelist()
-                labels = [os.path.dirname(x) for x in image_paths]
-                image_classes = set(labels)
-                num_classes = len (image_classes)
+                # make image name list and remove dir from list
+                image_paths = [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
+                dataset_zipfile.close()
+                str_labels = [os.path.dirname(x) for x in image_paths]
+                self.str_labels_set = list(set(str_labels))
+                num_classes = len (self.str_labels_set)
+                image_classes= [self.str_labels_set.index(x) for x in str_labels] 
+
         return (image_paths, image_classes, num_labeled_samples, num_classes)
 
     def _load(self, dataset_path, mode):
