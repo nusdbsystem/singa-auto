@@ -535,6 +535,6 @@ def _load_pil_images(image_paths, mode='RGB'):
                 pil_images.append(pil_image)
         except:
             print ('error accurs when handling : ', image_path)
-            break
+            pil_images.append(pil_images[-1])
         
     return pil_images
