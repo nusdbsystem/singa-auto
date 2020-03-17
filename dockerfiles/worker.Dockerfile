@@ -61,7 +61,7 @@ ENV PATH /usr/local/envs/$CONDA_ENVIORNMENT/bin:$PATH
 RUN apt-get update
 RUN apt-get install -y libsm6 libxext6 libxrender-dev
 RUN apt-get update && apt-get -y install libglib2.0; apt-get clean
-RUN pip install opencv-contrib-python-headless
+
 
 RUN pip install --upgrade pip
 ENV PYTHONUNBUFFERED 1
@@ -72,6 +72,7 @@ WORKDIR $DOCKER_WORKDIR_PATH
 ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
+# RUN pip install opencv-contrib-python-headless
 COPY rafiki/requirements.txt rafiki/requirements.txt
 RUN pip install -r rafiki/requirements.txt
 COPY rafiki/utils/requirements.txt rafiki/utils/requirements.txt

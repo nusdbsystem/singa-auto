@@ -101,15 +101,15 @@ class PyPandaVgg(PandaTorchBasicModel):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/train.zip', help='Path to train dataset')
+    parser.add_argument('--train_path', type=str, default='data/val.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/test.zip', help='Path to test dataset')
+    parser.add_argument('--test_path', type=str, default='data/val.zip', help='Path to test dataset')
     print (os.getcwd())
     parser.add_argument(
         '--query_path', 
         type=str, 
         default=
-        'examples/data/image_classification/xray_1.jpeg,examples/data/image_classification/IM-0103-0001.jpeg,examples/data/image_classification/NORMAL2-IM-0023-0001.jpeg',
+        'examples/data/image_classification/xray_1.png,examples/data/image_classification/fashion_mnist_test_1.png,examples/data/image_classification/cifar10_test_1.png',
         #'examples/data/image_classification/IM-0001-0001.jpeg,examples/data/image_classification/IM-0003-0001.jpeg,examples/data/image_classification/IM-0005-0001.jpeg',
         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()

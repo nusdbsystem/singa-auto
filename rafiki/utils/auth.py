@@ -22,7 +22,7 @@ import jwt
 from functools import wraps
 from datetime import datetime, timedelta
 
-from flask import jsonify
+# from flask import jsonify
 
 from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
@@ -69,7 +69,8 @@ def auth(user_types=[]):
                     raise UnauthorizedError()
                 return f(auth, *args, **kwargs)
             except Exception as e:
-                return jsonify({'ErrorMsg': e.__class__.__name__ + ' ' + str(e)}), 400
+                # return jsonify({'ErrorMsg': e.__class__.__name__ + ' ' + str(e)}), 400
+                pass
 
         return wrapped
     return decorator

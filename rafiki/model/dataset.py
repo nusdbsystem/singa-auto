@@ -69,7 +69,7 @@ class DatasetUtils():
         return CorpusDataset(dataset_path, tags or ['tag'], split_by)
 
     def load_dataset_of_image_files(self, dataset_path, min_image_size=None,
-                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=False):
+                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=True):
         '''
             Loads dataset for the task ``IMAGE_CLASSIFICATION``.
 
@@ -337,15 +337,15 @@ class ImageFilesDatasetLazy(ModelDataset):
         super().__init__(dataset_path)
         self.mode = mode
         self.dir_path = None
-        (self._full_image_paths, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
+        (self._image_names, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
         self.label_mapper = dict()
         if if_shuffle:
-            (self._full_image_paths, self._image_classes) = self._shuffle(self._full_image_paths, self._image_classes)
+            (self._image_names, self._image_classes) = self._shuffle(self._image_names, self._image_classes)
 
     def __getitem__(self, index):
-        pil_image = self._extract_item(self.path, self._full_image_paths[index])
+        pil_image = self._extract_item(self.path, self._image_names[index])
         # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
         (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
         image_class = self._image_classes[index]
@@ -384,38 +384,45 @@ class ImageFilesDatasetLazy(ModelDataset):
         return pil_image
 
     def _extract_zip(self, dataset_path):
-        # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
-        with tempfile.TemporaryDirectory() as d:
-            dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
-            # obtain csv file
-            for fileName in dataset_zipfile.namelist():
-               if fileName.endswith('.csv'):
-                   # Extract a single csv file from zip
-                   images_csv_path = dataset_zipfile.extract(fileName, path=d)
-            dataset_zipfile.close()
+        dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+        if 'images.csv' in dataset_zipfile.namelist():
+            # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
+            with tempfile.TemporaryDirectory() as d:
+                # obtain csv file
+                for fileName in dataset_zipfile.namelist():
+                   if fileName.endswith('.csv'):
+                       # Extract a single csv file from zip
+                       images_csv_path = dataset_zipfile.extract(fileName, path=d)
+                       break
+                dataset_zipfile.close()
+                image_paths = []
+                image_classes = []
+                try:
+                    csv = pd.read_csv(images_csv_path)
+                    image_classes = csv[csv.columns[1:]]
+                    image_paths = csv[csv.columns[0]]
+                    titles = csv.columns[1:].to_list()
+                    if len(titles) == 1:
+                        self.label_mapper = {'0': '0', '1': '1'}
+                    else:
+                        self.label_mapper = {str(k): v for k, v in enumerate(titles)}
+                except:
+                    traceback.print_stack()
+                    raise InvalidDatasetFormatException()
+            num_classes = image_classes.shape[1]
+            if num_classes == 1:
+                num_classes = 2
+            num_labeled_samples = image_paths.shape[0]
+            image_classes = tuple(np.array(image_classes).tolist())
+            image_paths = tuple(image_paths)
 
-            image_paths = []
-            image_classes = []
-
-            try:
-                reader = pd.read_csv(images_csv_path)
-                image_classes = reader[reader.columns[1:]]
-                image_paths = reader[reader.columns[0]]
-                titles = reader.columns[1:].to_list()
-                if 'class' in titles and len(titles) == 1:
-                    self.label_mapper = {'0': '0', '1': '1'}
-                else:
-                    self.label_mapper = {str(k): v for k, v in enumerate(titles)}
-            except:
-                traceback.print_stack()
-                raise InvalidDatasetFormatException()
-
-        num_classes = image_classes.shape[1]
-        if num_classes == 1:
-            num_classes = 2
-        num_labeled_samples = image_paths.shape[0]
-        image_classes = tuple(np.array(image_classes).tolist())
-        image_paths = tuple(image_paths)
+        else:
+            with tempfile.TemporaryDirectory() as d:
+                num_labeled_samples = len(dataset_zipfile.namelist())
+                image_paths = dataset_zipfile.namelist()
+                labels = [os.path.dirname(x) for x in image_paths]
+                image_classes = set(labels)
+                num_classes = len (image_classes)
         return (image_paths, image_classes, num_labeled_samples, num_classes)
 
     def _load(self, dataset_path, mode):
