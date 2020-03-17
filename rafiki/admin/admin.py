@@ -184,7 +184,7 @@ class Admin(object):
                 num_labeled_samples = len(dataset_zipfile.namelist())
                 num_unlabeled_samples=0
 
-                d_list = dataset_zipfile.namelist()
+                d_list =  [x for x in dataset_zipfile.namelist() if x.endswith('/')==False] 
                 labels = [os.path.dirname(x) for x in d_list]
                 class_count = pd.DataFrame( list(Counter(labels).values()),list(Counter(labels).keys()))
 
