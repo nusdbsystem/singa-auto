@@ -352,7 +352,7 @@ class ImageFilesDatasetLazy(ModelDataset):
             image_class = self._image_classes[index]
 
         except:
-            print ('image is not readable, error accurs during handling :', self._image_names[index])
+            print ('image is not readable, error accurs during handling :', len(self._image_names), index)
             (image, image_class)= self.get_item(index-1)
         return (image, image_class)
 
@@ -379,7 +379,6 @@ class ImageFilesDatasetLazy(ModelDataset):
 
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item 
-        # print (item_path)
         with tempfile.TemporaryDirectory() as d:
             dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
             extracted_item_path=dataset_zipfile.extract(item_path, path=d)
@@ -415,16 +414,15 @@ class ImageFilesDatasetLazy(ModelDataset):
             image_classes = tuple(np.array(image_classes).tolist())
             image_paths = tuple(image_paths)
 
-        else:
-            # with tempfile.TemporaryDirectory() as d:
-                num_labeled_samples = len(dataset_zipfile.namelist())
-                # make image name list and remove dir from list
-                image_paths = [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
-                dataset_zipfile.close()
-                str_labels = [os.path.dirname(x) for x in image_paths]
-                self.str_labels_set = list(set(str_labels))
-                num_classes = len (self.str_labels_set)
-                image_classes= [self.str_labels_set.index(x) for x in str_labels] 
+        else:                
+            # make image name list and remove dir from list
+            image_paths = [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
+            dataset_zipfile.close()
+            num_labeled_samples = len(image_paths)
+            str_labels = [os.path.dirname(x) for x in image_paths]
+            self.str_labels_set = list(set(str_labels))
+            num_classes = len (self.str_labels_set)
+            image_classes= [self.str_labels_set.index(x) for x in str_labels] 
 
         return (image_paths, image_classes, num_labeled_samples, num_classes)
 
@@ -473,15 +471,17 @@ class ImageFilesDatasetLazy(ModelDataset):
     def get_stat(self):
         x = 0
         for i in range(self.size):
-            image = np.array(self.get_item(i)[0])
-            mu_i = np.mean(image, axis=(0,1))
-            mu_i = np.expand_dims(mu_i, axis=0)
+            try:
+                image = np.array(self.get_item(i)[0])
+                mu_i = np.mean(image, axis=(0,1))
+                mu_i = np.expand_dims(mu_i, axis=0)
 
-            if i == 0:
-                x = mu_i
-            else:
-                x = np.concatenate((x, mu_i), axis=0)
-            # break
+                if i == 0:
+                    x = mu_i
+                else:
+                    x = np.concatenate((x, mu_i), axis=0)
+            except:
+                pass
         x = x / 255
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
