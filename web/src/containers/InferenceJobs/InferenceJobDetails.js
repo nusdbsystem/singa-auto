@@ -159,24 +159,30 @@ class InferenceJobDetails extends React.Component {
             alignItems="center"
             style={{ minHeight: "100px" }}
           >
-            <Grid item >
-              <Button
-                onClick={this.handleClickRunPrediction}
-                color="secondary"
-                variant="contained"
-              >
-                Predict
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button
-                onClick={this.handleClickStopInferenceJob}
-                color="primary"
-                variant="contained"
-              >
-                Stop Inference Job
-              </Button>
-            </Grid>
+            {this.state.selectedInferenceJob.datetime_started &&
+              (
+                <>
+                  <Grid item >
+                    <Button
+                      onClick={this.handleClickRunPrediction}
+                      color="secondary"
+                      variant="contained"
+                    >
+                      Predict
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      onClick={this.handleClickStopInferenceJob}
+                      color="primary"
+                      variant="contained"
+                    >
+                      Stop Inference Job
+                    </Button>
+                  </Grid>
+                </>
+              )
+            }
             <Grid item>
               <Button
                 color="default"

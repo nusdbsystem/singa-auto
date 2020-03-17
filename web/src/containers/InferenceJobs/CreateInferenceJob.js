@@ -32,7 +32,8 @@ class CreateInferenceJob extends React.Component {
     const { app, appVersion } = this.props.match.params
     const budget = { GPU_COUNT: 0 }
     this.props.postCreateInferenceJob(app, appVersion, budget) // action.json
-    this.props.push('/console/inferencejobs/list-inferencejobs')
+    // TODO: implement async call to get list of inference jobs
+    // this.props.push('/console/inferencejobs/list-inferencejobs')
   }
 
   render() {

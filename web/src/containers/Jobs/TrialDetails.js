@@ -109,12 +109,13 @@ class TrialDetails extends React.Component {
   }
 
   componentDidUpdate() {
-    // TODO: how can this plot??
     this.updatePlots()
   }
 
   updatePlots() {
     const { logs } = this.state
+
+    console.log("TrialDetails logs: ", logs)
     const plotManager = this.plotManager
 
     if (!logs) return
