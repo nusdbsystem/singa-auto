@@ -28,6 +28,10 @@ import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 // read query-string
 import queryString from 'query-string'
 
+// for echart plot
+import ReactEcharts from 'echarts-for-react';
+import { calculateGaussian } from "./calculateGaussian"
+
 const styles = theme => ({
   block: {
     display: "block",
@@ -180,9 +184,9 @@ class RunPrediction extends React.Component {
         formState: "idle",
         message: "Upload and prediction done",
         predictionDone: true,
-        gradcamImg: res.data.prediction.explaination.gradcam_img,
-        limeImg: res.data.prediction.explaination.lime_img,
-        mcDropout: res.data.prediction.mc_dropout,
+        gradcamImg: res.data.explaination.gradcam_img,
+        limeImg: res.data.explaination.lime_img,
+        mcDropout: res.data.mc_dropout,
       }))
     } catch (err) {
       console.error(err, "error")
@@ -214,6 +218,51 @@ class RunPrediction extends React.Component {
     console.log("file removed")
   }
 
+  getOption = (mcDropout) => {
+    console.log("mcDropout: ", mcDropout)
+
+    return {
+      title: {
+        text: "MC Dropout",
+        // x: "center"
+      },
+      // toolbox: {
+      //   feature: {
+      //     dataView: { show: true, readOnly: false },
+      //     magicType: { show: true, type: ['line', 'bar'] },
+      //     restore: { show: true },
+      //     saveAsImage: { show: true }
+      //   }
+      // },
+      legend: {
+        data: mcDropout.map(item => item.label)
+      },
+      tooltip: {
+        trigger: 'axis',
+      },
+      xAxis: {
+        type: 'value',
+        name: "Mean",
+        nameLocation: 'middle',
+        min: 0,
+        max: 1
+      },
+      yAxis: {
+        type: 'value',
+        name: "Probability",
+        min: 0,
+        max: 1
+      },
+      series: mcDropout.map(item => {
+        return {
+          name: item.label,
+          type: "line",
+          data: calculateGaussian(item.mean, item.std)
+        }
+      })
+    }
+  };
+
   render() {
     console.log("STATE: ", this.state)
     const { classes } = this.props
@@ -232,8 +281,22 @@ class RunPrediction extends React.Component {
       )
     }
 
+    const mcDropout = [
+      {
+        "label": "0", 
+        "mean": 0.969304084777832, 
+        "std": 0.0003792115021497011
+      }, 
+      {
+        "label": "1", 
+        "mean": 0.038662247359752655, 
+        "std": 0.0012569488026201725
+      }
+    ]
+
     return (
       <React.Fragment>
+        <ReactEcharts option={this.getOption(mcDropout)} style={{ height: 300 }} />
         <MainContent>
           <ContentBar
             needToList={false}
@@ -279,7 +342,14 @@ class RunPrediction extends React.Component {
             >
               Predict
             </Button>
-            <br />
+          </div>
+        </MainContent>
+        <MainContent>
+          <ContentBar
+            needToList={false}
+            barTitle="Results"
+          />
+          <div className={classes.contentWrapper}>
             <ForkbaseStatus
               formState={this.state.formState}
             >
