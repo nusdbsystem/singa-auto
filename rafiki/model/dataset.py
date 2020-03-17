@@ -401,18 +401,11 @@ class ImageFilesDatasetLazy(ModelDataset):
                     csv = pd.read_csv(images_csv_path)
                     image_classes = csv[csv.columns[1:]]
                     image_paths = csv[csv.columns[0]]
-                    titles = csv.columns[1:].to_list()
-                    if len(titles) == 1:
-                        self.label_mapper = {'0': '0', '1': '1'}
-                    else:
-                        self.label_mapper = {str(k): v for k, v in enumerate(titles)}
                 except:
                     traceback.print_stack()
                     raise InvalidDatasetFormatException()
-            num_classes = image_classes.shape[1]
-            if num_classes == 1:
-                num_classes = 2
-            num_labeled_samples = image_paths.shape[0]
+            num_classes = len(csv[csv.columns[1]].unique())
+            num_labeled_samples = len(csv[csv.columns[0]].unique())
             image_classes = tuple(np.array(image_classes).tolist())
             image_paths = tuple(image_paths)
 
@@ -474,6 +467,7 @@ class ImageFilesDatasetLazy(ModelDataset):
     def get_stat(self):
         x = 0
         for i in range(self.size):
+            print (i)
             image = np.array(self.get_item(i)[0])
             mu_i = np.mean(image, axis=(0,1))
             mu_i = np.expand_dims(mu_i, axis=0)
@@ -482,7 +476,7 @@ class ImageFilesDatasetLazy(ModelDataset):
                 x = mu_i
             else:
                 x = np.concatenate((x, mu_i), axis=0)
-        
+            break
         x = x / 255
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
