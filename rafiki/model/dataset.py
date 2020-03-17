@@ -345,10 +345,15 @@ class ImageFilesDatasetLazy(ModelDataset):
             (self._image_names, self._image_classes) = self._shuffle(self._image_names, self._image_classes)
 
     def __getitem__(self, index):
-        pil_image = self._extract_item(self.path, self._image_names[index])
-        # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
-        (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
-        image_class = self._image_classes[index]
+        try:
+            pil_image = self._extract_item(self.path, self._image_names[index])
+            # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+            (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
+            image_class = self._image_classes[index]
+
+        except:
+            print ('image is not readable, error accurs during handling :', self._image_names[index])
+            (image, image_class)= self.get_item(index-1)
         return (image, image_class)
 
     def _preprocess(self, pil_image, min_image_size, max_image_size):
@@ -374,6 +379,7 @@ class ImageFilesDatasetLazy(ModelDataset):
 
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item 
+        # print (item_path)
         with tempfile.TemporaryDirectory() as d:
             dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
             extracted_item_path=dataset_zipfile.extract(item_path, path=d)
@@ -467,7 +473,6 @@ class ImageFilesDatasetLazy(ModelDataset):
     def get_stat(self):
         x = 0
         for i in range(self.size):
-            print (i)
             image = np.array(self.get_item(i)[0])
             mu_i = np.mean(image, axis=(0,1))
             mu_i = np.expand_dims(mu_i, axis=0)
@@ -476,7 +481,7 @@ class ImageFilesDatasetLazy(ModelDataset):
                 x = mu_i
             else:
                 x = np.concatenate((x, mu_i), axis=0)
-            break
+            # break
         x = x / 255
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
@@ -523,9 +528,13 @@ class AudioFilesDataset(ModelDataset):
 def _load_pil_images(image_paths, mode='RGB'):
     pil_images = []
     for image_path in image_paths:
-        with open(image_path, 'rb') as f:
-            encoded = io.BytesIO(f.read())
-            pil_image = Image.open(encoded).convert(mode)
-            pil_images.append(pil_image)
-    
+        try:
+            with open(image_path, 'rb') as f:
+                encoded = io.BytesIO(f.read())
+                pil_image = Image.open(encoded).convert(mode)
+                pil_images.append(pil_image)
+        except:
+            print ('error accurs when handling : ', image_path)
+            break
+        
     return pil_images
