@@ -603,7 +603,7 @@ class PandaTorchBasicModel(PandaModel):
         """
         inputs = data
         labels = labels.type(torch.LongTensor)
-        one_hot_labels = torch.zeros(labels.shape[0], 2)
+        one_hot_labels = torch.zeros(labels.shape[0], self._num_classes)
         one_hot_labels[range(one_hot_labels.shape[0]), labels.squeeze()] = 1
         one_hot_labels = one_hot_labels.type(torch.FloatTensor)
         if self._use_gpu:
