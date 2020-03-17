@@ -387,12 +387,6 @@ https://github.com/supasate/connected-react-router/issues/230
 
 
 
-## Dependencies
-
-This is for MUI-form-field
-```
-yarn add @date-io/core @date-io/moment @material-ui/core @material-ui/icons classnames core-js css-vendor final-form is-plain-object jss moment react react-dom react-dropzone react-final-form react-select react-number-format
-```
 # For Developers
 
 This app use redux to manage the state and the state shape is like this 

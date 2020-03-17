@@ -281,22 +281,8 @@ class RunPrediction extends React.Component {
       )
     }
 
-    const mcDropout = [
-      {
-        "label": "0", 
-        "mean": 0.969304084777832, 
-        "std": 0.0003792115021497011
-      }, 
-      {
-        "label": "1", 
-        "mean": 0.038662247359752655, 
-        "std": 0.0012569488026201725
-      }
-    ]
-
     return (
       <React.Fragment>
-        <ReactEcharts option={this.getOption(mcDropout)} style={{ height: 300 }} />
         <MainContent>
           <ContentBar
             needToList={false}
@@ -400,6 +386,13 @@ class RunPrediction extends React.Component {
                     />
                   </Grid>
                 </Grid>
+                <br />
+                <Divider />
+                <br />
+                <ReactEcharts
+                  option={this.getOption(this.state.mcDropout)}
+                  style={{ height: 500 }}
+                />
               </div>
             }
           </div>

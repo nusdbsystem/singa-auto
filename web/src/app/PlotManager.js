@@ -22,6 +22,11 @@ import _ from "lodash"
 
 export default class PlotManager {
   updatePlot(elemId, series, plotOption) {
+    console.log("updatePlot called")
+    console.log("elemID: ", elemId)
+    console.log("series: ", series)
+    console.log("plotOption: ", plotOption)
+
     const dom = document.getElementById(elemId)
     if (!dom) {
       console.error(`Element of ID "${elemId}" doesn't exist on DOM!`)
