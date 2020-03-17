@@ -22,6 +22,7 @@ import logging
 import tempfile
 
 from flask import Flask, jsonify, request, g
+from flask_cors import CORS
 
 from .predictor import Predictor
 from ..model import utils
@@ -30,6 +31,8 @@ service_id = os.environ['RAFIKI_SERVICE_ID']
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
+CORS(app)
+
 
 class InvalidQueryFormatError(Exception): pass
 
@@ -83,7 +86,7 @@ def predict():
         predictions = predictor.predict([query])
         assert len(predictions) == 1
         print(predictions)
-        return jsonify({'prediction': predictions[0][0]}), 200
+        return jsonify(predictions[0][0]), 200
     except Exception as e:
         logger.error(str(e))
         print('error', str(e))

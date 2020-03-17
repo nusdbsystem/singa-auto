@@ -185,3 +185,4 @@ PREDICTOR_PORT='34249'
 curl -i http://panda.d2.comp.nus.edu.sg:$PREDICTOR_PORT/predict \
   -X POST \
   -F img=@'/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/data/image_classification/xray_1.png' \
+
