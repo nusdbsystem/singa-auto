@@ -175,6 +175,13 @@ curl -i "${URL}inference_jobs/PandaApp/1/stop" \
   -H "Authorization: Bearer $TOKEN" \
   -X POST
 
-curl -i http://panda.d2.comp.nus.edu.sg:53353/predict \
+#####################################
+# Predictor
+#####################################
+
+# the predictor host does not have a fixed port (as of Mar16 2020)
+PREDICTOR_PORT='34249'
+# and predictor host does not have authentication (as of Mar16 2020)
+curl -i http://panda.d2.comp.nus.edu.sg:$PREDICTOR_PORT/predict \
   -X POST \
-  -F img=@'/Users/nailixing/Downloads/data/train/person878_bacteria_2801.jpeg' \
+  -F img=@'/home/svd/Documents/Work/NUS-SOC/FeiyiRafiki/rafiki_panda_dev/examples/data/image_classification/xray_1.png' \
