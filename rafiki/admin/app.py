@@ -133,9 +133,13 @@ def create_dataset(auth):
             del params['dataset_url']
 
         params['data_file_path'] = f.name
-
+        print(params)
         with admin:
-            return jsonify(admin.create_dataset(auth['user_id'], **params))
+            return jsonify(admin.create_dataset(user_id=auth['user_id'],
+                                                name=params['name'],
+                                                task=params['task'],
+                                                data_file_path=params['data_file_path'])
+                           )
 
 
 @app.route('/datasets', methods=['GET'])
@@ -502,6 +506,7 @@ def get_request_params():
         for k, v in request.args.items()
     }
     params = {**params, **query_params}
+    print('params', params)
 
     return params
 

@@ -139,11 +139,11 @@ class Admin(object):
 
     def create_dataset(self, user_id, name, task, data_file_path):
         # Store dataset in data folder
+        print('begin saving to local path')
         store_dataset = self._data_store.save(data_file_path)
         # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
-
 
         dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
         if 'images.csv' in dataset_zipfile.namelist():
@@ -196,12 +196,13 @@ class Admin(object):
                     img = Image.open(img_path)
                     img_size = str(img.size)
 
-
         
         if task == 'IMAGE_CLASSIFICATION':
             stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size':img_size}
         else:
             stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples' : num_unlabeled_samples, 'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
+
+        print('begin saving to db')
 
         dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
         self._meta_store.commit()
@@ -939,12 +940,14 @@ class Admin(object):
 
     def __enter__(self):
         self.connect()
+        print('connected')
 
     def connect(self):
         self._meta_store.connect()
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.disconnect()
+        print('disconnected')
 
     def disconnect(self):
         self._meta_store.disconnect()

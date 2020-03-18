@@ -180,27 +180,30 @@ class Client():
         :param dataset_url: Publicly accessible URL where the dataset file can be downloaded
         :returns: Created dataset as dictionary
         '''
-        files = {}
+
+        from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+
+        def my_callback(monitor):
+            progress = (monitor.bytes_read / monitor.len) * 100
+            print("\r uploading...：%d%%(%d/%d)" % (progress, monitor.bytes_read, monitor.len), end=" ")
+
+        datasets = dict()
+
+        form_data = {'name': name, 'task': task, 'dataset_url': dataset_url}
 
         if dataset_path is not None:
-            f = open(dataset_path, 'rb')
-            dataset = f.read()
-            f.close()
-            files['dataset'] = dataset
-            print('Uploading dataset..')
+            datasets = {'dataset': ('dataset', open(dataset_path, 'rb'), 'application/zip')}
         else:
             print('Waiting for server finish downloading the dataset from URL...')
 
-        data = self._post(
-            '/datasets', 
-            files=files,
-            form_data={
-                'name': name,
-                'task': task,
-                'dataset_url': dataset_url
-            }
-        )
-        return data
+        m = MultipartEncoderMonitor(MultipartEncoder(fields={**datasets, **form_data}), my_callback)
+
+        url = self._make_url('/datasets')
+        headers = self._get_headers()
+
+        res = requests.post(url, data=m,  headers={**{'Content-Type': m.content_type}, **headers})
+
+        return self._parse_response(res)
 
     def get_datasets(self, task: str = None) -> List[Dict[str, Any]]:
         '''
