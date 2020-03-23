@@ -450,7 +450,7 @@ class PandaTorchBasicModel(PandaModel):
                 outs.append(out.numpy())
 
         result = dict()
-        result['out'] = np.asarray(outs).tolist()
+        # result['out'] = np.asarray(outs).tolist()
         result['explaination'] = {}
         result['mc_dropout'] = []
 
@@ -459,7 +459,7 @@ class PandaTorchBasicModel(PandaModel):
             if exp:
                 result['explaination'] = exp
         if self._knobs.get("enable_mc_dropout"):
-            mean_var_eles = dict()
+            mean_var_eles = list()
             outs = np.asarray(outs)
             print("mean {}, var {}".format(np.mean(outs, axis=0), np.var(outs, axis=0)))
             label_index = 0
@@ -469,10 +469,10 @@ class PandaTorchBasicModel(PandaModel):
                                                                                is not None else str(label_index)
                 mean_var_ele['mean'] = mean
                 mean_var_ele['std'] = var
-                mean_var_eles['class_{}'.format(label_index)] = mean_var_ele
+                mean_var_eles.append(mean_var_ele)
                 label_index += 1
 
-            result['mc_dropout'] = [mean_var_eles]
+            result['mc_dropout'] = mean_var_eles
         return [result]
 
     def local_explain(self, org_imgs: Image, images: List[Any], params: Params) -> Dict:
