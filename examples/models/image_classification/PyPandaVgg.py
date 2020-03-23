@@ -84,8 +84,8 @@ class PyPandaVgg(PandaTorchBasicModel):
             
             # Explanation
             'enable_explanation': FixedKnob(True),
-            'explanation_gradcam': FixedKnob(False),
-            'explanation_lime': FixedKnob(True),
+            'explanation_gradcam': FixedKnob(True),
+            'explanation_lime': FixedKnob(False),
 
             # Model Slicing
             'enable_model_slicing':FixedKnob(True),
@@ -95,7 +95,7 @@ class PyPandaVgg(PandaTorchBasicModel):
             'model_slicing_randnum':FixedKnob(1),
 
             # MC Dropout
-            'enable_mc_dropout':FixedKnob(False),
+            'enable_mc_dropout':FixedKnob(True),
             'mc_trials_n':FixedKnob(10)
         }
 
