@@ -46,8 +46,8 @@ class PyPandaVgg(PandaTorchBasicModel):
             'lr':FixedKnob(0.0001), ### learning_rate
             'weight_decay':FixedKnob(0.0),
             'drop_rate':FixedKnob(0.0),
-            'max_epochs': FixedKnob(3),
-            'batch_size': CategoricalKnob([32]),
+            'max_epochs': FixedKnob(0), 
+            'batch_size': CategoricalKnob([150]),
             'max_iter': FixedKnob(20),
             'optimizer':CategoricalKnob(['adam']),
             'scratch':FixedKnob(True),
@@ -63,14 +63,14 @@ class PyPandaVgg(PandaTorchBasicModel):
      
             # Hyperparameters for PANDA modules
             # Self-paced Learning and Loss Revision
-            'enable_spl':FixedKnob(True),
+            'enable_spl':FixedKnob(False),
             'spl_threshold_init':FixedKnob(16.0),
             'spl_mu':FixedKnob(1.3),
             'enable_lossrevise':FixedKnob(False),
             'lossrevise_slop':FixedKnob(2.0),
 
             # Label Adaptation
-            'enable_label_adaptation':FixedKnob(False),
+            'enable_label_adaptation':FixedKnob(False), # error occurs 
 
             # GM Prior Regularization
             'enable_gm_prior_regularization':FixedKnob(False),
@@ -84,33 +84,33 @@ class PyPandaVgg(PandaTorchBasicModel):
             
             # Explanation
             'enable_explanation': FixedKnob(True),
-            'explanation_gradcam': FixedKnob(True),
+            'explanation_gradcam': FixedKnob(False),
             'explanation_lime': FixedKnob(True),
 
             # Model Slicing
-            'enable_model_slicing':FixedKnob(False),
+            'enable_model_slicing':FixedKnob(True),
             'model_slicing_groups':FixedKnob(0),
             'model_slicing_rate':FixedKnob(1.0),
             'model_slicing_scheduler_type':FixedKnob('randomminmax'),
             'model_slicing_randnum':FixedKnob(1),
 
             # MC Dropout
-            'enable_mc_dropout':FixedKnob(True),
+            'enable_mc_dropout':FixedKnob(False),
             'mc_trials_n':FixedKnob(10)
         }
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/val.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/val.zip', help='Path to test dataset')
+    parser.add_argument('--train_path', type=str, default='data/food_val.zip', help='Path to train dataset')
+    parser.add_argument('--val_path', type=str, default='data/food_val.zip', help='Path to validation dataset')
+    parser.add_argument('--test_path', type=str, default='data/food_val.zip', help='Path to test dataset')
     print (os.getcwd())
     parser.add_argument(
         '--query_path', 
         type=str, 
         default=
-        'examples/data/image_classification/xray_1.png,examples/data/image_classification/fashion_mnist_test_1.png,examples/data/image_classification/cifar10_test_1.png',
-        #'examples/data/image_classification/IM-0001-0001.jpeg,examples/data/image_classification/IM-0003-0001.jpeg,examples/data/image_classification/IM-0005-0001.jpeg',
+        # 'examples/data/image_classification/1463729893_339.jpg,examples/data/image_classification/1463729893_326.jpg,examples/data/image_classification/eed35e9d04814071.jpg',
+        'examples/data/image_classification/1463729893_339.jpg',
         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

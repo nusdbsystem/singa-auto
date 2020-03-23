@@ -55,7 +55,7 @@ class GradCam():
         conv_output, model_output = self.extractor.forward_pass(input_image)
 
         if target_class is None:
-            target_class = np.argmax(model_output.data.numpy())
+            target_class = np.argmax(model_output.data.cpu().numpy())
         # Target for backprop
         one_hot_output = torch.FloatTensor(1, model_output.size()[-1]).zero_()
         one_hot_output[0][target_class] = 1
@@ -83,11 +83,16 @@ class GradCam():
             raise Exception()
 
         # Backward pass with specified target
+        try:
+            one_hot_output=one_hot_output.cuda()
+        except:
+            pass
         model_output.backward(gradient=one_hot_output, retain_graph=True)
         # Get hooked gradients
-        guided_gradients = self.extractor.gradients.data.numpy()[0]
+        guided_gradients = self.extractor.gradients.data.cpu()
+        guided_gradients = guided_gradients.numpy()[0]
         # Get convolution outputs
-        target = conv_output.data.numpy()[0]
+        target = conv_output.data.cpu().numpy()[0]
         # Get weights from gradients
         weights = np.mean(guided_gradients, axis=(1, 2))  # Take averages for each gradient
         # Create empty numpy array for cam

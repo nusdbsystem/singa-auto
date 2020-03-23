@@ -37,6 +37,8 @@ class Lime():
         # images are size of (B, W, H, C)
         with torch.no_grad():
             images = torch.FloatTensor(images).permute(0, 3, 1, 2)
+        if self._use_gpu:
+            images = images.cuda()
         logits = self._model(images)
         probs = F.softmax(logits, dim=1)
 

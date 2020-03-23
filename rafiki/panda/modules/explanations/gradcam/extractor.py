@@ -136,6 +136,10 @@ class CamExtractorVGG():
         """
             Does a forward pass on convolutions, hooks the function at given layer
         """
+        try:
+            x = x.cuda()
+        except:
+            pass
         x = self.model.features(x)
         x.register_hook(self.save_gradient)
         conv_output = x

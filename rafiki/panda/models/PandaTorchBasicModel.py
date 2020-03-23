@@ -253,7 +253,7 @@ class PandaTorchBasicModel(PandaModel):
             shuffle=True)
 
         #Setup Criterion
-        print("self._num_classes is :   ", self._num_classes)
+        # print("self._num_classes is :   ", self._num_classes)
 
         self.train_criterion = nn.MultiLabelSoftMarginLoss() ### type(torch.FloatTensor)
 
@@ -299,12 +299,10 @@ class PandaTorchBasicModel(PandaModel):
             for batch_idx, (raw_indices, traindata, batch_classes) in enumerate(train_dataloader):
                 inputs, labels = self._transform_data(traindata, batch_classes, train=True)
                 optimizer.zero_grad()
-                
                 if self._knobs.get("enable_model_slicing"):
                     for sr_idx in next(sr_scheduler):
                         self._model.update_sr_idx(sr_idx)
                         outputs = self._model(inputs)
-                        print('output is ', outputs)
                         trainloss = self.train_criterion(outputs, labels)
                         trainloss.backward()
                 else:
@@ -325,13 +323,15 @@ class PandaTorchBasicModel(PandaModel):
                 
                 if self._knobs.get("enable_spl"):
                     train_dataset.update_sample_score(raw_indices, trainloss.detach().cpu().numpy())
-
                 optimizer.step()
                 print("Epoch: {:d} Batch: {:d} Train Loss: {:.6f}".format(epoch, batch_idx, trainloss.item()))
                 sys.stdout.flush()
 
                 transfered_labels = torch.max(labels.data, 1)
-                transfered_outpus = torch.max(torch.sigmoid(outputs).cpu(), 1)
+                # transfered_outpus = torch.max(torch.sigmoid(outputs).cpu(), 1)
+                transfered_outpus = torch.max(torch.sigmoid(outputs), 1)
+
+
                 bach_accuracy.append(transfered_labels[1].eq(transfered_outpus[1]).sum().item()/
                                      transfered_labels[1].size(0))
                 batch_losses.append(trainloss.item())
@@ -419,11 +419,11 @@ class PandaTorchBasicModel(PandaModel):
             outs: list of numbers indicating scores of classes
         """
         print('begin to predict')
-        print('mean and std', self._normalize_mean, self._normalize_std)
+        # print('mean and std', self._normalize_mean, self._normalize_std)
         ndarray_images, pil_images = utils.dataset.transform_images(queries, image_size=128, mode='RGB')
         (images, _, _) = utils.dataset.normalize_images(ndarray_images, self._normalize_mean, self._normalize_std)
 
-        print(self._use_gpu)
+        print('use_gpu:', self._use_gpu)
         if self._use_gpu:
             self._model.cuda()
         self._model.eval()
@@ -450,7 +450,7 @@ class PandaTorchBasicModel(PandaModel):
                 outs.append(out.numpy())
 
         result = dict()
-        # result['out'] = np.asarray(outs).tolist()
+        result['out'] = np.asarray(outs).tolist()
         result['explaination'] = {}
         result['mc_dropout'] = []
 
@@ -459,7 +459,7 @@ class PandaTorchBasicModel(PandaModel):
             if exp:
                 result['explaination'] = exp
         if self._knobs.get("enable_mc_dropout"):
-            mean_var_eles = list()
+            mean_var_eles = dict()
             outs = np.asarray(outs)
             print("mean {}, var {}".format(np.mean(outs, axis=0), np.var(outs, axis=0)))
             label_index = 0
@@ -469,10 +469,10 @@ class PandaTorchBasicModel(PandaModel):
                                                                                is not None else str(label_index)
                 mean_var_ele['mean'] = mean
                 mean_var_ele['std'] = var
-                mean_var_eles.append(mean_var_ele)
+                mean_var_eles['class_{}'.format(label_index)] = mean_var_ele
                 label_index += 1
 
-            result['mc_dropout'] = mean_var_eles
+            result['mc_dropout'] = [mean_var_eles]
         return [result]
 
     def local_explain(self, org_imgs: Image, images: List[Any], params: Params) -> Dict:
@@ -490,7 +490,7 @@ class PandaTorchBasicModel(PandaModel):
         print('begin local_explain')
         enable_gradcam = self._knobs.get("explanation_gradcam")
         enable_lime = self._knobs.get("explanation_lime")
-        print('get method:', enable_gradcam, enable_lime)
+        print('get method enable_gradcam, enable_lime:', enable_gradcam, enable_lime)
 
         explanation = dict()
         explanation['lime_img'] = ''
@@ -551,7 +551,8 @@ class PandaTorchBasicModel(PandaModel):
 
         if self._knobs.get("enable_label_adaptation"):
             params[self._label_drift_adapter.get_mod_name()] = self._label_drift_adapter.dump_parameters()
-
+        # print ('****************************DUMP Model *********************')
+        # torch.save(self._model, 'test/trained_food_vgg.pt')
         return params
 
     def load_parameters(self, params):
@@ -603,14 +604,14 @@ class PandaTorchBasicModel(PandaModel):
         """
         inputs = data
         labels = labels.type(torch.LongTensor)
-        one_hot_labels = torch.zeros(labels.shape[0], self._num_classes) # dataset.classes 
+        one_hot_labels = torch.zeros(labels.shape[0], self._num_classes)
         one_hot_labels[range(one_hot_labels.shape[0]), labels.squeeze()] = 1
         one_hot_labels = one_hot_labels.type(torch.FloatTensor)
-        if self._use_gpu:
-            inputs, labels = inputs.cuda(), labels.cuda()
-
         inputs = Variable(inputs, requires_grad=False)
         one_hot_labels = Variable(one_hot_labels, requires_grad=False)
+        if self._use_gpu:
+            inputs, one_hot_labels = inputs.cuda(), one_hot_labels.cuda()
+
         return inputs, one_hot_labels
 
     def combine_images(self,  org_im, activation, colormap_name='hsv'):

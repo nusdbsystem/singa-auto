@@ -480,11 +480,16 @@ class ImageFilesDatasetLazy(ModelDataset):
                     x = mu_i
                 else:
                     x = np.concatenate((x, mu_i), axis=0)
+                # if i == 10:
+                #     break
             except:
                 pass
         x = x / 255
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
+        # prevent single image dataset being normalized by 0 std, for this will cause inf values of model inputs
+        if std.sum() == 0:
+            std = np.array([1, 1, 1])
         # print("Dataset Mu = {}, Std = {}".format(mu, std))
         """
         mu = np.array([0.48233507, 0.48233507, 0.48233507])
