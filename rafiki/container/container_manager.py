@@ -20,7 +20,9 @@
 import abc
 from typing import List, Dict, Tuple, Any
 
+
 class InvalidServiceRequestError(Exception): pass
+
 
 class ContainerService():
     def __init__(self, id: str, hostname: str, port: int, info: Dict[str, Any] = {}):
@@ -28,6 +30,7 @@ class ContainerService():
         self.hostname = hostname # Hostname for the service created (in the internal network)
         self.port = port # Port for the service created (in the internal network), None if no container port is passed
         self.info = info
+
 
 class ContainerManager(abc.ABC):
     def __init__(self, **kwargs):

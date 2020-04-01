@@ -23,6 +23,7 @@ import shutil
 
 from .data_store import DataStore, Dataset
 
+
 class FileDataStore(DataStore):
     '''
        Stores datasets in the local filesystem.

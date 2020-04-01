@@ -16,71 +16,55 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
 import os
 import logging
-from flask import Flask, jsonify, request, g
-
+from flask import Flask, jsonify, g, request
+from flask_cors import CORS
 from .predictor import Predictor
-
+from rafiki.model import utils
+import traceback
 service_id = os.environ['RAFIKI_SERVICE_ID']
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
+CORS(app)
+
 
 class InvalidQueryFormatError(Exception): pass
+
 
 def get_predictor() -> Predictor:
     # Allow multiple threads to each have their own instance of predictor
     if not hasattr(g, 'predictor'):
         g.predictor = Predictor(service_id)
-    
+
     return g.predictor
 
-# Extract request params from Flask request
-def get_request_params():
-    # Get params from body as JSON
-    params = request.get_json()
-
-    # If the above fails, get params from body as form data
-    if params is None:
-        params = request.form.to_dict()
-
-    # Merge in query params
-    query_params = {
-        k: v
-        for k, v in request.args.items()
-    }
-    params = {**params, **query_params}
-
-    return params
 
 @app.route('/')
 def index():
     return 'Predictor is up.'
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    predictor = get_predictor()
-    params = get_request_params()
 
-    # Must either have `query` or `queries` key
-    if not 'query' in params and not 'queries' in params:
-        raise InvalidQueryFormatError('Must have either `query` or `queries` attribute')
-
-    # Either do single prediction or bulk predictions 
-    if 'queries' in params:
-        predictions = predictor.predict(params['queries'])
-        return jsonify({
-            'prediction': None,
-            'predictions': predictions
-        })
+    if request.files.getlist('img'):
+        img_stores = request.files.getlist('img')
+        img_bytes = [img for img in [img_store.read() for img_store in img_stores] if img]
+        print("img_stores", img_stores)
+        print("img_bytes", img_bytes)
+        if not img_bytes:
+            return jsonify({'ErrorMsg': 'No image provided'}), 400
     else:
-        predictions = predictor.predict([params['query']])
-        assert len(predictions) == 1
-        return jsonify({
-            'prediction': predictions[0],
-            'predictions': []
-        })
-
-
+        return jsonify({'ErrorMsg': 'No image provided'}), 400
+    try:
+        predictor = get_predictor()
+        queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
+        predictions = predictor.predict(queries)
+        return jsonify(predictions), 200
+    except:
+        # for debug,print the error
+        traceback.print_exc()
+        logging.error(traceback.format_exc())
+        return jsonify({'ErrorMsg': 'Server Error'}), 500

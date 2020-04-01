@@ -30,4 +30,4 @@ title "Starting Rafiki's Web Admin..."
   $RAFIKI_IMAGE_WEB_ADMIN:$RAFIKI_VERSION \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Rafiki's Web Admin" $LOG_FILE_PATH 10
+ensure_stable "Rafiki's Web Admin" $LOG_FILE_PATH 5

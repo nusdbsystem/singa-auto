@@ -23,11 +23,13 @@ from typing import List, Callable, Any
 
 logger = logging.getLogger(__name__)
 
-def get_ensemble_method(task: str) -> Callable[[List[Any]], Any]:
+
+def get_ensemble_method(task: str = "") -> Callable[[List[Any]], Any]:
     if task == 'IMAGE_CLASSIFICATION':
         return ensemble_probabilities
     else:
         return ensemble
+
 
 def ensemble_probabilities(predictions: List[Any]) -> Any:
     if len(predictions) == 0:
@@ -43,15 +45,17 @@ def ensemble_probabilities(predictions: List[Any]) -> Any:
     prediction = _simplify_prediction(prediction)
     return prediction
 
+
 def ensemble(predictions: List[Any]) -> Any:
     if len(predictions) == 0:
         return None
-
+    print("predictions is (in ensemble)", predictions)
     # Return some worker's predictions
     index = 0
     prediction = predictions[index]
     prediction = _simplify_prediction(prediction)
     return prediction
+
 
 def _simplify_prediction(prediction):
     # Convert numpy arrays to lists

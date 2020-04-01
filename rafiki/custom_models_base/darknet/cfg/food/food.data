@@ -1,0 +1,4 @@
+classes= 1
+train  = ""
+valid  = ""
+names = ./rafiki/custom_models_base/darknet/cfg/food/food.names

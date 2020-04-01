@@ -22,6 +22,7 @@ import uuid
 
 from .param_store import ParamStore, Params
 
+
 class FileParamStore(ParamStore):
     '''
        Stores parameters in the local filesystem.

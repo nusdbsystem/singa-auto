@@ -34,6 +34,7 @@ RUNNING_INFERENCE_WORKERS = 'INFERENCE_WORKERS'
 QUERIES_QUEUE = 'QUERIES'
 PREDICTIONS_QUEUE = 'PREDICTIONS'
 
+
 class InferenceCache(object):
     '''
     Caches queries & predictions to facilitate communication between predictor & inference workers.
@@ -43,7 +44,7 @@ class InferenceCache(object):
         hostlist = hosts.split(',')
         portlist = ports.split(',')
         self.connection_url = [f'{host}:{port}' for host, port in zip(hostlist, portlist)]
-        self.producer = KafkaProducer(bootstrap_servers=self.connection_url)   
+        self.producer = KafkaProducer(bootstrap_servers=self.connection_url, max_request_size=134217728, buffer_memory=134217728)
 
     def add_predictions_for_worker(self, worker_id: str, predictions: List[Prediction]):
         logger.info(f'Adding {len(predictions)} prediction(s) for worker "{worker_id}"')

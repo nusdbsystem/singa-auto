@@ -34,11 +34,14 @@ from .ensemble import get_ensemble_method
 
 PREDICT_LOOP_SLEEP_SECS = 0.1
 
+
 class InvalidInferenceJobError(Exception): pass
+
 
 logger = logging.getLogger(__name__)
 
-class Predictor():
+
+class Predictor:
     def __init__(self, service_id, meta_store=None):
         self._service_id = service_id
         self._meta_store = meta_store or MetaStore()
@@ -47,7 +50,6 @@ class Predictor():
         self._kafka_host = os.getenv('KAFKA_HOST', 'rafiki_kafka')
         self._kafka_port = os.getenv('KAFKA_PORT', 9092)
         self._ensemble_method: Callable[[List[Any]], Any] = None
-        self._inference_job_id = None
 
         self._pull_job_info()
         self._redis_cache = RedisInferenceCache(self._inference_job_id, 
@@ -85,11 +87,18 @@ class Predictor():
             if inference_job is None:
                 raise InvalidInferenceJobError('No inference job associated with predictor "{}"'.format(service_id))
 
-            train_job = self._meta_store.get_train_job(inference_job.train_job_id)
-            if train_job is None:
-                raise InvalidInferenceJobError('No such train job with ID "{}"'.format(inference_job.train_job_id))
+            if inference_job.train_job_id is None and inference_job.model_id is None:
+                raise InvalidInferenceJobError('No train job or checkpoint found with inference ID "{}"'.
+                                               format(inference_job.id))
 
-            self._ensemble_method = get_ensemble_method(train_job.task)
+            if inference_job.train_job_id is not None:
+                train_job = self._meta_store.get_train_job(inference_job.train_job_id)
+                if train_job is None:
+                    raise InvalidInferenceJobError('No such train job with ID "{}"'.format(inference_job.train_job_id))
+                self._ensemble_method = get_ensemble_method(train_job.task)
+            if inference_job.model_id is not None:
+                self._ensemble_method = get_ensemble_method()
+
             self._inference_job_id = inference_job.id
 
             logger.info(f'Using ensemble method: {self._ensemble_method}...')
