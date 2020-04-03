@@ -26,6 +26,7 @@ from rafiki.utils.log import configure_logging
 
 logger = logging.getLogger(__name__)
 
+
 def run_worker(meta_store, start_worker, stop_worker):
     service_id = os.environ['RAFIKI_SERVICE_ID']
     service_type = os.environ['RAFIKI_SERVICE_TYPE']
@@ -64,7 +65,7 @@ def run_worker(meta_store, start_worker, stop_worker):
 
         raise e
 
-    
+
     
 
 

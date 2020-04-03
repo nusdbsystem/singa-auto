@@ -35,12 +35,15 @@ from rafiki.param_store import FileParamStore, ParamStore
 LOOP_SLEEP_SECS = 0.1
 MAX_CONSEC_TRIAL_ERRORS = 100
 
+
 class InvalidWorkerError(Exception): pass
 class InvalidDatasetError(Exception): pass
 
+
 logger = logging.getLogger(__name__)
 
-class TrainWorker():
+
+class TrainWorker:
     def __init__(self, service_id, worker_id):
         self._worker_id = worker_id
         self._monitor: _SubTrainJobMonitor = _SubTrainJobMonitor(service_id)
@@ -215,7 +218,7 @@ class TrainWorker():
         py_model_logger.removeHandler(log_handler)
 
 
-class _SubTrainJobMonitor():
+class _SubTrainJobMonitor:
     '''
         Manages fetching & updating of metadata & datasets
     '''
@@ -292,6 +295,7 @@ class _SubTrainJobMonitor():
             raise InvalidDatasetError(e)
 
         return (train_dataset_path, val_dataset_path)
+
 
 class LoggerUtilsHandler(logging.Handler):
     def __init__(self, handle_log):

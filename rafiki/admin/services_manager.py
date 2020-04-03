@@ -31,7 +31,9 @@ from rafiki.model import parse_model_install_command
 
 logger = logging.getLogger(__name__)
 
+
 class ServiceDeploymentError(Exception): pass
+
 
 # List of environment variables that will be auto-forwarded to services deployed
 ENVIRONMENT_VARIABLES_AUTOFORWARD = [
@@ -39,23 +41,28 @@ ENVIRONMENT_VARIABLES_AUTOFORWARD = [
     'SUPERADMIN_PASSWORD', 'POSTGRES_DB', 'REDIS_HOST', 'REDIS_PORT',
     'ADMIN_HOST', 'ADMIN_PORT', 'DATA_DIR_PATH', 'LOGS_DIR_PATH', 'PARAMS_DIR_PATH', 'KAFKA_HOST', 'KAFKA_PORT',
 ]
+
 DEFAULT_TRAIN_GPU_COUNT = 0
 DEFAULT_INFERENCE_GPU_COUNT = 0
 SERVICE_STATUS_WAIT_SECS = 1
 
-class ServicesManager(object):
-    '''
-        Manages deployment of services and statuses of train jobs & inference jobs
-    '''
 
-    def __init__(self, meta_store=None, container_manager=None, 
-                var_autoforward=ENVIRONMENT_VARIABLES_AUTOFORWARD):
+class ServicesManager(object):
+    """
+        Manages deployment of services and statuses of train jobs & inference jobs
+    """
+
+    def __init__(self, meta_store=None, container_manager=None, var_autoforward=None):
+        if var_autoforward is None:
+            var_autoforward = ENVIRONMENT_VARIABLES_AUTOFORWARD
         self._meta_store: MetaStore = meta_store or MetaStore()
         self._container_manager: ContainerManager = container_manager or DockerSwarmContainerManager()
 
          # Ensure that environment variable exists, failing fast
         for x in var_autoforward:
-            os.environ[x]
+            if x not in os.environ:
+                raise ServiceDeploymentError('{} is not in environment variables'.format(x))
+
         self._var_autoforward = var_autoforward
 
         version = os.environ['RAFIKI_VERSION']
@@ -70,22 +77,26 @@ class ServicesManager(object):
         self._rafiki_addr = os.environ['RAFIKI_ADDR']
         self._app_mode = os.environ['APP_MODE']
 
-    def create_inference_services(self, inference_job_id):
+    def create_inference_services(self, inference_job_id, use_checkpoint=False):
         inference_job = self._meta_store.get_inference_job(inference_job_id)
-        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(inference_job.train_job_id)
-
-        # Determine trials to be deployed & GPU allocation for these trials
         total_gpus = int(inference_job.budget.get(InferenceBudgetOption.GPU_COUNT, DEFAULT_INFERENCE_GPU_COUNT))
-        (trial_ids, jobs_gpus) = self._get_deployment_for_inference_job(total_gpus, sub_train_jobs)
-
         try:
-            # Create predictor
             predictor_service = self._create_predictor(inference_job)
-
-            # Create worker for each trial to be deployed
-            for (trial_id, gpus) in zip(trial_ids, jobs_gpus):
-                trial = self._meta_store.get_trial(trial_id)
-                self._create_inference_job_worker(inference_job, trial, gpus=gpus)
+            if use_checkpoint:
+                self._create_inference_job_worker(inference_job=inference_job,
+                                                  model_id=inference_job.model_id,
+                                                  gpus=total_gpus)
+            else:
+                sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(inference_job.train_job_id)
+                # Determine trials to be deployed & GPU allocation for these trials
+                (jobs_ids, jobs_gpus) = \
+                    self._get_deployment_for_inference_job(total_gpus, sub_train_jobs)
+                # Create worker for each trial to be deployed
+                for (trial_id, gpus) in zip(jobs_ids, jobs_gpus):
+                    trial = self._meta_store.get_trial(trial_id)
+                    self._create_inference_job_worker(inference_job=inference_job,
+                                                      trial=trial,
+                                                      gpus=gpus)
 
             return (inference_job, predictor_service)
 
@@ -293,7 +304,7 @@ class ServicesManager(object):
             if len(trials) == 0:
                 continue
             trial_ids.append(trials[0].id)
-        
+
         # Evenly distribute GPus across trials, letting first few trials have 1 more GPU to fully allocate
         N = len(trial_ids)
         base_gpus = total_gpus // N
@@ -302,9 +313,18 @@ class ServicesManager(object):
 
         return (trial_ids, jobs_gpus)
 
-    def _create_inference_job_worker(self, inference_job, trial, gpus=0):
-        sub_train_job = self._meta_store.get_sub_train_job(trial.sub_train_job_id)
-        model = self._meta_store.get_model(sub_train_job.model_id)
+    def _create_inference_job_worker(self, inference_job, trial=None, model_id=None, gpus=0):
+        trial_id = None
+        checkpoint_id = None
+        if trial is not None:
+            sub_train_job = self._meta_store.get_sub_train_job(trial.sub_train_job_id)
+            model = self._meta_store.get_model(sub_train_job.model_id)
+            trial_id = trial.id
+        elif model_id is not None:
+            model = self._meta_store.get_model(model_id)
+            checkpoint_id = model.checkpoint_id
+        else:
+            raise ServiceDeploymentError("No model found")
         service_type = ServiceType.INFERENCE
         install_command = parse_model_install_command(model.dependencies, enable_gpu=(gpus > 0))
         environment_vars = {
@@ -321,7 +341,8 @@ class ServicesManager(object):
         self._meta_store.create_inference_job_worker(
             service_id=service.id,
             inference_job_id=inference_job.id,
-            trial_id=trial.id
+            trial_id=trial_id,
+            checkpoint_id=checkpoint_id
         )
         self._meta_store.commit()
 
@@ -455,11 +476,7 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = ''
-            if os.getenv('CONTAINER_MODE', 'SWARM') == 'SWARM':
-                container_service_name = 'rafiki_service_{}'.format(service.id)
-            else:
-                container_service_name = 'rafiki-service-{}'.format(service.id)
+            container_service_name = 'rafiki-svc-{}-{}'.format(service_type.lower(), service.id)
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image, 

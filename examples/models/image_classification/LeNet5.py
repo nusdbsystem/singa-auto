@@ -37,6 +37,7 @@ from rafiki.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
 from rafiki.constants import ModelDependency
 from rafiki.model.dev import test_model_class
 
+
 class LeNet5(BaseModel):
     '''
     Implements LeNet5 network to train image classification model on mnist dataset
@@ -50,14 +51,12 @@ class LeNet5(BaseModel):
             'max_image_size': CategoricalKnob([28, 32])
         }
 
-
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
         self._model = self._build_classifier(self.l_rate)
 
-  
     def train(self, dataset_path, **kwargs):
         ep = self._knobs.get('epochs')
         bs = self._knobs.get('batch_size')

@@ -22,6 +22,7 @@ from typing import Union
 
 from rafiki.model import Knobs
 
+
 class Jsonable():
     @classmethod
     def from_jsonable(cls, jsonable) -> object:
@@ -57,7 +58,7 @@ class ParamsType(Enum):
     NONE = 'NONE'
 
 class Proposal(Jsonable):
-    def __init__(self, 
+    def __init__(self,
                 trial_no: int, # Trial no.
                 knobs: Knobs, # Knobs for this trial
                 params_type: ParamsType = ParamsType.NONE, # Parameters to use for this trial
@@ -73,11 +74,11 @@ class Proposal(Jsonable):
         self.to_cache_params = to_cache_params
         self.to_save_params = to_save_params
         self.meta = meta or {}
-        self.trial_id = trial_id 
+        self.trial_id = trial_id
 
 class TrialResult(Jsonable):
-    def __init__(self, 
-                proposal: Proposal, 
+    def __init__(self,
+                proposal: Proposal,
                 score: Union[float, None] = None): # Score for the proposal, None if trial was not evaluated
         self.proposal = proposal if isinstance(proposal, Proposal) else Proposal(**proposal)
         self.score = score

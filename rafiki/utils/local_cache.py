@@ -17,14 +17,16 @@
 # under the License.
 #
 
-class _CacheNode():
+
+class _CacheNode:
     def __init__(self):
         self.key = None
         self.val = None
         self.prev = None
         self.next = None
 
-class LocalCache():
+
+class LocalCache:
     def __init__(self, size: int):
         assert size > 0
         self._size = size

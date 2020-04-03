@@ -31,6 +31,7 @@ if exit_code != 0:
 
 worker = None
 
+
 def start_worker(service_id, service_type, container_id):
     global worker
 
@@ -49,10 +50,12 @@ def start_worker(service_id, service_type, container_id):
     else:
         raise Exception('Invalid service type: {}'.format(service_type))
 
+
 def stop_worker():
     global worker
     if worker is not None:
         worker.stop()    
+
 
 meta_store = MetaStore()
 run_worker(meta_store, start_worker, stop_worker)

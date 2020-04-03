@@ -28,7 +28,8 @@ logger = logging.getLogger(__name__)
 
 REDIS_NAMESPACE = 'INFERENCE'
 
-class InferenceCache():
+
+class InferenceCache:
     '''
     Caches queries & predictions to facilitate communication between predictor & inference workers.
 
@@ -113,7 +114,6 @@ class InferenceCache():
             name = f'workers:{worker_id}:{prediction.query_id}:prediction'
             prediction = pickle.dumps(prediction)
             self._redis.set(name, prediction)
-    
 
     def delete_worker(self, worker_id: str):
         self._redis.delete_from_set('workers', worker_id)

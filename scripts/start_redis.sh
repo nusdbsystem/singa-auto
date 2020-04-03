@@ -28,4 +28,4 @@ title "Starting Rafiki's Redis..."
   $IMAGE_REDIS \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Rafiki's Redis" $LOG_FILE_PATH 10
+ensure_stable "Rafiki's Redis" $LOG_FILE_PATH 5

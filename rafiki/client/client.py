@@ -180,26 +180,18 @@ class Client():
         :param dataset_url: Publicly accessible URL where the dataset file can be downloaded
         :returns: Created dataset as dictionary
         '''
-        files = {}
+
+        dataset = dict()
+
+        form_data = {'name': name, 'task': task, 'dataset_url': dataset_url}
 
         if dataset_path is not None:
-            f = open(dataset_path, 'rb')
-            dataset = f.read()
-            f.close()
-            files['dataset'] = dataset
-            print('Uploading dataset..')
+            dataset = {'dataset': ('dataset', open(dataset_path, 'rb'), 'application/zip')}
         else:
             print('Waiting for server finish downloading the dataset from URL...')
 
-        data = self._post(
-            '/datasets', 
-            files=files,
-            form_data={
-                'name': name,
-                'task': task,
-                'dataset_url': dataset_url
-            }
-        )
+        data = self._post_stream(path='/datasets', files=dataset, form_data=form_data)
+
         return data
 
     def get_datasets(self, task: str = None) -> List[Dict[str, Any]]:
@@ -218,8 +210,9 @@ class Client():
     # Models
     ####################################
 
-    def create_model(self, name: str, task: str, model_file_path: str, model_class: str, dependencies: ModelDependencies = None, 
-                    access_right: ModelAccessRight = ModelAccessRight.PRIVATE, docker_image: str = None) -> Dict[str, Any]:
+    def create_model(self, name: str, task: str, model_file_path: str, model_class: str,
+                     model_pretrained_params_id: str = None, dependencies: ModelDependencies = None,
+                     access_right: ModelAccessRight = ModelAccessRight.PRIVATE, docker_image: str = None) -> Dict[str, Any]:
         '''
         Creates a model on Rafiki.
 
@@ -231,6 +224,7 @@ class Client():
         :param model_class: The name of the model class inside the Python file. This class should implement :class:`rafiki.model.BaseModel`
         :param dependencies: List of Python dependencies & their versions
         :param access_right: Model access right
+        :param model_pretrained_params_id: pretrained mdoel file
         :param docker_image: A custom Docker image that extends ``rafikiai/rafiki_worker``, publicly available on Docker Hub.
         :returns: Created model as dictionary
 
@@ -248,24 +242,27 @@ class Client():
         and ``<dependency_version>`` corresponds to the version of the PyPI package (e.g. ``1.12.0``). 
         Refer to :ref:`configuring-model-environment` to understand more about this option.
         '''
-        f = open(model_file_path, 'rb')
-        model_file_bytes = f.read()
-        f.close()
-        
-        data = self._post(
-            '/models', 
-            files={
-                'model_file_bytes': model_file_bytes
-            },
-            form_data={
-                'name': name,
-                'task': task,
-                'dependencies': json.dumps(dependencies),
-                'docker_image': docker_image,
-                'model_class':  model_class,
-                'access_right': access_right
-            }
-        )
+
+        model_files = {'model_file_bytes': ('file_name', open(model_file_path, 'rb'), 'application/octet-stream')}
+        pretrained_files = {}
+
+        if model_pretrained_params_id is not None:
+            pretrained_files = {'checkpoint_id':
+                                    ('file_name', open(model_pretrained_params_id, 'rb'), 'application/octet-stream')}
+
+        files = {**model_files, **pretrained_files}
+
+        form_data = {
+            'name': name,
+            'task': task,
+            'dependencies': json.dumps(dependencies),
+            'docker_image': docker_image,
+            'model_class': model_class,
+            'access_right': access_right
+        }
+
+        data = self._post_stream(path='/models', files=files, form_data=form_data)
+
         return data
 
     def get_model(self, model_id: str) -> Dict[str, Any]:
@@ -349,7 +346,7 @@ class Client():
     ####################################
     
     def create_train_job(self, app: str, task: str, train_dataset_id: str, val_dataset_id: str, 
-                        budget: Budget, models: List[str] = None, train_args: Dict[str, any] = None) -> Dict[str, Any]:
+                         budget: Budget, models: List[str] = None, train_args: Dict[str, any] = None) -> Dict[str, Any]:
         '''
         Creates and starts a train job on Rafiki. 
 
@@ -681,6 +678,19 @@ class Client():
             json=json,
             files=files or {}
         )
+        return self._parse_response(res)
+
+    def _post_stream(self, path, files=None, form_data=None):
+        from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+
+        def my_callback(monitor):
+            progress = (monitor.bytes_read / monitor.len) * 100
+            print("\r uploading...：%d%%(%d/%d)" % (progress, monitor.bytes_read, monitor.len), end=" ")
+
+        url = self._make_url(path)
+        headers = self._get_headers()
+        m = MultipartEncoderMonitor(MultipartEncoder(fields={**files, **form_data}), my_callback)
+        res = requests.post(url, data=m, headers={**{'Content-Type': m.content_type}, **headers})
         return self._parse_response(res)
 
     def _delete(self, path, params=None, files=None, form_data=None, json=None):

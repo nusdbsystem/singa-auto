@@ -21,13 +21,15 @@ import abc
 import msgpack
 import traceback
 import numpy as np
-
 from rafiki.model import Params
+
 
 class InvalidParamsFormatError(Exception): pass
 
+
 PARAM_DATA_TYPE_SEPARATOR = '//'
 PARAM_DATA_TYPE_NUMPY = 'NP'
+
 
 class ParamStore(abc.ABC):
     '''
@@ -87,6 +89,7 @@ def _simplify_params(params):
     except:
         traceback.print_stack()
         raise InvalidParamsFormatError()
+
 
 def _unsimplify_params(params_simple):
     params = {}

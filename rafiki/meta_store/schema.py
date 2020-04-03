@@ -16,11 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, String, Float, ForeignKey, Integer, LargeBinary, DateTime, UniqueConstraint, BigInteger
-from sqlalchemy.dialects.postgresql import JSON, ARRAY
+from sqlalchemy.dialects.postgresql import JSON
 import uuid
 from datetime import datetime
 
@@ -28,11 +27,14 @@ from rafiki.constants import InferenceJobStatus, ServiceStatus, TrainJobStatus, 
 
 Base = declarative_base()
 
+
 def generate_uuid():
     return str(uuid.uuid4())
 
+
 def generate_datetime():
     return datetime.utcnow()
+
 
 class InferenceJob(Base):
     __tablename__ = 'inference_job'
@@ -40,18 +42,22 @@ class InferenceJob(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
     train_job_id = Column(String, ForeignKey('train_job.id'))
+    model_id = Column(String, ForeignKey('model.id'))
     budget = Column(JSON, default={})
     status = Column(String, nullable=False, default=InferenceJobStatus.STARTED)
     user_id = Column(String, ForeignKey('user.id'), nullable=False)
     predictor_service_id = Column(String, ForeignKey('service.id'))
     datetime_stopped = Column(DateTime, default=None)
 
+
 class InferenceJobWorker(Base):
     __tablename__ = 'inference_job_worker'
 
     service_id = Column(String, ForeignKey('service.id'), primary_key=True)
     inference_job_id = Column(String, ForeignKey('inference_job.id'))
-    trial_id = Column(String, ForeignKey('trial.id'), nullable=False)
+    trial_id = Column(String, ForeignKey('trial.id'))
+    checkpoint_id = Column(String)
+
 
 class Dataset(Base):
     __tablename__ = 'dataset'
@@ -63,6 +69,7 @@ class Dataset(Base):
     size_bytes = Column(BigInteger, default=0)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
     datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
+
 
 class Model(Base):
     __tablename__ = 'model'
@@ -77,7 +84,9 @@ class Model(Base):
     docker_image = Column(String, nullable=False)
     dependencies = Column(JSON, nullable=False)
     access_right = Column(String, nullable=False, default=ModelAccessRight.PRIVATE)
+    checkpoint_id = Column(String, default=None)
     __table_args__ = (UniqueConstraint('name', 'user_id'),)
+
 
 class Service(Base):
     __tablename__ = 'service'
@@ -106,6 +115,7 @@ class Service(Base):
             return None
         return f'{self.ext_hostname}:{self.ext_port}'
 
+
 class TrainJob(Base):
     __tablename__ = 'train_job'
 
@@ -120,9 +130,9 @@ class TrainJob(Base):
     train_args = Column(JSON, default=None)
     user_id = Column(String, ForeignKey('user.id'), nullable=False)
     status = Column(String, nullable=False, default=TrainJobStatus.STARTED)
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
     datetime_stopped = Column(DateTime, default=None)
     __table_args__ = (UniqueConstraint('app', 'app_version', 'user_id'),)
+
 
 class SubTrainJob(Base):
     __tablename__ = 'sub_train_job'
@@ -131,10 +141,10 @@ class SubTrainJob(Base):
     train_job_id = Column(String, ForeignKey('train_job.id'))
     model_id = Column(String, ForeignKey('model.id'))
     datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
-    train_job_id = Column(String, ForeignKey('train_job.id'))
     status = Column(String, nullable=False, default=TrainJobStatus.STARTED)
     datetime_stopped = Column(DateTime, default=None)
     advisor_service_id = Column(String, ForeignKey('service.id'))
+
 
 class TrainJobWorker(Base):
     __tablename__ = 'train_job_worker'
@@ -166,6 +176,7 @@ class Trial(Base):
 
     __table_args__ = (UniqueConstraint('sub_train_job_id', 'no', name='_sub_train_job_id_no_uc'),) # Unique by (sub train job, trial no)
 
+
 class TrialLog(Base):
     __tablename__ = 'trial_log'
 
@@ -175,6 +186,7 @@ class TrialLog(Base):
     line = Column(String, nullable=False)
     level = Column(String)
 
+
 class User(Base):
     __tablename__ = 'user'
 
@@ -183,4 +195,3 @@ class User(Base):
     password_hash = Column(LargeBinary, nullable=False)
     user_type = Column(String, nullable=False)
     banned_date = Column(DateTime, default=None)
-    
