@@ -37,24 +37,25 @@ logger = logging.getLogger(__name__)
 _Node = namedtuple('_Node', ['id', 'available_gpus', 'num_services'])
 _Deployment = namedtuple('_Deployment', ['node_id', 'gpu_nos'])
 
+
 class DockerSwarmContainerManager(ContainerManager):
     def __init__(self,
-        network=os.environ.get('DOCKER_NETWORK', 'rafiki'),
-        label_num_services=os.environ.get('DOCKER_NODE_LABEL_NUM_SERVICES', 'num_services'), 
-        label_available_gpus=os.environ.get('DOCKER_NODE_LABEL_AVAILABLE_GPUS', 'available_gpus')):
+                 network=os.environ.get('DOCKER_NETWORK', 'rafiki'),
+                 label_num_services=os.environ.get('DOCKER_NODE_LABEL_NUM_SERVICES', 'num_services'),
+                 label_available_gpus=os.environ.get('DOCKER_NODE_LABEL_AVAILABLE_GPUS', 'available_gpus')):
 
         self._network = network
         self._client = docker.from_env()
         self._label_num_services = label_num_services
         self._label_available_gpus = label_available_gpus
 
-    def create_service(self, service_name, docker_image, replicas, 
+    def create_service(self, service_name, docker_image, replicas,
                         args, environment_vars, mounts={}, publish_port=None,
                         gpus=0) -> ContainerService:
 
         deployment = self._get_deployment(gpus)
         (service_id, hostname, port) \
-            = self._create_service(deployment, service_name, docker_image, replicas, 
+            = self._create_service(deployment, service_name, docker_image, replicas,
                                 args, environment_vars, mounts, publish_port)
         info = {
             'node_id': deployment.node_id,
@@ -63,7 +64,7 @@ class DockerSwarmContainerManager(ContainerManager):
             'replicas': replicas
         }
         service = ContainerService(service_id, hostname, port, info)
-        self._mark_deployment(deployment)                            
+        self._mark_deployment(deployment)
 
         logger.info('Created service of ID "{}" with info {}'.format(service.id, service.info))
         return service
@@ -78,14 +79,14 @@ class DockerSwarmContainerManager(ContainerManager):
 
     def _get_deployment(self, gpus) -> _Deployment:
         nodes = self._get_nodes()
-        
+
         # Filter nodes with GPU if required
         if gpus > 0:
             nodes = [x for x in nodes if len(x.available_gpus) >= gpus]
-        
+
         if len(nodes) == 0:
             raise InvalidServiceRequestError('Insufficient GPUs to deploy service')
-        
+
         # Choose the node with fewest services
         (_, node) = sorted([(x.num_services, x) for x in nodes])[0]
 
@@ -107,7 +108,7 @@ class DockerSwarmContainerManager(ContainerManager):
 
     def _unmark_deployment(self, deployment):
         node_id = deployment.node_id
-        
+
         # Update num services and GPUs available for node
         node = self._get_node(node_id)
         num_services = max(0, node.num_services - 1)
@@ -119,7 +120,7 @@ class DockerSwarmContainerManager(ContainerManager):
         service = self._client.services.get(service_id)
         _retry(service.remove)()
 
-    def _create_service(self, deployment, service_name, docker_image, replicas, 
+    def _create_service(self, deployment, service_name, docker_image, replicas,
                         args, environment_vars, mounts, publish_port):
         env = [
             '{}={}'.format(k, v)
@@ -139,8 +140,8 @@ class DockerSwarmContainerManager(ContainerManager):
             # Host of Docker Swarm service = service's name at the container port
             published_port = int(publish_port[0])
             container_port = int(publish_port[1])
-            ports_list = [{ 
-                'PublishedPort': published_port, 
+            ports_list = [{
+                'PublishedPort': published_port,
                 'TargetPort': container_port
             }]
 
@@ -222,13 +223,12 @@ def _retry(func):
                 logger.error(f'Error when calling `{func}`:')
                 logger.error(traceback.format_exc())
 
-                # Retried so many times but still errors - raise exception    
+                # Retried so many times but still errors - raise exception
                 if no == RETRY_TIMES:
                     logger.info(f'Giving up on `{func} call...')
                     raise e
-                
+
             logger.info(f'Retrying {func} after {wait_secs}s...')
             time.sleep(wait_secs)
-    
+
     return retried_func
-            

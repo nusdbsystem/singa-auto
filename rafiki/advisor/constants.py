@@ -22,7 +22,8 @@ from typing import Union
 
 from rafiki.model import Knobs
 
-class Jsonable():
+
+class Jsonable:
     @classmethod
     def from_jsonable(cls, jsonable) -> object:
         return cls(**jsonable)
@@ -42,12 +43,14 @@ class Jsonable():
     def __str__(self):
         return str(self.to_jsonable())
 
+
 class AdvisorType(Enum):
     FIXED = 'FIXED'
     BAYES_OPT_WITH_PARAM_SHARING = 'BAYES_OPT_WITH_PARAM_SHARING'
     BAYES_OPT = 'BAYES_OPT'
     RANDOM = 'RANDOM'
     ENAS = 'ENAS'
+
 
 class ParamsType(Enum):
     LOCAL_RECENT = 'LOCAL_RECENT'
@@ -56,8 +59,9 @@ class ParamsType(Enum):
     GLOBAL_BEST = 'GLOBAL_BEST'
     NONE = 'NONE'
 
+
 class Proposal(Jsonable):
-    def __init__(self, 
+    def __init__(self,
                 trial_no: int, # Trial no.
                 knobs: Knobs, # Knobs for this trial
                 params_type: ParamsType = ParamsType.NONE, # Parameters to use for this trial
@@ -73,11 +77,12 @@ class Proposal(Jsonable):
         self.to_cache_params = to_cache_params
         self.to_save_params = to_save_params
         self.meta = meta or {}
-        self.trial_id = trial_id 
+        self.trial_id = trial_id
+
 
 class TrialResult(Jsonable):
-    def __init__(self, 
-                proposal: Proposal, 
+    def __init__(self,
+                proposal: Proposal,
                 score: Union[float, None] = None): # Score for the proposal, None if trial was not evaluated
         self.proposal = proposal if isinstance(proposal, Proposal) else Proposal(**proposal)
         self.score = score

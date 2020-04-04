@@ -35,10 +35,13 @@ from rafiki.kafka import InferenceCache as KafkaInferenceCache
 LOOP_SLEEP_SECS = 0.1
 PREDICT_BATCH_SIZE = 32
 
+
 class InvalidWorkerError(Exception): pass
 class InvalidTrialError(Exception): pass
 
+
 logger = logging.getLogger(__name__)
+
 
 class InferenceWorker():
     def __init__(self, service_id, worker_id, meta_store=None, param_store=None):
@@ -61,9 +64,7 @@ class InferenceWorker():
 
     def start(self):
         self._pull_job_info()
-        self._redis_cache = RedisInferenceCache(self._inference_job_id, 
-                                            self._redis_host, 
-                                            self._redis_port)
+        self._redis_cache = RedisInferenceCache(self._inference_job_id,  self._redis_host,  self._redis_port)
 
         logger.info(f'Starting worker for inference job "{self._inference_job_id}"...')
         
@@ -111,22 +112,29 @@ class InferenceWorker():
             inference_job = self._meta_store.get_inference_job(worker.inference_job_id)
             if inference_job is None:
                 raise InvalidWorkerError('No such inference job with ID "{}"'.format(worker.inference_job_id))
+            if inference_job.model_id:
+                model = self._meta_store.get_model(inference_job.model_id)
+                logger.info(f'Using checkpoint of the model "{model.name}"...')
 
-            trial = self._meta_store.get_trial(worker.trial_id)
-            if trial is None or trial.store_params_id is None: # Must have model saved
-                raise InvalidTrialError('No saved trial with ID "{}"'.format(worker.trial_id))
-            logger.info(f'Using trial "{trial.id}"...')
-            
-            model = self._meta_store.get_model(trial.model_id)
-            if model is None:
-                raise InvalidTrialError('No such model with ID "{}"'.format(trial.model_id))
-            logger.info(f'Using model "{model.name}"...')
+                self._proposal = Proposal.from_jsonable({"trial_no": 1, "knobs": {}})
+                self._store_params_id = model.checkpoint_id
+            else:
+
+                trial = self._meta_store.get_trial(worker.trial_id)
+                if trial is None or trial.store_params_id is None: # Must have model saved
+                    raise InvalidTrialError('No saved trial with ID "{}"'.format(worker.trial_id))
+                logger.info(f'Using trial "{trial.id}"...')
+
+                model = self._meta_store.get_model(trial.model_id)
+                if model is None:
+                    raise InvalidTrialError('No such model with ID "{}"'.format(trial.model_id))
+                logger.info(f'Using model "{model.name}"...')
+
+                self._proposal = Proposal.from_jsonable(trial.proposal)
+                self._store_params_id = trial.store_params_id
 
             self._inference_job_id = inference_job.id
-
             self._py_model_class = load_model_class(model.model_file_bytes, model.model_class)
-            self._proposal = Proposal.from_jsonable(trial.proposal)
-            self._store_params_id = trial.store_params_id 
 
     def _load_trial_model(self):
         logger.info('Loading saved model parameters from store...')

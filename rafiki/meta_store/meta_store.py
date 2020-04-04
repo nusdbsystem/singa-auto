@@ -25,14 +25,16 @@ from sqlalchemy.orm import sessionmaker
 from rafiki.constants import TrainJobStatus, UserType, \
     TrialStatus, ServiceStatus, InferenceJobStatus, ModelAccessRight
 
-from .schema import Base, TrainJob, SubTrainJob, TrainJobWorker, \
+from rafiki.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWorker, \
     InferenceJob, Trial, Model, User, Service, InferenceJobWorker, \
     TrialLog, Dataset
+
 
 class InvalidModelAccessRightError(Exception): pass
 class DuplicateModelNameError(Exception): pass
 class ModelUsedError(Exception): pass
 class InvalidUserTypeError(Exception): pass
+
 
 class MetaStore(object):
     def __init__(self, **kwargs):
@@ -43,10 +45,10 @@ class MetaStore(object):
         password = kwargs.get('postgres_password', os.environ.get('POSTGRES_PASSWORD', 'rafiki'))
 
         db_connection_url = self._make_connection_url(
-            host=host, 
-            port=port, 
+            host=host,
+            port=port,
             db=db,
-            user=user, 
+            user=user,
             password=password
         )
 
@@ -75,6 +77,10 @@ class MetaStore(object):
 
     def get_user_by_email(self, email):
         user = self._session.query(User).filter(User.email == email).first()
+        return user
+
+    def get_user_by_id(self, user_id):
+        user = self._session.query(User).filter(User.id == user_id).first()
         return user
 
     def get_users(self):
@@ -110,10 +116,10 @@ class MetaStore(object):
 
         if task is not None:
             query = query.filter(Dataset.task == task)
-        
+
         datasets = query.all()
         return datasets
-    
+
     ####################################
     # Train Jobs
     ####################################
@@ -172,7 +178,7 @@ class MetaStore(object):
             query = query.filter(TrainJob.app_version == app_version)
 
         return query.first()
-    
+
     def mark_train_job_as_running(self, train_job):
         train_job.status = TrainJobStatus.RUNNING
         self._session.add(train_job)
@@ -190,7 +196,7 @@ class MetaStore(object):
 
     ####################################
     # Sub Train Jobs
-    ####################################  
+    ####################################
 
     def create_sub_train_job(self, train_job_id, model_id):
         sub_train_job = SubTrainJob(
@@ -205,7 +211,7 @@ class MetaStore(object):
             .filter(SubTrainJob.train_job_id == train_job_id) \
             .all()
 
-        return sub_train_jobs 
+        return sub_train_jobs
 
     def update_sub_train_job(self, sub_train_job, advisor_service_id=None):
         if advisor_service_id is not None:
@@ -239,7 +245,7 @@ class MetaStore(object):
 
     ####################################
     # Train Job Workers
-    ####################################  
+    ####################################
 
     def create_train_job_worker(self, service_id, sub_train_job_id):
         worker = TrainJobWorker(
@@ -263,11 +269,12 @@ class MetaStore(object):
     ####################################
     # Inference Jobs
     ####################################
-    
-    def create_inference_job(self, user_id, train_job_id, budget):
+
+    def create_inference_job(self, user_id, budget, train_job_id=None, model_id=None):
         inference_job = InferenceJob(
             user_id=user_id,
             train_job_id=train_job_id,
+            model_id=model_id,
             budget=budget
         )
         self._session.add(inference_job)
@@ -299,7 +306,7 @@ class MetaStore(object):
             inference_job.predictor_service_id = predictor_service_id
         self._session.add(inference_job)
         return inference_job
-    
+
     def mark_inference_job_as_running(self, inference_job):
         inference_job.status = InferenceJobStatus.RUNNING
         inference_job.datetime_stopped = None
@@ -321,7 +328,7 @@ class MetaStore(object):
             .filter(TrainJob.app == app) \
             .order_by(InferenceJob.datetime_started.desc()).all()
         return inference_jobs
-    
+
     def get_inference_jobs_by_statuses(self, statuses):
         inference_jobs = self._session.query(InferenceJob) \
             .filter(InferenceJob.status.in_(statuses)).all()
@@ -329,13 +336,14 @@ class MetaStore(object):
 
     ####################################
     # Inference Job Workers
-    ####################################  
+    ####################################
 
-    def create_inference_job_worker(self, service_id, inference_job_id, trial_id):
+    def create_inference_job_worker(self, service_id, inference_job_id, trial_id=None, checkpoint_id=None):
         worker = InferenceJobWorker(
             service_id=service_id,
             inference_job_id=inference_job_id,
-            trial_id=trial_id
+            trial_id=trial_id,
+            checkpoint_id=checkpoint_id
         )
         self._session.add(worker)
         return worker
@@ -355,7 +363,7 @@ class MetaStore(object):
     # Services
     ####################################
 
-    def create_service(self, service_type, container_manager_type, 
+    def create_service(self, service_type, container_manager_type,
                         docker_image, replicas, gpus):
         service = Service(
             service_type=service_type,
@@ -367,7 +375,7 @@ class MetaStore(object):
         self._session.add(service)
         return service
 
-    def mark_service_as_deploying(self, service, container_service_name, 
+    def mark_service_as_deploying(self, service, container_service_name,
                                 container_service_id, hostname,
                                 port, ext_hostname, ext_port, container_service_info):
         service.container_service_name = container_service_name
@@ -414,9 +422,9 @@ class MetaStore(object):
     # Models
     ####################################
 
-    def create_model(self, user_id, name, task, model_file_bytes, 
-                    model_class, docker_image, dependencies, access_right):
-        
+    def create_model(self, user_id, name, task, model_file_bytes,
+                     model_class, docker_image, dependencies, access_right, checkpoint_id):
+
         self._validate_model_access_right(access_right)
 
         model = Model(
@@ -427,7 +435,8 @@ class MetaStore(object):
             model_class=model_class,
             docker_image=docker_image,
             dependencies=dependencies,
-            access_right=access_right
+            access_right=access_right,
+            checkpoint_id=checkpoint_id
         )
         self._session.add(model)
         return model
@@ -455,11 +464,18 @@ class MetaStore(object):
         model = self._session.query(Model) \
             .filter(Model.user_id == user_id) \
             .filter(Model.name == name).first()
-        
+
         return model
 
     def get_model(self, id):
         model = self._session.query(Model).get(id)
+        return model
+
+    def get_model_by_pretrain_model_id(self, user_id, name):
+        model = self._session.query(Model) \
+            .filter(Model.user_id == user_id) \
+            .filter(Model.name == name).first()
+
         return model
 
     def _validate_model_access_right(self, access_right):
@@ -492,9 +508,9 @@ class MetaStore(object):
         trial_logs = self._session.query(TrialLog) \
             .filter(TrialLog.trial_id == id) \
             .all()
-            
+
         return trial_logs
-    
+
     # Return a list of trials associated with a train job that have the best scores, in descending score
     # Trials' models must be saved
     def get_best_trials_of_train_job(self, train_job_id, max_count=3):
@@ -517,7 +533,7 @@ class MetaStore(object):
             .filter(Trial.is_params_saved == True) \
             .order_by(Trial.score.desc()) \
             .limit(max_count).all()
-        
+
         return trials
 
     def get_trials_of_train_job(self, train_job_id, limit=1000, offset=0):
@@ -571,7 +587,7 @@ class MetaStore(object):
     ####################################
     # Others
     ####################################
-    
+
     def __enter__(self):
         self.connect()
 
@@ -601,7 +617,7 @@ class MetaStore(object):
             self._session.commit()
             self._session.close()
             self._session = None
-            
+
     def clear_all_data(self):
         for table in reversed(Base.metadata.sorted_tables):
             self._session.execute(table.delete())

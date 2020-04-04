@@ -16,23 +16,3 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-import os
-
-from rafiki.admin.app import create_app
-from rafiki.utils.log import configure_logging
-from rafiki.admin import Admin
-
-
-configure_logging('admin')
-
-if __name__ == "__main__":
-    # Run seed logic for admin at start-up
-    admin = Admin()
-    admin.seed()
-    app = create_app()
-    # Run Flask app
-    app.run(
-        host='0.0.0.0',
-        port=os.getenv('ADMIN_PORT', 3000),
-        threaded=True)
