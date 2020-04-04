@@ -153,6 +153,8 @@ if __name__ == '__main__':
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
     env.append({'name': 'KAFKA_ZOOKEEPER_CONNECT', 'value': f'{ZOOKEEPER_HOST}:{ZOOKEEPER_PORT}'})
     env.append({'name': 'KAFKA_ADVERTISED_HOST_NAME', 'value': KAFKA_HOST})
+    env.append({'name': 'KAFKA_MESSAGE_MAX_BYTES', 'value': "134217728"})
+    env.append({'name': 'KAFKA_FETCH_MAX_BYTES', 'value': "134217728"})
     env.append({'name': 'KAFKA_ADVERTISED_PORT', 'value': KAFKA_PORT})
     container.setdefault('env', env)
     template.setdefault('spec', {'containers': [container]})
