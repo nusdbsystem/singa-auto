@@ -24,12 +24,14 @@ from datetime import datetime, timedelta
 
 from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
+from rafiki.meta_store import MetaStore
 
-TOKEN_EXPIRATION_HOURS = 1
+TOKEN_EXPIRATION_HOURS = 10
 
 class UnauthorizedError(Exception): pass
 class InvalidAuthorizationHeaderError(Exception): pass
-    
+
+
 def generate_token(user):
     payload = {
         'user_id': user['id'],
@@ -39,9 +41,11 @@ def generate_token(user):
     token = jwt.encode(payload, APP_SECRET, algorithm='HS256')
     return token.decode('utf-8')
 
+
 def decode_token(token):
     payload = jwt.decode(token, APP_SECRET, algorithms=['HS256'])
     return payload
+
 
 def auth(user_types=[]):
     from flask import request
@@ -58,10 +62,17 @@ def auth(user_types=[]):
             if auth.get('user_type') not in user_types:
                 raise UnauthorizedError()
 
+            metastore = MetaStore()
+            with metastore:
+                user = metastore.get_user_by_id(user_id=auth.get("user_id"))
+                if user is None:
+                    raise UnauthorizedError("user is not exist")
+
             return f(auth, *args, **kwargs)
 
         return wrapped
     return decorator
+
 
 def extract_token_from_header(header):
     if header is None:
@@ -77,6 +88,7 @@ def extract_token_from_header(header):
 
     token = parts[1]
     return token
+
 
 def superadmin_client():
     from rafiki.client import Client
