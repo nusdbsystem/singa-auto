@@ -20,7 +20,8 @@
 from typing import Union, Any
 import uuid
 
-class Query():
+
+class Query:
     def __init__(self, query: Any):
         self.id = str(uuid.uuid4())
         self.query = query
@@ -30,7 +31,8 @@ class Query():
                 and self.id == other.id 
                 and self.query == other.query)
 
-class Prediction():
+
+class Prediction:
     def __init__(self, 
                 # Raw prediction, or None if the worker is unable to make a prediction (e.g. errored)
                 prediction: Union[Any, None], 

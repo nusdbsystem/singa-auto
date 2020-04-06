@@ -34,6 +34,7 @@ RETRY_TIMES = 5
 
 logger = logging.getLogger(__name__)
 
+
 class KubernetesContainerManager(ContainerManager):
     def __init__(self, **kwargs):
         aToken = None

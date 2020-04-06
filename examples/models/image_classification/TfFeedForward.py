@@ -29,6 +29,7 @@ from rafiki.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKn
 from rafiki.constants import ModelDependency
 from rafiki.model.dev import test_model_class
 
+
 class TfFeedForward(BaseModel):
     '''
     Implements a fully-connected feed-forward neural network with variable hidden layers on Tensorflow for IMAGE_CLASSIFICATION

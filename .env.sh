@@ -43,7 +43,7 @@ export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. o
 export POSTGRES_USER=rafiki
 export POSTGRES_DB=rafiki
 
-# Internal hosts & ports and configuration for Rafiki's components 
+# Internal hosts & ports and configuration for Rafiki's components
 export POSTGRES_HOST=rafiki_db
 export POSTGRES_PORT=5432
 export ADMIN_HOST=rafiki_admin
@@ -56,6 +56,7 @@ export ZOOKEEPER_HOST=rafiki_zookeeper
 export ZOOKEEPER_PORT=2181
 export KAFKA_HOST=rafiki_kafka
 export KAFKA_PORT=9092
+
 export DOCKER_WORKDIR_PATH=/root
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
@@ -77,4 +78,4 @@ export IMAGE_KAFKA=wurstmeister/kafka:2.12-2.1.1
 
 # Utility configuration
 export PYTHONPATH=$PWD # Ensures that `rafiki` module can be imported at project root
-export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly 
+export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly

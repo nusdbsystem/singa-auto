@@ -149,6 +149,24 @@ class DatasetUtils():
         images = np.array([np.asarray(x) for x in pil_images])
         return images
 
+    def load_images_from_bytes(self, image_bytes: List[bytes], mode: str = 'RGB') -> np.ndarray:
+        '''
+            Loads multiple images from the bytes
+            Assumes that images are of the same dimensions.
+
+            :param images: Paths to images
+            :param str mode: Pillow image mode to convert all images to. Refer to https://pillow.readthedocs.io/en/3.1.x/handbook/concepts.html#concept-modes
+            :returns: images as a (N x width x height x channels) numpy array
+        '''
+        pil_images = []
+        for image_byte in image_bytes:
+            encoded = io.BytesIO(image_byte)
+            pil_image = Image.open(encoded).convert(mode)
+            pil_images.append(pil_image)
+        images = np.array([np.asarray(x) for x in pil_images])
+        return images
+
+
 class ModelDataset():
     '''
     Abstract that helps loading of dataset of a specific type
@@ -166,6 +184,7 @@ class ModelDataset():
 
     def __len__(self):
         return self.size
+
 
 class CorpusDataset(ModelDataset):
     '''

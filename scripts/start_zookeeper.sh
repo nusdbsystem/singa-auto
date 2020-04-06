@@ -27,4 +27,4 @@ title "Starting Rafiki's Zookeeper..."
   -p $ZOOKEEPER_EXT_PORT:$ZOOKEEPER_PORT \
   -d $IMAGE_ZOOKEEPER \
   &> $LOG_FILE_PATH) &
-ensure_stable "Rafiki's Zookeeper" $LOG_FILE_PATH 30
+ensure_stable "Rafiki's Zookeeper" $LOG_FILE_PATH 5

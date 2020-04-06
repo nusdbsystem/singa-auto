@@ -19,7 +19,9 @@
 
 from copy import deepcopy
 
-class InvalidDAGError(Exception): pass
+
+class InvalidDAGException(Exception): pass
+
 
 def build_dag(sub_train_jobs, ensemble):
     adjacency_list = {}
@@ -36,6 +38,7 @@ def build_dag(sub_train_jobs, ensemble):
             adjacency_list[sub_train_job.id] = [] if ensemble_sub_train_job is None else [ensemble_sub_train_job.id]
     return adjacency_list
 
+
 def validate_dag(adjacency_list):
     try:
         _get_topological_order(adjacency_list)
@@ -43,8 +46,10 @@ def validate_dag(adjacency_list):
     except InvalidDAGException:
         return False
 
+
 def get_children(sub_train_job_id, adjacency_list):
     return adjacency_list[sub_train_job_id]
+
 
 def get_parents(sub_train_job_id, adjacency_list):
     parents = []
@@ -53,12 +58,14 @@ def get_parents(sub_train_job_id, adjacency_list):
             parents.append(node)
     return parents
 
+
 def get_nodes_with_zero_incoming_degrees(adjacency_list):
     nodes_with_zero_incoming_degrees = set(list(adjacency_list.keys()))
     for node, adjacent_nodes in adjacency_list.items():
         for adjacent_node in adjacent_nodes:
             nodes_with_zero_incoming_degrees.discard(adjacent_node)
     return list(nodes_with_zero_incoming_degrees)
+
 
 def _get_topological_order(adjacency_list):
     adjacency_list = deepcopy(adjacency_list)
