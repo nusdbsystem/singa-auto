@@ -19,20 +19,15 @@
 
 from examples.datasets.tabular.csv_file import load
 
-# Loads the "Heart Disease UCI" CSV dataset from kaggle for the `TABULAR_REGRESSION` task
-# (
-# step 1: Install Kaggle API. 
-# step2: From Rafiki root folder, run: `kaggle datasets download ronitf/heart-disease-uci -p data --unzip` 
-# to download the `heart.csv` file to `rafiki/data` folder.
-#)
+# Loads the "Pima Indian Diabetes" CSV dataset from `https://raw.githubusercontent.com/plotly/datasets/master/diabetes.csv` for the `TABULAR_CLASSIFICATION` task
 
-def load_heart():
+def load_diabetes():
     load(
-        dataset_url='data/heart.csv',
-        out_train_dataset_path='data/heart_train.csv',
-        out_val_dataset_path='data/heart_val.csv'
+        dataset_url='https://raw.githubusercontent.com/plotly/datasets/master/diabetes.csv',
+        out_train_dataset_path='data/diabetes_train.csv',
+        out_val_dataset_path='data/diabetes_val.csv'
     )
 
 
 if __name__ == '__main__':
-    load_heart()    
+    load_diabetes()    
