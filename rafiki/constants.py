@@ -83,3 +83,5 @@ class ModelDependency():
     SINGA = 'singa'
     XGBOOST = 'xgboost'
     DS_CTCDECODER = 'ds-ctcdecoder'
+    NLTK = 'nltk'
+    SKLEARN_CRFSUITE = 'sklearn-crfsuite'
