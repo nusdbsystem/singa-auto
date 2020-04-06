@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,7 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/logs/test.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/test.log
 
 echo 'Running tests...'
 echo "Check test results at $LOG_FILE_PATH"

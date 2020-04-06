@@ -26,7 +26,8 @@ from rafiki.constants import UserType
 from rafiki.config import APP_SECRET, SUPERADMIN_EMAIL
 from rafiki.meta_store import MetaStore
 
-TOKEN_EXPIRATION_HOURS = 10
+# extend JWT expiration to 1 day!
+TOKEN_EXPIRATION_HOURS = 24
 
 class UnauthorizedError(Exception): pass
 class InvalidAuthorizationHeaderError(Exception): pass
@@ -38,6 +39,8 @@ def generate_token(user):
         'user_type': user['user_type'],
         'exp': datetime.utcnow() + timedelta(hours=TOKEN_EXPIRATION_HOURS)
     }
+    # TODO: if backend using jwt, how come frontend still
+    # needs to configure token in localStorage?
     token = jwt.encode(payload, APP_SECRET, algorithm='HS256')
     return token.decode('utf-8')
 
@@ -49,7 +52,7 @@ def decode_token(token):
 
 def auth(user_types=[]):
     from flask import request
-    
+
     user_types.append(UserType.SUPERADMIN)
 
     def decorator(f):
@@ -77,9 +80,9 @@ def auth(user_types=[]):
 def extract_token_from_header(header):
     if header is None:
         raise InvalidAuthorizationHeaderError()
-    
+
     parts = header.split(' ')
-    
+
     if len(parts) != 2:
         raise InvalidAuthorizationHeaderError()
 
@@ -94,7 +97,7 @@ def superadmin_client():
     from rafiki.client import Client
     admin_host = os.environ['ADMIN_HOST']
     admin_port = os.environ['ADMIN_PORT']
-    client = Client(admin_host=admin_host, 
+    client = Client(admin_host=admin_host,
                     admin_port=admin_port)
     client.login(email=SUPERADMIN_EMAIL, password=os.environ['SUPERADMIN_PASSWORD'])
     return client

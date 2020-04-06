@@ -43,14 +43,14 @@ def _deprecated(msg=None):
             _warn(f'{msg}\n' \
                 f'Refer to the updated documentation at {DOCS_URL}')
             return func(*args, **kwargs)
-        
+
         return deprecated_func
     return deco
 
 class Client():
 
     '''
-    Initializes the Client to connect to a running 
+    Initializes the Client to connect to a running
     Rafiki Admin instance that the Client connects to.
 
     :param admin_host: Host of Rafiki Admin
@@ -112,8 +112,8 @@ class Client():
 
     def create_user(self, email: str, password: str, user_type: UserType) -> Dict[str, Any]:
         '''
-        Creates a Rafiki user. 
-        
+        Creates a Rafiki user.
+
         Only admins can create users (except for admins).
         Only superadmins can create admins.
 
@@ -137,7 +137,7 @@ class Client():
     def get_users(self) -> List[Dict[str, Any]]:
         '''
         Lists all Rafiki users.
-        
+
         Only admins can list all users.
 
         :returns: List of users as list of dictionaries
@@ -148,7 +148,7 @@ class Client():
     def ban_user(self, email: str) -> Dict[str, Any]:
         '''
         Bans a Rafiki user, disallowing logins.
-        
+
         This action is irrevisible.
         Only admins can ban users (except for admins).
         Only superadmins can ban admins.
@@ -218,7 +218,7 @@ class Client():
 
         Only admins & model developers can manage models.
 
-        :param name: Name of the model, which must be unique across all models added by the current user 
+        :param name: Name of the model, which must be unique across all models added by the current user
         :param task: Task associated with the model, where the model must adhere to the specification of the task
         :param model_file_path: Path to a single Python file that contains the definition for the model class
         :param model_class: The name of the model class inside the Python file. This class should implement :class:`rafiki.model.BaseModel`
@@ -230,16 +230,16 @@ class Client():
 
         Refer to :ref:`model-development` for more details on how to write & test models for Rafiki.
 
-        ``model_file_path`` should point to a *single* file that contains all necessary Python code for the model's implementation. 
+        ``model_file_path`` should point to a *single* file that contains all necessary Python code for the model's implementation.
         If the Python file imports any external Python modules, you should list it in ``dependencies`` or create a custom
-        ``docker_image``. 
+        ``docker_image``.
 
         If a model's ``access_right`` is set to ``PUBLIC``, this model will be publicly available to all other users on Rafiki for training
         and inference. By default, a model's access is ``PRIVATE``.
 
-        ``dependencies`` should be a dictionary of ``{ <dependency_name>: <dependency_version> }``, where 
+        ``dependencies`` should be a dictionary of ``{ <dependency_name>: <dependency_version> }``, where
         ``<dependency_name>`` corresponds to the name of the Python Package Index (PyPI) package (e.g. ``tensorflow``)
-        and ``<dependency_version>`` corresponds to the version of the PyPI package (e.g. ``1.12.0``). 
+        and ``<dependency_version>`` corresponds to the version of the PyPI package (e.g. ``1.12.0``).
         Refer to :ref:`configuring-model-environment` to understand more about this option.
         '''
 
@@ -301,7 +301,7 @@ class Client():
         model_class = data.get('model_class')
 
         print('Model file downloaded to "{}"!'.format(os.path.join(os.getcwd(), out_model_file_path)))
-        
+
         if dependencies:
             print('You\'ll need to install the following model dependencies locally: {}'.format(dependencies))
 
@@ -344,33 +344,33 @@ class Client():
     ####################################
     # Train Jobs
     ####################################
-    
-    def create_train_job(self, app: str, task: str, train_dataset_id: str, val_dataset_id: str, 
+
+    def create_train_job(self, app: str, task: str, train_dataset_id: str, val_dataset_id: str,
                          budget: Budget, models: List[str] = None, train_args: Dict[str, any] = None) -> Dict[str, Any]:
         '''
-        Creates and starts a train job on Rafiki. 
+        Creates and starts a train job on Rafiki.
 
         A train job is uniquely identified by user, its associated app, and the app version (returned in output).
-        
+
         Only admins, model developers & app developers can manage train jobs. Model developers & app developers can only manage their own train jobs.
 
         :param app: Name of the app associated with the train job
-        :param task: Task associated with the train job, 
+        :param task: Task associated with the train job,
             the train job will train models associated with the task
         :param train_dataset_id: ID of the train dataset, previously created on Rafiki
         :param val_dataset_id: ID of the validation dataset, previously created on Rafiki
         :param budget: Budget for train job
         :param models: List of IDs of model to use for train job. Defaults to all available models
-        :param train_args: Additional arguments to pass to models during training, if any. 
-            Refer to the task's specification for appropriate arguments  
+        :param train_args: Additional arguments to pass to models during training, if any.
+            Refer to the task's specification for appropriate arguments
         :returns: Created train job as dictionary
 
         If ``models`` is unspecified, all models accessible to the user for the specified task will be used.
 
-        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where 
-        ``<budget_type>`` is one of :class:`rafiki.constants.BudgetOption` and 
+        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where
+        ``<budget_type>`` is one of :class:`rafiki.constants.BudgetOption` and
         ``<budget_amount>`` specifies the amount for the associated budget option.
-        
+
         The following describes the budget options available:
 
         =====================       =====================
@@ -382,12 +382,12 @@ class Client():
         =====================       =====================
         '''
         _note('`create_train_job` now requires `models` as a list of model IDs instead of a list of model names')
-        
+
         if 'ENABLE_GPU' in budget:
             _warn('The `ENABLE_GPU` option has been changed to `GPU_COUNT`')
-            
+
         # Default to all available models
-        if models is None: 
+        if models is None:
             avail_models = self.get_available_models(task)
             models = [x['id'] for x in avail_models]
 
@@ -398,7 +398,11 @@ class Client():
             **budget
         }
 
-        data = self._post('/train_jobs', json={
+        # TODO: figure out why requests.post(json) preserves the TYPE!?
+        # client use json=json, and somehow this passes the TYPE of the values
+        # but restAPI should be just using JSON as strings!
+        # Solution Feb2020: change the type handling and conversion at admin.py
+        postJSON = {
             'app': app,
             'task': task,
             'train_dataset_id': train_dataset_id,
@@ -406,7 +410,12 @@ class Client():
             'budget': budget,
             'model_ids': models,
             'train_args': train_args
-        })
+        }
+
+        print("postJSON: ", postJSON)
+        # print will show up in docker exec terminal
+
+        data = self._post('/train_jobs', json=postJSON)
         return data
 
     def get_train_jobs_by_user(self, user_id: str) -> List[Dict[str, Any]]:
@@ -416,11 +425,11 @@ class Client():
         :param user_id: ID of the user
         :returns: Train jobs as list of dictionaries
         '''
-        data = self._get('/train_jobs', params={ 
+        data = self._get('/train_jobs', params={
             'user_id': user_id
         })
         return data
-    
+
     def get_train_jobs_of_app(self, app: str) -> List[Dict[str, Any]]:
         '''
         Lists all of current user's train jobs associated to the app name on Rafiki.
@@ -433,7 +442,7 @@ class Client():
 
     def get_train_job(self, app: str, app_version: int = -1) -> Dict[str, Any]:
         '''
-        Retrieves details of the current user's train job identified by an app and an app version, 
+        Retrieves details of the current user's train job identified by an app and an app version,
         including workers' details.
 
         :param app: Name of the app
@@ -523,7 +532,7 @@ class Client():
         Loads an instance of a trial's model with the trial's knobs & parameters.
 
         Before this, you must have the trial's model class file already in your local filesystem,
-        the dependencies of the model must have been installed separately, and the model class must have been 
+        the dependencies of the model must have been installed separately, and the model class must have been
         imported and passed into this method.
 
         Wraps :meth:`get_trial_parameters` and :meth:`get_trial`.
@@ -546,11 +555,11 @@ class Client():
 
     def create_inference_job(self, app: str, app_version: int = -1, budget: InferenceBudget = None) -> Dict[str, Any]:
         '''
-        Creates and starts a inference job on Rafiki with the best-scoring trials of the associated train job. 
-        The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version. 
+        Creates and starts a inference job on Rafiki with the best-scoring trials of the associated train job.
+        The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
         Throws an error if an inference job of the same train job is already running.
 
-        In this method's response, `predictor_host` is this inference job's predictor's host. 
+        In this method's response, `predictor_host` is this inference job's predictor's host.
 
         Only admins, model developers & app developers can manage inference jobs. Model developers & app developers can only manage their own inference jobs.
 
@@ -559,10 +568,10 @@ class Client():
         :param budget: Budget for inference job
         :returns: Created inference job as dictionary
 
-        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where 
-        ``<budget_type>`` is one of :class:`rafiki.constants.InferenceBudgetOption` and 
+        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where
+        ``<budget_type>`` is one of :class:`rafiki.constants.InferenceBudgetOption` and
         ``<budget_amount>`` specifies the amount for the associated budget option.
-        
+
         The following describes the budget options available:
 
         =====================       =====================
@@ -592,7 +601,7 @@ class Client():
         :param user_id: ID of the user
         :returns: Inference jobs as list of dictionaries
         '''
-        data = self._get('/inference_jobs', params={ 
+        data = self._get('/inference_jobs', params={
             'user_id': user_id
         })
         return data
@@ -612,7 +621,7 @@ class Client():
         Retrieves details of the *running* inference job identified by an app and an app version,
         including workers' details.
 
-        :param app: Name of the app 
+        :param app: Name of the app
         :param app_version: Version of the app (-1 for latest version)
         :returns: Inference job as dictionary
         '''
@@ -638,7 +647,7 @@ class Client():
 
     def stop_all_jobs(self):
         '''
-        Stops all train and inference jobs on Rafiki. 
+        Stops all train and inference jobs on Rafiki.
 
         Only the superadmin can call this.
         '''
@@ -671,9 +680,9 @@ class Client():
         url = self._make_url(path)
         headers = self._get_headers()
         res = requests.post(
-            url, 
+            url,
             headers=headers,
-            params=params or {}, 
+            params=params or {},
             data=form_data,
             json=json,
             files=files or {}
@@ -697,9 +706,9 @@ class Client():
         url = self._make_url(path)
         headers = self._get_headers()
         res = requests.delete(
-            url, 
+            url,
             headers=headers,
-            params=params or {}, 
+            params=params or {},
             data=form_data or {},
             json=json,
             files=files

@@ -20,7 +20,12 @@
 import os
 import logging
 import bcrypt
-from rafiki.constants import UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
+import pandas as pd
+import zipfile
+import tempfile
+from collections import Counter
+from PIL import Image
+from rafiki.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
 from rafiki.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from rafiki.meta_store import MetaStore
 from rafiki.model import LoggerUtils
@@ -143,21 +148,82 @@ class Admin(object):
 
     def create_dataset(self, user_id, name, task, data_file_path):
         # Store dataset in data folder
+        print('begin saving to local path')
         store_dataset = self._data_store.save(data_file_path)
-
-        # Get metadata for dataset
+        # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
-        owner_id = user_id
 
-        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, owner_id)
+        dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
+        if 'images.csv' in dataset_zipfile.namelist():
+
+            for fileName in dataset_zipfile.namelist():
+                if fileName.endswith('.csv'):
+                    num_samples = len(dataset_zipfile.namelist()) -1
+                    # create tempdir to store unziped csv and a sample image
+                    with tempfile.TemporaryDirectory() as dir_path:
+                        # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
+                        # obtain csv file
+                        # Extract a single file from zip
+                        csv_path = dataset_zipfile.extract(fileName, path=dir_path)
+                        # obtain a sample
+                        sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
+                        if task == 'IMAGE_CLASSIFICATION':
+                            img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                            img = Image.open(img_path)
+                            img_size = str(img.size)
+                        # close dataset zipfile
+                        dataset_zipfile.close()
+                        csv = pd.read_csv(csv_path)
+
+                        # num_classes = len(labels)
+                        if len(csv.columns) == 2:
+                            class_count = csv[csv.columns[1]].value_counts()
+                        else:
+                            labels = pd.read_csv(csv_path, nrows=0).columns[1::].to_list()
+                            class_count = (csv[csv.columns[1::]] == 1).astype(int).sum(axis=0)
+
+                    num_labeled_samples = len(csv[csv.columns[0]].unique())
+                    ratio = class_count / num_labeled_samples
+                    num_unlabeled_samples = num_samples - num_labeled_samples
+                    break
+        else:
+            # if the csv file was not provided in zip
+            with tempfile.TemporaryDirectory() as dir_path:
+                num_labeled_samples = len(dataset_zipfile.namelist())
+                num_unlabeled_samples = 0
+
+                d_list =  [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
+                labels = [os.path.dirname(x) for x in d_list]
+                class_count = pd.DataFrame( list(Counter(labels).values()), list(Counter(labels).keys()))
+
+                ratio = class_count / num_labeled_samples
+                sample_name = d_list[0]
+                if task == 'IMAGE_CLASSIFICATION':
+                    img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                    img = Image.open(img_path)
+                    img_size = str(img.size)
+
+        if task == 'IMAGE_CLASSIFICATION':
+            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
+                    'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size': img_size}
+        else:
+            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
+                    'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
+
+        print('begin saving to db')
+
+        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
         self._meta_store.commit()
 
         return {
             'id': dataset.id,
             'name': dataset.name,
             'task': dataset.task,
-            'size_bytes': dataset.size_bytes
+            'size_bytes': dataset.size_bytes,
+            'store_dataset_id' : dataset.store_dataset_id,
+            'owner_id' : dataset.owner_id,
+            'stat': dataset.stat,
         }
 
     def get_dataset(self, dataset_id):
@@ -171,22 +237,27 @@ class Admin(object):
             'task': dataset.task,
             'datetime_created': dataset.datetime_created,
             'size_bytes': dataset.size_bytes,
-            'owner_id': dataset.owner_id
+            'owner_id': dataset.owner_id,
+            'stat': dataset.stat,
         }
 
     def get_datasets(self, user_id, task=None):
         datasets = self._meta_store.get_datasets(user_id, task)
-        return [
-            {
+
+        datasetdicts=[]
+        for x in datasets:
+            datasetdict={
                 'id': x.id,
                 'name': x.name,
                 'task': x.task,
                 'datetime_created': x.datetime_created,
-                'size_bytes': x.size_bytes
-
+                'size_bytes': x.size_bytes,
+                'store_dataset_id' : x.store_dataset_id,
+                'stat': x.stat,
             }
-            for x in datasets
-        ]
+            datasetdicts.append(datasetdict)
+
+        return datasetdicts
 
     ####################################
     # Train Job
@@ -194,13 +265,45 @@ class Admin(object):
 
     def create_train_job(self, user_id, app, task, train_dataset_id,
                         val_dataset_id, budget, model_ids=None, train_args=None):
+        """
+              Creates and starts a train job on Rafiki.
 
+              A train job is uniquely identified by user, its associated app, and the app version (returned in output).
+
+              Only admins, model developers & app developers can manage train jobs. Model developers & app developers can only manage their own train jobs.
+
+              :param app: Name of the app associated with the train job
+              :param task: Task associated with the train job,
+                  the train job will train models associated with the task
+              :param train_dataset_id: ID of the train dataset, previously created on Rafiki
+              :param val_dataset_id: ID of the validation dataset, previously created on Rafiki
+              :param budget: Budget for train job
+                      The following describes the budget options available:
+
+              =====================       =====================
+              **Budget Option**             **Description**
+              ---------------------       ---------------------
+              ``TIME_HOURS``              Max no. of hours to train (soft target). Defaults to 0.1.
+              ``GPU_COUNT``               No. of GPUs to allocate for training, across all models. Defaults to 0.
+              ``MODEL_TRIAL_COUNT``       Max no. of trials to conduct for each model (soft target). -1 for unlimited. Defaults to -1.
+              =====================       =====================
+              ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where
+              ``<budget_type>`` is one of :class:`rafiki.constants.BudgetOption` and
+              ``<budget_amount>`` specifies the amount for the associated budget option.
+
+              :param model_ids: List of IDs of model to use for train job.
+              NOTE: only client.py defaults to all models if model_ids is None!
+
+              :param train_args: Additional arguments to pass to models during training, if any.
+                  Refer to the task's specification for appropriate arguments
+              :returns: Created train job as dictionary
+              """
         if train_args is None:
             train_args = {}
 
         if model_ids is None:
             avail_models = self.get_available_models(task)
-            models = [x['id'] for x in avail_models]
+            model_ids = [x['id'] for x in avail_models]
 
         # Ensure there is no existing train job for app
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
@@ -287,8 +390,12 @@ class Admin(object):
         return {
             'id': sub_train_job_id
         }
-
-    def get_train_job(self, user_id, app, app_version=-1):
+    def get_train_job(self, user_id, app, app_version=-1): # by app ver
+        """
+        get_train_job() is called by:
+        @app.route('/train_jobs/<app>/<app_version>',
+        methods=['GET'])
+        """
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
@@ -307,6 +414,11 @@ class Admin(object):
         }
 
     def get_train_jobs_by_app(self, user_id, app):
+        """
+        unlike get_train_jobs_by_user,
+        get_train_jobs_by_app is for:
+        GET /train_jobs/{app}
+        """
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
         return [
             {
@@ -326,6 +438,11 @@ class Admin(object):
         ]
 
     def get_train_jobs_by_user(self, user_id):
+        """
+        unlike get_train_jobs_by_app,
+        get_train_jobs_by_user is called by:
+        @app.route('/train_jobs', methods=['GET'])
+        """
         train_jobs = self._meta_store.get_train_jobs_by_user(user_id)
         return [
             {
@@ -343,6 +460,7 @@ class Admin(object):
             }
             for x in train_jobs
         ]
+
     def stop_all_train_jobs(self):
         train_jobs = self._meta_store.get_train_jobs_by_statuses(
                     [TrainJobStatus.STARTED, TrainJobStatus.RUNNING])
@@ -428,7 +546,7 @@ class Admin(object):
         params = self._param_store.load(trial.store_params_id)
         return params
 
-    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0):
+    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0): ### return top 1000
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
@@ -522,10 +640,14 @@ class Admin(object):
     def stop_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
         if inference_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._services_manager.stop_inference_services(inference_job.id)
@@ -540,10 +662,14 @@ class Admin(object):
     def get_running_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
         if inference_job is None:
+            # TODO: REST api need to return some JSON, and not
+            # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
         predictor_service = self._meta_store.get_service(inference_job.predictor_service_id) \
@@ -760,6 +886,38 @@ class Admin(object):
             }
             for model in models
         ]
+
+    def get_recommend_models(self, user_id, dataset_id):
+        dataset = self._meta_store.get_dataset(dataset_id)
+        task = dataset.task
+        models = self._meta_store.get_available_models(user_id, task)
+
+        for model in models:
+            if model.name == 'resnet':
+                return [
+                    {
+                        'id': model.id,
+                        'user_id': model.user_id,
+                        'name': model.name,
+                        'task': model.task,
+                        'datetime_created': model.datetime_created,
+                        'dependencies': model.dependencies,
+                        'access_right': model.access_right
+                    }
+                ]
+        # If we can not found resnet, return the first model
+        for model in models:
+            return [
+                {
+                    'id': model.id,
+                    'user_id': model.user_id,
+                    'name': model.name,
+                    'task': model.task,
+                    'datetime_created': model.datetime_created,
+                    'dependencies': model.dependencies,
+                    'access_right': model.access_right
+                }
+            ]
 
     ####################################
     # Private / Users
