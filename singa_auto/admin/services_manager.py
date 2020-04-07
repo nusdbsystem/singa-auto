@@ -476,7 +476,7 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = 'singa_auto-svc-{}-{}'.format(service_type.lower(), service.id)
+            container_service_name = 'singa-auto-svc-{}-{}'.format(service_type.lower(), service.id)
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image,
