@@ -33,7 +33,7 @@ fi
 
 source ./scripts/utils.sh
 
-title "Starting Rafiki's Admin..."
+title "Starting Singa-Auto's Admin..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -59,10 +59,10 @@ title "Starting Rafiki's Admin..."
   -e KAFKA_HOST=$KAFKA_HOST \
   -e KAFKA_PORT=$KAFKA_PORT \
   -e PREDICTOR_PORT=$PREDICTOR_PORT \
-  -e RAFIKI_ADDR=$RAFIKI_ADDR \
-  -e RAFIKI_IMAGE_WORKER=$RAFIKI_IMAGE_WORKER \
-  -e RAFIKI_IMAGE_PREDICTOR=$RAFIKI_IMAGE_PREDICTOR \
-  -e RAFIKI_VERSION=$RAFIKI_VERSION \
+  -e SINGA_AUTO_ADDR=$SINGA_AUTO_ADDR \
+  -e SINGA_AUTO_IMAGE_WORKER=$SINGA_AUTO_IMAGE_WORKER \
+  -e SINGA_AUTO_IMAGE_PREDICTOR=$SINGA_AUTO_IMAGE_PREDICTOR \
+  -e SINGA_AUTO_VERSION=$SINGA_AUTO_VERSION \
   -e DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
   -e WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
   -e HOST_WORKDIR_PATH=$HOST_WORKDIR_PATH \
@@ -73,7 +73,7 @@ title "Starting Rafiki's Admin..."
   -v /var/run/docker.sock:/var/run/docker.sock \
   $VOLUME_MOUNTS \
   -p $ADMIN_EXT_PORT:$ADMIN_PORT \
-  $RAFIKI_IMAGE_ADMIN:$RAFIKI_VERSION \
+  $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Rafiki's Admin" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Admin" $LOG_FILE_PATH 5

@@ -18,9 +18,9 @@
 #
 
 import pytest
-from rafiki.advisor import BaseAdvisor, make_advisor
+from singa_auto.advisor import BaseAdvisor, make_advisor
 
-# rafiki/advisor/advisor.py
+# singa_auto/advisor/advisor.py
 def test_make_advisor():
     pass
 
@@ -36,7 +36,7 @@ class TestFixedAdvisor(object):
 class TestRandomAdvisor(object):
     pass
 
-# rafiki/advisor/skopt.py
+# singa_auto/advisor/skopt.py
 class TestBayesOptAdvisor(object):
     pass
 
@@ -52,7 +52,7 @@ def test__knob_to_dimension():
 def test__simplify_value():
     pass
 
-# rafiki/advisor/tf.py
+# singa_auto/advisor/tf.py
 class TestEnasAdvisor(object):
     pass
 

@@ -32,14 +32,14 @@ pull_image()
 }
 
 title "Pulling images..."
-echo "Pulling images required by Rafiki from Docker Hub..."
+echo "Pulling images required by Singa-Auto from Docker Hub..."
 # Docker images for dependent services
 pull_image $IMAGE_POSTGRES
 pull_image $IMAGE_REDIS
 pull_image $IMAGE_KAFKA
 pull_image $IMAGE_ZOOKEEPER
-# Docker images for Rafiki's custom components
-pull_image $RAFIKI_IMAGE_ADMIN:$RAFIKI_VERSION
-pull_image $RAFIKI_IMAGE_WORKER:$RAFIKI_VERSION
-pull_image $RAFIKI_IMAGE_PREDICTOR:$RAFIKI_VERSION
-pull_image $RAFIKI_IMAGE_WEB_ADMIN:$RAFIKI_VERSION
+# Docker images for Singa-Auto's custom components
+pull_image $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION

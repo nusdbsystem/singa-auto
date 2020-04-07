@@ -18,12 +18,12 @@
 #
 
 import pytest
-from rafiki.data_store import Dataset, DataStore, FileDataStore
+from singa_auto.data_store import Dataset, DataStore, FileDataStore
 
-# rafiki/data_store/data_store.py
+# singa_auto/data_store/data_store.py
 class TestDataStore(object):
     pass
 
-# rafiki/data_store/file.py
+# singa_auto/data_store/file.py
 class TestFileDataStore(object):
     pass

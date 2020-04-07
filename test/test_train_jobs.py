@@ -19,8 +19,8 @@
 
 import pytest
 
-from rafiki.client import Client
-from rafiki.constants import TrainJobStatus, BudgetOption
+from singa_auto.client import Client
+from singa_auto.constants import TrainJobStatus, BudgetOption
 from test.utils import global_setup, make_model_dev, make_app_dev, make_model, make_private_model, \
                     make_invalid_model, make_dataset, gen, superadmin, wait_for_train_job_status
 
@@ -47,7 +47,7 @@ class TestTrainJobs():
         assert train_job['id'] == train_job_id
         assert train_job['app'] == app
         assert train_job['status'] == TrainJobStatus.STOPPED
-        
+
         # Get train job by user
         user = app_dev.get_current_user()
         user_id = user['id']
@@ -86,8 +86,8 @@ class TestTrainJobs():
         trial = app_dev.get_trial(trial_id)
         assert trial['id'] == trial_id
         assert all([(x in trial) for x in ['proposal', 'status', 'score', 'datetime_started', 'datetime_stopped']])
-        
-    
+
+
     def test_app_dev_get_trial_logs(self, app_dev_create_train_job_and_waited):
         (app_dev, app, *args) = app_dev_create_train_job_and_waited
         app_dev: Client
@@ -108,7 +108,7 @@ class TestTrainJobs():
         (app_dev, app, task, *args) = app_dev_create_train_job_and_waited
         (_, _, model_id, train_dataset_id, val_dataset_id, budget) = make_train_job_info(app_dev, task=task) # Get another set of job info
         app_dev: Client
-        
+
         # Create another train job
         train_job = app_dev.create_train_job(app, task, train_dataset_id, val_dataset_id, budget, models=[model_id])
         assert train_job['app'] == app
@@ -119,7 +119,7 @@ class TestTrainJobs():
         (app_dev, app, task, *args) = app_dev_create_train_job_and_waited
         app_dev2 = make_app_dev()
         (_, _, model_id, train_dataset_id, val_dataset_id, budget) = make_train_job_info(app_dev2, task=task) # Get another set of job info
-        
+
         # App dev 2 create another train job with same app
         train_job = app_dev2.create_train_job(app, task, train_dataset_id, val_dataset_id, budget, models=[model_id])
         assert train_job['app'] == app
@@ -151,13 +151,13 @@ class TestTrainJobs():
         # Train job should have stopped
         train_job = app_dev.get_train_job(app)
         assert train_job['status'] == TrainJobStatus.STOPPED
-    
+
 
     def test_app_dev_create_train_job_with_gpu(self):
         app_dev = make_app_dev()
         (task, app, model_id, train_dataset_id, val_dataset_id, budget) = make_train_job_info(app_dev)
         budget[BudgetOption.GPU_COUNT] = 1 # With GPU
-        
+
         # Create train job
         train_job = app_dev.create_train_job(app, task, train_dataset_id, val_dataset_id, budget, models=[model_id])
         assert 'id' in train_job
@@ -189,7 +189,7 @@ class TestTrainJobs():
 
         # Create train job
         app_dev.create_train_job(app, task, train_dataset_id, val_dataset_id, budget, models=[model_id])
-        
+
         # Train job will be errored
         with pytest.raises(Exception, match='errored'):
             wait_for_train_job_status(app_dev, app, TrainJobStatus.STOPPED)

@@ -19,14 +19,14 @@
 
 source ./scripts/kubernetes/utils.sh
 
-title "Starting Rafiki's Redis..."
+title "Starting Singa-Auto's Redis..."
 
 LOG_FILE_PATH=$PWD/logs/start_redis_service.log
 (kubectl create -f scripts/kubernetes/start_redis_service.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Rafiki's Redis Service" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Redis Service" $LOG_FILE_PATH 5
 
 LOG_FILE_PATH=$PWD/logs/start_redis_deployment.log
 (kubectl create -f scripts/kubernetes/start_redis_deployment.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Rafiki's Redis Deployment" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Redis Deployment" $LOG_FILE_PATH 5

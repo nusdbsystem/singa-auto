@@ -18,7 +18,7 @@
 #
 
 import pytest
-from rafiki.model import BaseModel, Params, KnobConfig, Knobs, \
+from singa_auto.model import BaseModel, Params, KnobConfig, Knobs, \
                   DatasetUtils, CorpusDataset, ImageFilesDataset, \
                   LoggerUtils, \
                   utils, logger, dataset, load_model_class, parse_model_install_command, \
@@ -26,7 +26,7 @@ from rafiki.model import BaseModel, Params, KnobConfig, Knobs, \
                   BaseKnob, CategoricalKnob, IntegerKnob, FloatKnob, FixedKnob, ArchKnob, \
                   KnobValue, CategoricalValue, PolicyKnob
 
-# rafiki/model/dataset.py
+# singa_auto/model/dataset.py
 class TestDatasetUtils(object):
     pass
 
@@ -46,7 +46,7 @@ def test__load_pil_images():
     pass
 
 
-# rafiki/model/dev.py
+# singa_auto/model/dev.py
 def test_tune_model():
     pass
 
@@ -95,7 +95,7 @@ def test__check_model_inst():
 def test__print_header():
     pass
 
-# rafiki/model/knob.py
+# singa_auto/model/knob.py
 class TestKnobValue(object):
     pass
 
@@ -117,14 +117,14 @@ class TestFloatKnob(object):
 class TestArchKnob(object):
     pass
 
-# rafiki/model/log.py
+# singa_auto/model/log.py
 class TestLoggerUtils(object):
     pass
 
 class TestLoggerUtilsDebugHandler(object):
     pass
 
-# rafiki/model/utils.py
+# singa_auto/model/utils.py
 def test_load_model_class():
     pass
 

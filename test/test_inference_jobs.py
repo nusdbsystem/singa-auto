@@ -19,8 +19,8 @@
 
 import pytest
 
-from rafiki.client import Client
-from rafiki.constants import TrainJobStatus, InferenceJobStatus
+from singa_auto.client import Client
+from singa_auto.constants import TrainJobStatus, InferenceJobStatus
 from test.utils import global_setup, make_app_dev, make_model, gen,make_train_job, \
                     wait_for_train_job_status, wait_for_inference_job_status
 
@@ -79,7 +79,7 @@ class TestInferenceJobs():
         task = gen()
         model_id = make_model(task=task, model_file_path=MODEL_INVALID_LOAD_PARAMS_PATH)
         (task, app, train_job_id) = make_inference_job_info(app_dev, task=task, model_id=model_id)
-        
+
         # Create inference job
         inference_job = app_dev.create_inference_job(app)
 

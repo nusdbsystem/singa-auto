@@ -6,7 +6,7 @@ stages:
 
 variables:
   ENV_K8S_CONF: "scripts/kubernetes/.env.sh"
-  
+
 default:
   before_script:
     # Get RAFIKI_VERSION
@@ -51,7 +51,7 @@ sonar-scanner-job:
 build-image-job:
   stage: build
   tags:
-    - rafiki-ssh-test
+    - singa_auto-ssh-test
   only:
     - dev
   script:
@@ -62,7 +62,7 @@ build-image-job:
 unit-test-job:
   stage: unit-test
   tags:
-    - rafiki-ssh-test
+    - singa_auto-ssh-test
   only:
     - dev
   script:
@@ -74,12 +74,12 @@ integration-test-job:
     - dev
     - master
   tags:
-    - rafiki-ssh-test
+    - singa_auto-ssh-test
   script:
     - pwd
     - source $ENV_K8S_CONF && bash scripts/kubernetes/stop.sh
     - sleep 60
-    # The performance of the integration test machine was poor, so delayed the stabilization time 
+    # The performance of the integration test machine was poor, so delayed the stabilization time
     - sed -ri 's/60/180/g' scripts/kubernetes/start_stolon.sh
     - source $ENV_K8S_CONF && bash scripts/kubernetes/start.sh
     - bash test/scripts/kubernetes/start_integration_test.sh

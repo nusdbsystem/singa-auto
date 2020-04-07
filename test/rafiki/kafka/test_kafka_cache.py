@@ -19,11 +19,11 @@
 
 import pytest
 
-from rafiki.kafka import InferenceCache as KafkaInferenceCache
-from rafiki.predictor import Prediction, Query
+from singa_auto.kafka import InferenceCache as KafkaInferenceCache
+from singa_auto.predictor import Prediction, Query
 
-class TestKafkaCache():    
-    
+class TestKafkaCache():
+
     @pytest.fixture(scope='class', autouse=True)
     def queris(self):
         '''
@@ -61,7 +61,7 @@ class TestKafkaCache():
         for query in queris.items():
             q = stores.pop_queries_for_worker(query[0], len(query[1]))
             assert q == query[1]
-        
+
     def test_prediction(self, predictions, stores):
         # Populate params
         for prediction in predictions.items():

@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_zookeeper.log
 
 source ./scripts/utils.sh
 
-title "Starting Rafiki's Zookeeper..."
+title "Starting Singa-Auto's Zookeeper..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -38,5 +38,5 @@ title "Starting Rafiki's Zookeeper..."
   -p $ZOOKEEPER_EXT_PORT:$ZOOKEEPER_PORT \
   -d $IMAGE_ZOOKEEPER \
   &> $LOG_FILE_PATH) &
-ensure_stable "Rafiki's Zookeeper" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Zookeeper" $LOG_FILE_PATH 5
 

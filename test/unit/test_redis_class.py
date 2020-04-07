@@ -19,11 +19,11 @@
 
 import pytest
 
-# rafiki/redis/inference_cache.py
+# singa_auto/redis/inference_cache.py
 class TestRedisInferenceCache(object):
     pass
 
-# rafiki/redis/param_cache.py
+# singa_auto/redis/param_cache.py
 class TestParamCache(object):
     pass
 
@@ -39,7 +39,7 @@ def test__simplify_params():
 def test__unsimplify_params():
     pass
 
-# rafiki/redis/redis.py
+# singa_auto/redis/redis.py
 class TestRedisSession(object):
     pass
 
@@ -47,6 +47,6 @@ class TestMockRedis(object):
     pass
 
 
-#rafiki/redis/train_cache.py
+#singa_auto/redis/train_cache.py
 class TestTrainCache(object):
     pass

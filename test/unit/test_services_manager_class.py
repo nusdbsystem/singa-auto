@@ -18,8 +18,8 @@
 #
 
 import pytest
-from rafiki.admin import services_manager
+from singa_auto.admin import services_manager
 
-# rafiki/admin/services_manager.py
+# singa_auto/admin/services_manager.py
 class TestServicesManager(object):
     pass

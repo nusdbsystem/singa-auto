@@ -19,9 +19,9 @@
 
 import os
 
-from rafiki.admin.app import create_app
-from rafiki.utils.log import configure_logging
-from rafiki.admin import Admin
+from singa_auto.admin.app import create_app
+from singa_auto.utils.log import configure_logging
+from singa_auto.admin import Admin
 from datetime import datetime
 
 curr_time = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")

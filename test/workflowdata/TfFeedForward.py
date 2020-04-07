@@ -25,9 +25,9 @@ import numpy as np
 import base64
 import argparse
 
-from rafiki.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, PolicyKnob
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, PolicyKnob
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 class TfFeedForward(BaseModel):
     '''
@@ -54,7 +54,7 @@ class TfFeedForward(BaseModel):
         self._sess = tf.Session(graph=self._graph, config=config)
         self._model = None
         self._train_params = None
-        
+
     def train(self, dataset_path, **kwargs):
         max_image_size = self._knobs['max_image_size']
         bs = self._knobs['batch_size']
@@ -65,7 +65,7 @@ class TfFeedForward(BaseModel):
         utils.logger.define_plot('Loss Over Epochs', ['loss', 'early_stop_val_loss'], x_axis='epoch')
 
         # Load dataset
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size, 
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size,
                                                             mode='RGB')
         num_classes = dataset.classes
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
@@ -75,13 +75,13 @@ class TfFeedForward(BaseModel):
         callbacks = [tf.keras.callbacks.LambdaCallback(on_epoch_end=self._on_train_epoch_end)]
         if quick_train:
             callbacks.append(tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2))
-        
+
         with self._graph.as_default():
             with self._sess.as_default():
                 self._model = self._build_model(num_classes, dataset.image_size)
                 self._model.fit(
-                    np.asarray(images), 
-                    np.asarray(classes), 
+                    np.asarray(images),
+                    np.asarray(classes),
                     verbose=0,
                     epochs=max_epochs,
                     validation_split=0.05,
@@ -106,7 +106,7 @@ class TfFeedForward(BaseModel):
         norm_mean = self._train_params['norm_mean']
         norm_std = self._train_params['norm_std']
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size, 
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size,
                                                             mode='RGB')
 
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
@@ -130,7 +130,7 @@ class TfFeedForward(BaseModel):
         with self._graph.as_default():
             with self._sess.as_default():
                 probs = self._model.predict(images)
-                
+
         return probs.tolist()
 
     def destroy(self):
@@ -148,7 +148,7 @@ class TfFeedForward(BaseModel):
             with self._graph.as_default():
                 with self._sess.as_default():
                     self._model.save(tmp.name)
-        
+
             # Read from temp h5 file & encode it to base64 string
             with open(tmp.name, 'rb') as f:
                 h5_model_bytes = f.read()
@@ -171,7 +171,7 @@ class TfFeedForward(BaseModel):
             with self._graph.as_default():
                 with self._sess.as_default():
                     self._model = keras.models.load_model(tmp.name)
-        
+
         # Add train params
         self._train_params = json.loads(params['train_params'])
 
@@ -184,7 +184,7 @@ class TfFeedForward(BaseModel):
         units = self._knobs['hidden_layer_units']
         layers = self._knobs['hidden_layer_count']
         lr = self._knobs['learning_rate']
-         
+
         model = keras.Sequential()
         model.add(keras.layers.Flatten(input_shape=(image_size, image_size, 3)))
         model.add(keras.layers.BatchNormalization())
@@ -193,10 +193,10 @@ class TfFeedForward(BaseModel):
             model.add(keras.layers.Dense(units, activation=tf.nn.relu))
 
         model.add(keras.layers.Dense(
-            num_classes, 
+            num_classes,
             activation=tf.nn.softmax
         ))
-        
+
         model.compile(
             optimizer=keras.optimizers.Adam(lr=lr),
             loss='sparse_categorical_crossentropy',
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

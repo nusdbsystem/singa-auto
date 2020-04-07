@@ -20,10 +20,10 @@ import base64
 import argparse
 from ds_ctcdecoder import ctc_beam_search_decoder_batch, ctc_beam_search_decoder, Scorer
 
-from rafiki.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, \
+from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, \
     PolicyKnob, utils, logger
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -112,15 +112,15 @@ class TfDeepSpeech(BaseModel):
     '''
     Implements a speech recognition neural network model developed by Baidu. It contains five hiddlen layers.
     By default, this model works only for the *English* language.
-    
-    To run this model locally, you'll first need to download this model's file dependencies by running (in Rafiki's root folder):
-    
+
+    To run this model locally, you'll first need to download this model's file dependencies by running (in Singa-Auto's root folder):
+
     ```
     bash examples/models/speech_recognition/tfdeepspeech/download_file_deps.sh
     ```
 
-    To add this model to Rafiki, you'll need to build the model's custom Docker image by running (in Rafiki's root folder):
- 
+    To add this model to Singa-Auto, you'll need to build the model's custom Docker image by running (in Singa-Auto's root folder):
+
     ```
     bash examples/models/speech_recognition/tfdeepspeech/build_image.sh
     ```
@@ -273,8 +273,8 @@ class TfDeepSpeech(BaseModel):
 
         dataset = utils.dataset.load_dataset_of_audio_files(dataset_uri, dataset_dir)
         df = dataset.df
-        
-        # Make batch size at most length of dataset 
+
+        # Make batch size at most length of dataset
         batch_size = self._knobs.get('batch_size')
         dataset_size = len(df)
         if batch_size > dataset_size:
@@ -1264,7 +1264,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/ldc93s1/ldc93s1.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/ldc93s1/ldc93s1.zip', help='Path to validation dataset')
     # Ensure the wav files have a sample rate of 16kHz
-    parser.add_argument('--query_path', type=str, default='data/ldc93s1/ldc93s1/LDC93S1.wav', 
+    parser.add_argument('--query_path', type=str, default='data/ldc93s1/ldc93s1/LDC93S1.wav',
                         help='Path(s) to query audio(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

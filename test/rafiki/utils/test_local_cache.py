@@ -20,7 +20,7 @@
 import pytest
 import numpy as np
 
-from rafiki.utils.local_cache import LocalCache
+from singa_auto.utils.local_cache import LocalCache
 from test.utils import global_setup
 
 class TestLocalCache():
@@ -74,7 +74,7 @@ class TestLocalCache():
         cache.put('5', params['5'])
         assert cache.get('4') is params['4']
         assert cache.get('5') is params['5']
-    
+
     def test_repeatedly_evict_values(self, params):
         cache = LocalCache(size=2)
         cache.put('1', params['1'])
@@ -89,7 +89,7 @@ class TestLocalCache():
         cache.put('2', params['2'])
         cache.put('3', params['3'])
         assert cache.get('3') is params['3']
-    
+
     def test_evict_least_recently_used_value(self, params):
         cache = LocalCache(size=4)
         cache.put('1', params['1'])
@@ -97,6 +97,6 @@ class TestLocalCache():
         cache.put('3', params['3'])
         cache.put('4', params['4'])
         cache.put('1', params['1']) # Put 1 again
-        assert cache.get('2') is params['2'] # Get 2 again 
+        assert cache.get('2') is params['2'] # Get 2 again
         cache.put('5', params['5'])
         assert cache.get('3') is None # 3 is least recently used

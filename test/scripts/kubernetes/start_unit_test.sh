@@ -24,7 +24,7 @@ kubectl create -f ./test/scripts/kubernetes/unit_test_database.yaml
 sleep 20
 
 echo "Creating Rafiki's PostgreSQL database & user..."
-DB_PODNAME=$(kubectl get pod | grep rafiki-db-unittest)
+DB_PODNAME=$(kubectl get pod | grep singa_auto-db-unittest)
 DB_PODNAME=${DB_PODNAME:0:35}
 kubectl exec $DB_PODNAME -- psql -U postgres -c "CREATE DATABASE rafiki"
 kubectl exec $DB_PODNAME -- psql -U postgres -c "CREATE USER rafiki WITH PASSWORD 'rafiki'"
@@ -44,7 +44,7 @@ sed -ri "s#CMD#['bash', 'test/scripts/kubernetes/run_unit_test.sh']#g" ./test/sc
 kubectl create -f ./test/scripts/kubernetes/unit_test.yaml
 rm -rf ./test/scripts/kubernetes/unit_test.yaml
 
-while (kubectl get job | grep rafiki-test-unit)
+while (kubectl get job | grep singa_auto-test-unit)
 do
     echo "Waiting for Unit test finished!"
     sleep 30
@@ -52,12 +52,12 @@ done
 
 if (cat $HOST_WORKDIR_PATH/$LOGS_DIR_PATH/test_unit.log | grep "failed");then
     echo "Unit test failed!"
-    kubectl delete deployment rafiki-db-unittest
-    kubectl delete svc rafiki-db-unittest
+    kubectl delete deployment singa_auto-db-unittest
+    kubectl delete svc singa_auto-db-unittest
     exit 1
 else
     echo "Unit test passed!"
-    kubectl delete deployment rafiki-db-unittest
-    kubectl delete svc rafiki-db-unittest
+    kubectl delete deployment singa_auto-db-unittest
+    kubectl delete svc singa_auto-db-unittest
     exit 0
 fi

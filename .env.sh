@@ -18,16 +18,16 @@
 # under the License.
 #
 
-# Core secrets for Rafiki - change these in production!
-export POSTGRES_PASSWORD=rafiki
-export SUPERADMIN_PASSWORD=rafiki
-export APP_SECRET=rafiki
+# Core secrets for Singa-auto - change these in production!
+export POSTGRES_PASSWORD=singa_auto
+export SUPERADMIN_PASSWORD=singa_auto
+export APP_SECRET=singa_auto
 
-# Core external configuration for Rafiki
-export DOCKER_NETWORK=rafiki
+# Core external configuration for Singa-auto
+export DOCKER_NETWORK=singa_auto
 export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
-export RAFIKI_VERSION=0.2.0
-export RAFIKI_ADDR=127.0.0.1
+export SINGA_AUTO_VERSION=0.2.0
+export SINGA_AUTO_ADDR=127.0.0.1
 export ADMIN_EXT_PORT=3000
 export WEB_ADMIN_EXT_PORT=3001
 export POSTGRES_EXT_PORT=5433
@@ -40,36 +40,36 @@ export POSTGRES_DUMP_FILE_PATH=$PWD/db_dump.sql # PostgreSQL database dump file
 export DOCKER_NODE_LABEL_AVAILABLE_GPUS=available_gpus # Docker node label for no. of services currently running on the node
 export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. of services currently running on the node
 
-# Internal credentials for Rafiki's components
-export POSTGRES_USER=rafiki
-export POSTGRES_DB=rafiki
+# Internal credentials for Singa-auto's components
+export POSTGRES_USER=singa_auto
+export POSTGRES_DB=singa_auto
 
-# Internal hosts & ports and configuration for Rafiki's components
-export POSTGRES_HOST=rafiki_db
+# Internal hosts & ports and configuration for Singa-auto's components
+export POSTGRES_HOST=singa_auto_db
 export POSTGRES_PORT=5432
-export ADMIN_HOST=rafiki_admin
+export ADMIN_HOST=singa_auto_admin
 export ADMIN_PORT=3000
-export REDIS_HOST=rafiki_redis
+export REDIS_HOST=singa_auto_redis
 export REDIS_PORT=6379
 export PREDICTOR_PORT=3003
-export WEB_ADMIN_HOST=rafiki_admin_web
-export ZOOKEEPER_HOST=rafiki_zookeeper
+export WEB_ADMIN_HOST=singa_auto_admin_web
+export ZOOKEEPER_HOST=singa_auto_zookeeper
 export ZOOKEEPER_PORT=2181
-export KAFKA_HOST=rafiki_kafka
+export KAFKA_HOST=singa_auto_kafka
 export KAFKA_PORT=9092
 
 export DOCKER_WORKDIR_PATH=/root
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir
-export CONDA_ENVIORNMENT=rafiki
+export CONDA_ENVIORNMENT=singa_auto
 export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs are run natively
 
-# Docker images for Rafiki's custom components
-export RAFIKI_IMAGE_ADMIN=rafikiai/rafiki_admin
-export RAFIKI_IMAGE_WEB_ADMIN=rafikiai/rafiki_admin_web
-export RAFIKI_IMAGE_WORKER=rafikiai/rafiki_worker
-export RAFIKI_IMAGE_PREDICTOR=rafikiai/rafiki_predictor
+# Docker images for Singa-auto's custom components
+export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
+export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
+export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker
+export SINGA_AUTO_IMAGE_PREDICTOR=singa_auto/singa_auto_predictor
 
 # Docker images for dependent services
 export IMAGE_POSTGRES=postgres:10.5-alpine
@@ -78,5 +78,5 @@ export IMAGE_ZOOKEEPER=zookeeper:3.5
 export IMAGE_KAFKA=wurstmeister/kafka:2.12-2.1.1
 
 # Utility configuration
-export PYTHONPATH=$PWD # Ensures that `rafiki` module can be imported at project root
+export PYTHONPATH=$PWD # Ensures that `singa_auto` module can be imported at project root
 export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly

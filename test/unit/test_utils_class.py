@@ -19,7 +19,7 @@
 
 import pytest
 
-# rafiki/utils/auth.py
+# singa_auto/utils/auth.py
 def test_generate_token():
     pass
 
@@ -32,7 +32,7 @@ def test_auth():
 def test_extract_token_from_header():
     pass
 
-# rafiki/utils/graph.py
+# singa_auto/utils/graph.py
 def test_build_dag():
     pass
 
@@ -51,14 +51,14 @@ def test_get_nodes_with_zero_incoming_degrees():
 def test__get_topological_order():
     pass
 
-# rafiki/utils/local_cache.py
+# singa_auto/utils/local_cache.py
 class TestLocalCache(object):
     pass
 
-# rafiki/utils/log.py
+# singa_auto/utils/log.py
 def test_configure_logging():
     pass
 
-# rafiki/utils/service.py
+# singa_auto/utils/service.py
 def test_run_worker():
     pass

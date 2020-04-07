@@ -33,9 +33,9 @@ from torch.nn import functional as F
 from torch.nn.init import kaiming_normal_
 from torch.utils.data import Dataset, DataLoader
 
-from rafiki.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
@@ -486,7 +486,7 @@ class DNNTorch(BaseModel):
 
 
 if __name__ == '__main__':
-    curpath = os.path.join(os.environ['HOME'], 'rafiki')
+    curpath = os.path.join(os.environ['HOME'], 'singa_auto')
     os.environ.setdefault('WORKDIR_PATH', curpath)
     os.environ.setdefault('PARAMS_DIR_PATH', os.path.join(curpath, 'params'))
 

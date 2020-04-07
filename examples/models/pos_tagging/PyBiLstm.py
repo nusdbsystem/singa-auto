@@ -24,9 +24,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from rafiki.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 class PyBiLstm(BaseModel):
     '''
@@ -50,11 +50,11 @@ class PyBiLstm(BaseModel):
     def train(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         self._word_dict = self._extract_word_dict(dataset)
-        self._tag_count = dataset.tag_num_classes[0] 
+        self._tag_count = dataset.tag_num_classes[0]
 
         utils.logger.log('No. of unique words: {}'.format(len(self._word_dict)))
         utils.logger.log('No. of tags: {}'.format(self._tag_count))
-        
+
         (self._net, self._optimizer) = self._train(dataset)
         sents_tags = self._predict(dataset)
         acc = self._compute_accuracy(dataset, sents_tags)
@@ -99,11 +99,11 @@ class PyBiLstm(BaseModel):
                 if word not in word_dict:
                     word_dict[word] = len(word_dict)
 
-        return word_dict    
+        return word_dict
 
     def _prepare_batch(self, dataset, lo, hi, Tensor, has_tags=True):
         word_dict = self._word_dict
-        word_count = len(self._word_dict) 
+        word_count = len(self._word_dict)
         null_word = word_count
         null_tag = self._tag_count
 
@@ -151,7 +151,7 @@ class PyBiLstm(BaseModel):
 
         sents_pred_tags = []
         for i in range(B):
-            # Extract batch from dataset 
+            # Extract batch from dataset
             (words_tsr, _) = self._prepare_batch(dataset, i * N, i * N + N, Tensor, has_tags=False)
 
             # Forward propagate batch through model
@@ -194,7 +194,7 @@ class PyBiLstm(BaseModel):
         for epoch in range(ep):
             total_loss = 0
             for i in range(B):
-                # Extract batch from dataset 
+                # Extract batch from dataset
                 (words_tsr, tags_tsr) = self._prepare_batch(dataset, i * N, i * N + N, Tensor)
 
                 # Reset gradients for this batch
@@ -206,7 +206,7 @@ class PyBiLstm(BaseModel):
                 # Compute sum of per-word loss for all words & sentences
                 NW = probs_tsr.size(0) * probs_tsr.size(1)
                 loss = loss_func(probs_tsr.view(NW, -1), tags_tsr.view(-1))
-                
+
                 # Backward propagate on minibatch
                 loss.backward()
 
@@ -252,33 +252,33 @@ class PyBiLstm(BaseModel):
                 raise Exception(f'Param not supported: {value}')
 
             params[name] = value
-                
-        return params 
+
+        return params
 
     def _params_to_state_dict(self, params):
         state_dict = {}
         # For each tensor, convert into numpy array
         for (name, value) in params.items():
             state_dict[name] = torch.from_numpy(value)
-                
-        return state_dict 
+
+        return state_dict
 
     def _namespace_params(self, params, namespace):
         # For each param, add namespace prefix
         out_params = {}
         for (name, value) in params.items():
             out_params[f'{namespace}:{name}'] = value
-        
+
         return out_params
 
     def _extract_namespace_from_params(self, params, namespace):
         out_params = {}
-        # For each param, check for matching namespace, adding to out params without namespace prefix if matching 
+        # For each param, check for matching namespace, adding to out params without namespace prefix if matching
         for (name, value) in params.items():
             if name.startswith(f'{namespace}:'):
                 param_name = name[(len(namespace)+1):]
                 out_params[param_name] = value
-        
+
         return out_params
 
 
@@ -297,12 +297,12 @@ class PyNet(nn.Module):
         self._word_lstm = nn.LSTM(self._Ew, self._h, batch_first=True, bidirectional=True)
         self._word_lin = nn.Linear(2 * self._h, self._t)
         self._word_dropout = nn.Dropout(p=word_dropout)
-        
+
     def forward(self, words_tsr):
         N = words_tsr.size(0) # Batch size
         W = words_tsr.size(1) # No. of words per sentence
         Ew = self._Ew
-        t = self._t 
+        t = self._t
         h = self._h
 
         # Compute word embed for each word for all sentences (N x W x Ew)
@@ -317,7 +317,7 @@ class PyNet(nn.Module):
 
         # Apply linear + softmax operation for sentence rep for all sentences (N x W x t)
         word_probs_tsr = F.softmax(self._word_lin(words_hidden_rep_tsr.view(N * W, self._h * 2)), dim=1).view(N, W, t)
-        
+
         return word_probs_tsr
 
 if __name__ == '__main__':
@@ -335,5 +335,4 @@ if __name__ == '__main__':
             ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
         ]
     )
-    
-    
+

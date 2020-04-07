@@ -19,7 +19,7 @@
 
 import pytest
 
-# rafiki/predictor/ensemble.py
+# singa_auto/predictor/ensemble.py
 def test_get_ensemble_method():
     pass
 
@@ -32,6 +32,6 @@ def test_ensemble():
 def test__simplify_prediction():
     pass
 
-# rafiki/predictor/predictor.py
+# singa_auto/predictor/predictor.py
 class TestPredictor(object):
     pass

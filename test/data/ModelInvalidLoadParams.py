@@ -19,7 +19,7 @@
 
 import random
 
-from rafiki.model import BaseModel
+from singa_auto.model import BaseModel
 
 class Model(BaseModel):
     '''
@@ -28,7 +28,7 @@ class Model(BaseModel):
     @staticmethod
     def get_knob_config():
         return {}
-       
+
     def train(self, dataset_path, **kwargs):
         pass
 

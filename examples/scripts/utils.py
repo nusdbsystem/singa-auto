@@ -21,7 +21,7 @@ import string
 import random
 import time
 
-from rafiki.constants import TrainJobStatus
+from singa_auto.constants import TrainJobStatus
 
 # Generates a random ID
 def gen_id(length=16):

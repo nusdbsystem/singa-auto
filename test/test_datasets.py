@@ -19,7 +19,7 @@
 
 import pytest
 
-from rafiki.client import Client
+from singa_auto.client import Client
 from test.utils import global_setup, make_app_dev, gen, DATASET_FILE_PATH
 
 class TestDatasets():
@@ -35,7 +35,7 @@ class TestDatasets():
         dataset_id = dataset['id']
 
         return (app_dev, dataset_id, task)
-    
+
     def test_app_dev_create_dataset(self, app_dev_create_dataset):
         (app_dev, dataset_id, task) = app_dev_create_dataset
         app_dev: Client

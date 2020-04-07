@@ -1,15 +1,15 @@
-.. Rafiki documentation master file, created by
+.. Singa-Auto documentation master file, created by
    sphinx-quickstart on Mon Sep 17 16:39:17 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Rafiki's Documentation!
+Welcome to Singa-Auto's Documentation!
 ====================================================================
 
-What is Rafiki?
+What is Singa-Auto?
 --------------------------------------------------------------------
 
-*Rafiki* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind.
+*Singa-Auto* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind.
 To do so, it leverages on automated machine learning (AutoML).
 
 For *Application Developers* and *Application Users*, without any ML expertise, they can:
@@ -20,9 +20,9 @@ For *Application Developers* and *Application Users*, without any ML expertise, 
 
 For *Model Developers*, they can:
 
-- Contribute to Rafiki's pool of model templates
+- Contribute to Singa-Auto's pool of model templates
 
-Check out :ref:`quick-setup` to deploy/develop Rafiki on your machine, and/or :ref:`quick-start` to use a deployed instance of Rafiki.
+Check out :ref:`quick-setup` to deploy/develop Singa-Auto on your machine, and/or :ref:`quick-start` to use a deployed instance of Singa-Auto.
 
 
 Index
@@ -30,7 +30,7 @@ Index
 
 .. toctree::
    :maxdepth: 2
-   
+
    src/user/index.rst
    src/dev/index.rst
    src/python/index.rst
@@ -38,7 +38,7 @@ Index
 
 Issues
 ------------------------------------------------------------------
-Report any issues at `Apache SINGA's JIRA <https://issues.apache.org/jira/browse/SINGA>`_ or `Rafiki's Github Issues <https://github.com/nginyc/rafiki/issues>`_.
+Report any issues at `Apache SINGA's JIRA <https://issues.apache.org/jira/browse/SINGA>`_ or `Singa-Auto's Github Issues <https://github.com/nginyc/rafiki/issues>`_.
 
 
 Acknowledgements

@@ -18,12 +18,12 @@
 #
 
 import pytest
-from rafiki.param_store import ParamStore, FileParamStore
+from singa_auto.param_store import ParamStore, FileParamStore
 
-# rafiki/param_store/file.py
+# singa_auto/param_store/file.py
 class TestFileParamStore(object):
     pass
 
-# rafiki/param_store/param_store.py
+# singa_auto/param_store/param_store.py
 class TestParamStore():
     pass

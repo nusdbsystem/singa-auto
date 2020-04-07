@@ -18,8 +18,8 @@
 #
 
 import pytest
-from rafiki.kafka import InferenceCache as KafkaInferenceCache
+from singa_auto.kafka import InferenceCache as KafkaInferenceCache
 
-# rafiki/kafka/inference_cache.py
+# singa_auto/kafka/inference_cache.py
 class TestKafkaInferenceCache(object):
     pass

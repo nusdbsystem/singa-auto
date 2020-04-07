@@ -34,13 +34,13 @@ source ./scripts/utils.sh
 # Read from shell configuration file
 source ./.env.sh
 
-# Create Docker swarm for Rafiki
+# Create Docker swarm for Singa-Auto
 bash ./scripts/create_docker_swarm.sh
 
 # Pull images from Docker Hub
 bash ./scripts/pull_images.sh || exit 1
 
-# Start whole Rafiki stack
+# Start whole Singa-Auto stack
 # Start Zookeeper, Kafka & Redis
 bash ./scripts/start_zookeeper.sh || exit 1
 bash ./scripts/start_kafka.sh || exit 1
@@ -48,7 +48,7 @@ bash ./scripts/start_redis.sh || exit 1
 # Skip starting & loading DB if DB is already running
 if is_running $POSTGRES_HOST
 then
-  echo "Detected that Rafiki's DB is already running!"
+  echo "Detected that Singa-Auto's DB is already running!"
 else
     bash ./scripts/start_db.sh || exit 1
     bash ./scripts/load_db.sh || exit 1
@@ -56,6 +56,6 @@ fi
 bash ./scripts/start_admin.sh || exit 1
 bash ./scripts/start_web_admin.sh || exit 1
 
-echo "To use Rafiki, use Rafiki Client in the Python CLI"
+echo "To use Singa-Auto, use Singa-Auto Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/src/user/quickstart.html"
-echo "To configure Rafiki, refer to Rafiki's developer docs at https://nginyc.github.io/rafiki/docs/latest/src/dev/setup.html"
+echo "To configure Singa-Auto, refer to Singa-Auto's developer docs at https://nginyc.github.io/rafiki/docs/latest/src/dev/setup.html"

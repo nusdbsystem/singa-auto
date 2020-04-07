@@ -24,9 +24,9 @@ import uuid
 import random
 import numpy as np
 
-from rafiki.constants import UserType, ModelAccessRight, TrainJobStatus, BudgetOption, InferenceJobStatus
-from rafiki.client import Client
-from rafiki.config import SUPERADMIN_EMAIL
+from singa_auto.constants import UserType, ModelAccessRight, TrainJobStatus, BudgetOption, InferenceJobStatus
+from singa_auto.client import Client
+from singa_auto.config import SUPERADMIN_EMAIL
 
 
 superadmin_email = SUPERADMIN_EMAIL
@@ -82,7 +82,7 @@ def make_user(user_type, email=None, password=None):
     client.create_user(email, password, user_type)
     client.login(email, password)
     return client
-    
+
 
 ####################################
 # Datasets
@@ -142,7 +142,7 @@ def wait_for_train_job_status(client: Client, app, status):
             return
         elif train_job['status'] == TrainJobStatus.ERRORED:
             raise Exception('Train job has errored')
-            
+
         # Still running...
         if length >= timeout:
             raise TimeoutError('Waiting for too long')
@@ -166,7 +166,7 @@ def wait_for_inference_job_status(client: Client, app, status):
             return
         elif inference_job['status'] == InferenceJobStatus.ERRORED:
             raise Exception('Inference job has errored')
-            
+
         # Still running...
         if length >= timeout:
             raise TimeoutError('Waiting for too long')

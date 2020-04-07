@@ -19,11 +19,11 @@
 
 import pytest
 
-from rafiki.constants import UserType
+from singa_auto.constants import UserType
 from test.utils import global_setup, gen, gen_email, make_admin, make_app_dev, make_model_dev
 
 class TestUsers():
-    
+
     def test_admin_create_users(self):
         admin = make_admin()
         model_dev_email = gen_email()
@@ -44,8 +44,8 @@ class TestUsers():
         users = admin.get_users()
         assert any([x['id'] == model_dev_id for x in users])
         assert any([x['id'] == app_dev_id for x in users])
-    
-    
+
+
     def test_admin_ban_users(self):
         admin = make_admin()
         model_dev_email = gen_email()
@@ -61,10 +61,10 @@ class TestUsers():
         # Both users cannot login again
         with pytest.raises(Exception):
             model_dev.login(model_dev_email, password)
-        
+
         with pytest.raises(Exception):
             app_dev.login(app_dev_email, password)
-        
+
 
     def test_model_dev_cant_manage_users(self):
         ban_email = gen_email()
@@ -84,7 +84,7 @@ class TestUsers():
         # Can't ban user
         with pytest.raises(Exception):
             model_dev.ban_user(ban_email)
-        
+
 
     def test_app_dev_cant_manage_users(self):
         ban_email = f'{gen()}@rafiki'

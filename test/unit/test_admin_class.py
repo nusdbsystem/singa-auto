@@ -18,7 +18,7 @@
 #
 
 import pytest
-from rafiki.admin import Admin
+from singa_auto.admin import Admin
 
 class TestAdmin(object):
     pass

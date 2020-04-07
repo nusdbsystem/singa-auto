@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_redis.log
 
 source ./scripts/utils.sh
 
-title "Starting Rafiki's Redis..."
+title "Starting Singa-Auto's Redis..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -39,4 +39,4 @@ title "Starting Rafiki's Redis..."
   $IMAGE_REDIS \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Rafiki's Redis" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Redis" $LOG_FILE_PATH 5

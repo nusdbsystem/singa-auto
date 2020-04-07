@@ -18,16 +18,16 @@
 #
 
 import pytest
-from rafiki.container import ContainerManager, DockerSwarmContainerManager, KubernetesContainerManager
+from singa_auto.container import ContainerManager, DockerSwarmContainerManager, KubernetesContainerManager
 
-# rafiki/container/container_manager.py
+# singa_auto/container/container_manager.py
 class TestContainerManager(object):
     pass
 
-# rafiki/container/docker_swarm.py
+# singa_auto/container/docker_swarm.py
 class TestDockerSwarmContainerManager(object):
     pass
 
-# rafiki/container/kubernetes_operation.py
+# singa_auto/container/kubernetes_operation.py
 class TestKubernetesContainerManager(object):
     pass

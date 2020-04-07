@@ -34,7 +34,7 @@ sed -ri "s#CMD#['bash', 'test/scripts/kubernetes/run_integration_test.sh']#g" ./
 kubectl create -f ./test/scripts/kubernetes/integration_test.yaml
 rm -rf ./test/scripts/kubernetes/integration_test.yaml
 
-while (kubectl get job | grep rafiki-test-integration)
+while (kubectl get job | grep singa_auto-test-integration)
 do
     echo "Waiting for Integration test finished!"
     sleep 30

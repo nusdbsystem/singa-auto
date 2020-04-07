@@ -21,12 +21,12 @@ import pytest
 import numpy as np
 from datetime import datetime, timedelta
 
-from rafiki.advisor import ParamsType
-from rafiki.redis import ParamCache
+from singa_auto.advisor import ParamsType
+from singa_auto.redis import ParamCache
 from test.utils import global_setup
 
-class TestParamCache():    
-    
+class TestParamCache():
+
     @pytest.fixture(scope='class', autouse=True)
     def params(self):
         '''
@@ -58,8 +58,8 @@ class TestParamCache():
         stores['1'].store_params(params['2'], 0.2, time=datetime.now()) # now
         stores['1'].store_params(params['3'], 1, time=(datetime.now() - timedelta(minutes=2))) # 2 min ago
         stores['2'].store_params(params['4'], 0.1, time=datetime.now()) # now (another worker)
-        stores['1'].store_params(params['5'], 0.1, time=(datetime.now() - timedelta(minutes=1))) # 1 min ago    
-        
+        stores['1'].store_params(params['5'], 0.1, time=(datetime.now() - timedelta(minutes=1))) # 1 min ago
+
         assert are_params_equal(stores['1'].retrieve_params(ParamsType.LOCAL_RECENT), params['2']) # Should be most recent in worker 1
 
         stores['1'].store_params(params['6'], 0.3, time=datetime.now()) # now
@@ -99,7 +99,7 @@ class TestParamCache():
 def are_params_equal(params_1, params_2):
     if len(params_1) != len(params_2):
         return False
-    
+
     for (k, v) in params_1.items():
         if isinstance(v, np.ndarray):
             if not np.array_equal(v, params_2.get(k)):
@@ -108,8 +108,7 @@ def are_params_equal(params_1, params_2):
             if v != params_2[k]:
                 return False
 
-    return True 
-        
-             
+    return True
 
-        
+
+

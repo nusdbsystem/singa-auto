@@ -26,9 +26,9 @@ pytest -s -x test/test_datasets.py >> $LOG_FILE_PATH
 pytest -s -x test/test_train_jobs.py >> $LOG_FILE_PATH
 pytest -s -x test/test_inference_jobs.py >> $LOG_FILE_PATH
 
-pytest -s -x test/rafiki/utils/test_local_cache.py >> $LOG_FILE_PATH
-pytest -s -x test/rafiki/advisor/test_make_advisor.py >> $LOG_FILE_PATH
-pytest -s -x test/rafiki/kafka/test_kafka_cache.py >> $LOG_FILE_PATH
-pytest -s -x test/rafiki/redis/test_param_cache.py >> $LOG_FILE_PATH
+pytest -s -x test/singa_auto/utils/test_local_cache.py >> $LOG_FILE_PATH
+pytest -s -x test/singa_auto/advisor/test_make_advisor.py >> $LOG_FILE_PATH
+pytest -s -x test/singa_auto/kafka/test_kafka_cache.py >> $LOG_FILE_PATH
+pytest -s -x test/singa_auto/redis/test_param_cache.py >> $LOG_FILE_PATH
 
 pytest -s -x test/test_workflow.py >> $LOG_FILE_PATH

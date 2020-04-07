@@ -25,9 +25,9 @@ import numpy as np
 import pandas as pd
 import json
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class XgbReg(BaseModel):
     '''
@@ -48,12 +48,12 @@ class XgbReg(BaseModel):
         self.__dict__.update(knobs)
         self._clf = self._build_classifier(self.n_estimators, self.min_child_weight, \
             self.max_depth, self.gamma, self.subsample, self.colsample_bytree)
-       
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -126,14 +126,14 @@ class XgbReg(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:
             y = data[target]
 
         return (X, y)
-        
+
     def _encoding_categorical_type(self, cols):
         # Apply label encoding for those categorical columns
         cat_cols = list(filter(lambda x: cols[x].dtype == 'object', cols.columns))
@@ -167,7 +167,7 @@ class XgbReg(BaseModel):
             gamma=gamma,
             subsample=subsample,
             colsample_bytree=colsample_bytree
-        ) 
+        )
         return clf
 
 if __name__ == '__main__':

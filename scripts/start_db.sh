@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_db.log
 
 source ./scripts/utils.sh
 
-title "Starting Rafiki's DB..."
+title "Starting Singa-Auto's DB..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -42,8 +42,8 @@ title "Starting Rafiki's DB..."
   $IMAGE_POSTGRES \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Rafiki's DB" $LOG_FILE_PATH 10
+ensure_stable "Singa-Auto's DB" $LOG_FILE_PATH 10
 
-echo "Creating Rafiki's PostgreSQL database & user..."
+echo "Creating Singa-Auto's PostgreSQL database & user..."
 docker exec $POSTGRES_HOST psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
 docker exec $POSTGRES_HOST psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"

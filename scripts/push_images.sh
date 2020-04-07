@@ -18,13 +18,13 @@
 # under the License.
 #
 
-# Push Rafiki's images to Docker Hub
+# Push Singa-Auto's images to Docker Hub
 
 docker login
 
-echo "Pushing all Rafiki's images to Docker Hub..."
-docker push $RAFIKI_IMAGE_ADMIN:$RAFIKI_VERSION || exit 1
-docker push $RAFIKI_IMAGE_WORKER:$RAFIKI_VERSION || exit 1
-docker push $RAFIKI_IMAGE_PREDICTOR:$RAFIKI_VERSION || exit 1
-docker push $RAFIKI_IMAGE_WEB_ADMIN:$RAFIKI_VERSION || exit 1
+echo "Pushing all Singa-Auto's images to Docker Hub..."
+docker push $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION || exit 1
+docker push $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION || exit 1
+docker push $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION || exit 1
+docker push $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION || exit 1
 echo "Pushed all images!"

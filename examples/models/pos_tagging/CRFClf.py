@@ -31,13 +31,13 @@ from sklearn_crfsuite import metrics
 from sklearn_crfsuite import scorers
 from collections import Counter
 
-from rafiki.model import BaseModel, utils, FixedKnob, FloatKnob
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, utils, FixedKnob, FloatKnob
+from singa_auto.model.dev import test_model_class
 
 
 class CRFClf(BaseModel):
     '''
-    Implements Conditional Random Field classifier for POS tagging, using treebank dataset & universal tagset. 
+    Implements Conditional Random Field classifier for POS tagging, using treebank dataset & universal tagset.
     code credit to 'https://github.com/AiswaryaSrinivas/DataScienceWithPython/blob/master/CRF%20POS%20Tagging.ipynb'
     '''
     @staticmethod
@@ -48,46 +48,46 @@ class CRFClf(BaseModel):
             'max_iterations': FixedKnob(10)
         }
 
-    
+
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
         self._clf = self._build_classifier(self.c1, self.c2, self.max_iterations)
-        
-        
+
+
     def train(self, dataset_path, **kwargs):
         with open(dataset_path, "rb") as fp:
             data=pickle.load(fp)
-        
+
         X_train,y_train=self.prepareData(data)
 
         self._clf.fit(X_train, y_train)
-        
+
         # Compute train accuracy
-        y_pred = self._clf.predict(X_train)        
+        y_pred = self._clf.predict(X_train)
         accuracy = metrics.flat_f1_score(y_train,y_pred,average='weighted',labels=self._clf.classes_)
         utils.logger.log('Train accuracy: {}'.format(accuracy))
-        
-    
+
+
     def evaluate(self, dataset_path):
         with open(dataset_path, "rb") as fp:
             data=pickle.load(fp)
-        
+
         X_test,y_test=self.prepareData(data)
-        
+
         # Compute test accuracy
         y_pred=self._clf.predict(X_test)
         acc = metrics.flat_f1_score(y_test,y_pred,average='weighted',labels=self._clf.classes_)
         return acc
 
-    
+
     def predict(self, queries):
         sents_tokens = queries
         (sents_tags) = self._clf.predict(sents_tokens)
         return sents_tags
 
-    
+
     def dump_parameters(self):
         params = {}
         # Save model parameters
@@ -97,14 +97,14 @@ class CRFClf(BaseModel):
 
         return params
 
-    
+
     def load_parameters(self, params):
         # Load model parameters
         clf_base64 = params['clf_base64']
         clf_bytes = base64.b64decode(clf_base64.encode('utf-8'))
         self._clf = pickle.loads(clf_bytes)
 
-        
+
     def features(self, sentence, index):
     ### sentence is of the form [w1,w2,w3,..], index is the position of the word in the sentence
         return {
@@ -127,24 +127,24 @@ class CRFClf(BaseModel):
             'word_has_hyphen': 1 if '-' in sentence[index] else 0
         }
 
-    
+
     def untag(self, sentence):
         return [word for word,tag in sentence]
 
-    
+
     def prepareData(self, tagged_sentences):
         X,y=[],[]
         for sentences in tagged_sentences:
             X.append([self.features(self.untag(sentences), index) for index in range(len(sentences))])
             y.append([tag for word,tag in sentences])
         return X,y
-    
-    
+
+
     def _build_classifier(self, c1, c2, max_iterations):
         c1 =self._knobs.get('c1')
         c2 =self._knobs.get('c2')
         max_iterations =self._knobs.get('max_iterations')
-        
+
         clf = CRF(
             algorithm='lbfgs',
             c1=c1,
@@ -152,7 +152,7 @@ class CRFClf(BaseModel):
             max_iterations=max_iterations,
             all_possible_transitions=True
         )
-     
+
         return clf
 
 if __name__ == '__main__':
@@ -172,5 +172,4 @@ if __name__ == '__main__':
             ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
         ]
     )
-    
-    
+

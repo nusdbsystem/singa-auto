@@ -20,10 +20,10 @@
 import os
 import logging
 
-from rafiki.utils.service import run_worker
-from rafiki.meta_store import MetaStore
-from rafiki.predictor.predictor import Predictor
-from rafiki.predictor.app import app
+from singa_auto.utils.service import run_worker
+from singa_auto.meta_store import MetaStore
+from singa_auto.predictor.predictor import Predictor
+from singa_auto.predictor.app import app
 
 logger = logging.getLogger(__name__)
 

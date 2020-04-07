@@ -33,9 +33,9 @@ from keras.utils.np_utils import to_categorical
 from keras.callbacks import TensorBoard
 from sklearn.model_selection import train_test_split
 
-from rafiki.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 
 class LeNet5(BaseModel):
@@ -60,7 +60,7 @@ class LeNet5(BaseModel):
     def train(self, dataset_path, **kwargs):
         ep = self._knobs.get('epochs')
         bs = self._knobs.get('batch_size')
-        
+
         dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
@@ -69,7 +69,7 @@ class LeNet5(BaseModel):
         train['images'] = images
         train['classes'] = classes
         validation = {}
-        train['images'], validation['images'], train['classes'], validation['classes'] = train_test_split(train['images'], train['classes'], test_size=0.2, random_state=0)    
+        train['images'], validation['images'], train['classes'], validation['classes'] = train_test_split(train['images'], train['classes'], test_size=0.2, random_state=0)
         train['images'] =  np.pad(train['images'], ((0,0),(2,2),(2,2),(0,0)), 'constant')
         validation['images'] = np.pad(validation['images'], ((0,0),(2,2),(2,2),(0,0)), 'constant')
 
@@ -82,8 +82,8 @@ class LeNet5(BaseModel):
         validation_steps = X_validation.shape[0]//bs
 
         tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-        self._model.fit_generator(train_generator, steps_per_epoch=steps_per_epoch, epochs=ep, 
-                    validation_data=validation_generator, validation_steps=validation_steps, 
+        self._model.fit_generator(train_generator, steps_per_epoch=steps_per_epoch, epochs=ep,
+                    validation_data=validation_generator, validation_steps=validation_steps,
                     shuffle=True, callbacks=[tensorboard])
 
         # Compute train accuracy
@@ -93,7 +93,7 @@ class LeNet5(BaseModel):
 
 
     def evaluate (self, dataset_path):
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')        
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
         images = self._prepare_X(images)
         images = np.pad(images, ((0,0),(2,2),(2,2),(0,0)), 'constant')
@@ -109,7 +109,7 @@ class LeNet5(BaseModel):
         X = self._prepare_X(queries)
         X = np.pad(X, ((0,0),(2,2),(2,2),(0,0)), 'constant')
         probs = self._model.predict_proba(X)
-        
+
         return probs.tolist()
 
     def destroy(self):
@@ -139,8 +139,8 @@ class LeNet5(BaseModel):
     def _prepare_X(self, images):
         X = np.asarray(images)
         return X.reshape(-1,28,28,1)
-            
-    
+
+
     def _build_classifier(self, l_rate):
         l_rate = self._knobs.get('l_rate')
         model = models.Sequential()
@@ -151,10 +151,10 @@ class LeNet5(BaseModel):
         model.add(layers.Flatten())
         model.add(layers.Dense(units=120, activation='relu'))
         model.add(layers.Dense(units=84, activation='relu'))
-        model.add(layers.Dense(units=10, activation = 'softmax'))      
+        model.add(layers.Dense(units=10, activation = 'softmax'))
         adam = Adam(lr=l_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
         model.compile(loss=keras.losses.categorical_crossentropy, optimizer=adam, metrics=['accuracy'])
-        
+
         return model
 
 
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

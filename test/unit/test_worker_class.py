@@ -19,20 +19,20 @@
 
 import pytest
 
-# rafiki/worker/advisor.py
+# singa_auto/worker/advisor.py
 class TestAdvisorWorker(object):
     pass
 
 class Test_AdvisorSubTrainJobMonitor(object):
     pass
 
-# rafiki/worker/train.py
+# singa_auto/worker/train.py
 class TestTrainWorker(object):
     pass
 
 class Test_TrainSubTrainJobMonitor(object):
     pass
 
-# rafiki/worker/inference.py
+# singa_auto/worker/inference.py
 class TestInferenceWorker(object):
     pass

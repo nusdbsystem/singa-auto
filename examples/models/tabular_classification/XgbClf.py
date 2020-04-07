@@ -24,9 +24,9 @@ import pandas as pd
 import numpy as np
 import json
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class XgbClf(BaseModel):
     '''
@@ -45,19 +45,19 @@ class XgbClf(BaseModel):
 
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
-       
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
 
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
-        
+
         # Encode categorical features
         X = self._encoding_categorical_type(X)
 
@@ -126,7 +126,7 @@ class XgbClf(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:
@@ -161,7 +161,7 @@ class XgbClf(BaseModel):
 
     def _build_classifier(self, n_estimators, min_child_weight, max_depth, gamma, subsample, colsample_bytree, num_class):
         assert num_class >= 2
-        
+
         if num_class == 2:
             clf = xgb.XGBClassifier(
             n_estimators=n_estimators,
@@ -170,7 +170,7 @@ class XgbClf(BaseModel):
             gamma=gamma,
             subsample=subsample,
             colsample_bytree=colsample_bytree
-        ) 
+        )
         else:
             clf = xgb.XGBClassifier(
             n_estimators=n_estimators,
@@ -179,9 +179,9 @@ class XgbClf(BaseModel):
             gamma=gamma,
             subsample=subsample,
             colsample_bytree=colsample_bytree,
-            objective='multi:softmax', 
+            objective='multi:softmax',
             num_class=num_class
-        ) 
+        )
         return clf
 
 if __name__ == '__main__':

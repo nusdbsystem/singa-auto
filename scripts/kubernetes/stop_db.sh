@@ -21,7 +21,7 @@ LOG_FILEPATH=$PWD/logs/stop.log
 
 source ./scripts/kubernetes/utils.sh
 
-title "Dumping database..." 
+title "Dumping database..."
 bash ./scripts/kubernetes/save_db.sh
 
 # If database dump previously failed, prompt whether to continue script
@@ -33,6 +33,6 @@ then
     fi
 fi
 
-title "Stopping Rafiki's DB..."
+title "Stopping Singa-Auto's DB..."
 kubectl delete deployment $POSTGRES_HOST
 kubectl delete service $POSTGRES_HOST

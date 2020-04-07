@@ -20,30 +20,30 @@
 import pytest
 import uuid
 import bcrypt
-from rafiki.meta_store import MetaStore
-from rafiki.constants import UserType
-from rafiki.data_store import DataStore
-from rafiki.constants import TrainJobStatus, ModelAccessRight, ServiceType, \
+from singa_auto.meta_store import MetaStore
+from singa_auto.constants import UserType
+from singa_auto.data_store import DataStore
+from singa_auto.constants import TrainJobStatus, ModelAccessRight, ServiceType, \
     ServiceStatus, InferenceJobStatus, TrialStatus
 import mock
 from sqlalchemy.orm import Query
 
 
 METASTORE_SETTING={
-    'postgres_host': 'rafiki-db-unittest',
+    'postgres_host': 'singa_auto-db-unittest',
     'postgres_port': 30001,
-    'postgres_user': 'rafiki',
-    'postgres_db': 'rafiki',
-    'postgres_password': 'rafiki'
+    'postgres_user': 'singa_auto',
+    'postgres_db': 'singa_auto',
+    'postgres_password': 'singa_auto'
 }
 # METASTORE_SETTING={
 #     'postgres_host': 'localhost',
 #     'postgres_port': 5432,
-#     'postgres_user': 'rafiki',
-#     'postgres_db': 'rafiki',
-#     'postgres_password': 'rafiki'
+#     'postgres_user': 'singa_auto',
+#     'postgres_db': 'singa_auto',
+#     'postgres_password': 'singa_auto'
 # }
-# rafiki/meta_store/meta_store.py
+# singa_auto/meta_store/meta_store.py
 class TestMetaStore(object):
     @pytest.fixture(scope='class')
     def metastore(self):
@@ -70,7 +70,7 @@ class TestMetaStore(object):
 
     def test_create_user(self, metastore, usertype):
         metastore_obj = metastore
-        email = f'{usertype}@rafiki'
+        email = f'{usertype}@singa_auto'
         password = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = metastore_obj.create_user(email, password_hash, usertype)
@@ -80,34 +80,34 @@ class TestMetaStore(object):
 
     def test_create_user_invalid(self, metastore, usertype_invalid):
         metastore_obj = metastore
-        email = f'{usertype_invalid}@rafiki'
+        email = f'{usertype_invalid}@singa_auto'
         password = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         with pytest.raises(Exception):
             user = metastore_obj.create_user(email, password_hash, usertype_invalid)
-    
+
     def test_get_user_by_email(self, metastore, usertype):
         metastore_obj = metastore
-        email = f'{usertype}@rafiki'
+        email = f'{usertype}@singa_auto'
         user = metastore_obj.get_user_by_email(email)
         assert user.email == email
         assert user.user_type == usertype
 
     def test_get_user_by_email_invalid(self, metastore, usertype_invalid):
         metastore_obj = metastore
-        email = f'{usertype_invalid}@rafiki'
+        email = f'{usertype_invalid}@singa_auto'
         user = metastore_obj.get_user_by_email(email)
         assert user == None
 
     def test_get_users(self, metastore, usertype):
         metastore_obj = metastore
-        email = f'{usertype}@rafiki'
+        email = f'{usertype}@singa_auto'
         users = metastore_obj.get_users()
         assert any([user.email == email and user.user_type == usertype for user in users])
-    
+
     def test_ban_user(self, metastore, usertype):
         metastore_obj = metastore
-        email = f'{usertype}@rafiki'
+        email = f'{usertype}@singa_auto'
         user = metastore_obj.get_user_by_email(email)
         metastore_obj.ban_user(user)
         user = metastore_obj.get_user_by_email(email)
@@ -122,7 +122,7 @@ class TestMetaStore(object):
     @pytest.fixture(scope='class')
     def dataset_info(self, metastore):
         metastore_obj = metastore
-        email = 'dataset@rafiki'
+        email = 'dataset@singa_auto'
         password = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = metastore_obj.create_user(email, password_hash, UserType.MODEL_DEVELOPER)
@@ -177,11 +177,11 @@ class TestMetaStore(object):
 
         datasets = metastore_obj.get_datasets(dataset_info['owner_id'], 'else_task')
         assert len(datasets) == 0
-    
+
     @pytest.fixture(scope='class')
     def train_job_info(self, metastore, dataset_info):
         metastore_obj = metastore
-        email = 'train@rafiki'
+        email = 'train@singa_auto'
         password = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = metastore_obj.create_user(email, password_hash, UserType.MODEL_DEVELOPER)
@@ -214,7 +214,7 @@ class TestMetaStore(object):
         assert train_job.train_dataset_id == train_job_info['train_dataset_id']
         assert train_job.val_dataset_id == train_job_info['val_dataset_id']
         assert train_job.train_args == train_job_info['train_args']
-    
+
     def test_get_train_jobs_by_app(self, metastore, train_job_info):
         metastore_obj = metastore
         train_jobs = metastore_obj.get_train_jobs_by_app(train_job_info['user_id'], train_job_info['app'])
@@ -284,7 +284,7 @@ class TestMetaStore(object):
         assert train_job.train_dataset_id == train_job_info['train_dataset_id']
         assert train_job.val_dataset_id == train_job_info['val_dataset_id']
         assert train_job.train_args == train_job_info['train_args']
-    
+
     def test_mark_train_job_as_running(self, metastore, train_job_info):
         metastore_obj = metastore
         train_jobs = metastore_obj.get_train_jobs_by_user(train_job_info['user_id'])
@@ -305,7 +305,7 @@ class TestMetaStore(object):
         train_job = train_jobs[0]
         metastore_obj.mark_train_job_as_errored(train_job)
         assert train_job.status == TrainJobStatus.ERRORED
-        
+
         train_jobs = metastore_obj.get_train_jobs_by_user(train_job_info['user_id'])
         assert train_jobs[0].status == TrainJobStatus.ERRORED
 
@@ -317,16 +317,16 @@ class TestMetaStore(object):
         train_job = train_jobs[0]
         metastore_obj.mark_train_job_as_stopped(train_job)
         assert train_job.status == TrainJobStatus.STOPPED
-        
+
         train_jobs = metastore_obj.get_train_jobs_by_user(train_job_info['user_id'])
         assert train_jobs[0].status == TrainJobStatus.STOPPED
 
-    
+
 
     @pytest.fixture(scope='class')
     def model_info(self, metastore):
         metastore_obj = metastore
-        email = 'model@rafiki'
+        email = 'model@singa_auto'
         password = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = metastore_obj.create_user(email, password_hash, UserType.MODEL_DEVELOPER)
@@ -339,7 +339,7 @@ class TestMetaStore(object):
             'task': 'test',
             'model_file_bytes': model_file_bytes,
             'model_class': 'Model',
-            'dependencies': {} 
+            'dependencies': {}
         }
 
     def test_create_model(self, metastore, model_info):
@@ -365,7 +365,7 @@ class TestMetaStore(object):
         assert models[0].model_file_bytes == model_info['model_file_bytes']
         assert models[0].model_class == model_info['model_class']
         assert models[0].dependencies == model_info['dependencies']
-        
+
     def test_get_model_by_name(self, metastore, model_info):
         metastore_obj = metastore
         model = metastore_obj.get_model_by_name(model_info['user_id'], model_info['name'])
@@ -390,7 +390,7 @@ class TestMetaStore(object):
         assert model.model_file_bytes == model_info['model_file_bytes']
         assert model.model_class == model_info['model_class']
         assert model.dependencies == model_info['dependencies']
-    
+
     @mock.patch('sqlalchemy.orm.Query.first')
     def test_delete_model(self, mock_first, metastore, model_info):
         metastore_obj = metastore
@@ -406,10 +406,10 @@ class TestMetaStore(object):
         # Query.first = mock.Mock(return_value=None)
         metastore_obj.delete_model(models[0])
         metastore_obj.commit()
-        
+
         models = metastore_obj.get_available_models(model_info['user_id'])
         assert len(models) == 0
-    
+
     # @pytest.fixture(scope='class', params=[ServiceType.TRAIN, ServiceType.ADVISOR, \
     #     ServiceType.INFERENCE, ServiceType.PREDICT])
     # def servicetype(self, request):
@@ -418,9 +418,9 @@ class TestMetaStore(object):
     @pytest.fixture(scope='class')
     def service_info(self):
         return {
-            'service_type': ServiceType.TRAIN, 
+            'service_type': ServiceType.TRAIN,
             'container_manager_type': 'kubernetes',
-            'docker_image': ServiceType.TRAIN+'_image', 
+            'docker_image': ServiceType.TRAIN+'_image',
             'replicas': 1,
             'gpus': 0
         }
@@ -434,7 +434,7 @@ class TestMetaStore(object):
         assert service.docker_image == service_info['docker_image']
         assert service.replicas == service_info['replicas']
         assert service.gpus == service_info['gpus']
-    
+
     def test_get_services(self, metastore, service_info):
         metastore_obj = metastore
         services = metastore_obj.get_services()
@@ -486,7 +486,7 @@ class TestMetaStore(object):
         services = metastore_obj.get_services()
         assert len(services) == 1
         assert services[0].status == ServiceStatus.ERRORED
-    
+
     def test_mark_service_as_stopped(self, metastore):
         metastore_obj = metastore
         services = metastore_obj.get_services()
@@ -516,20 +516,20 @@ class TestMetaStore(object):
         service = metastore.create_service(
             service_type='ADVISOR',
             container_manager_type='Kubernetes',
-            docker_image='rafiki-worker',
+            docker_image='singa_auto-worker',
             replicas=1,
             gpus=0
         )
         metastore.commit()
         assert service.service_type == 'ADVISOR'
         assert service.container_manager_type == 'Kubernetes'
-        assert service.docker_image == 'rafiki-worker'
+        assert service.docker_image == 'singa_auto-worker'
         assert service.replicas == 1
         assert service.gpus == 0
 
         return {
             'model_id': model.id,
-            'train_job_id': train_jobs[0].id, 
+            'train_job_id': train_jobs[0].id,
             'advisor_service_id': service.id
         }
 
@@ -540,7 +540,7 @@ class TestMetaStore(object):
         metastore_obj.commit()
         assert sub_train_job.train_job_id == sub_train_job_info['train_job_id']
         assert sub_train_job.model_id == sub_train_job_info['model_id']
-       
+
     def test_get_sub_train_jobs_of_train_job(self, metastore, sub_train_job_info):
         metastore_obj = metastore
         sub_train_jobs = metastore_obj.get_sub_train_jobs_of_train_job(sub_train_job_info['train_job_id'])
@@ -627,7 +627,7 @@ class TestMetaStore(object):
         train_job_workers = metastore_obj.get_workers_of_sub_train_job(sub_train_jobs[0].id)
         assert len(train_job_workers) == 1
         assert train_job_workers[0].sub_train_job_id == sub_train_jobs[0].id
-    
+
     @pytest.fixture(scope='class')
     def inference_job_info(self, metastore, train_job_info):
         metastore_obj = metastore
@@ -641,7 +641,7 @@ class TestMetaStore(object):
             'budget': {'GPU_COUNT': 1},
             'predictor_service_id': service.id
             }
-        
+
     def test_create_inference_job(self, metastore, inference_job_info):
         metastore_obj = metastore
         inference_job = metastore_obj.create_inference_job(inference_job_info['user_id'], \
@@ -712,13 +712,13 @@ class TestMetaStore(object):
         metastore_obj.commit()
         inference_job = metastore_obj.get_deployed_inference_job_by_train_job(inference_job_info['train_job_id'])
         assert inference_job is None
-    
+
     def test_get_inference_jobs_by_statuses(self, metastore, inference_job_info):
         metastore_obj = metastore
         inference_jobs = metastore_obj.get_inference_jobs_by_statuses([InferenceJobStatus.STOPPED])
         assert len(inference_jobs) == 1
         assert inference_jobs[0].status == InferenceJobStatus.STOPPED
-    
+
     @pytest.fixture(scope='class')
     def trial_info(self, metastore, sub_train_job_info, train_service_info):
         metastore_obj = metastore
@@ -731,7 +731,7 @@ class TestMetaStore(object):
             'no': 1,
             'train_job_id': sub_train_job_info['train_job_id']
         }
-        
+
     def test_create_trial(self, metastore, trial_info):
         metastore_obj = metastore
         trial_job = metastore_obj.create_trial(trial_info['sub_train_job_id'], trial_info['no'], \
@@ -788,7 +788,7 @@ class TestMetaStore(object):
         trial_infos = metastore_obj.get_trials_of_train_job(trial_info['train_job_id'])
         assert len(trial_infos) == 1
         assert trial_infos[0].status == TrialStatus.ERRORED
-    
+
     def test_mark_trial_as_completed(self, metastore, trial_info):
         metastore_obj = metastore
         trial_infos = metastore_obj.get_trials_of_train_job(trial_info['train_job_id'])
@@ -816,7 +816,7 @@ class TestMetaStore(object):
         assert trial_infos[0].sub_train_job_id == trial_info['sub_train_job_id']
         assert trial_infos[0].no == trial_info['no']
         assert trial_infos[0].model_id == trial_info['model_id']
-    
+
     def test_add_trial_log(self, metastore, trial_info):
         metastore_obj = metastore
         trial_infos = metastore_obj.get_trials_of_train_job(trial_info['train_job_id'])
@@ -826,7 +826,7 @@ class TestMetaStore(object):
         assert trial_log.trial_id == trial_infos[0].id
         assert trial_log.line == 'test_log'
         assert trial_log.level == 'info'
-    
+
     def test_get_trial_logs(self, metastore, trial_info):
         metastore_obj = metastore
         trial_infos = metastore_obj.get_trials_of_train_job(trial_info['train_job_id'])
@@ -835,7 +835,7 @@ class TestMetaStore(object):
         assert len(trial_logs) == 1
         assert trial_logs[0].line == 'test_log'
         assert trial_logs[0].level == 'info'
-    
+
     @pytest.fixture(scope='class')
     def inference_job_worker_info(self, metastore, inference_job_info, trial_info):
         service = metastore.create_service(ServiceType.INFERENCE, 'test_type', 'test_inference_image', 1, 0)
@@ -848,7 +848,7 @@ class TestMetaStore(object):
         return {
             'service_id': service.id,
             'inference_job_id': inference_jobs[0].id,
-            'trial_id': trial_infos[0].id 
+            'trial_id': trial_infos[0].id
         }
 
     def test_create_inference_job_worker(self, metastore, inference_job_worker_info):
@@ -875,4 +875,3 @@ class TestMetaStore(object):
         metastore_obj = metastore
         metastore_obj.disconnect()
         assert metastore_obj._session == None
-    

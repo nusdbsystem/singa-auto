@@ -21,17 +21,17 @@ import os
 import argparse
 from pprint import pprint
 
-from rafiki.client import Client
-from rafiki.config import SUPERADMIN_EMAIL
-from rafiki.constants import BudgetOption, ModelDependency
+from singa_auto.client import Client
+from singa_auto.config import SUPERADMIN_EMAIL
+from singa_auto.constants import BudgetOption, ModelDependency
 
 from examples.scripts.utils import gen_id
 from examples.datasets.image_files.load_cifar10 import load_cifar10
 
-def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):    
+def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     '''
         Conducts training of model `PyDenseNetBc` on the CIFAR-10 dataset for IMAGE_CLASSIFICATION.
-        Demonstrates hyperparameter tuning with distributed parameter sharing on Rafiki. 
+        Demonstrates hyperparameter tuning with distributed parameter sharing on Singa-Auto.
     '''
     task = 'IMAGE_CLASSIFICATION'
 
@@ -42,7 +42,7 @@ def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Preprocessing datasets...')
     load_cifar10(train_dataset_path, val_dataset_path)
 
-    print('Creating & uploading datasets onto Rafiki...')
+    print('Creating & uploading datasets onto Singa-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
@@ -54,7 +54,7 @@ def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
         task='IMAGE_CLASSIFICATION',
         model_file_path='examples/models/image_classification/PyDenseNetBc.py',
         model_class='PyDenseNetBc',
-        dependencies={ 
+        dependencies={
             ModelDependency.TORCH: '1.0.1',
             ModelDependency.TORCHVISION: '0.2.2'
         }
@@ -62,14 +62,14 @@ def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     pprint(model)
 
     print('Creating train job...')
-    budget = { 
+    budget = {
         BudgetOption.TIME_HOURS: hours,
         BudgetOption.GPU_COUNT: gpus
     }
     train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'], budget, models=[model['id']])
     pprint(train_job)
 
-    print('Monitor the train job on Rafiki Web Admin')
+    print('Monitor the train job on Singa-Auto Web Admin')
 
     # TODO: Evaluate on test dataset?
 

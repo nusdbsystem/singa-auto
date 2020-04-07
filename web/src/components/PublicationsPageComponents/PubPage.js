@@ -23,7 +23,7 @@ function PubPage(props) {
         <div className="section_center">
           <div className="center__description">
             <p className="description__text">
-              <b>Rafiki: Machine Learning as an Analytics Service System. </b>
+              <b>Singa-Auto: Machine Learning as an Analytics Service System. </b>
               Wei Wang, Sheng Wang, Jinyang Gao, Meihui Zhang, Gang Chen, Teck
               Khim Ng, Beng Chin Ooi, and Jie Shao. Accepted in VLDB 2019. [
               <a

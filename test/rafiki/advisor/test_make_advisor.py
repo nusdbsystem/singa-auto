@@ -19,12 +19,12 @@
 
 import pytest
 
-from rafiki.model import IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, ArchKnob, KnobValue, PolicyKnob
-from rafiki.advisor import make_advisor
-from rafiki.advisor.advisor import FixedAdvisor, RandomAdvisor
-from rafiki.advisor.skopt import BayesOptAdvisor, BayesOptWithParamSharingAdvisor
-from rafiki.advisor.tf import EnasAdvisor
-from rafiki.constants import BudgetOption
+from singa_auto.model import IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, ArchKnob, KnobValue, PolicyKnob
+from singa_auto.advisor import make_advisor
+from singa_auto.advisor.advisor import FixedAdvisor, RandomAdvisor
+from singa_auto.advisor.skopt import BayesOptAdvisor, BayesOptWithParamSharingAdvisor
+from singa_auto.advisor.tf import EnasAdvisor
+from singa_auto.constants import BudgetOption
 
 from test.utils import global_setup
 
@@ -93,7 +93,7 @@ class TestMakeAdvisor():
         }
         advisor = make_advisor(knob_config, budget)
         assert isinstance(advisor, BayesOptWithParamSharingAdvisor)
-    
+
     # Knob config with just architecture knobs is handled by `RandomAdvisor`
     def test_arch_knobs(self, budget, arch_knob):
         knob_config = {
@@ -113,7 +113,7 @@ class TestMakeAdvisor():
         advisor = make_advisor(knob_config, budget)
         assert isinstance(advisor, RandomAdvisor)
 
-    # Knob config with an architecture knob, fixed knobs, and specific policies `SHARE_PARAMS`, `DOWNSCALE`, 
+    # Knob config with an architecture knob, fixed knobs, and specific policies `SHARE_PARAMS`, `DOWNSCALE`,
     # `EARLY_STOP`, `SKIP_TRAIN`, `QUICK_EVAL`, with day budget is handled by `EnasAdvisor`
     def test_arch_knob_with_enas_policies(self, day_budget, arch_knob):
         knob_config = {

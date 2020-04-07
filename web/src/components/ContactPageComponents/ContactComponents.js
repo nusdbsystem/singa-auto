@@ -58,7 +58,7 @@ function ContactComponents(props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://github.com/nginyc/rafiki
+                https://github.com/nginyc/singa_auto
               </a>
             </p>
           </div>

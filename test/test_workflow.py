@@ -20,8 +20,8 @@ import os
 import time
 import pytest
 
-from rafiki.client import Client
-from rafiki.constants import TrainJobStatus, BudgetOption, InferenceBudget, InferenceJobStatus
+from singa_auto.client import Client
+from singa_auto.constants import TrainJobStatus, BudgetOption, InferenceBudget, InferenceJobStatus
 from test.utils import global_setup, make_model_dev, make_app_dev, make_model, make_private_model, \
                     make_invalid_model, make_dataset, gen, superadmin, \
                         wait_for_inference_job_status, make_admin
@@ -61,7 +61,7 @@ class TestWorkflow(object):
         app_dev.get_models()
         train_dataset_info = app_dev.create_dataset(DATASET_TRAIN_NAME, TASK, \
             DATASET_TRAIN_FILE_PATH)
-        
+
         # test_dataset_info = app_dev.create_dataset(DATASET_TEST_NAME, TASK, DATASET_TEST_FILE_PATH)
         eval_dataset_info = app_dev.create_dataset(DATASET_EVAL_NAME, TASK, \
             DATASET_EVAL_FILE_PATH)
@@ -96,7 +96,7 @@ class TestWorkflow(object):
         assert inference_job['app'] == inference_job_create['app']
         assert inference_job['status'] == InferenceJobStatus.RUNNING
         assert all([(x in inference_job) for x in ['predictor_host']])
-        
+
         url = 'http://{}/predict'.format(inference_job['predictor_host'])
         predict_data = requests.post(url=url, json={
             'query': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \
@@ -126,7 +126,7 @@ class TestWorkflow(object):
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]        
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         })
         assert predict_data is not None
         assert predict_data.status_code == 200
@@ -150,7 +150,7 @@ def wait_for_train_job_status(client: Client, app, status, timeout):
             return
         elif train_job['status'] == TrainJobStatus.ERRORED:
             raise Exception('Train job has errored')
-            
+
         # Still running...
         if length >= timeout:
             raise TimeoutError('Waiting for too long')

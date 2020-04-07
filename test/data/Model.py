@@ -20,7 +20,7 @@
 import random
 import numpy as np
 
-from rafiki.model import BaseModel, IntegerKnob, FixedKnob, CategoricalKnob, FloatKnob, PolicyKnob
+from singa_auto.model import BaseModel, IntegerKnob, FixedKnob, CategoricalKnob, FloatKnob, PolicyKnob
 
 class Model(BaseModel):
     '''

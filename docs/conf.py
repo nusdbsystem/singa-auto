@@ -16,7 +16,7 @@
 # under the License.
 #
 
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -37,12 +37,12 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Rafiki'
+project = 'Singa-Auto'
 copyright = '2019, nginyc, cadmusthefounder, nudles'
 author = 'nginyc, cadmusthefounder, nudles'
 
 # The short X.Y version
-version = os.environ['RAFIKI_VERSION']
+version = os.environ['SINGA_AUTO_VERSION']
 # The full version, including alpha/beta/rc tags
 release = ''
 
@@ -160,7 +160,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'rafiki', 'Rafiki Documentation',
+    (master_doc, 'singa_auto', 'Rafiki Documentation',
      [author], 1)
 ]
 

@@ -1,8 +1,8 @@
-from rafiki.client import Client
+from singa_auto.client import Client
 import pprint
 
 client = Client(admin_host="localhost", admin_port=3000)
-client.login(email="superadmin@rafiki", password="rafiki")
+client.login(email="superadmin@singaauto", password="singa_auto")
 
 
 # client.create_model(
@@ -12,24 +12,24 @@ client.login(email="superadmin@rafiki", password="rafiki")
 #     model_class='TfFeedForward',
 #     dependencies={ 'tensorflow': '1.12.0' }
 # )
-# # 
+# #
 # ret = client.get_available_models(task='IMAGE_CLASSIFICATION')
 # pprint.pprint(ret)
-# # 
+# #
 # ret = client.create_dataset(
 #     name='fashion_mnist_train',
 #     task='IMAGE_CLASSIFICATION',
 #     dataset_path='data/fashion_mnist_train.zip'
 # )
 # pprint.pprint(ret)
-# # 
+# #
 # client.create_dataset(
 #     name='fashion_mnist_val',
 #     task='IMAGE_CLASSIFICATION',
 #     dataset_path='data/fashion_mnist_val.zip'
 # )
 # pprint.pprint(ret)
-# # 
+# #
 # pprint.pprint(client.get_datasets())
 
 
@@ -41,22 +41,22 @@ client.login(email="superadmin@rafiki", password="rafiki")
 #     budget={ 'MODEL_TRIAL_COUNT': 5 }
 # )
 # pprint.pprint(ret)
-# # 
+# #
 # ret = client.get_train_jobs_of_app(app='fashion_mnist_app')
 # pprint.pprint(ret)
-# 
+#
 # ret = client.create_inference_job(app='fashion_mnist_app')
 # pprint.pprint(ret)
-# # 
+# #
 # pprint.pprint(client.get_inference_jobs_of_app(app='fashion_mnist_app'))
 
 predictor_host = '127.0.0.1:47887'
 query_path = 'examples/data/image_classification/fashion_mnist_test_1.png'
- 
+
 # Load query image as 3D list of pixels
-from rafiki.model import utils
+from singa_auto.model import utils
 [query] = utils.dataset.load_images([query_path]).tolist()
- 
+
 # Make request to predictor
 import requests
 res = requests.post('http://{}/predict'.format(predictor_host), json={ 'query': query })
