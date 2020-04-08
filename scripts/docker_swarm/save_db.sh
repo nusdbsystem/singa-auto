@@ -18,25 +18,19 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_redis.log
+DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Redis..."
+# Check if dump file exists
+if [ -f $DUMP_FILE ]
+then
+    if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
+    then
+        echo "Not dumping database!"
+        exit 0
+    fi
+fi
 
-# docker container run flags info:
-# --rm: container is removed when it exits
-# (--rm will also remove anonymous volumes)
-# -v == --volume: shared filesystems
-# -e == --env: environment variable
-# --name: name used to identify the container
-# --network: default is docker bridge
-# -p: expose and map port(s)
-
-(docker run --rm --name $REDIS_HOST \
-  --network $DOCKER_NETWORK \
-  -p $REDIS_EXT_PORT:$REDIS_PORT \
-  $IMAGE_REDIS \
-  &> $LOG_FILE_PATH) &
-
-ensure_stable "Singa-Auto's Redis" $LOG_FILE_PATH 5
+echo "Dumping database to $DUMP_FILE..."
+docker exec $POSTGRES_HOST pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE

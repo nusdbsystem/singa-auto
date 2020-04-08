@@ -31,15 +31,19 @@ from singa_auto.redis import TrainCache, ParamCache
 
 LOOP_SLEEP_SECS = 0.1
 
+
 class InvalidSubTrainJobError(Exception): pass
+
 
 logger = logging.getLogger(__name__)
 
-class _WorkerInfo():
+
+class _WorkerInfo:
     def __init__(self):
         self.trial_id: int = None # ID of pending trial assigned to worker, None if there is no pending trial
 
-class AdvisorWorker():
+
+class AdvisorWorker:
     def __init__(self, service_id):
         self._monitor: _SubTrainJobMonitor = _SubTrainJobMonitor(service_id)
         self._redis_host = os.environ['REDIS_HOST']

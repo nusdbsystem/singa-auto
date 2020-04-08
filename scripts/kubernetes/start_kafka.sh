@@ -24,9 +24,9 @@ title "Starting Singa-Auto's Kafka..."
 LOG_FILE_PATH=$PWD/logs/start_kafka_service.log
 (kubectl create -f scripts/kubernetes/start_kafka_service.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Kafka Service" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Kafka Service" $LOG_FILE_PATH 2
 
 LOG_FILE_PATH=$PWD/logs/start_kafka_deployment.log
 (kubectl create -f scripts/kubernetes/start_kafka_deployment.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Kafka Deployment" $LOG_FILE_PATH 5
+ensure_stable "Singa-Auto's Kafka Deployment" $LOG_FILE_PATH 2

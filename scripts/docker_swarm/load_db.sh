@@ -18,27 +18,18 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_web_admin.log
 
-source ./scripts/utils.sh
+DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
-title "Starting Singa-Auto's Web Admin..."
+source ./scripts/docker_swarm/utils.sh
 
-# docker container run flags info:
-# --rm: container is removed when it exits
-# (--rm will also remove anonymous volumes)
-# -v == --volume: shared filesystems
-# -e == --env: environment variable
-# --name: name used to identify the container
-# --network: default is docker bridge
-# -p: expose and map port(s)
+title "Maybe loading from database dump..."
 
-(docker run --rm --name $WEB_ADMIN_HOST \
-  --network $DOCKER_NETWORK \
-  -e SINGA_AUTO_ADDR=$SINGA_AUTO_ADDR \
-  -e ADMIN_EXT_PORT=$ADMIN_EXT_PORT \
-  -p $WEB_ADMIN_EXT_PORT:3001 \
-  $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION \
-  &> $LOG_FILE_PATH) &
-
-ensure_stable "Singa-Auto's Web Admin" $LOG_FILE_PATH 5
+# Check if dump file exists
+if [ -f $DUMP_FILE ]
+then
+    echo "Loading database dump at $DUMP_FILE..."
+    cat $DUMP_FILE | docker exec -i $POSTGRES_HOST psql -U postgres --dbname $POSTGRES_DB > /dev/null
+else
+    echo "No database dump file found."
+fi

@@ -22,11 +22,13 @@ import json
 import os
 import shutil
 import tempfile
+import traceback
 import uuid
 
 from singa_auto.constants import UserType, RequestsParameters
 from flask import jsonify, Blueprint, make_response, g
 
+from singa_auto.meta_store.meta_store import DuplicateModelNameError
 from singa_auto.param_store import FileParamStore
 from singa_auto.utils.auth import UnauthorizedError, auth
 from singa_auto.utils.requests_params import param_check
@@ -159,3 +161,10 @@ def get_recommend_models(auth, params):
     with admin:
             return jsonify(admin.get_recommend_models(auth['user_id'],
                                                       dataset_id=params['dataset_id']))
+
+
+@model_bp.errorhandler(Exception)
+def handle_error(error):
+    traceback.print_exc()
+    if type(error) == DuplicateModelNameError:
+        return jsonify({'ErrorMsg': 'DuplicateModelNameError'}), 400

@@ -724,7 +724,7 @@ class Client:
         return url
 
     def _parse_response(self, res):
-        if res.status_code != 200:
+        if res.status_code != 200 and res.status_code != 400:
             raise SingaAutoConnectionError(res.text)
 
         content_type = res.headers.get('content-type')

@@ -18,11 +18,25 @@
 # under the License.
 #
 
-source ./scripts/utils.sh
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_redis.log
 
-title "Creating Docker swarm for Singa_auto..."
-docker swarm leave $1
-docker swarm init --advertise-addr $DOCKER_SWARM_ADVERTISE_ADDR \
-    || >&2 echo "Failed to init Docker swarm - continuing..."
-docker network create $DOCKER_NETWORK -d overlay --attachable --scope=swarm \
-    || >&2 echo  "Failed to create Docker network for swarm - continuing..."
+source ./scripts/docker_swarm/utils.sh
+
+title "Starting Singa-Auto's Redis..."
+
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
+
+(docker run --rm --name $REDIS_HOST \
+  --network $DOCKER_NETWORK \
+  -p $REDIS_EXT_PORT:$REDIS_PORT \
+  $IMAGE_REDIS \
+  &> $LOG_FILE_PATH) &
+
+ensure_stable "Singa-Auto's Redis" $LOG_FILE_PATH 2

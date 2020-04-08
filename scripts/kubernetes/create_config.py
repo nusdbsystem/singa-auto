@@ -22,6 +22,7 @@ import sys
 import os
 
 if __name__ == '__main__':
+    print(sys.argv)
     POSTGRES_PASSWORD = sys.argv[1]
     SUPERADMIN_PASSWORD = sys.argv[2]
     APP_SECRET = sys.argv[3]
@@ -77,6 +78,8 @@ if __name__ == '__main__':
     PYTHONUNBUFFERED = sys.argv[48]
     CONTAINER_MODE = sys.argv[49]
     CLUSTER_MODE = sys.argv[50]
+
+    DB_DIR_PATH = sys.argv[51]
 
     #zk service
     content = {}
@@ -194,6 +197,20 @@ if __name__ == '__main__':
         container = {}
         container.setdefault('name', POSTGRES_HOST)
         container.setdefault('image', IMAGE_POSTGRES)
+
+        container.setdefault('volumeMounts',
+                             [
+                              {'name': 'db-path',
+                               'mountPath': "/var/lib/postgresql/data"},
+                              ])
+
+        template.setdefault('spec', {'containers': [container],
+                                     'volumes': [
+                                                 {'name': 'db-path',
+                                                  'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{DB_DIR_PATH}'}}
+                                                 ]
+                                     }
+                            )
         env = []
         env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
         env.append({'name': 'POSTGRES_HOST', 'value': POSTGRES_HOST})

@@ -34,5 +34,6 @@ ensure_stable "Singa-Auto's DB Deployment" $LOG_FILE_PATH 10
 echo "Creating Singa-Auto's PostgreSQL database & user..."
 DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
 DB_PODNAME=${DB_PODNAME:0:30}
-kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
-kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
+
+kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE DATABASE $POSTGRES_DB" || true
+kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'" || true

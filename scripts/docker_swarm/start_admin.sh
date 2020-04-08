@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+source ./scripts/docker_swarm/.env.sh
 LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_admin.log
 
 PROD_MOUNT_DATA=$HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
@@ -31,7 +31,7 @@ else
   VOLUME_MOUNTS="-v $PROD_MOUNT_DATA -v $PROD_MOUNT_PARAMS -v $PROD_MOUNT_LOGS"
 fi
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
 title "Starting Singa-Auto's Admin..."
 

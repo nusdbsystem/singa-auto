@@ -22,7 +22,7 @@
 
 source ./scripts/kubernetes/.env.sh
 
-source ./scripts/utils.sh
+source ./scripts/kubernetes/utils.sh
 
 title "Using K8S"
 # Build Singa-Auto's images

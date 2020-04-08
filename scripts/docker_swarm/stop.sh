@@ -20,10 +20,10 @@
 
 LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
 # Read from shell configuration file
-source ./.env.sh
+source ./scripts/docker_swarm/.env.sh
 
 title "Stopping any existing jobs..."
 echo $(which python3)
@@ -31,13 +31,15 @@ pyv="$(python3 -V 2>&1)"
 echo $pyv
 python3 ./scripts/stop_all_jobs.py
 
+bash scripts/docker_swarm/stop_db.sh || exit 1
+
 # Prompt if should stop DB
-if prompt "Should stop Singa_Auto's DB?"
-then
-    bash scripts/stop_db.sh || exit 1
-else
-    echo "Not stopping Singa_Auto's DB!"
-fi
+#if prompt "Should stop Singa_Auto's DB?"
+#then
+#    bash scripts/docker_swarm/stop_db.sh || exit 1
+#else
+#    echo "Not stopping Singa_Auto's DB!"
+#fi
 
 title "Stopping Singa_Auto's Zookeeper..."
 docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop Singa_Auto's Zookeeper"

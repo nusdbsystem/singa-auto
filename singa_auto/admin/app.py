@@ -41,7 +41,6 @@ def create_app():
     app.register_blueprint(trial_bp)
     app.register_blueprint(inference_bp, url_prefix='/inference_jobs')
     app.register_blueprint(events_bp)
-    app.register_blueprint(events_bp)
 
     CORS(app)
 
@@ -55,5 +54,10 @@ def create_app():
     @app.route('/')
     def index():
         return 'Singa-Auto Admin is up.'
+
+    @app.errorhandler(Exception)
+    def handle_error(error):
+        traceback.print_exc()
+        return traceback.format_exc(), 500
 
     return app

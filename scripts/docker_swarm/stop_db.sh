@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,3 +17,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
+LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
+
+source ./scripts/docker_swarm/utils.sh
+
+title "Dumping database..."
+bash ./scripts/save_db.sh
+
+# If database dump previously failed, prompt whether to continue script
+#if [ $? -ne 0 ]
+#then
+#    if ! prompt "Failed to dump database. Continue?"
+#    then
+#        exit 1
+#    fi
+#fi
+
+title "Stopping Singa-Auto's DB..."
+docker rm -f $POSTGRES_HOST || echo "Failed to stop Singa-Auto's DB"

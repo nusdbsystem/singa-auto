@@ -43,6 +43,7 @@ PARAM_DATA_TYPE_NUMPY = 'NP'
 
 _ParamMeta = namedtuple('_ParamMeta', ('param_id', 'score', 'time'))
 
+
 class ParamCache(object):
     '''
     Retrieves and caches parameters for a session & a worker, backed by an in-memory cache and Redis for cross-worker sharing (optional).
@@ -323,11 +324,13 @@ def _serialize_params(params):
     params_bytes = msgpack.packb(params_simple, use_bin_type=True)
     return params_bytes
 
+
 def _deserialize_params(params_bytes):
     # Deserialize as `msgpack`
     params_simple = msgpack.unpackb(params_bytes, raw=False)
     params = _unsimplify_params(params_simple)
     return params
+
 
 def _simplify_params(params):
     try:
@@ -353,6 +356,7 @@ def _simplify_params(params):
     except:
         traceback.print_stack()
         raise InvalidParamsFormatError()
+
 
 def _unsimplify_params(params_simple):
     params = {}

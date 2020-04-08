@@ -59,6 +59,7 @@ export KAFKA_HOST=singa_auto_kafka
 export KAFKA_PORT=9092
 
 export DOCKER_WORKDIR_PATH=/root
+export DB_DIR_PATH=db
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir

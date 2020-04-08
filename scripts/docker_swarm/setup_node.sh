@@ -17,19 +17,19 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+# Read from shell configuration file
+source ./scripts/docker_swarm/.env.sh
 
+echo "Listing nodes in Docker Swarm..."
+docker node ls
 
-DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
-
-source ./scripts/utils.sh
-
-title "Maybe loading from database dump..."
-
-# Check if dump file exists
-if [ -f $DUMP_FILE ]
-then
-    echo "Loading database dump at $DUMP_FILE..."
-    cat $DUMP_FILE | docker exec -i $POSTGRES_HOST psql -U postgres --dbname $POSTGRES_DB > /dev/null
-else
-    echo "No database dump file found."
-fi
+read -p "Hostname of node to configure? " hostname
+while true; do
+    read -p "GPU numbers available? (e.g. '' or '0,2') " gpus
+    if echo "$gpus" | grep -Eq "^(([0-9],)*[0-9])?$"; then
+        break
+    fi
+    echo "Please key in a comman-separated list of GPU numbers e.g. '' or '0,2'."
+done
+docker node update --label-add $DOCKER_NODE_LABEL_AVAILABLE_GPUS=$gpus $hostname
+docker node update --label-add $DOCKER_NODE_LABEL_NUM_SERVICES=0 $hostname

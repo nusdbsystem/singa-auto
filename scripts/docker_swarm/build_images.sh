@@ -19,9 +19,9 @@
 #
 
 # Read from shell configuration file
-source .env.sh
+source ./scripts/docker_swarm/.env.sh
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
 title "Using docker swarm"
 # Build Singa-Auto's images

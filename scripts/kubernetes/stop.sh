@@ -54,14 +54,20 @@ kubectl delete service $KAFKA_HOST || echo "Failed to stop Singa-Auto's Kafka Se
 title "Stopping Singa-Auto's Zookeeper Service..."
 kubectl delete service $ZOOKEEPER_HOST || echo "Failed to stop Singa-Auto's Zookeeper Service"
 
-# Prompt if should stop DB
-if prompt "Should stop Singa-Auto's DB?"
-then
-    if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-        bash scripts/kubernetes/stop_db.sh || exit 1
-    else
-        bash scripts/kubernetes/stop_stolon.sh || exit 1
-    fi
+if [ "$CLUSTER_MODE" = "SINGLE" ]; then
+    bash scripts/kubernetes/stop_db.sh || exit 1
 else
-    echo "Not stopping Singa-Auto's DB!"
+    bash scripts/kubernetes/stop_stolon.sh || exit 1
 fi
+
+# Prompt if should stop DB
+#if prompt "Should stop Singa-Auto's DB?"
+#then
+#    if [ "$CLUSTER_MODE" = "SINGLE" ]; then
+#        bash scripts/kubernetes/stop_db.sh || exit 1
+#    else
+#        bash scripts/kubernetes/stop_stolon.sh || exit 1
+#    fi
+#else
+#    echo "Not stopping Singa-Auto's DB!"
+#fi

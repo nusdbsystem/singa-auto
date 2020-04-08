@@ -18,11 +18,11 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_db.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_kafka.log
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's DB..."
+title "Starting Singa-Auto's Kafka..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -33,17 +33,14 @@ title "Starting Singa-Auto's DB..."
 # --network: default is docker bridge
 # -p: expose and map port(s)
 
-(docker run --rm --name $POSTGRES_HOST \
+(docker run --rm --name $KAFKA_HOST \
   --network $DOCKER_NETWORK \
-  -e POSTGRES_HOST=$POSTGRES_HOST \
-  -e POSTGRES_PORT=$POSTGRES_PORT \
-  -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-  -p $POSTGRES_EXT_PORT:$POSTGRES_PORT \
-  $IMAGE_POSTGRES \
+  -e KAFKA_ZOOKEEPER_CONNECT=$ZOOKEEPER_HOST:$ZOOKEEPER_PORT \
+  -e KAFKA_ADVERTISED_HOST_NAME=$KAFKA_HOST \
+  -e KAFKA_ADVERTISED_PORT=$KAFKA_PORT \
+  -e KAFKA_MESSAGE_MAX_BYTES=134217728\
+  -e KAFKA_FETCH_MAX_BYTES=134217728\
+  -p $KAFKA_EXT_PORT:$KAFKA_PORT \
+  -d $IMAGE_KAFKA \
   &> $LOG_FILE_PATH) &
-
-ensure_stable "Singa-Auto's DB" $LOG_FILE_PATH 10
-
-echo "Creating Singa-Auto's PostgreSQL database & user..."
-docker exec $POSTGRES_HOST psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
-docker exec $POSTGRES_HOST psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
+ensure_stable "Singa-Auto's Kafka" $LOG_FILE_PATH 2

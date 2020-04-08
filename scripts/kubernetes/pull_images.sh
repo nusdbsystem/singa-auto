@@ -17,7 +17,7 @@
 # under the License.
 #
 
-source ./scripts/utils.sh
+source ./scripts/kubernetes/utils.sh
 
 pull_image()
 {

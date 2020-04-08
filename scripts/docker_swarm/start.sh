@@ -29,32 +29,32 @@ while (! docker stats --no-stream ); do
 done
 fi
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
 # Read from shell configuration file
-source ./.env.sh
+source ./scripts/docker_swarm/.env.sh
 
 # Create Docker swarm for Singa-Auto
-bash ./scripts/create_docker_swarm.sh
+bash ./scripts/docker_swarm/create_docker_swarm.sh
 
 # Pull images from Docker Hub
-bash ./scripts/pull_images.sh || exit 1
+#bash ./scripts/docker_swarm/pull_images.sh || exit 1
 
 # Start whole Singa-Auto stack
 # Start Zookeeper, Kafka & Redis
-bash ./scripts/start_zookeeper.sh || exit 1
-bash ./scripts/start_kafka.sh || exit 1
-bash ./scripts/start_redis.sh || exit 1
+bash ./scripts/docker_swarm/start_zookeeper.sh || exit 1
+bash ./scripts/docker_swarm/start_kafka.sh || exit 1
+bash ./scripts/docker_swarm/start_redis.sh || exit 1
 # Skip starting & loading DB if DB is already running
 if is_running $POSTGRES_HOST
 then
   echo "Detected that Singa-Auto's DB is already running!"
 else
-    bash ./scripts/start_db.sh || exit 1
-    bash ./scripts/load_db.sh || exit 1
+    bash ./scripts/docker_swarm/start_db.sh
+
 fi
-bash ./scripts/start_admin.sh || exit 1
-bash ./scripts/start_web_admin.sh || exit 1
+bash ./scripts/docker_swarm/start_admin.sh || exit 1
+bash ./scripts/docker_swarm/start_web_admin.sh || exit 1
 
 echo "To use Singa-Auto, use Singa-Auto Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/src/user/quickstart.html"

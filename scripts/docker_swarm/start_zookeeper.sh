@@ -18,21 +18,25 @@
 # under the License.
 #
 
-LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_zookeeper.log
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
-title "Dumping database..."
-bash ./scripts/save_db.sh
+title "Starting Singa-Auto's Zookeeper..."
 
-# If database dump previously failed, prompt whether to continue script
-if [ $? -ne 0 ]
-then
-    if ! prompt "Failed to dump database. Continue?"
-    then
-        exit 1
-    fi
-fi
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
 
-title "Stopping Singa-Auto's DB..."
-docker rm -f $POSTGRES_HOST || echo "Failed to stop Singa-Auto's DB"
+(docker run --rm --name $ZOOKEEPER_HOST \
+  --network $DOCKER_NETWORK \
+  -p $ZOOKEEPER_EXT_PORT:$ZOOKEEPER_PORT \
+  -d $IMAGE_ZOOKEEPER \
+  &> $LOG_FILE_PATH) &
+ensure_stable "Singa-Auto's Zookeeper" $LOG_FILE_PATH 5
+

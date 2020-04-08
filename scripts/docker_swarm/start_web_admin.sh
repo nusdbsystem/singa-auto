@@ -18,11 +18,11 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_kafka.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_web_admin.log
 
-source ./scripts/utils.sh
+source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Kafka..."
+title "Starting Singa-Auto's Web Admin..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -33,14 +33,12 @@ title "Starting Singa-Auto's Kafka..."
 # --network: default is docker bridge
 # -p: expose and map port(s)
 
-(docker run --rm --name $KAFKA_HOST \
+(docker run --rm --name $WEB_ADMIN_HOST \
   --network $DOCKER_NETWORK \
-  -e KAFKA_ZOOKEEPER_CONNECT=$ZOOKEEPER_HOST:$ZOOKEEPER_PORT \
-  -e KAFKA_ADVERTISED_HOST_NAME=$KAFKA_HOST \
-  -e KAFKA_ADVERTISED_PORT=$KAFKA_PORT \
-  -e KAFKA_MESSAGE_MAX_BYTES=134217728\
-  -e KAFKA_FETCH_MAX_BYTES=134217728\
-  -p $KAFKA_EXT_PORT:$KAFKA_PORT \
-  -d $IMAGE_KAFKA \
+  -e SINGA_AUTO_ADDR=$SINGA_AUTO_ADDR \
+  -e ADMIN_EXT_PORT=$ADMIN_EXT_PORT \
+  -p $WEB_ADMIN_EXT_PORT:3001 \
+  $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION \
   &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Kafka" $LOG_FILE_PATH 5
+
+ensure_stable "Singa-Auto's Web Admin" $LOG_FILE_PATH 5

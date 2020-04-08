@@ -18,19 +18,11 @@
 # under the License.
 #
 
-DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
+source ./scripts/docker_swarm/utils.sh
 
-source ./scripts/utils.sh
-
-# Check if dump file exists
-if [ -f $DUMP_FILE ]
-then
-    if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
-    then
-        echo "Not dumping database!"
-        exit 0
-    fi
-fi
-
-echo "Dumping database to $DUMP_FILE..."
-docker exec $POSTGRES_HOST pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE
+title "Creating Docker swarm for Singa_auto..."
+docker swarm leave $1
+docker swarm init --advertise-addr $DOCKER_SWARM_ADVERTISE_ADDR \
+    || >&2 echo "Failed to init Docker swarm - continuing..."
+docker network create $DOCKER_NETWORK -d overlay --attachable --scope=swarm \
+    || >&2 echo  "Failed to create Docker network for swarm - continuing..."

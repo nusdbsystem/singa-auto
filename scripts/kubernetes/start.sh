@@ -46,7 +46,6 @@ if [ "$CLUSTER_MODE" = "SINGLE" ]; then
       echo "Detected that Rafiki's DB is already running!"
     else
         bash ./scripts/kubernetes/start_db.sh || exit 1
-        bash ./scripts/kubernetes/load_db.sh || exit 1
     fi
 else
     # Whether stolon has started inside the script

@@ -18,25 +18,28 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_zookeeper.log
+source ./scripts/docker_swarm/utils.sh
 
-source ./scripts/utils.sh
+pull_image()
+{
+    # -q == --quiet, Only display numeric IDs
+    if [[ ! -z $(docker images -q $1) ]]
+    then
+        echo "$1 already exists locally, thus will not pull. Using local version of $1"
+    else
+        docker pull $1 || exit 1
+    fi
+}
 
-title "Starting Singa-Auto's Zookeeper..."
-
-# docker container run flags info:
-# --rm: container is removed when it exits
-# (--rm will also remove anonymous volumes)
-# -v == --volume: shared filesystems
-# -e == --env: environment variable
-# --name: name used to identify the container
-# --network: default is docker bridge
-# -p: expose and map port(s)
-
-(docker run --rm --name $ZOOKEEPER_HOST \
-  --network $DOCKER_NETWORK \
-  -p $ZOOKEEPER_EXT_PORT:$ZOOKEEPER_PORT \
-  -d $IMAGE_ZOOKEEPER \
-  &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Zookeeper" $LOG_FILE_PATH 5
-
+title "Pulling images..."
+echo "Pulling images required by Singa-Auto from Docker Hub..."
+# Docker images for dependent services
+pull_image $IMAGE_POSTGRES
+pull_image $IMAGE_REDIS
+pull_image $IMAGE_KAFKA
+pull_image $IMAGE_ZOOKEEPER
+# Docker images for Singa-Auto's custom components
+pull_image $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION
