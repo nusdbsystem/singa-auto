@@ -57,6 +57,7 @@ def create_app():
 
     @app.errorhandler(Exception)
     def handle_error(error):
+        traceback.print_exc()
         return traceback.format_exc(), 500
 
     return app

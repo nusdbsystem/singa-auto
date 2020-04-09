@@ -142,3 +142,20 @@ def download_model_file(auth, model_id):
     return res
 
 
+# TODO:New METHOD get model of specific task
+@model_bp.route('/<task>/available', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+def get_available_models_of_taks(auth, task):
+    admin = g.admin
+    with admin:
+        return jsonify(admin.get_available_models(auth['user_id'], task))
+
+
+@model_bp.route('/recommended', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def get_recommend_models(auth, params):
+    admin = g.admin
+    with admin:
+            return jsonify(admin.get_recommend_models(auth['user_id'],
+                                                      dataset_id=params['dataset_id']))

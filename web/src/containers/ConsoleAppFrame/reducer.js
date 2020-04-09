@@ -1,22 +1,15 @@
 import { Types } from "./actions"
 
-
 const initialState = {
-  mobileOpen: false,
-  headerTitle: "Overview"
-};
+  headerTitle: "Overview",
+}
 
 export const ConsoleAppFrame = (state = initialState, action) => {
   switch (action.type) {
-    case Types.DRAWER_TOGGLE :
+    case Types.CHANGE_HEADER_TITLE:
       return {
         ...state,
-        mobileOpen: !state.mobileOpen
-      }
-    case Types.CHANGE_HEADER_TITLE :
-      return {
-        ...state,
-        headerTitle: action.headerTitle
+        headerTitle: action.headerTitle,
       }
     default:
       return state

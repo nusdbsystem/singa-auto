@@ -5,6 +5,7 @@
 env/
 envs/
 venv/
+.env.sh
 
 # Visual Studio Code config
 .vscode/
@@ -28,6 +29,7 @@ docs/*
 # Datasets
 data/*
 !data/.gitkeep
+examples/data/image_classification/*
 
 # Logs
 *.log
@@ -45,6 +47,7 @@ params/*
 # Pytest
 .coverage*
 .pytest_cache/
+test/*
 
 # SQL dump files
 *.sql

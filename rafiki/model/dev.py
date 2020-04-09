@@ -178,7 +178,7 @@ def make_predictions(queries: List[Any], task: str, py_model_class: Type[BaseMod
     inference_cache: InferenceCache = InferenceCache()
     worker_id = 'local'
 
-    print('Queries: {}'.format(queries))
+    # print('Queries: {}'.format(queries))
 
     # Worker load best trained model's parameters
     model_inst = None

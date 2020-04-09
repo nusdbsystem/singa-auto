@@ -30,10 +30,13 @@ import abc
 import csv
 import pandas
 import tempfile
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+
 class InvalidDatasetFormatException(Exception): pass
+
 
 class DatasetUtils():
     '''
@@ -67,7 +70,7 @@ class DatasetUtils():
         return CorpusDataset(dataset_path, tags or ['tag'], split_by)
 
     def load_dataset_of_image_files(self, dataset_path, min_image_size=None,
-                                    max_image_size=None, mode='RGB', if_shuffle=False):
+                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=False):
         '''
             Loads dataset for the task ``IMAGE_CLASSIFICATION``.
 
@@ -78,7 +81,11 @@ class DatasetUtils():
             :param bool if_shuffle: Whether to shuffle the dataset
             :returns: An instance of ``ImageFilesDataset``
         '''
-        return ImageFilesDataset(dataset_path, min_image_size=min_image_size, max_image_size=max_image_size,
+        if lazy_load:
+            return ImageFilesDatasetLazy(dataset_path, min_image_size=min_image_size, max_image_size=max_image_size,
+                mode=mode, if_shuffle=if_shuffle)
+        else:
+            return ImageFilesDataset(dataset_path, min_image_size=min_image_size, max_image_size=max_image_size,
                                 mode=mode, if_shuffle=if_shuffle)
 
     def load_dataset_of_audio_files(self, dataset_path, dataset_dir):
@@ -134,7 +141,7 @@ class DatasetUtils():
         if mode is not None:
             images = [x.convert(mode) for x in images]
 
-        return np.asarray([np.asarray(x) for x in images])
+        return np.asarray([np.asarray(x) for x in images]), images
 
     def load_images(self, image_paths: List[str], mode: str = 'RGB') -> np.ndarray:
         '''
@@ -257,6 +264,7 @@ class CorpusDataset(ModelDataset):
 
         return (size, tag_num_classes, max_token_len, max_sent_len, sents)
 
+
 class ImageFilesDataset(ModelDataset):
     '''
     Class that helps loading of dataset for task ``IMAGE_CLASSIFICATION``.
@@ -301,13 +309,17 @@ class ImageFilesDataset(ModelDataset):
         # Create temp directory to unzip to
         with tempfile.TemporaryDirectory() as d:
             dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+            # obtain csv file
+            for fileName in dataset_zipfile.namelist():
+               if fileName.endswith('.csv'):
+                    images_csv_path = os.path.join(d, fileName)
             dataset_zipfile.extractall(path=d)
             dataset_zipfile.close()
 
             # Read images.csv, and read image paths & classes
             image_paths = []
             image_classes = []
-            images_csv_path = os.path.join(d, 'images.csv')
+
             try:
                 with open(images_csv_path, mode='r') as f:
                     reader = csv.DictReader(f)
@@ -322,7 +334,6 @@ class ImageFilesDataset(ModelDataset):
 
         num_classes = len(set(image_classes))
         num_samples = len(image_paths)
-
         return (pil_images, image_classes, num_samples, num_classes)
 
     def _shuffle(self, images, classes):
@@ -330,6 +341,131 @@ class ImageFilesDataset(ModelDataset):
         random.shuffle(zipped)
         (images, classes) = zip(*zipped)
         return (images, classes)
+
+
+class ImageFilesDatasetLazy(ModelDataset):
+    '''
+    Class that helps loading of dataset for task ``IMAGE_CLASSIFICATION``.
+    ``classes`` is the number of image classes.
+    Each dataset example is (image, class) where:
+        - Each image is a 3D numpy array (width x height x channels)
+        - Each class is an integer from 0 to (k - 1)
+    '''
+
+    def __init__(self, dataset_path, min_image_size=None, max_image_size=None, mode='RGB', if_shuffle=False):
+        super().__init__(dataset_path)
+        self.mode = mode
+        self.dataset_zipfile = None
+        (self._image_names, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
+        self.min_image_size = min_image_size
+        self.max_image_size = max_image_size
+        self.label_mapper = dict()
+        if if_shuffle:
+            (self._image_names, self._image_classes) = self._shuffle(self._image_names, self._image_classes)
+
+    def __getitem__(self, index):
+        try:
+            pil_image = self._extract_item(self.path, self._image_names[index])
+            # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+            (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
+            image_class = self._image_classes[index]
+
+        except:
+            print('image is not readable, error accurs during handling :', len(self._image_names), index)
+            (image, image_class) = self.get_item(index - 1)
+        return (image, image_class)
+
+    def _preprocess(self, pil_image, min_image_size, max_image_size):
+        (width, height) = pil_image.size
+        # crop rectangular image into square
+        left = (width - min(width, height)) / 2
+        right = (width + min(width, height)) / 2
+        top = (height - min(width, height)) / 2
+        bottom = (height + min(width, height)) / 2
+        crop_pil_image = pil_image.crop((left, top, right, bottom))
+
+        # Decide on image size, adhering to min/max, making it square and trying not to stretch it
+        image_size = max(min([width, height, max_image_size or width]), min_image_size or 0)
+
+        # Resize all images
+        images = crop_pil_image.resize([image_size, image_size])
+
+        return (images, image_size)
+
+    def _extract_item(self, dataset_path, item_path):
+        # Create temp directory to unzip to extract 1 item
+        with tempfile.TemporaryDirectory() as d:
+            extracted_item_path = self.dataset_zipfile.extract(item_path, path=d)
+            pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+
+        return pil_image
+
+    def _extract_zip(self, dataset_path):
+        self.dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+        if 'images.csv' in self.dataset_zipfile.namelist():
+            # Create temp directory to unzip to extract paths/classes/numbers only, no actual images would be extracted
+            with tempfile.TemporaryDirectory() as d:
+                # obtain csv file
+                for fileName in self.dataset_zipfile.namelist():
+                    if fileName.endswith('.csv'):
+                        # Extract a single csv file from zip
+                        images_csv_path = self.dataset_zipfile.extract(fileName, path=d)
+                        break
+                try:
+                    csv = pd.read_csv(images_csv_path)
+                    image_classes = csv[csv.columns[1:]]
+                    image_paths = csv[csv.columns[0]]
+                except:
+                    traceback.print_stack()
+                    raise
+            num_classes = len(csv[csv.columns[1]].unique())
+            num_labeled_samples = len(csv[csv.columns[0]].unique())
+            image_classes = tuple(np.array(image_classes).tolist())
+            image_paths = tuple(image_paths)
+
+        else:
+            # make image name list and remove dir from list
+            image_paths = [x for x in self.dataset_zipfile.namelist() if x.endswith('/') == False]
+            num_labeled_samples = len(image_paths)
+            str_labels = [os.path.dirname(x) for x in image_paths]
+            self.str_labels_set = list(set(str_labels))
+            num_classes = len(self.str_labels_set)
+            image_classes = [self.str_labels_set.index(x) for x in str_labels]
+        return (image_paths, image_classes, num_labeled_samples, num_classes)
+
+    def _shuffle(self, images, classes):
+        zipped = list(zip(images, classes))
+        random.shuffle(zipped)
+        (images, classes) = zip(*zipped)
+        return (images, classes)
+
+    def get_item(self, index):
+        return self.__getitem__(index)
+
+    def get_stat(self):
+        x = 0
+        print(self.size)
+        for i in range(self.size):
+            try:
+                image = np.array(self.get_item(i)[0])
+                mu_i = np.mean(image, axis=(0, 1))
+                mu_i = np.expand_dims(mu_i, axis=0)
+
+                if i == 0:
+                    x = mu_i
+                else:
+                    x = np.concatenate((x, mu_i), axis=0)
+                if i % 10000 == 0:
+                    print(i)
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                pass
+        x = x / 255
+        mu = np.mean(x, axis=0)
+        std = np.std(x, axis=0)
+        return mu, std
 
 class AudioFilesDataset(ModelDataset):
     '''
@@ -363,13 +499,18 @@ class AudioFilesDataset(ModelDataset):
         df = pandas.read_csv(audios_csv_path, encoding='utf-8', na_filter=False)
 
         return df
-        
+
+
 def _load_pil_images(image_paths, mode='RGB'):
     pil_images = []
     for image_path in image_paths:
-        with open(image_path, 'rb') as f:
-            encoded = io.BytesIO(f.read())
-            pil_image = Image.open(encoded).convert(mode)
-            pil_images.append(pil_image)
-    
+        try:
+            with open(image_path, 'rb') as f:
+                encoded = io.BytesIO(f.read())
+                pil_image = Image.open(encoded).convert(mode)
+                pil_images.append(pil_image)
+        except:
+            print ('error accurs when handling : ', image_path)
+            pil_images.append(pil_images[-1])
+
     return pil_images

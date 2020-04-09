@@ -32,7 +32,9 @@ from .model import BaseModel
 from .dataset import DatasetUtils
 from .log import LoggerUtils
 
+
 class InvalidModelClassError(Exception): pass
+
 
 def load_model_class(model_file_bytes, model_class, temp_mod_name=None) -> Type[BaseModel]:
     temp_mod_name = temp_mod_name or '{}-{}'.format(model_class, str(uuid.uuid4()))
@@ -56,6 +58,7 @@ def load_model_class(model_file_bytes, model_class, temp_mod_name=None) -> Type[
         os.remove(temp_model_file_name)
 
     return clazz
+
 
 def parse_model_install_command(dependencies, enable_gpu=False):
     conda_env = os.environ.get('CONDA_ENVIORNMENT')
@@ -91,6 +94,7 @@ def parse_model_install_command(dependencies, enable_gpu=False):
             commands.append('pip --no-cache-dir install {}=={}'.format(dep, ver))
 
     return '; '.join(commands)
+
 
 def parse_ctc_decoder_url(ver):
     is_arm = 'arm' in platform.machine()
@@ -132,13 +136,16 @@ def parse_ctc_decoder_url(ver):
     deepspeech_scheme = 'https://index.taskcluster.net/v1/task/project.deepspeech.deepspeech.native_client.%(branch_name)s.%(arch_string)s/artifacts/public/%(artifact_name)s'
     return deepspeech_scheme % {'arch_string': ctc_arch, 'artifact_name': artifact, 'branch_name': branch}
 
+
 def deserialize_knob_config(knob_config_bytes):
     knob_config = pickle.loads(knob_config_bytes.encode())
     return knob_config
 
+
 def serialize_knob_config(knob_config):
     knob_config_bytes = pickle.dumps(knob_config, 0).decode()
     return knob_config_bytes
+
 
 class ModelUtils():
     def __init__(self):

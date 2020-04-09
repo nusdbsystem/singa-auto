@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TextField from '../LandingComponents/TextField';
+import React from "react"
+import PropTypes from "prop-types"
+import TextField from "../LandingComponents/TextField"
 
 function RFTextField(props) {
   const {
@@ -9,7 +9,7 @@ function RFTextField(props) {
     InputProps,
     meta: { touched, error, submitError },
     ...other
-  } = props;
+  } = props
 
   return (
     <TextField
@@ -22,9 +22,9 @@ function RFTextField(props) {
         },
         ...InputProps,
       }}
-      helperText={touched ? error || submitError : ''}
+      helperText={touched ? error || submitError : ""}
     />
-  );
+  )
 }
 
 RFTextField.propTypes = {
@@ -35,6 +35,6 @@ RFTextField.propTypes = {
     error: PropTypes.string,
     touched: PropTypes.bool.isRequired,
   }).isRequired,
-};
+}
 
-export default RFTextField;
+export default RFTextField

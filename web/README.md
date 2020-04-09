@@ -1,15 +1,69 @@
-# Rafiki Dashboard
+# Rafiki/Panda-dev Dashboard
 
-## How to run the app
+> Ensure you are in the `REPO_ROOT/web/` directory
 
+## Set up local development
+
+### Set up Docker orchestration for backend
+- install docker [setupDocker.md](./docsWebDev/seupDocker.md)
+- run `REPO_ROOT/scripts/start.sh`, this will start all the docker-swarm Kafka, Redis, Postgres, Flask, and web
+- **for local web development, we will only make use of the non-web docker images**
+- change the API and port in the `./src/HTTPconfig.js`:
+```js
+if (process.env.NODE_ENV === "production") {
+  //HTTPconfig.gateway = "http://13.229.126.135/"
+  HTTPconfig.gateway = `http://${adminHost}:${adminPort}/`
+}
+```
+
+### Install Node Packages
+
+```sh
+yarn install
+```
+
+### Run the create-react-app local development
 ```
 yarn start
 ```
+Then open `http://localhost:65432/` to see your app in a browser. If you want to use another port, specify it before the `yarn start`:
+```sh
+PORT=<your port number> yarn start
+```
+
+In this react-app, you can run several commands:
+```sh
+yarn start
+# Starts the development server.
+
+yarn build
+# Bundles the app into static files for production.
+
+yarn test
+# Starts the test runner.
+
+yarn eject
+# Removes this tool and copies build dependencies, configuration files and scripts into the app directory. If you do this, you can’t go back!
+# do not eject the app
+```
+
+### Push local changes
+- update change to be reflect in the docker image:
+```sh
+rafiki_panda_dev$ bash scripts/build_images.sh
+#(this will create a new ubuntu-based docker image)
+```
+- list docker containers
+```sh
+rafiki_panda_dev$ docker container ls
+```
+
+===
 
 ## How to setup Api End Point (environment parameters)
 
-```
-rafiki $ source env.sh
+```sh
+rafiki_panda_dev/web$ source ../.env.sh
 ```
 
 ```
@@ -333,12 +387,6 @@ https://github.com/supasate/connected-react-router/issues/230
 
 
 
-## Dependencies
-
-This is for MUI-form-field
-```
-yarn add @date-io/core @date-io/moment @material-ui/core @material-ui/icons classnames core-js css-vendor final-form is-plain-object jss moment react react-dom react-dropzone react-final-form react-select react-number-format
-```
 # For Developers
 
 This app use redux to manage the state and the state shape is like this 

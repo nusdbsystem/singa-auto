@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,18 +18,31 @@
 # under the License.
 #
 
-LOG_FILE_PATH=$PWD/logs/start_admin.log
+LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_admin.log
+
+PROD_MOUNT_DATA=$HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
+PROD_MOUNT_PARAMS=$HOST_WORKDIR_PATH/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
+PROD_MOUNT_LOGS=$HOST_WORKDIR_PATH/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH
 
 # Mount whole project folder with code for dev for shorter iterations
 if [ $APP_MODE = "DEV" ]; then
   VOLUME_MOUNTS="-v $PWD:$DOCKER_WORKDIR_PATH"
 else
-  VOLUME_MOUNTS="-v $HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH -v $HOST_WORKDIR_PATH/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH -v $HOST_WORKDIR_PATH/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH"
+  VOLUME_MOUNTS="-v $PROD_MOUNT_DATA -v $PROD_MOUNT_PARAMS -v $PROD_MOUNT_LOGS"
 fi
 
 source ./scripts/utils.sh
 
 title "Starting Rafiki's Admin..."
+
+# docker container run flags info:
+# --rm: container is removed when it exits
+# (--rm will also remove anonymous volumes)
+# -v == --volume: shared filesystems
+# -e == --env: environment variable
+# --name: name used to identify the container
+# --network: default is docker bridge
+# -p: expose and map port(s)
 
 (docker run --rm --name $ADMIN_HOST \
   --network $DOCKER_NETWORK \

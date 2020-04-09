@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,10 @@
 # under the License.
 #
 
+echo ---import common utility functions---
+
 # Echo title with border
-title() 
+title()
 {
     title="| $1 |"
     edge=$(echo "$title" | sed 's/./-/g')
@@ -57,13 +60,12 @@ is_running()
         return 1
     else
         return 0
-    fi  
+    fi
 }
 
 # Prompts the user with a yes/no question (defaults to yes), returns 0/1
 prompt()
 {
-    
     text=$1
     read -p "$text (y/n) " ok
     if [ $ok = "n" ]
@@ -74,14 +76,14 @@ prompt()
     fi
 }
 
-# Delete a folder or file with confirmation 
+# Delete a folder or file with confirmation
 delete_path()
 {
     path=$1
     read -p "Confirm remove $path? (y/n) " ok
-    if [ $ok = "y" ] 
-    then 
-        echo "Removing $path..." 
+    if [ $ok = "y" ]
+    then
+        echo "Removing $path..."
         rm -rf $path
     fi
 }

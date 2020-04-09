@@ -40,9 +40,12 @@ def ensemble_probabilities(predictions: List[Any]) -> Any:
     assert all([len(x) == len(probs_by_worker[0]) for x in probs_by_worker])
 
     # Compute mean of probabilities across predictions
-    probs = np.mean(probs_by_worker, axis=0)
-    prediction = probs
-    prediction = _simplify_prediction(prediction)
+    if not isinstance(predictions[0], dict):
+        probs = np.mean(probs_by_worker, axis=0)
+        prediction = probs
+        prediction = _simplify_prediction(prediction)
+    else:
+        prediction = predictions
     return prediction
 
 
