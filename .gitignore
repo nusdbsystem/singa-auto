@@ -54,3 +54,6 @@ test/*
 
 # Tensorflow
 .keras
+
+dist/*
+singa_auto.egg-info/*

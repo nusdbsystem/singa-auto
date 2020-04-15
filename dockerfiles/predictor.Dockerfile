@@ -52,9 +52,9 @@ RUN pip install -r singa_auto/kafka/requirements.txt
 COPY singa_auto/predictor/requirements.txt singa_auto/predictor/requirements.txt
 RUN pip install -r singa_auto/predictor/requirements.txt
 
-COPY singa_auto/ singa_auto/
-COPY scripts/ scripts/
+RUN pip install singa-auto==0.1.9
 
 EXPOSE 3003
 
-CMD ["python", "scripts/start_predictor.py"]
+CMD ["predict"]
+

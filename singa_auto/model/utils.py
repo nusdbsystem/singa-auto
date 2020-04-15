@@ -46,7 +46,7 @@ def load_model_class(model_file_bytes, model_class, temp_mod_name=None) -> Type[
 
     try:
         import time
-        time.sleep(1.5)
+        time.sleep(3)
         # Import model file as module
         mod = import_module(temp_mod_name)
         # Extract model class from module

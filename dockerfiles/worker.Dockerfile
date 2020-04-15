@@ -73,7 +73,7 @@ ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
 RUN mkdir ~/.pip
-COPY ./pip.conf /root/.pip/pip.conf
+#COPY ./pip.conf /root/.pip/pip.conf
 COPY singa_auto/requirements.txt singa_auto/requirements.txt
 RUN pip install -r singa_auto/requirements.txt
 COPY singa_auto/utils/requirements.txt singa_auto/utils/requirements.txt
@@ -87,8 +87,7 @@ RUN pip install -r singa_auto/kafka/requirements.txt
 COPY singa_auto/advisor/requirements.txt singa_auto/advisor/requirements.txt
 RUN pip install -r singa_auto/advisor/requirements.txt
 
-COPY singa_auto/ singa_auto/
-COPY scripts/ scripts/
-RUN mkdir data/
+RUN pip install singa-auto==0.1.9
 
-CMD ["python", "scripts/start_worker.py"]
+CMD ["worker"]
+
