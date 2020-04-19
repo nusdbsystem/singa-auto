@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_kafka.log
 
 source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Kafka..."
+title "Starting SINGA-Auto's Kafka..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -43,4 +43,4 @@ title "Starting Singa-Auto's Kafka..."
   -p $KAFKA_EXT_PORT:$KAFKA_PORT \
   -d $IMAGE_KAFKA \
   &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Kafka" $LOG_FILE_PATH 2
+ensure_stable "SINGA-Auto's Kafka" $LOG_FILE_PATH 2

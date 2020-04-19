@@ -1,2 +1,0 @@
-scikit-optimize==0.5.2
-tensorflow==1.12.0

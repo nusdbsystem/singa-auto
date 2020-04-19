@@ -1,28 +1,28 @@
 .. _`architecture`:
 
-Singa-Auto's Architecture
+SINGA-Auto's Architecture
 ====================================================================
 
-Singa-Auto’s system architecture consists of 3 static components, 2 central databases, 4 types of dynamic components, and 1 client-side SDK,
+SINGA-Auto’s system architecture consists of 3 static components, 2 central databases, 4 types of dynamic components, and 1 client-side SDK,
 which can be illustrated with a 3-layer architecture diagram.
 
 .. figure:: ../images/container-diagram.png
     :align: center
     :width: 1200px
 
-    Architecture of Singa-Auto
+    Architecture of SINGA-Auto
 
 
-Static Stack of Singa-Auto
+Static Stack of SINGA-Auto
 ---------------------------------------------------------------------
 
-Singa-Auto’s static stack consists of the following:
+SINGA-Auto’s static stack consists of the following:
 
-    *Singa-Auto Admin* (*Python/Flask*) is the centrepiece of Singa-Auto. It is a multi-threaded HTTP server which presents a unified REST API over HTTP that fully administrates the Singa-Auto instance. When users send requests to Singa-Auto Admin, it handles these requests by accordingly modifying Singa-Auto’s Metadata Store or deploying/stopping the dynamic components of Singa-Auto’s stack (i.e. workers for model training & serving).
+    *SINGA-Auto Admin* (*Python/Flask*) is the centrepiece of SINGA-Auto. It is a multi-threaded HTTP server which presents a unified REST API over HTTP that fully administrates the Singa-Auto instance. When users send requests to Singa-Auto Admin, it handles these requests by accordingly modifying Singa-Auto’s Metadata Store or deploying/stopping the dynamic components of Singa-Auto’s stack (i.e. workers for model training & serving).
 
-    *Singa-Auto Metadata Store* (*PostgreSQL*) is Singa-Auto’s centralized, persistent database for user metadata, job metadata, worker metadata and model templates.
+    *SINGA-Auto Metadata Store* (*PostgreSQL*) is SINGA-Auto’s centralized, persistent database for user metadata, job metadata, worker metadata and model templates.
 
-    *Singa-Auto Redis* (*Redis*) is Singa-Auto’s temporary in-memory store for the implementation of fast asynchronous cross-worker communication, in a way that decouples senders from receivers. It synchronizes the back-and-forth of queries & predictions between multiple Singa-Auto Inference Workers and a single Singa-Auto Predictor for an Inference Job.
+    *SINGA-Auto Redis* (*Redis*) is SINGA-Auto’s temporary in-memory store for the implementation of fast asynchronous cross-worker communication, in a way that decouples senders from receivers. It synchronizes the back-and-forth of queries & predictions between multiple Singa-Auto Inference Workers and a single Singa-Auto Predictor for an Inference Job.
 
     *Singa-Auto Web Admin* (*NodeJS/ExpressJS*) is a HTTP server that serves Singa-Auto’s web front-end to users, allowing Application Developers to survey their jobs on a friendly web GUI.
 

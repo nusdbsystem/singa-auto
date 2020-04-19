@@ -3,7 +3,7 @@ from setuptools import setup, findall, find_packages
 
 setup(name='singa-auto',
       version='0.1.9',
-      description='The singa-auto',
+      description='The SINGA-Auto',
       url='https://github.com/nusdbsystem/singa-auto.git',
       author='Naili',
       author_email='xingnaili14@gmail.com',

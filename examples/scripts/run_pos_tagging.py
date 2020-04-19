@@ -47,7 +47,7 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Preprocessing datasets...')
     load_sample_ptb(train_dataset_path, val_dataset_path)
 
-    print('Creating & uploading datasets onto Singa-Auto...')
+    print('Creating & uploading datasets onto SINGA-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
@@ -56,7 +56,7 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Preprocessing datasets...')
     load_sample_ptb(train_dataset_path, val_dataset_path)
 
-    print('Adding models "{}" and "{}" to Singa-Auto...'.format(bihmm_model_name, py_model_name))
+    print('Adding models "{}" and "{}" to SINGA-Auto...'.format(bihmm_model_name, py_model_name))
     bihmm_model = client.create_model(bihmm_model_name, task, 'examples/models/pos_tagging/BigramHmm.py', \
                         'BigramHmm', dependencies={})
 
@@ -66,7 +66,7 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     pprint(py_model)
     model_ids = [bihmm_model['id'], py_model['id']]
 
-    print('Creating train job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
     budget = {
         BudgetOption.TIME_HOURS: hours,
         BudgetOption.GPU_COUNT: gpus
@@ -83,7 +83,7 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Listing best trials of latest train job for app "{}"...'.format(app))
     pprint(client.get_best_trials_of_train_job(app))
 
-    print('Creating inference job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating inference job for app "{}" on SINGA-Auto...'.format(app))
     pprint(client.create_inference_job(app))
     predictor_host = get_predictor_host(client, app)
     if not predictor_host: raise Exception('Inference job has errored or stopped')

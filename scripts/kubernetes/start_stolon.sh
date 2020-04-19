@@ -22,9 +22,9 @@ source ./scripts/kubernetes/utils.sh
 DB_CLUSTER_RUNNING_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-RUNNING
 mkdir -p $HOST_WORKDIR_PATH/$RUN_DIR_PATH/
 
-title "Starting Singa-auto's DB..."
+title "Starting SINGA-auto's DB..."
 if [ -f $DB_CLUSTER_RUNNING_FILE ]; then
-    echo "Singa-auto's DB is already running, skip..."
+    echo "SINGA-Auto's DB is already running, skip..."
     exit 0
 fi
 
@@ -42,29 +42,29 @@ bash scripts/kubernetes/stolon/generate_stolon_yaml.sh
 LOG_FILE_PATH=$PWD/logs/start_stolon_sentinel.log
 (kubectl create -f scripts/kubernetes/stolon/stolon-sentinel.yaml \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-auto's Stolon Sentinel" $LOG_FILE_PATH 20
+ensure_stable "SINGA-Auto's Stolon Sentinel" $LOG_FILE_PATH 20
 
 kubectl create -f scripts/kubernetes/stolon/secret.yaml
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_keeper.log
 (kubectl create -f scripts/kubernetes/stolon/stolon-keeper.yaml \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-auto's Stolon Keeper" $LOG_FILE_PATH 20
+ensure_stable "SINGA-Auto's Stolon Keeper" $LOG_FILE_PATH 20
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_proxy.log
 (kubectl create -f scripts/kubernetes/stolon/stolon-proxy.yaml \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-auto's Stolon Proxy" $LOG_FILE_PATH 20
+ensure_stable "SINGA-Auto's Stolon Proxy" $LOG_FILE_PATH 20
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_proxy_service.log
 (kubectl create -f scripts/kubernetes/stolon/stolon-proxy-service.yaml \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-auto's Stolon Proxy Service" $LOG_FILE_PATH 10
+ensure_stable "SINGA-Auto's Stolon Proxy Service" $LOG_FILE_PATH 10
 
 DB_CLUSTER_INIT_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-INIT-FLAG-CAN-NOT-REMOVE
 if [ -f $DB_CLUSTER_INIT_FILE ]; then
     echo "The Database Cluster already initialized, don't need reinitialize ..."
-    echo "Waiting for 60s for Singa-auto's Stolon Cluster to stabilize..."
+    echo "Waiting for 60s for SINGA-Auto's Stolon Cluster to stabilize..."
     sleep 60
 else
     echo "Create databse initialized file $DB_CLUSTER_INIT_FILE"
@@ -78,10 +78,10 @@ else
       --restart=Never --rm -- /usr/local/bin/stolonctl \
       --cluster-name=kube-stolon --store-backend=kubernetes \
       --kube-resource-kind=configmap init -y
-    echo "Waiting for 60s for Singa-auto's Stolon Cluster to stabilize..."
+    echo "Waiting for 60s for SINGA-Auto's Stolon Cluster to stabilize..."
     sleep 60
 
-    echo "Creating Singa-auto's PostgreSQL database & user..."
+    echo "Creating SINGA-Auto's PostgreSQL database & user..."
     DB_SVC_IP=`kubectl get svc | grep stolon-proxy-service | awk '{print $3}'`
     STOLON_PASSWD=`echo $POSTGRES_STOLON_PASSWD|base64 -d`
     kubectl run -i -t stolon-create-db --image=$SINGA_AUTO_IMAGE_STOLON \
