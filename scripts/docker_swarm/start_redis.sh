@@ -39,4 +39,4 @@ title "Starting SINGA-Auto's Redis..."
   $IMAGE_REDIS \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Singa-Auto's Redis" $LOG_FILE_PATH 2
+ensure_stable "SINGA-Auto's Redis" $LOG_FILE_PATH 2

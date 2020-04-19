@@ -33,7 +33,7 @@ bash ./scripts/kubernetes/pull_images.sh || exit 1
 echo "Generate config files"
 bash ./scripts/kubernetes/generate_config.sh || exit 1
 
-# Start whole Singa_Auto stack
+# Start whole SINGA-Auto stack
 # Start Zookeeper, Kafka & Redis
 bash ./scripts/kubernetes/start_zookeeper.sh || exit 1
 bash ./scripts/kubernetes/start_kafka.sh || exit 1

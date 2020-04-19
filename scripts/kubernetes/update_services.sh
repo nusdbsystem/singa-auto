@@ -19,7 +19,7 @@
 source ./scripts/kubernetes/.env.sh
 source ./scripts/kubernetes/utils.sh
 
-title "updating Singa-Auto's services"
+title "updating SINGA-Auto's services"
 
 bash ./scripts/kubernetes/generate_config.sh
 

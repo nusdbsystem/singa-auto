@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_web_admin.log
 
 source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Web Admin..."
+title "Starting SINGA-Auto's Web Admin..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -41,4 +41,4 @@ title "Starting Singa-Auto's Web Admin..."
   $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Singa-Auto's Web Admin" $LOG_FILE_PATH 5
+ensure_stable "SINGA-Auto's Web Admin" $LOG_FILE_PATH 5

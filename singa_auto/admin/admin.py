@@ -266,7 +266,7 @@ class Admin(object):
     def create_train_job(self, user_id, app, task, train_dataset_id,
                         val_dataset_id, budget, model_ids=None, train_args=None):
         """
-              Creates and starts a train job on Singa-Auto.
+              Creates and starts a train job on SINGA-Auto.
 
               A train job is uniquely identified by user, its associated app, and the app version (returned in output).
 
@@ -275,8 +275,8 @@ class Admin(object):
               :param app: Name of the app associated with the train job
               :param task: Task associated with the train job,
                   the train job will train models associated with the task
-              :param train_dataset_id: ID of the train dataset, previously created on Singa-Auto
-              :param val_dataset_id: ID of the validation dataset, previously created on Singa-Auto
+              :param train_dataset_id: ID of the train dataset, previously created on SINGA-Auto
+              :param val_dataset_id: ID of the validation dataset, previously created on SINGA-Auto
               :param budget: Budget for train job
                       The following describes the budget options available:
 

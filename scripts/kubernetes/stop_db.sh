@@ -33,6 +33,6 @@ bash ./scripts/kubernetes/save_db.sh
 #    fi
 #fi
 
-title "Stopping Singa-Auto's DB..."
+title "Stopping SINGA-Auto's DB..."
 kubectl delete deployment $POSTGRES_HOST
 kubectl delete service $POSTGRES_HOST

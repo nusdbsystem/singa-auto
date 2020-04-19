@@ -46,13 +46,13 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus, h
     app = 'speech_recognition_app_{}'.format(app_id)
     tf_model_name = 'TfDeepSpeech_{}'.format(app_id)
 
-    print('Creating & uploading datasets onto Singa-Autp...')
+    print('Creating & uploading datasets onto SINGA-Autp...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
     pprint(val_dataset)
 
-    print('Adding models "{}" to Singa-Autp...'.format(tf_model_name))
+    print('Adding models "{}" to SINGA-Auto...'.format(tf_model_name))
     tf_model = client.create_model(tf_model_name, task, 'examples/models/speech_recognition/TfDeepSpeech.py',
                         'TfDeepSpeech',
                         docker_image=IMAGE_TFDEEPSPEECH,
@@ -62,7 +62,7 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus, h
                         })
     pprint(tf_model)
 
-    print('Creating train job for app "{}" on Singa-Autp...'.format(app))
+    print('Creating train job for app "{}" on SINGA-Autp...'.format(app))
     budget = {
         BudgetOption.TIME_HOURS: hours,
         BudgetOption.GPU_COUNT: gpus
@@ -71,7 +71,7 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus, h
                                         budget, models=[tf_model['id']])
     pprint(train_job)
 
-    print('Monitor the train job on Singa-Autp Web Admin')
+    print('Monitor the train job on SINGA-Autp Web Admin')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

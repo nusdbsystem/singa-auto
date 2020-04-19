@@ -119,7 +119,7 @@ class TfDeepSpeech(BaseModel):
     bash examples/models/speech_recognition/tfdeepspeech/download_file_deps.sh
     ```
 
-    To add this model to Singa-Auto, you'll need to build the model's custom Docker image by running (in SINGA-Auto's root folder):
+    To add this model to SINGA-Auto, you'll need to build the model's custom Docker image by running (in SINGA-Auto's root folder):
 
     ```
     bash examples/models/speech_recognition/tfdeepspeech/build_image.sh

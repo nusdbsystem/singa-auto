@@ -34,18 +34,18 @@ python3 ./scripts/stop_all_jobs.py
 bash scripts/docker_swarm/stop_db.sh || exit 1
 
 # Prompt if should stop DB
-#if prompt "Should stop Singa_Auto's DB?"
+#if prompt "Should stop SINGA-Auto's DB?"
 #then
 #    bash scripts/docker_swarm/stop_db.sh || exit 1
 #else
-#    echo "Not stopping Singa_Auto's DB!"
+#    echo "Not stopping SINGA-Auto's DB!"
 #fi
 
-title "Stopping Singa_Auto's Zookeeper..."
-docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop Singa_Auto's Zookeeper"
+title "Stopping SINGA-Auto's Zookeeper..."
+docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper"
 
-title "Stopping Singa_Auto's Kafka..."
-docker rm -f $KAFKA_HOST || echo "Failed to stop Singa_Auto's Kafka"
+title "Stopping SINGA-Auto's Kafka..."
+docker rm -f $KAFKA_HOST || echo "Failed to stop SINGA-Auto's Kafka"
 
 title "Stopping SINGA-Auto's Redis..."
 docker rm -f $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis"

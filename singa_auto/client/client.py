@@ -55,7 +55,7 @@ class Client:
 
     '''
     Initializes the Client to connect to a running
-    Singa_Auto Admin instance that the Client connects to.
+    SINGA-Auto Admin instance that the Client connects to.
 
     :param admin_host: Host of SINGA-Auto Admin
     :param admin_port: Port of SINGA-Auto Admin
@@ -659,7 +659,7 @@ class Client:
         return data
 
     ####################################
-    # Singa_Auto Internal
+    # SINGA-Auto Internal
     ####################################
 
     def send_event(self, name, **params):

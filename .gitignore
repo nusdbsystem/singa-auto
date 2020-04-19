@@ -5,7 +5,7 @@
 env/
 envs/
 venv/
-scripts/docker_swarm/.env.sh
+
 
 # Visual Studio Code config
 .vscode/

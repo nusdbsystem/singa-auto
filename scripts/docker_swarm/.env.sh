@@ -40,7 +40,7 @@ export POSTGRES_DUMP_FILE_PATH=$PWD/db_dump.sql # PostgreSQL database dump file
 export DOCKER_NODE_LABEL_AVAILABLE_GPUS=available_gpus # Docker node label for no. of services currently running on the node
 export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. of services currently running on the node
 
-# Internal credentials for Singa-auto's components
+# Internal credentials for SINGA-auto's components
 export POSTGRES_USER=singa_auto
 export POSTGRES_DB=singa_auto
 

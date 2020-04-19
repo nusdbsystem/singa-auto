@@ -126,7 +126,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours, query_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='localhost', help='Host of Singa-Auto instance')
+    parser.add_argument('--host', type=str, default='localhost', help='Host of SINGA-Auto instance')
     parser.add_argument('--web_admin_port', type=int, default=os.environ.get('WEB_ADMIN_EXT_PORT', 3001), help='Port for SINGA-Auto Web Admin on host')
     parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
     parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')

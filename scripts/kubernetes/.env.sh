@@ -17,15 +17,15 @@
 # under the License.
 #
 
-# Cluster Mode for Singa-auto
+# Cluster Mode for SINGA-auto
 export CLUSTER_MODE=SINGLE # CLUSTER or SINGLE
 
-# Core secrets for Singa-auto - change these in production!
+# Core secrets for SINGA-auto - change these in production!
 export POSTGRES_PASSWORD=singa_auto
 export SUPERADMIN_PASSWORD=singa_auto
 export APP_SECRET=singa_auto
 
-# Core external configuration for Singa-auto
+# Core external configuration for SINGA-auto
 export KUBERNETES_NETWORK=singa_auto
 export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
 export SINGA_AUTO_VERSION=0.2.0
@@ -42,12 +42,12 @@ export POSTGRES_DUMP_FILE_PATH=$PWD/db_dump.sql # PostgreSQL database dump file
 export DOCKER_NODE_LABEL_AVAILABLE_GPUS=available_gpus # Docker node label for no. of services currently running on the node
 export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. of services currently running on the node
 
-# Internal credentials for Singa-auto's components
+# Internal credentials for SINGA-auto's components
 export POSTGRES_USER=singa_auto
 export POSTGRES_DB=singa_auto
 export POSTGRES_STOLON_PASSWD=cmFmaWtpCg==  # The Passwd for stolon, base64 encode
 
-# Internal hosts & ports and configuration for Singa-auto's components
+# Internal hosts & ports and configuration for SINGA-auto's components
 export POSTGRES_HOST=singa-auto-db
 export POSTGRES_PORT=5432
 export ADMIN_HOST=singa-auto-admin
@@ -68,7 +68,7 @@ export PARAMS_DIR_PATH=params # Shares a folder with containers that stores mode
 export CONDA_ENVIORNMENT=singa_auto
 export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs are run natively
 
-# Docker images for Singa-auto's custom components
+# Docker images for SINGA-Auto's custom components
 export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
 export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
 export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker

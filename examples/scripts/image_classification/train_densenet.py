@@ -31,7 +31,7 @@ from examples.datasets.image_files.load_cifar10 import load_cifar10
 def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     '''
         Conducts training of model `PyDenseNetBc` on the CIFAR-10 dataset for IMAGE_CLASSIFICATION.
-        Demonstrates hyperparameter tuning with distributed parameter sharing on Singa-Auto.
+        Demonstrates hyperparameter tuning with distributed parameter sharing on SINGA-Auto.
     '''
     task = 'IMAGE_CLASSIFICATION'
 

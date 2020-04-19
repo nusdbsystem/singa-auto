@@ -21,19 +21,19 @@ source ./scripts/kubernetes/utils.sh
 
 DB_CLUSTER_RUNNING_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-RUNNING
 
-title "Stopping Singa-Auto's Stolon Proxy Service..."
+title "Stopping SINGA-Auto's Stolon Proxy Service..."
 kubectl delete service stolon-proxy-service
 sleep 5
 
-title "Stopping Singa-Auto's Stolon Proxy..."
+title "Stopping SINGA-Auto's Stolon Proxy..."
 kubectl delete deployment stolon-proxy
 sleep 5
 
-title "Stopping Singa-Auto's Stolon Keeper..."
+title "Stopping SINGA-Auto's Stolon Keeper..."
 kubectl delete statefulset stolon-keeper
 sleep 5
 
-title "Stopping Singa-Auto's Stolon Sentinel..."
+title "Stopping SINGA-Auto's Stolon Sentinel..."
 kubectl delete deployment stolon-sentinel
 sleep 5
 
