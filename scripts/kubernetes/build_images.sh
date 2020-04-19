@@ -25,20 +25,20 @@ source ./scripts/kubernetes/.env.sh
 source ./scripts/kubernetes/utils.sh
 
 title "Using K8S"
-# Build Singa-Auto's images
+# Build SINGA-Auto's images
 
 # Docker build -t <label-of-docker-image>
 # Docker build -f <path-to-dockerfile>
 
-title "Building Singa-Auto Admin's image..."
+title "Building SINGA-Auto Admin's image..."
 docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/admin.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-title "Building Singa-Auto Worker's image..."
+title "Building SINGA-Auto Worker's image..."
 docker build -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/worker.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-title "Building Singa-Auto Predictor's image..."
+title "Building SINGA-Auto Predictor's image..."
 docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/predictor.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1

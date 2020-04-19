@@ -33,7 +33,7 @@ fi
 
 source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Admin..."
+title "Starting SINGA-Auto's Admin..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits
@@ -76,4 +76,4 @@ title "Starting Singa-Auto's Admin..."
   $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Singa-Auto's Admin" $LOG_FILE_PATH 5
+ensure_stable "SINGA-Auto's Admin" $LOG_FILE_PATH 5

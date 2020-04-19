@@ -19,14 +19,14 @@
 source ./scripts/kubernetes/.env.sh
 source ./scripts/kubernetes/utils.sh
 
-title "Starting Singa-Auto's Admin..."
+title "Starting SINGA-Auto's Admin..."
 
 LOG_FILE_PATH=$PWD/logs/start_admin_service.log
 (kubectl create -f scripts/kubernetes/start_admin_service.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Admin Service" $LOG_FILE_PATH 5
+ensure_stable "SINGA-Auto's Admin Service" $LOG_FILE_PATH 5
 
 LOG_FILE_PATH=$PWD/logs/start_admin_deployment.log
 (kubectl create -f scripts/kubernetes/start_admin_deployment.json \
 &> $LOG_FILE_PATH) &
-ensure_stable "Singa-Auto's Admin Deployment" $LOG_FILE_PATH 5
+ensure_stable "SINGA-Auto's Admin Deployment" $LOG_FILE_PATH 5

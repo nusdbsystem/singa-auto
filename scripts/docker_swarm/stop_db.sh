@@ -34,5 +34,5 @@ bash ./scripts/save_db.sh
 #    fi
 #fi
 
-title "Stopping Singa-Auto's DB..."
-docker rm -f $POSTGRES_HOST || echo "Failed to stop Singa-Auto's DB"
+title "Stopping SINGA-Auto's DB..."
+docker rm -f $POSTGRES_HOST || echo "Failed to stop SINGA-Auto's DB"

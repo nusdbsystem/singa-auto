@@ -23,7 +23,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_db.log
 source ./scripts/docker_swarm/utils.sh
 
 
-title "Starting Singa-Auto's DB..."
+title "Starting SINGA-Auto's DB..."
 
 PROD_MOUNT_DATA=$HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
 PROD_MOUNT_PARAMS=$HOST_WORKDIR_PATH/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
@@ -53,10 +53,10 @@ VOLUME_MOUNTS="-v $PROD_MOUNT_DB"
   $IMAGE_POSTGRES \
   &> $LOG_FILE_PATH) &
 
-ensure_stable "Singa-Auto's DB" $LOG_FILE_PATH 20
+ensure_stable "SINGA-Auto's DB" $LOG_FILE_PATH 20
 
-echo "Creating Singa-Auto's PostgreSQL database & user..."
+echo "Creating SINGA-Auto's PostgreSQL database & user..."
 docker exec $POSTGRES_HOST psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
-ensure_stable "Singa-Auto's DB create database" $LOG_FILE_PATH 5
+ensure_stable "SINGA-Auto's DB create database" $LOG_FILE_PATH 5
 docker exec $POSTGRES_HOST psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
-ensure_stable "Singa-Auto's DB create user" $LOG_FILE_PATH 2
+ensure_stable "SINGA-Auto's DB create user" $LOG_FILE_PATH 2

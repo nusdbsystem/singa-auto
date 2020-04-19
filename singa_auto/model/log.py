@@ -101,7 +101,7 @@ class LoggerUtils():
         '''
         Logs a message and/or a set of metrics at a single point in time.
 
-        Logged messages will be viewable on Singa-Auto's administrative UI.
+        Logged messages will be viewable on SINGA-Auto's administrative UI.
 
         To visualize logged metrics on plots, a plot must be defined via :meth:`singa_auto.model.LoggerUtils.define_plot`.
 
@@ -120,7 +120,7 @@ class LoggerUtils():
 
     # - INTERNAL METHOD -
     # Set the Python logger internally used.
-    # During model training, this method will be called by Singa-Auto to inject a Python logger
+    # During model training, this method will be called by SINGA-Auto to inject a Python logger
     # to generate logs for an instance of model training.
     def set_logger(self, logger):
         self._logger = logger
@@ -208,7 +208,7 @@ class LoggerUtilsDebugHandler(logging.Handler):
             metrics = log_dict.get('metrics')
             x_axis = log_dict.get('x_axis')
 
-            self._print('Plot `{}` will be registered when this model is being trained on Singa-Auto' \
+            self._print('Plot `{}` will be registered when this model is being trained on SINGA-Auto' \
                 .format(title, ', '.join(metrics), x_axis or 'time'))
 
         elif log_type == LogType.METRICS:

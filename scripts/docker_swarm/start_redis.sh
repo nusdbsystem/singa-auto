@@ -22,7 +22,7 @@ LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_redis.log
 
 source ./scripts/docker_swarm/utils.sh
 
-title "Starting Singa-Auto's Redis..."
+title "Starting SINGA-Auto's Redis..."
 
 # docker container run flags info:
 # --rm: container is removed when it exits

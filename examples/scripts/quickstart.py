@@ -75,13 +75,13 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours, query_
     print('Preprocessing datasets...')
     load_fashion_mnist(train_dataset_path, val_dataset_path)
 
-    print('Creating & uploading datasets onto Singa-Auto...')
+    print('Creating & uploading datasets onto SINGA-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
     pprint(val_dataset)
 
-    print('Adding models "{}" and "{}" to Singa-Auto...'.format(tf_model_name, sk_model_name))
+    print('Adding models "{}" and "{}" to SINGA-Auto...'.format(tf_model_name, sk_model_name))
     tf_model = client.create_model(tf_model_name, task, 'examples/models/image_classification/TfFeedForward.py',
                         'TfFeedForward', dependencies={ ModelDependency.TENSORFLOW: '1.12.0' })
     pprint(tf_model)
@@ -90,7 +90,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours, query_
     pprint(sk_model)
     model_ids = [tf_model['id'], sk_model['id']]
 
-    print('Creating train job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
 
     budget = {
         BudgetOption.TIME_HOURS: hours,
@@ -108,7 +108,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours, query_
     print('Listing best trials of latest train job for app "{}"...'.format(app))
     pprint(client.get_best_trials_of_train_job(app))
 
-    print('Creating inference job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating inference job for app "{}" on SINGA-Auto...'.format(app))
     pprint(client.create_inference_job(app))
     predictor_host = get_predictor_host(client, app)
     if not predictor_host: raise Exception('Inference job has errored')
@@ -127,7 +127,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours, query_
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', type=str, default='localhost', help='Host of Singa-Auto instance')
-    parser.add_argument('--web_admin_port', type=int, default=os.environ.get('WEB_ADMIN_EXT_PORT', 3001), help='Port for Singa-Auto Web Admin on host')
+    parser.add_argument('--web_admin_port', type=int, default=os.environ.get('WEB_ADMIN_EXT_PORT', 3001), help='Port for SINGA-Auto Web Admin on host')
     parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
     parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')
     parser.add_argument('--gpus', type=int, default=0, help='How many GPUs to use for training')

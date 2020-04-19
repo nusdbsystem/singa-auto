@@ -57,8 +57,8 @@ class Client:
     Initializes the Client to connect to a running
     Singa_Auto Admin instance that the Client connects to.
 
-    :param admin_host: Host of Singa_Auto Admin
-    :param admin_port: Port of Singa_Auto Admin
+    :param admin_host: Host of SINGA-Auto Admin
+    :param admin_port: Port of SINGA-Auto Admin
     '''
     def __init__(self, admin_host: str = os.environ.get('SINGA_AUTO_ADDR', 'localhost'),
                     admin_port: int = os.environ.get('ADMIN_EXT_PORT', 3000)):
@@ -69,7 +69,7 @@ class Client:
 
     def login(self, email: str, password: str) -> Dict[str, Any]:
         '''
-        Creates a login session as a Singa_Auto user. You will have to be logged in to perform any actions.
+        Creates a login session as a SINGA-Auto user. You will have to be logged in to perform any actions.
 
         App developers can create, list and stop train and inference jobs, as well as list models.
         Model developers can create and list models.
@@ -116,7 +116,7 @@ class Client:
 
     def create_user(self, email: str, password: str, user_type: UserType) -> Dict[str, Any]:
         '''
-        Creates a Singa_Auto user.
+        Creates a SINGA-Auto user.
 
         Only admins can create users (except for admins).
         Only superadmins can create admins.
@@ -140,7 +140,7 @@ class Client:
 
     def get_users(self) -> List[Dict[str, Any]]:
         '''
-        Lists all Singa_Auto users.
+        Lists all SINGA-Auto users.
 
         Only admins can list all users.
 
@@ -151,7 +151,7 @@ class Client:
 
     def ban_user(self, email: str) -> Dict[str, Any]:
         '''
-        Bans a Singa_Auto user, disallowing logins.
+        Bans a SINGA-Auto user, disallowing logins.
 
         This action is irrevisible.
         Only admins can ban users (except for admins).
@@ -172,7 +172,7 @@ class Client:
 
     def create_dataset(self, name: str, task: str, dataset_path: str = None, dataset_url: str = None) -> Dict[str, Any]:
         '''
-        Creates a dataset on Singa_Auto, either by uploading the dataset file from your filesystem or specifying a URL where the dataset file can be downloaded.
+        Creates a dataset on SINGA-Auto, either by uploading the dataset file from your filesystem or specifying a URL where the dataset file can be downloaded.
         The dataset should be in a format specified by the task
         Either `dataset_url` or `dataset_path` should be specified.
 
@@ -218,7 +218,7 @@ class Client:
                      model_pretrained_params_id: str = None, dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE, docker_image: str = None) -> Dict[str, Any]:
         '''
-        Creates a model on Singa_Auto.
+        Creates a model on SINGA-Auto.
 
         Only admins & model developers can manage models.
 
@@ -232,13 +232,13 @@ class Client:
         :param docker_image: A custom Docker image that extends ``singa_auto/singa_auto_worker``, publicly available on Docker Hub.
         :returns: Created model as dictionary
 
-        Refer to :ref:`model-development` for more details on how to write & test models for Singa_Auto.
+        Refer to :ref:`model-development` for more details on how to write & test models for SINGA-Auto.
 
         ``model_file_path`` should point to a *single* file that contains all necessary Python code for the model's implementation.
         If the Python file imports any external Python modules, you should list it in ``dependencies`` or create a custom
         ``docker_image``.
 
-        If a model's ``access_right`` is set to ``PUBLIC``, this model will be publicly available to all other users on Singa_Auto for training
+        If a model's ``access_right`` is set to ``PUBLIC``, this model will be publicly available to all other users on SINGA-Auto for training
         and inference. By default, a model's access is ``PRIVATE``.
 
         ``dependencies`` should be a dictionary of ``{ <dependency_name>: <dependency_version> }``, where
@@ -285,7 +285,7 @@ class Client:
 
     def download_model_file(self, model_id: str, out_model_file_path: str) -> Dict[str, any]:
         '''
-        Downloads the Python model class file for the Singa_Auto model.
+        Downloads the Python model class file for the SINGA-Auto model.
 
         Model developers can only download their own models.
 
@@ -323,7 +323,7 @@ class Client:
 
     def get_available_models(self, task: str = None) -> List[Dict[str, Any]]:
         '''
-        Lists all Singa_Auto models available to the current user, optionally filtering by task.
+        Lists all SINGA-Auto models available to the current user, optionally filtering by task.
 
         :param task: Task name
         :returns: Available models as list of dictionaries
@@ -352,7 +352,7 @@ class Client:
     def create_train_job(self, app: str, task: str, train_dataset_id: str, val_dataset_id: str,
                          budget: Budget, models: List[str] = None, train_args: Dict[str, any] = None) -> Dict[str, Any]:
         '''
-        Creates and starts a train job on Singa_Auto.
+        Creates and starts a train job on SINGA-Auto.
 
         A train job is uniquely identified by user, its associated app, and the app version (returned in output).
 
@@ -361,8 +361,8 @@ class Client:
         :param app: Name of the app associated with the train job
         :param task: Task associated with the train job,
             the train job will train models associated with the task
-        :param train_dataset_id: ID of the train dataset, previously created on Singa_Auto
-        :param val_dataset_id: ID of the validation dataset, previously created on Singa_Auto
+        :param train_dataset_id: ID of the train dataset, previously created on SINGA-Auto
+        :param val_dataset_id: ID of the validation dataset, previously created on SINGA-Auto
         :param budget: Budget for train job
         :param models: List of IDs of model to use for train job. Defaults to all available models
         :param train_args: Additional arguments to pass to models during training, if any.
@@ -424,7 +424,7 @@ class Client:
 
     def get_train_jobs_by_user(self, user_id: str) -> List[Dict[str, Any]]:
         '''
-        Lists all of user's train jobs on Singa_Auto.
+        Lists all of user's train jobs on SINGA-Auto.
 
         :param user_id: ID of the user
         :returns: Train jobs as list of dictionaries
@@ -436,7 +436,7 @@ class Client:
 
     def get_train_jobs_of_app(self, app: str) -> List[Dict[str, Any]]:
         '''
-        Lists all of current user's train jobs associated to the app name on Singa_Auto.
+        Lists all of current user's train jobs associated to the app name on SINGA-Auto.
 
         :param app: Name of the app
         :returns: Train jobs as list of dictionaries
@@ -559,7 +559,7 @@ class Client:
 
     def create_inference_job(self, app: str, app_version: int = -1, budget: InferenceBudget = None) -> Dict[str, Any]:
         '''
-        Creates and starts a inference job on Singa_Auto with the best-scoring trials of the associated train job.
+        Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
         Throws an error if an inference job of the same train job is already running.
 
@@ -600,7 +600,7 @@ class Client:
 
     def get_inference_jobs_by_user(self, user_id: str) -> List[Dict[str, Any]]:
         '''
-        Lists all of user's inference jobs on Singa_Auto.
+        Lists all of user's inference jobs on SINGA-Auto.
 
         :param user_id: ID of the user
         :returns: Inference jobs as list of dictionaries
@@ -612,7 +612,7 @@ class Client:
 
     def get_inference_jobs_of_app(self, app: str) -> List[Dict[str, Any]]:
         '''
-        Lists all inference jobs associated to an app on Singa_Auto.
+        Lists all inference jobs associated to an app on SINGA-Auto.
 
         :param app: Name of the app
         :returns: Inference jobs as list of dictionaries
@@ -651,7 +651,7 @@ class Client:
 
     def stop_all_jobs(self):
         '''
-        Stops all train and inference jobs on Singa_Auto.
+        Stops all train and inference jobs on SINGA-Auto.
 
         Only the superadmin can call this.
         '''

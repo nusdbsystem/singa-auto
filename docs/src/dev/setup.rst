@@ -23,54 +23,54 @@ We assume development or deployment in a MacOS or Linux environment.
 
 4. Clone the project at https://github.com/nginyc/rafiki (e.g. with `Git <https://git-scm.com/downloads>`__)
 
-5. If using docker, Setup Singa-Auto's complete stack with the setup script:
+5. If using docker, Setup SINGA-Auto's complete stack with the setup script:
 
     .. code-block:: shell
 
         bash scripts/start.sh
 
-   If using kubernetes, Setup Singa-Auto's complete stack with the setup script:
+   If using kubernetes, Setup SINGA-Auto's complete stack with the setup script:
 
     .. code-block:: shell
 
         bash scripts/kubernetes/start.sh
 
-*Singa-Auto Admin* and *Singa-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively.
+*SINGA-Auto Admin* and *SINGA-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively.
 
-If using docker, to destroy Singa-Auto's complete stack:
+If using docker, to destroy SINGA-Auto's complete stack:
 
     .. code-block:: shell
 
         bash scripts/stop.sh
 
-If using kubernetes, to destroy Singa-Auto's complete stack:
+If using kubernetes, to destroy SINGA-Auto's complete stack:
 
     .. code-block:: shell
 
         bash scripts/kubernetes/stop.sh
 
-Scaling Singa-Auto
+Scaling SINGA-Auto
 --------------------------------------------------------------------
 
-Singa-Auto's default setup runs on a single machine and only runs its workloads on CPUs.
+SINGA-Auto's default setup runs on a single machine and only runs its workloads on CPUs.
 
-Singa-Auto's model training workers run in Docker containers that extend the Docker image ``nvidia/cuda:9.0-runtime-ubuntu16.04``,
+SINGA-Auto's model training workers run in Docker containers that extend the Docker image ``nvidia/cuda:9.0-runtime-ubuntu16.04``,
 and are capable of leveraging on `CUDA-Capable GPUs <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#pre-installation-actions>`__
 
-Scaling Singa-Auto horizontally and enabling GPU usage involves setting up *Network File System* (*NFS*) at a common path across all nodes,
+Scaling SINGA-Auto horizontally and enabling GPU usage involves setting up *Network File System* (*NFS*) at a common path across all nodes,
 installing & configuring the default Docker runtime to `nvidia` for each GPU-bearing node. If using docker swarm, putting all these nodes into a single Docker Swarm.
 If using kubernetes, putting all these nodes into kubernetes.
 
 .. seealso:: :ref:`architecture`
 
-To run Singa-Auto on multiple machines with GPUs on docker swarm, do the following:
+To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the following:
 
-1. If Singa-Auto is running, stop Singa-Auto with ``bash scripts/stop.sh``
+1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/stop.sh``
 
 2. Have all nodes `leave any Docker Swarm <https://docs.docker.com/engine/reference/commandline/swarm_leave/>`__ they are in
 
 3. Set up NFS such that the *master node is a NFS host*, *other nodes are NFS clients*, and the master node *shares an ancestor directory
-   containing Singa-Auto's project directory*. `Here are instructions for Ubuntu <https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04>`__
+   containing SINGA-Auto's project directory*. `Here are instructions for Ubuntu <https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04>`__
 
 4. All nodes should be in a common network. On the *master node*, change ``DOCKER_SWARM_ADVERTISE_ADDR`` in the project's ``.env.sh`` to the IP address of the master node
    in *the network that your nodes are in*
@@ -87,7 +87,7 @@ To run Singa-Auto on multiple machines with GPUs on docker swarm, do the followi
 
     6.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
 
-7. On the *master node*, start Singa-Auto with ``bash scripts/start.sh``
+7. On the *master node*, start SINGA-Auto with ``bash scripts/start.sh``
 
 8. For *each worker node*, have the node `join the master node's Docker Swarm <https://docs.docker.com/engine/swarm/join-nodes/>`__
 
@@ -97,14 +97,14 @@ To run Singa-Auto on multiple machines with GPUs on docker swarm, do the followi
 
         bash scripts/setup_node.sh
 
-To run Singa-Auto on multiple machines with GPUs on kubernetes, do the following:
+To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following:
 
-1. If Singa-Auto is running, stop Singa-Auto with ``bash scripts/kubernetes/stop.sh``
+1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/kubernetes/stop.sh``
 
 2. Put all nodes you need in kubernetes cluster, reference to `kubeadm join <https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/>`__
 
 3. Set up NFS such that the *master node is a NFS host*, *other nodes are NFS clients*, and the master node *shares an ancestor directory
-   containing Singa-Auto's project directory*. `Here are instructions for Ubuntu <https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04>`__
+   containing SINGA-Auto's project directory*. `Here are instructions for Ubuntu <https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04>`__
 
 4. Change ``KUBERNETES_ADVERTISE_ADDR`` in the project's ``scripts/kubernetes/.env.sh`` to the IP address of the master node
    in *the network that your nodes are in*
@@ -119,16 +119,16 @@ To run Singa-Auto on multiple machines with GPUs on kubernetes, do the following
 
     6.4. Install nvidia-device-plugin, use command "*kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml*" on the *master node*
 
-7. On the *master node*, start Singa-Auto with ``bash scripts/kubernetes/start.sh``
+7. On the *master node*, start SINGA-Auto with ``bash scripts/kubernetes/start.sh``
 
-Exposing Singa-Auto Publicly
+Exposing SINGA-Auto Publicly
 --------------------------------------------------------------------
 
-Singa-Auto Admin and Singa-Auto Web Admin runs on the master node.
+SINGA-Auto Admin and SINGA-Auto Web Admin runs on the master node.
 If using docker swarm, change ``RAFIKI_ADDR`` in ``.env.sh`` to the IP address of the master node
-in the network you intend to expose Singa-Auto in.
+in the network you intend to expose SINGA-Auto in.
 If using kubernetes, change ``RAFIKI_ADDR`` in ``scripts/kubernetes/.env.sh`` to the IP address of the master node
-in the network you intend to expose Singa-Auto in.
+in the network you intend to expose SINGA-Auto in.
 
 Example:
 
@@ -136,16 +136,16 @@ Example:
 
     export RAFIKI_ADDR=172.28.176.35
 
-Re-deploy Singa-Auto. Singa-Auto Admin and Singa-Auto Web Admin will be available at that IP address,
+Re-deploy SINGA-Auto. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
 over ports 3000 and 3001 (by default), assuming incoming connections to these ports are allowed.
 
-**Before you expose Singa-Auto to the public,
+**Before you expose SINGA-Auto to the public,
 it is highly recommended to change the master passwords for superadmin, server and the database (located in `.env.sh` as `POSTGRES_PASSWORD`, `APP_SECRET` & `SUPERADMIN_PASSWORD`)**
 
-Reading Singa-Auto's logs
+Reading SINGA-Auto's logs
 --------------------------------------------------------------------
 
-By default, you can read logs of Singa-Auto Admin & any of Singa-Auto's workers
+By default, you can read logs of SINGA-Auto Admin & any of SINGA-Auto's workers
 in ``./logs`` directory at the root of the project's directory of the master node.
 
 

@@ -18,11 +18,11 @@
 # under the License.
 #
 
-# Push Singa-Auto's images to Docker Hub
+# Push SINGA-Auto's images to Docker Hub
 
 docker login
 
-echo "Pushing all Singa-Auto's images to Docker Hub..."
+echo "Pushing all SINGA-Auto's images to Docker Hub..."
 docker push $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION || exit 1
 docker push $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION || exit 1
 docker push $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION || exit 1

@@ -21,7 +21,7 @@
 source ./scripts/docker_swarm/utils.sh
 source ./scripts/docker_swarm/.env.sh
 
-title "Creating Docker swarm for Singa_auto..."
+title "Creating Docker swarm for SINGA-Auto..."
 docker swarm leave $1
 docker swarm init --advertise-addr $DOCKER_SWARM_ADVERTISE_ADDR \
     || >&2 echo "Failed to init Docker swarm - continuing..."

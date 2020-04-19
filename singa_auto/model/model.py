@@ -30,16 +30,16 @@ Params = Dict[str, Union[str, int, float, np.ndarray]]
 
 class BaseModel(abc.ABC):
     '''
-    Singa-Auto's base model class that Singa-Auto models must extend.
+    SINGA-Auto's base model class that SINGA-Auto models must extend.
 
-    Singa-Auto models must implement all abstract methods below, according to the specification of its associated task (see :ref:`tasks`).
-    They configure how this model template will be trained, evaluated, tuned, serialized and served on Singa-Auto.
+    SINGA-Auto models must implement all abstract methods below, according to the specification of its associated task (see :ref:`tasks`).
+    They configure how this model template will be trained, evaluated, tuned, serialized and served on SINGA-Auto.
 
     In the model's ``__init__`` method, call ``super().__init__(**knobs)`` as the first line,
     followed by the model's initialization logic. The model should be initialize itself with ``knobs``,
     a set of generated knob values for the created model instance.
 
-    These knob values are chosen by Singa-Auto based on the model's knob configuration (defined in :meth:`singa_auto.model.BaseModel.get_knob_config`).
+    These knob values are chosen by SINGA-Auto based on the model's knob configuration (defined in :meth:`singa_auto.model.BaseModel.get_knob_config`).
 
     For example:
 
@@ -117,7 +117,7 @@ class BaseModel(abc.ABC):
         '''
         Returns a dictionary of model parameters that *fully define the trained state of the model*.
         This dictionary must conform to the format :obj:`singa_auto.model.Params`.
-        This will be used to save the trained model in Singa-Auto.
+        This will be used to save the trained model in SINGA-Auto.
 
         Additionally, trained parameters produced by this method could be shared with future trials, as
         part of the ``SHARE_PARAMS`` policy (see :ref:`model-policies`).

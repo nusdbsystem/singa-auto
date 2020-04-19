@@ -3,14 +3,14 @@
 Quick Start (Model Developers)
 ====================================================================
 
-As a *Model Developer*, you can manage models, datasets, train jobs & inference jobs on Singa-Auto. This guide only highlights the key methods available to manage models.
+As a *Model Developer*, you can manage models, datasets, train jobs & inference jobs on SINGA-Auto. This guide only highlights the key methods available to manage models.
 
 To learn about how to manage datasets, train jobs & inference jobs, go to :ref:`quickstart-app-developers`.
 
-This guide assumes that you have access to a running instance of *Singa-Auto Admin* at ``<singa_auto_host>:<admin_port>``
-and *Singa-Auto Web Admin* at ``<singa_auto_host>:<web_admin_port>``.
+This guide assumes that you have access to a running instance of *SINGA-Auto Admin* at ``<singa_auto_host>:<admin_port>``
+and *SINGA-Auto Web Admin* at ``<singa_auto_host>:<web_admin_port>``.
 
-To learn more about what else you can do on Singa-Auto, explore the methods of :class:`singa_auto.client.Client`
+To learn more about what else you can do on SINGA-Auto, explore the methods of :class:`singa_auto.client.Client`
 
 Installing the client
 --------------------------------------------------------------------

@@ -47,18 +47,18 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     print('Preprocessing dataset...')
     load(csv_file_url, train_dataset_path, val_dataset_path)
 
-    print('Creating & uploading datasets onto Singa-Auto...')
+    print('Creating & uploading datasets onto SINGA-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
     pprint(val_dataset)
 
-    print('Adding models "{}" to Singa-Auto...'.format(xgb_model_name))
+    print('Adding models "{}" to SINGA-Auto...'.format(xgb_model_name))
     xgb_model = client.create_model(xgb_model_name, task, 'examples/models/tabular_regression/XgbReg.py', \
                         'XgbReg', dependencies={ ModelDependency.XGBOOST: '0.90' })
     pprint(xgb_model)
 
-    print('Creating train job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
     budget = {
         BudgetOption.TIME_HOURS: hours,
         BudgetOption.GPU_COUNT: gpus
@@ -75,7 +75,7 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     print('Listing best trials of latest train job for app "{}"...'.format(app))
     pprint(client.get_best_trials_of_train_job(app))
 
-    print('Creating inference job for app "{}" on Singa-Auto...'.format(app))
+    print('Creating inference job for app "{}" on SINGA-Auto...'.format(app))
     pprint(client.create_inference_job(app))
     predictor_host = get_predictor_host(client, app)
     if not predictor_host: raise Exception('Inference job has errored or stopped')

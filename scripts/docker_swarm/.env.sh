@@ -18,12 +18,12 @@
 # under the License.
 #
 
-# Core secrets for Singa-auto - change these in production!
+# Core secrets for SINGA-auto - change these in production!
 export POSTGRES_PASSWORD=singa_auto
 export SUPERADMIN_PASSWORD=singa_auto
 export APP_SECRET=singa_auto
 
-# Core external configuration for Singa-auto
+# Core external configuration for SINGA-auto
 export DOCKER_NETWORK=singa_auto
 export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
 export SINGA_AUTO_VERSION=0.2.0
@@ -44,7 +44,7 @@ export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. o
 export POSTGRES_USER=singa_auto
 export POSTGRES_DB=singa_auto
 
-# Internal hosts & ports and configuration for Singa-auto's components
+# Internal hosts & ports and configuration for SINGA-Auto's components
 export POSTGRES_HOST=singa_auto_db
 export POSTGRES_PORT=5432
 export ADMIN_HOST=singa_auto_admin
@@ -66,7 +66,7 @@ export PARAMS_DIR_PATH=params # Shares a folder with containers that stores mode
 export CONDA_ENVIORNMENT=singa_auto
 export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs are run natively
 
-# Docker images for Singa-auto's custom components
+# Docker images for SINGA-Auto's custom components
 export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
 export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
 export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker

@@ -53,7 +53,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        return 'Singa-Auto Admin is up.'
+        return 'SINGA-Auto Admin is up.'
 
     @app.errorhandler(Exception)
     def handle_error(error):

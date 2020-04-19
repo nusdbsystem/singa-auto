@@ -47,13 +47,13 @@ docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop Singa_Auto's Zookeeper"
 title "Stopping Singa_Auto's Kafka..."
 docker rm -f $KAFKA_HOST || echo "Failed to stop Singa_Auto's Kafka"
 
-title "Stopping Singa_Auto's Redis..."
-docker rm -f $REDIS_HOST || echo "Failed to stop Singa_Auto's Redis"
+title "Stopping SINGA-Auto's Redis..."
+docker rm -f $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis"
 
-title "Stopping Singa_Auto's Admin..."
-docker rm -f $ADMIN_HOST || echo "Failed to stop Singa_Auto's Admin"
+title "Stopping SINGA-Auto's Admin..."
+docker rm -f $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin"
 
-title "Stopping Singa_Auto's Web Admin..."
-docker rm -f $WEB_ADMIN_HOST || echo "Failed to stop Singa_Auto's Web Admin"
+title "Stopping SINGA-Auto's Web Admin..."
+docker rm -f $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin"
 
 echo "You'll need to destroy your machine's Docker swarm manually"

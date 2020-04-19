@@ -42,7 +42,7 @@ def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Preprocessing datasets...')
     load_cifar10(train_dataset_path, val_dataset_path)
 
-    print('Creating & uploading datasets onto Singa-Auto...')
+    print('Creating & uploading datasets onto SINGA-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
     pprint(train_dataset)
     val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
@@ -69,7 +69,7 @@ def train_densenet(client, train_dataset_path, val_dataset_path, gpus, hours):
     train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'], budget, models=[model['id']])
     pprint(train_job)
 
-    print('Monitor the train job on Singa-Auto Web Admin')
+    print('Monitor the train job on SINGA-Auto Web Admin')
 
     # TODO: Evaluate on test dataset?
 
