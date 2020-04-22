@@ -5,7 +5,7 @@
 env/
 envs/
 venv/
-.env.sh
+
 
 # Visual Studio Code config
 .vscode/
@@ -54,3 +54,6 @@ test/*
 
 # Tensorflow
 .keras
+
+dist/*
+singa_auto.egg-info/*

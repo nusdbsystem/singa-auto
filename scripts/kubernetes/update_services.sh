@@ -19,9 +19,9 @@
 source ./scripts/kubernetes/.env.sh
 source ./scripts/kubernetes/utils.sh
 
-title "updating Rafiki's services"
+title "updating SINGA-Auto's services"
 
-#bash ./scripts/kubernetes/generate_config.sh
+bash ./scripts/kubernetes/generate_config.sh
 
 kubectl apply -f scripts/kubernetes/start_admin_deployment.json --record
 kubectl apply -f scripts/kubernetes/start_admin_service.json --record
@@ -41,4 +41,4 @@ kubectl apply -f scripts/kubernetes/start_web_admin_service.json --record
 kubectl apply -f scripts/kubernetes/start_zookeeper_deployment.json --record
 kubectl apply -f scripts/kubernetes/start_zookeeper_service.json --record
 
-#bash ./scripts/kubernetes/remove_config.sh
+bash ./scripts/kubernetes/remove_config.sh

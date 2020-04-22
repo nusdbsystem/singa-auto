@@ -26,9 +26,9 @@ import json
 import base64
 import argparse
 
-from rafiki.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 class TfVgg16(BaseModel):
     '''
@@ -61,7 +61,7 @@ class TfVgg16(BaseModel):
         # Define plot for loss against epochs
         utils.logger.define_plot('Loss Over Epochs', ['loss', 'early_stop_val_loss'], x_axis='epoch')
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32, 
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32,
                                                             max_image_size=max_image_size, mode='RGB')
         self._image_size = dataset.image_size
         num_classes = dataset.classes
@@ -74,9 +74,9 @@ class TfVgg16(BaseModel):
             with self._sess.as_default():
                 self._model = self._build_model(num_classes, dataset.image_size)
                 self._model.fit(
-                    images, 
-                    classes, 
-                    epochs=max_epochs, 
+                    images,
+                    classes,
+                    epochs=max_epochs,
                     validation_split=0.05,
                     batch_size=bs,
                     callbacks=[
@@ -93,7 +93,7 @@ class TfVgg16(BaseModel):
 
     def evaluate(self, dataset_path):
         max_image_size = self._knobs.get('max_image_size')
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32, 
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32,
                                                             max_image_size=max_image_size, mode='RGB')
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
         (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
@@ -117,9 +117,9 @@ class TfVgg16(BaseModel):
         with self._graph.as_default():
             with self._sess.as_default():
                 probs = self._model.predict(images)
-                
+
         return probs.tolist()
-    
+
     def destroy(self):
         self._sess.close()
 
@@ -132,7 +132,7 @@ class TfVgg16(BaseModel):
             with self._graph.as_default():
                 with self._sess.as_default():
                     self._model.save(tmp.name)
-        
+
             # Read from temp h5 file & encode it to base64 string
             with open(tmp.name, 'rb') as f:
                 h5_model_bytes = f.read()
@@ -160,7 +160,7 @@ class TfVgg16(BaseModel):
             with self._graph.as_default():
                 with self._sess.as_default():
                     self._model = keras.models.load_model(tmp.name)
-        
+
         # Load pre-processing params
         self._image_size = params['image_size']
         self._normalize_mean = json.loads(params['normalize_mean'])
@@ -177,7 +177,7 @@ class TfVgg16(BaseModel):
         model = keras.applications.VGG16(
             include_top=True,
             input_shape=(image_size, image_size, 3),
-            weights=None, 
+            weights=None,
             classes=num_classes
         )
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/cifar10_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/cifar10_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/cifar10_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

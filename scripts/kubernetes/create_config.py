@@ -22,13 +22,14 @@ import sys
 import os
 
 if __name__ == '__main__':
+    print(sys.argv)
     POSTGRES_PASSWORD = sys.argv[1]
     SUPERADMIN_PASSWORD = sys.argv[2]
     APP_SECRET = sys.argv[3]
     KUBERNETES_NETWORK = sys.argv[4]
     KUBERNETES_ADVERTISE_ADDR = sys.argv[5]
-    RAFIKI_VERSION = sys.argv[6]
-    RAFIKI_ADDR = sys.argv[7]
+    SINGA_AUTO_VERSION = sys.argv[6]
+    SINGA_AUTO_ADDR = sys.argv[7]
     ADMIN_EXT_PORT = sys.argv[8]
     WEB_ADMIN_EXT_PORT = sys.argv[9]
     POSTGRES_EXT_PORT = sys.argv[10]
@@ -36,14 +37,14 @@ if __name__ == '__main__':
     ZOOKEEPER_EXT_PORT = sys.argv[12]
     KAFKA_EXT_PORT = sys.argv[13]
     HOST_WORKDIR_PATH = sys.argv[14]
-    APP_MODE = sys.argv[15] 
-    POSTGRES_DUMP_FILE_PATH = sys.argv[16] 
-    DOCKER_NODE_LABEL_AVAILABLE_GPUS = sys.argv[17] 
+    APP_MODE = sys.argv[15]
+    POSTGRES_DUMP_FILE_PATH = sys.argv[16]
+    DOCKER_NODE_LABEL_AVAILABLE_GPUS = sys.argv[17]
     DOCKER_NODE_LABEL_NUM_SERVICES = sys.argv[18]
 
     POSTGRES_USER = sys.argv[19]
     POSTGRES_DB = sys.argv[20]
- 
+
     POSTGRES_HOST = sys.argv[21]
     POSTGRES_PORT = sys.argv[22]
     ADMIN_HOST = sys.argv[23]
@@ -57,26 +58,28 @@ if __name__ == '__main__':
     KAFKA_HOST = sys.argv[31]
     KAFKA_PORT = sys.argv[32]
     DOCKER_WORKDIR_PATH = sys.argv[33]
-    DATA_DIR_PATH = sys.argv[34] 
-    LOGS_DIR_PATH = sys.argv[35] 
-    PARAMS_DIR_PATH = sys.argv[36] 
+    DATA_DIR_PATH = sys.argv[34]
+    LOGS_DIR_PATH = sys.argv[35]
+    PARAMS_DIR_PATH = sys.argv[36]
     CONDA_ENVIORNMENT = sys.argv[37]
-    WORKDIR_PATH = sys.argv[38] 
+    WORKDIR_PATH = sys.argv[38]
 
-    RAFIKI_IMAGE_ADMIN = sys.argv[39]
-    RAFIKI_IMAGE_WEB_ADMIN = sys.argv[40]
-    RAFIKI_IMAGE_WORKER = sys.argv[41]
-    RAFIKI_IMAGE_PREDICTOR = sys.argv[42]
+    SINGA_AUTO_IMAGE_ADMIN = sys.argv[39]
+    SINGA_AUTO_IMAGE_WEB_ADMIN = sys.argv[40]
+    SINGA_AUTO_IMAGE_WORKER = sys.argv[41]
+    SINGA_AUTO_IMAGE_PREDICTOR = sys.argv[42]
 
     IMAGE_POSTGRES = sys.argv[43]
     IMAGE_REDIS = sys.argv[44]
     IMAGE_ZOOKEEPER = sys.argv[45]
     IMAGE_KAFKA = sys.argv[46]
 
-    PYTHONPATH = sys.argv[47] 
+    PYTHONPATH = sys.argv[47]
     PYTHONUNBUFFERED = sys.argv[48]
     CONTAINER_MODE = sys.argv[49]
     CLUSTER_MODE = sys.argv[50]
+
+    DB_DIR_PATH = sys.argv[51]
 
     #zk service
     content = {}
@@ -96,7 +99,7 @@ if __name__ == '__main__':
 
     #zk deployment
     content = {}
-    content.setdefault('apiVersion', 'apps/v1')      
+    content.setdefault('apiVersion', 'apps/v1')
     content.setdefault('kind', 'Deployment')
     metadata = content.setdefault('metadata', {})
     metadata.setdefault('name', ZOOKEEPER_HOST)
@@ -135,7 +138,7 @@ if __name__ == '__main__':
 
     #kafka deployment
     content = {}
-    content.setdefault('apiVersion', 'apps/v1')      
+    content.setdefault('apiVersion', 'apps/v1')
     content.setdefault('kind', 'Deployment')
     metadata = content.setdefault('metadata', {})
     metadata.setdefault('name', KAFKA_HOST)
@@ -194,6 +197,20 @@ if __name__ == '__main__':
         container = {}
         container.setdefault('name', POSTGRES_HOST)
         container.setdefault('image', IMAGE_POSTGRES)
+
+        container.setdefault('volumeMounts',
+                             [
+                              {'name': 'db-path',
+                               'mountPath': "/var/lib/postgresql/data"},
+                              ])
+
+        template.setdefault('spec', {'containers': [container],
+                                     'volumes': [
+                                                 {'name': 'db-path',
+                                                  'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{DB_DIR_PATH}'}}
+                                                 ]
+                                     }
+                            )
         env = []
         env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
         env.append({'name': 'POSTGRES_HOST', 'value': POSTGRES_HOST})
@@ -222,7 +239,7 @@ if __name__ == '__main__':
 
     #redis deployment
     content = {}
-    content.setdefault('apiVersion', 'apps/v1')      
+    content.setdefault('apiVersion', 'apps/v1')
     content.setdefault('kind', 'Deployment')
     metadata = content.setdefault('metadata', {})
     metadata.setdefault('name', REDIS_HOST)
@@ -242,7 +259,7 @@ if __name__ == '__main__':
 
     #admin deployment
     content = {}
-    content.setdefault('apiVersion', 'apps/v1')      
+    content.setdefault('apiVersion', 'apps/v1')
     content.setdefault('kind', 'Deployment')
     metadata = content.setdefault('metadata', {})
     metadata.setdefault('name', ADMIN_HOST)
@@ -255,7 +272,7 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': ADMIN_HOST}})
     container = {}
     container.setdefault('name', ADMIN_HOST)
-    container.setdefault('image', f'{RAFIKI_IMAGE_ADMIN}:{RAFIKI_VERSION}')
+    container.setdefault('image', f'{SINGA_AUTO_IMAGE_ADMIN}:{SINGA_AUTO_VERSION}')
     if CONTAINER_MODE == 'DEV':
         container.setdefault('volumeMounts', [{'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'}, {'name': 'admin-log', 'mountPath': DOCKER_WORKDIR_PATH}])
         template.setdefault('spec', {'containers': [container], 'volumes': [{'name': ADMIN_HOST, 'hostPath': {'path': '/var/run/docker.sock'}}, \
@@ -283,10 +300,10 @@ if __name__ == '__main__':
     env.append({'name': 'KAFKA_HOST', 'value': KAFKA_HOST})
     env.append({'name': 'KAFKA_PORT', 'value': KAFKA_PORT})
     env.append({'name': 'PREDICTOR_PORT', 'value': PREDICTOR_PORT})
-    env.append({'name': 'RAFIKI_ADDR', 'value': RAFIKI_ADDR})
-    env.append({'name': 'RAFIKI_IMAGE_WORKER', 'value': RAFIKI_IMAGE_WORKER})
-    env.append({'name': 'RAFIKI_IMAGE_PREDICTOR', 'value': RAFIKI_IMAGE_PREDICTOR})
-    env.append({'name': 'RAFIKI_VERSION', 'value': RAFIKI_VERSION})
+    env.append({'name': 'SINGA_AUTO_ADDR', 'value': SINGA_AUTO_ADDR})
+    env.append({'name': 'SINGA_AUTO_IMAGE_WORKER', 'value': SINGA_AUTO_IMAGE_WORKER})
+    env.append({'name': 'SINGA_AUTO_IMAGE_PREDICTOR', 'value': SINGA_AUTO_IMAGE_PREDICTOR})
+    env.append({'name': 'SINGA_AUTO_VERSION', 'value': SINGA_AUTO_VERSION})
     env.append({'name': 'DOCKER_WORKDIR_PATH', 'value': DOCKER_WORKDIR_PATH})
     env.append({'name': 'WORKDIR_PATH', 'value': DOCKER_WORKDIR_PATH})
     env.append({'name': 'HOST_WORKDIR_PATH', 'value': HOST_WORKDIR_PATH})
@@ -333,7 +350,7 @@ if __name__ == '__main__':
 
     #web deployment
     content = {}
-    content.setdefault('apiVersion', 'apps/v1')      
+    content.setdefault('apiVersion', 'apps/v1')
     content.setdefault('kind', 'Deployment')
     metadata = content.setdefault('metadata', {})
     metadata.setdefault('name', WEB_ADMIN_HOST)
@@ -346,10 +363,10 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': WEB_ADMIN_HOST}})
     container = {}
     container.setdefault('name', WEB_ADMIN_HOST)
-    container.setdefault('image', f'{RAFIKI_IMAGE_WEB_ADMIN}:{RAFIKI_VERSION}')
+    container.setdefault('image', f'{SINGA_AUTO_IMAGE_WEB_ADMIN}:{SINGA_AUTO_VERSION}')
     template.setdefault('spec', {'containers': [container]})
     env = []
-    env.append({'name': 'RAFIKI_ADDR', 'value': RAFIKI_ADDR})
+    env.append({'name': 'SINGA_AUTO_ADDR', 'value': SINGA_AUTO_ADDR})
     env.append({'name': 'ADMIN_EXT_PORT', 'value': ADMIN_EXT_PORT})
     container.setdefault('env', env)
     with open(f'{PYTHONPATH}/scripts/kubernetes/start_web_admin_deployment.json', 'w') as f:

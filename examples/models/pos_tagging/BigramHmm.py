@@ -20,8 +20,8 @@
 import math
 import json
 
-from rafiki.model import BaseModel, utils, FixedKnob
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, utils, FixedKnob
+from singa_auto.model.dev import test_model_class
 
 class BigramHmm(BaseModel):
     '''
@@ -91,7 +91,7 @@ class BigramHmm(BaseModel):
 
         # Bigram (tag i, tag j) counts
         bi_counts = [[0 for j in range(T)] for i in range(T)]
-        
+
         # Counts for (tag i, word w) as [{ w -> count }]
         word_counts = [{} for i in range(T)]
 
@@ -112,12 +112,12 @@ class BigramHmm(BaseModel):
                 prev_tag = tag
 
             uni_counts[END] += 1
-            
+
             # Account for last bigram with </s>
             if len(tokens) > 0:
                 last_tag = tags[-1]
                 bi_counts[last_tag][END] += 1
-          
+
         # Transition function (tag i, tag j) -> <log prob of transition from state i to j>
         trans_probs = [[0 for j in range(T)] for i in range(T)]
         for i in range(T):
@@ -132,7 +132,7 @@ class BigramHmm(BaseModel):
         for i in range(T):
             for w in word_counts[i]:
                 emiss_probs[i][w] = math.log(word_counts[i][w] / uni_counts[i])
-        
+
         return (trans_probs, emiss_probs)
 
     def _tag_sents(self, num_tags, sents_tokens, trans_probs, emiss_probs):
@@ -190,7 +190,7 @@ class BigramHmm(BaseModel):
                 sent_tags.append(cur)
                 cur = backpointers[w][cur]
                 w -= 1
-            
+
             sent_tags.reverse()
             sents_tags.append(sent_tags)
 
@@ -209,5 +209,4 @@ if __name__ == '__main__':
             ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
         ]
     )
-    
-    
+

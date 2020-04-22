@@ -36,9 +36,9 @@ from keras.utils import np_utils
 from keras.utils.np_utils import to_categorical
 from keras.optimizers import SGD
 
-from rafiki.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 class SqueezeNet(BaseModel):
     '''
@@ -54,26 +54,26 @@ class SqueezeNet(BaseModel):
             'batch_size': CategoricalKnob([32, 64, 128]),
             'max_image_size': FixedKnob(28)
 
-        }    
+        }
 
-    
+
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
         self._model = self._build_classifier(self.learning_rate, self.decay_rate, self.momentum)
 
-        
+
     def train(self, dataset_path, **kwargs):
         epochs = self._knobs.get('epochs')
         batch_size = self._knobs.get('batch_size')
 
         dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
         self._image_size = dataset.image_size
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])   
+        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
         X = self._prepare_X(images)
         y = to_categorical(classes, num_classes = 10)
-        
+
         self._model.fit(X, y, nb_epoch=epochs, batch_size=batch_size, verbose=1)
 
         # Compute train accuracy
@@ -81,11 +81,11 @@ class SqueezeNet(BaseModel):
         utils.logger.log('Train loss: {}'.format(train_loss))
         utils.logger.log('Train accuracy: {}'.format(train_acc))
 
-                  
+
     def evaluate (self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
         self._image_size = dataset.image_size
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])        
+        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
         images = self._prepare_X(images)
         X_test, y_test = images, to_categorical(classes, num_classes = 10)
         # Compute test accuracy
@@ -98,7 +98,7 @@ class SqueezeNet(BaseModel):
         X = self._prepare_X(queries)
         probs = self._model.predict(X)
         return probs.tolist()
-                        
+
 
     def dump_parameters(self):
         params = {}
@@ -127,15 +127,15 @@ class SqueezeNet(BaseModel):
         images = np.asarray(images)
         X = images.reshape(-1,28,28,1)
         return X
-    
+
 
     def _build_classifier(self, learning_rate, decay_rate, momentum):
         learning_rate = self._knobs.get('learning_rate')
         decay_rate = self._knobs.get('decay_rate')
         momentum = self._knobs.get('momentum')
-        
+
         sgd = SGD(lr=learning_rate, momentum=momentum, decay=decay_rate, nesterov=False)
-        
+
         input_shape=(28,28,1)
 
         input_img = Input(batch_shape=(None, 28,28,1))
@@ -173,16 +173,16 @@ class SqueezeNet(BaseModel):
         model = Model(inputs = input_img, outputs = squeeze0)
         model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics = ['accuracy'])
         model.summary()
-        
+
         return model
-    
-    
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

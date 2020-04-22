@@ -45,20 +45,19 @@ WORKDIR $DOCKER_WORKDIR_PATH
 ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
-COPY rafiki/requirements.txt rafiki/requirements.txt
-RUN pip install -r rafiki/requirements.txt
-COPY rafiki/utils/requirements.txt rafiki/utils/requirements.txt
-RUN pip install -r rafiki/utils/requirements.txt
-COPY rafiki/meta_store/requirements.txt rafiki/meta_store/requirements.txt
-RUN pip install -r rafiki/meta_store/requirements.txt
-COPY rafiki/container/requirements.txt rafiki/container/requirements.txt
-RUN pip install -r rafiki/container/requirements.txt
-COPY rafiki/admin/requirements.txt rafiki/admin/requirements.txt
-RUN pip install -r rafiki/admin/requirements.txt
+COPY singa_auto/requirements.txt singa_auto/requirements.txt
+RUN pip install -r singa_auto/requirements.txt
+COPY singa_auto/utils/requirements.txt singa_auto/utils/requirements.txt
+RUN pip install -r singa_auto/utils/requirements.txt
+COPY singa_auto/meta_store/requirements.txt singa_auto/meta_store/requirements.txt
+RUN pip install -r singa_auto/meta_store/requirements.txt
+COPY singa_auto/container/requirements.txt singa_auto/container/requirements.txt
+RUN pip install -r singa_auto/container/requirements.txt
+COPY singa_auto/admin/requirements.txt singa_auto/admin/requirements.txt
+RUN pip install -r singa_auto/admin/requirements.txt
 
-COPY rafiki/ rafiki/
-COPY scripts/ scripts/
+RUN pip install singa-auto==0.1.9
 
 EXPOSE 3000
 
-CMD ["python", "scripts/start_admin.py"]
+CMD ["admin"]

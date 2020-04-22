@@ -16,7 +16,7 @@ describe("watchSigninRequest should wait for action SIGN_IN_REQUEST", function()
 describe("authLogin Saga Unit Test", function() {
   const gen = cloneableGenerator(authLogin)(
     actions.signInRequest({
-      username: "superadmin@rafiki ",
+      username: "superadmin@singaauto ",
       password: "rafiki",
     })
   )
@@ -30,7 +30,7 @@ describe("authLogin Saga Unit Test", function() {
     const step2 = gen.next()
     expect(step2.value).toEqual(
       call(api.requestSignIn, {
-        username: "superadmin@rafiki ",
+        username: "superadmin@singaauto ",
         password: "rafiki",
       })
     )

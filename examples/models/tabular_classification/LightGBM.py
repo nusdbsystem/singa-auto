@@ -17,9 +17,9 @@
 # under the License.
 #
 
-from rafiki.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob,IntegerKnob,utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob,IntegerKnob,utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 from sklearn.metrics import roc_auc_score, roc_curve
 
 from lightgbm import LGBMClassifier
@@ -115,7 +115,7 @@ class LightGBM(BaseModel):
 
     def evaluate(self, dataset_url):
         df = pd.read_csv(dataset_url, index_col=0)
-        
+
         # Optional: Remove 4 applications with XNA CODE_GENDER (train set)
         df = df[df['CODE_GENDER'] != 'XNA']
 
@@ -224,7 +224,7 @@ class LightGBM(BaseModel):
 
 
 if __name__ == '__main__':
-    curpath = os.path.join(os.environ['HOME'], 'rafiki')
+    curpath = os.path.join(os.environ['HOME'], 'singa_auto')
     os.environ.setdefault('WORKDIR_PATH', curpath)
     os.environ.setdefault('PARAMS_DIR_PATH', os.path.join(curpath, 'params'))
 

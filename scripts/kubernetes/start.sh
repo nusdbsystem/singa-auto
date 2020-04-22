@@ -30,9 +30,10 @@ kubectl create clusterrolebinding add-on-cluster-admin \
 bash ./scripts/kubernetes/pull_images.sh || exit 1
 
 # Generate config files
+echo "Generate config files"
 bash ./scripts/kubernetes/generate_config.sh || exit 1
 
-# Start whole Rafiki stack
+# Start whole SINGA-Auto stack
 # Start Zookeeper, Kafka & Redis
 bash ./scripts/kubernetes/start_zookeeper.sh || exit 1
 bash ./scripts/kubernetes/start_kafka.sh || exit 1
@@ -45,7 +46,6 @@ if [ "$CLUSTER_MODE" = "SINGLE" ]; then
       echo "Detected that Rafiki's DB is already running!"
     else
         bash ./scripts/kubernetes/start_db.sh || exit 1
-        bash ./scripts/kubernetes/load_db.sh || exit 1
     fi
 else
     # Whether stolon has started inside the script

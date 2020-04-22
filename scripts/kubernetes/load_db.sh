@@ -22,15 +22,15 @@ DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
 source ./scripts/kubernetes/utils.sh
 
-title "Maybe loading from database dump..." 
+title "Maybe loading from database dump..."
 
 # Check if dump file exists
 if [ -f $DUMP_FILE ]
-then 
-    echo "Loading database dump at $DUMP_FILE..." 
+then
+    echo "Loading database dump at $DUMP_FILE..."
     DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
-    DB_PODNAME=${DB_PODNAME:0:26}
+    DB_PODNAME=${DB_PODNAME:0:30}
     cat $DUMP_FILE | kubectl exec -i $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres --dbname $POSTGRES_DB > /dev/null
 else
-    echo "No database dump file found." 
+    echo "No database dump file found."
 fi

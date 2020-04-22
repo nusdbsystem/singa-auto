@@ -19,14 +19,14 @@
 
 import os
 
-from rafiki.constants import ServiceType
-from rafiki.utils.service import run_worker
-from rafiki.meta_store import MetaStore
+from singa_auto.constants import ServiceType
+from singa_auto.utils.service import run_worker
+from singa_auto.meta_store import MetaStore
 
 # Run install command
 install_command = os.environ.get('WORKER_INSTALL_COMMAND', '')
 exit_code = os.system(install_command)
-if exit_code != 0: 
+if exit_code != 0:
     raise Exception('Install command gave non-zero exit code: "{}"'.format(install_command))
 
 worker = None
@@ -36,15 +36,15 @@ def start_worker(service_id, service_type, container_id):
     global worker
 
     if service_type == ServiceType.TRAIN:
-        from rafiki.worker.train import TrainWorker
+        from singa_auto.worker.train import TrainWorker
         worker = TrainWorker(service_id, container_id)
         worker.start()
     elif service_type == ServiceType.INFERENCE:
-        from rafiki.worker.inference import InferenceWorker
+        from singa_auto.worker.inference import InferenceWorker
         worker = InferenceWorker(service_id, container_id)
         worker.start()
     elif service_type == ServiceType.ADVISOR:
-        from rafiki.worker.advisor import AdvisorWorker
+        from singa_auto.worker.advisor import AdvisorWorker
         worker = AdvisorWorker(service_id)
         worker.start()
     else:
@@ -54,7 +54,7 @@ def start_worker(service_id, service_type, container_id):
 def stop_worker():
     global worker
     if worker is not None:
-        worker.stop()    
+        worker.stop()
 
 
 meta_store = MetaStore()

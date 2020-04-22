@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: stolon-proxy
-        image: RAFIKI_IMAGE_STOLON
+        image: SINGA_AUTO_IMAGE_STOLON
         command:
           - "/bin/bash"
           - "-ec"
