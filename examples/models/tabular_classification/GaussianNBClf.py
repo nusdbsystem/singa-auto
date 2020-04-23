@@ -24,9 +24,9 @@ import base64
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class GaussianClf(BaseModel):
     '''
@@ -35,7 +35,7 @@ class GaussianClf(BaseModel):
     @staticmethod
     def get_knob_config():
         return {
-            'var_smoothing': FloatKnob(1e-07, 1e-05, is_exp=True),          
+            'var_smoothing': FloatKnob(1e-07, 1e-05, is_exp=True),
         }
 
     def __init__(self, **knobs):
@@ -43,7 +43,7 @@ class GaussianClf(BaseModel):
         self._clf = self._build_classifier(self.var_smoothing)
 
 
-    def train(self, dataset_path, **kwargs):       
+    def train(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -70,7 +70,7 @@ class GaussianClf(BaseModel):
 
 
     def predict(self, queries):
-        queries = [pd.DataFrame(query, index=[0]) for query in queries]    
+        queries = [pd.DataFrame(query, index=[0]) for query in queries]
         probs = self._clf.predict_proba(queries)
         return probs.tolist()
 
@@ -120,4 +120,4 @@ if __name__ == '__main__':
         queries=[
             { 'age': 50, 'Sex': '0', 'cp': 3, 'trestbps': 130, 'chol': 220, 'fbs': 1, 'restecg': 0, 'thalach': 170, 'exang': 1, 'oldpeak': 1.7, 'slope': 2, 'ca': 0, 'thal': 3 }
         ]
-    ) 
+    )

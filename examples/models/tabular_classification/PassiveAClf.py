@@ -26,9 +26,9 @@ import json
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import PassiveAggressiveClassifier
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class PassiveAClf(BaseModel):
     '''
@@ -52,12 +52,12 @@ class PassiveAClf(BaseModel):
         self.__dict__.update(knobs)
         self._clf = self._build_classifier(self.C, self.tol, self.validation_fraction, self.n_iter_no_change, self.shuffle, self.loss, self.random_state, self.warm_start, self.average)
 
-    
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -66,14 +66,14 @@ class PassiveAClf(BaseModel):
         (X, y) = self._extract_xy(data)
 
         X = self.prepare_X(X)
-        
+
         self._clf.fit(X, y)
 
         # Compute train accuracy
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-        
+
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -87,18 +87,18 @@ class PassiveAClf(BaseModel):
         accuracy = self._clf.score(X, y)
         return accuracy
 
-    
+
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         probs = self._clf.predict_proba(data)
         return probs.tolist()
-    
-    
+
+
     def destroy(self):
         pass
 
-    
+
     def dump_parameters(self):
         params = {}
 
@@ -107,7 +107,8 @@ class PassiveAClf(BaseModel):
         clf_base64 = base64.b64encode(clf_bytes).decode('utf-8')
         params['clf_base64'] = clf_base64
         params['features'] = json.dumps(self._features)
-        params['target'] = self._target
+        if self._target:
+            params['target'] = self._target
 
         return params
 
@@ -119,9 +120,12 @@ class PassiveAClf(BaseModel):
 
         self._clf = pickle.loads(clf_bytes)
         self._features = json.loads(params['features'])
-        self._target = params['target']
+        if "target" in params:
+            self._target = params['target']
+        else:
+            self._target = None
 
-        
+
     def _extract_xy(self, data):
         features = self._features
         target = self._target
@@ -130,15 +134,15 @@ class PassiveAClf(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:
             y = data[target]
 
         return (X, y)
-        
-        
+
+
     def median_dataset(self, df):
         #replace zero values by median so that 0 will not affect median.
         for col in df.columns:
@@ -146,12 +150,12 @@ class PassiveAClf(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-    
+
     def prepare_X(self, df):
         data = self.median_dataset(df)
         X = PolynomialFeatures(interaction_only=True).fit_transform(data).astype(int)
         return X
-    
+
 
     def _build_classifier(self, C, tol, validation_fraction, n_iter_no_change, shuffle, loss, random_state, warm_start, average):
         clf = PassiveAggressiveClassifier(
@@ -167,7 +171,7 @@ class PassiveAClf(BaseModel):
         )
         return clf
 
-    
+
 if __name__ == '__main__':
     test_model_class(
         model_file_path=__file__,

@@ -24,9 +24,9 @@ import base64
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 
-from rafiki.model import BaseModel, IntegerKnob, CategoricalKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class KNNClf(BaseModel):
     '''
@@ -45,7 +45,7 @@ class KNNClf(BaseModel):
         self._clf = self._build_classifier(self.n_neighbors, self.metric, self.p)
 
 
-    def train(self, dataset_path, **kwargs):       
+    def train(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -72,7 +72,7 @@ class KNNClf(BaseModel):
 
 
     def predict(self, queries):
-        queries = [pd.DataFrame(query, index=[0]) for query in queries]    
+        queries = [pd.DataFrame(query, index=[0]) for query in queries]
         probs = self._clf.predict_proba(queries)
         return probs.tolist()
 
@@ -126,4 +126,4 @@ if __name__ == '__main__':
         queries=[
             { 'age': 50, 'Sex': '0', 'cp': 3, 'trestbps': 130, 'chol': 220, 'fbs': 1, 'restecg': 0, 'thalach': 170, 'exang': 1, 'oldpeak': 1.7, 'slope': 2, 'ca': 0, 'thal': 3 }
         ]
-    ) 
+    )
