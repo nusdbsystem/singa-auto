@@ -1,11 +1,11 @@
 //axios to send ajax request
-import axios from 'axios'
+import axios from "axios"
 import HTTPconfig from "../HTTPconfig"
 
-export const requestSignIn = (authData) => {
-  console.log("requestSignIn", `${HTTPconfig.gateway}tokens`)
+export const requestSignIn = authData => {
+  // console.log("requestSignIn", `${HTTPconfig.gateway}tokens`)
   return axios({
-    method: 'post',
+    method: "post",
     url: `${HTTPconfig.gateway}tokens`,
     headers: HTTPconfig.HTTP_HEADER,
     // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
@@ -13,6 +13,6 @@ export const requestSignIn = (authData) => {
     // `Authorization` custom headers you have set using `headers`.
     // Please note that only HTTP Basic auth is configurable through this parameter.
     // For Bearer tokens and such, use `Authorization` custom headers instead.
-    data: JSON.stringify(authData)
-  });
+    data: JSON.stringify(authData),
+  })
 }

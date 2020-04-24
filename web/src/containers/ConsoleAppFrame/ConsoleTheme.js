@@ -1,26 +1,58 @@
-import theme from "../../theme"
+import { createMuiTheme } from "@material-ui/core/styles"
+import { blueGrey, orange } from "@material-ui/core/colors"
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      // same as landing-page theme
+      light: blueGrey[100],
+      main: blueGrey[900], // almost black
+      dark: "#1e1e1f",
+    },
+    secondary: {
+      light: orange[50],
+      main: orange[500],
+      dark: orange[700],
+    },
+  },
+  typography: {
+    h5: {
+      fontWeight: 300, // top-theme fontWeightLight
+      fontSize: 20, // top-theme h5 fontSize
+      // letterSpacing: 0.5,
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  props: {
+    MuiTab: {
+      disableRipple: true,
+    },
+  },
+  mixins: {
+    toolbar: {
+      minHeight: 48,
+    },
+  },
+})
 
 const ConsoleTheme = {
   ...theme,
   overrides: {
     MuiDrawer: {
       paper: {
-        backgroundColor: '#18202c',
-      },
-    },
-    MuiToolbar: {
-      regular: {
-        minHeight: 80,
+        backgroundColor: "#18202c",
       },
     },
     MuiButton: {
       label: {
-        textTransform: 'initial',
+        textTransform: "none",
       },
       contained: {
-        boxShadow: 'none',
-        '&:active': {
-          boxShadow: 'none',
+        boxShadow: "none",
+        "&:active": {
+          boxShadow: "none",
         },
       },
     },
@@ -37,17 +69,13 @@ const ConsoleTheme = {
     },
     MuiTab: {
       root: {
-        textTransform: 'initial',
-        margin: '0 16px',
+        textTransform: "none",
+        margin: "0 16px",
         minWidth: 0,
-        [theme.breakpoints.up('md')]: {
-          minWidth: 0,
-        },
-      },
-      labelContainer: {
         padding: 0,
-        [theme.breakpoints.up('md')]: {
+        [theme.breakpoints.up("md")]: {
           padding: 0,
+          minWidth: 0,
         },
       },
     },
@@ -63,7 +91,7 @@ const ConsoleTheme = {
     },
     MuiDivider: {
       root: {
-        backgroundColor: '#404854',
+        backgroundColor: "#404854",
       },
     },
     MuiListItemText: {
@@ -73,9 +101,9 @@ const ConsoleTheme = {
     },
     MuiListItemIcon: {
       root: {
-        color: 'inherit',
+        color: "inherit",
         marginRight: 0,
-        '& svg': {
+        "& svg": {
           fontSize: 20,
         },
       },
@@ -87,17 +115,6 @@ const ConsoleTheme = {
       },
     },
   },
-  props: {
-    MuiTab: {
-      disableRipple: true,
-    },
-  },
-  mixins: {
-    ...theme.mixins,
-    toolbar: {
-      minHeight: 48,
-    },
-  },
-};
+}
 
-export default ConsoleTheme;
+export default ConsoleTheme

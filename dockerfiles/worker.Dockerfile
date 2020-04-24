@@ -57,6 +57,12 @@ RUN apt-get -y install curl bzip2 \
   && conda create -y --name $CONDA_ENVIORNMENT python=3.6 \
   && conda clean --all --yes
 ENV PATH /usr/local/envs/$CONDA_ENVIORNMENT/bin:$PATH
+
+RUN apt-get update
+RUN apt-get install -y libsm6 libxext6 libxrender-dev
+RUN apt-get update && apt-get -y install libglib2.0; apt-get clean
+RUN pip install opencv-contrib-python-headless
+
 RUN pip install --upgrade pip
 ENV PYTHONUNBUFFERED 1
 
@@ -66,21 +72,22 @@ WORKDIR $DOCKER_WORKDIR_PATH
 ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
-COPY rafiki/requirements.txt rafiki/requirements.txt
-RUN pip install -r rafiki/requirements.txt
-COPY rafiki/utils/requirements.txt rafiki/utils/requirements.txt
-RUN pip install -r rafiki/utils/requirements.txt
-COPY rafiki/meta_store/requirements.txt rafiki/meta_store/requirements.txt
-RUN pip install -r rafiki/meta_store/requirements.txt
-COPY rafiki/redis/requirements.txt rafiki/redis/requirements.txt
-RUN pip install -r rafiki/redis/requirements.txt
-COPY rafiki/kafka/requirements.txt rafiki/kafka/requirements.txt
-RUN pip install -r rafiki/kafka/requirements.txt
-COPY rafiki/advisor/requirements.txt rafiki/advisor/requirements.txt
-RUN pip install -r rafiki/advisor/requirements.txt
+RUN mkdir ~/.pip
+#COPY ./pip.conf /root/.pip/pip.conf
+COPY singa_auto/requirements.txt singa_auto/requirements.txt
+RUN pip install -r singa_auto/requirements.txt
+COPY singa_auto/utils/requirements.txt singa_auto/utils/requirements.txt
+RUN pip install -r singa_auto/utils/requirements.txt
+COPY singa_auto/meta_store/requirements.txt singa_auto/meta_store/requirements.txt
+RUN pip install -r singa_auto/meta_store/requirements.txt
+COPY singa_auto/redis/requirements.txt singa_auto/redis/requirements.txt
+RUN pip install -r singa_auto/redis/requirements.txt
+COPY singa_auto/kafka/requirements.txt singa_auto/kafka/requirements.txt
+RUN pip install -r singa_auto/kafka/requirements.txt
+COPY singa_auto/advisor/requirements.txt singa_auto/advisor/requirements.txt
+RUN pip install -r singa_auto/advisor/requirements.txt
 
-COPY rafiki/ rafiki/
-COPY scripts/ scripts/
-RUN mkdir data/
+RUN pip install singa-auto==0.1.9
 
-CMD ["python", "scripts/start_worker.py"]
+CMD ["worker"]
+

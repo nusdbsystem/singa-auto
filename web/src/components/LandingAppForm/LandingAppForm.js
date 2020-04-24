@@ -1,24 +1,24 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import LayoutBody from '../LandingComponents/LayoutBody';
-import Paper from '../LandingComponents/Paper';
+import React from "react"
+import PropTypes from "prop-types"
+import { withStyles } from "@material-ui/core/styles"
+import LayoutBody from "../LandingComponents/LayoutBody"
+import Paper from "../LandingComponents/Paper"
 
 const styles = theme => ({
   root: {
-    display: 'flex',
-    backgroundRepeat: 'no-repeat',
+    display: "flex",
+    backgroundRepeat: "no-repeat",
   },
   paper: {
-    padding: `${theme.spacing(1) * 4}px ${theme.spacing(1) * 3}px`,
-    [theme.breakpoints.up('md')]: {
-      padding: `${theme.spacing(1) * 10}px ${theme.spacing(1) * 8}px`,
+    padding: `${theme.spacing(4)}px ${theme.spacing(3)}px`,
+    [theme.breakpoints.up("md")]: {
+      padding: `${theme.spacing(10)}px ${theme.spacing(8)}px`,
     },
   },
-});
+})
 
 function AppForm(props) {
-  const { children, classes } = props;
+  const { children, classes } = props
 
   return (
     <div className={classes.root}>
@@ -26,12 +26,12 @@ function AppForm(props) {
         <Paper className={classes.paper}>{children}</Paper>
       </LayoutBody>
     </div>
-  );
+  )
 }
 
 AppForm.propTypes = {
   children: PropTypes.node.isRequired,
   classes: PropTypes.object.isRequired,
-};
+}
 
-export default withStyles(styles)(AppForm);
+export default withStyles(styles)(AppForm)

@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 import json
 
-from rafiki.model import BaseModel, IntegerKnob, CategoricalKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class RandomForestClf(BaseModel):
     '''
@@ -26,20 +26,20 @@ class RandomForestClf(BaseModel):
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
         self._clf = self._build_classifier(self.n_estimators, self.max_depth, self.oob_score, self.max_features)
-       
+
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
 
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
-        
+
         # Encode categorical features
         X = self._encoding_categorical_type(X)
 
@@ -109,7 +109,7 @@ class RandomForestClf(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:

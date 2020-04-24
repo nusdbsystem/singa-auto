@@ -29,31 +29,31 @@ from collections import namedtuple
 import numpy as np
 import argparse
 
-from rafiki.constants import ModelDependency
-from rafiki.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, \
+from singa_auto.constants import ModelDependency
+from singa_auto.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, \
                             FixedKnob, ArchKnob, KnobValue, PolicyKnob
-from rafiki.model.dev import test_model_class
+from singa_auto.model.dev import test_model_class
 
-_Model = namedtuple('_Model', 
-                    ['train_dataset_init_op', 'pred_dataset_init_op', 
-                    'train_op', 'summary_op', 'pred_probs', 'pred_corrects', 
+_Model = namedtuple('_Model',
+                    ['train_dataset_init_op', 'pred_dataset_init_op',
+                    'train_op', 'summary_op', 'pred_probs', 'pred_corrects',
                     'train_corrects', 'step', 'vars_assign_op', 'ph', 'var_phs'])
-_ModelMemo = namedtuple('_ModelMemo', 
-                    ['train_params', 'use_dynamic_arch', 'knobs', 
+_ModelMemo = namedtuple('_ModelMemo',
+                    ['train_params', 'use_dynamic_arch', 'knobs',
                     'model', 'graph', 'sess', 'saver', 'monitored_values'])
-_ModelPlaceholder = namedtuple('_ModelPlaceholder', 
-                                ['train_images', 'train_classes', 'pred_images', 
+_ModelPlaceholder = namedtuple('_ModelPlaceholder',
+                                ['train_images', 'train_classes', 'pred_images',
                                 'pred_classes', 'normal_arch', 'reduction_arch'])
 
-OPS = [0, 1, 2, 3, 4] 
+OPS = [0, 1, 2, 3, 4]
 CELL_NUM_BLOCKS = 5 # No. of blocks in a cell
 TF_COLLECTION_MONITORED = 'MONITORED'
 
 class TfEnas(BaseModel):
     '''
-        Implements the child model of cell-based "Efficient Neural Architecture Search via Parameter Sharing" (ENAS) 
-        for IMAGE_CLASSIFICATION, configured for *architecture tuning with ENAS* on Rafiki. 
-        
+        Implements the child model of cell-based "Efficient Neural Architecture Search via Parameter Sharing" (ENAS)
+        for IMAGE_CLASSIFICATION, configured for *architecture tuning with ENAS* .
+
         Original paper: https://arxiv.org/abs/1802.03268
         Implementation is with credits to https://github.com/melodyguan/enas
     '''
@@ -71,7 +71,7 @@ class TfEnas(BaseModel):
             'max_image_size': FixedKnob(32),
             'epochs': FixedKnob(310), # Total no. of epochs during a standard train
             'batch_size': FixedKnob(128),
-            'learning_rate': FixedKnob(0.05), 
+            'learning_rate': FixedKnob(0.05),
             'initial_block_ch': FixedKnob(36),
             'stem_ch_mul': FixedKnob(3),
             'reg_decay': FixedKnob(4e-4),
@@ -80,8 +80,8 @@ class TfEnas(BaseModel):
             'use_sgdr': FixedKnob(True),
             'sgdr_alpha': FixedKnob(0.002),
             'sgdr_decay_epochs': FixedKnob(10),
-            'sgdr_t_mul': FixedKnob(2),  
-            'num_layers': FixedKnob(15), 
+            'sgdr_t_mul': FixedKnob(2),
+            'num_layers': FixedKnob(15),
             'aux_loss_mul': FixedKnob(0.4),
             'drop_path_keep_prob': FixedKnob(0.6),
             'drop_path_decay_epochs': FixedKnob(310),
@@ -91,16 +91,16 @@ class TfEnas(BaseModel):
             'share_params': PolicyKnob('SHARE_PARAMS'),
 
             # Affects whether model constructed is a scaled-down version with fewer layers
-            'downscale': PolicyKnob('DOWNSCALE'), 
-            'enas_num_layers': FixedKnob(6), 
-            'enas_initial_block_ch': FixedKnob(20), 
+            'downscale': PolicyKnob('DOWNSCALE'),
+            'enas_num_layers': FixedKnob(6),
+            'enas_initial_block_ch': FixedKnob(20),
             'enas_dropout_keep_prob': FixedKnob(0.9),
             'enas_sgdr_alpha': FixedKnob(0.01),
             'enas_drop_path_keep_prob': FixedKnob(0.9),
             'enas_drop_path_decay_epochs': FixedKnob(150),
 
             # Affects whether training is shortened using a reduced no. of epochs
-            'quick_train': PolicyKnob('EARLY_STOP'), 
+            'quick_train': PolicyKnob('EARLY_STOP'),
             'enas_epochs': FixedKnob(1),
 
             # Affects whether training is skipped
@@ -114,26 +114,26 @@ class TfEnas(BaseModel):
     def make_arch_knob():
         # Make knob values for ops
         # Operations across blocks are considered identical for the purposes of architecture search
-        # E.g. operation "conv3x3" with op code 0 has the same meaning across blocks 
+        # E.g. operation "conv3x3" with op code 0 has the same meaning across blocks
         ops = [KnobValue(i) for i in OPS]
 
         # Build list of knobs for ``cell_archs``
         cell_archs = []
         for c in range(2): # 1 for normal cell, 1 for reduction cell
-            
+
             # Make knob values for inputs
             # Input indices across blocks in the same cell are considered identical for the purposes of architecture search
-            # E.g. input from block 0 with index 2 has the same meaning across blocks in the same cell 
+            # E.g. input from block 0 with index 2 has the same meaning across blocks in the same cell
             input_knob_values = [KnobValue(i) for i in range(CELL_NUM_BLOCKS + 2)]
 
             # For each block
-            for b in range(CELL_NUM_BLOCKS): 
+            for b in range(CELL_NUM_BLOCKS):
                 # Input 1 & input 2 can only can take input from prev prev cell, prev cell, or one of prev blocks
                 inputs = input_knob_values[:(b + 2)]
-                cell_archs.extend([inputs, ops, inputs, ops]) 
-            
+                cell_archs.extend([inputs, ops, inputs, ops])
+
         return ArchKnob(cell_archs)
-    
+
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self._model = None
@@ -149,11 +149,11 @@ class TfEnas(BaseModel):
 
         # Load dataset
         (images, classes, self._train_params) = self._maybe_load_dataset(dataset_path, **knobs)
-        
+
         # Build model
-        (self._model, self._graph, self._sess, self._saver, 
+        (self._model, self._graph, self._sess, self._saver,
             self._monitored_values) = self._maybe_build_model(**knobs)
-        
+
         if not knobs['skip_train']:
             # Maybe load shared variables, then train model
             with self._graph.as_default():
@@ -163,7 +163,7 @@ class TfEnas(BaseModel):
 
     def evaluate(self, dataset_path):
         (images, classes, _) = self._maybe_load_dataset(dataset_path, train_params=self._train_params, **self._knobs)
-        
+
         with self._graph.as_default():
             acc = self._evaluate_model(images, classes, dataset_path=dataset_path, **self._knobs)
 
@@ -204,7 +204,7 @@ class TfEnas(BaseModel):
         self._train_params = json.loads(params['train_params'])
 
         # Build model
-        (self._model, self._graph, self._sess, 
+        (self._model, self._graph, self._sess,
             self._saver, self._monitored_values) = self._maybe_build_model(**self._knobs)
 
         # Add model parameters
@@ -234,7 +234,7 @@ class TfEnas(BaseModel):
     def _maybe_load_tf_vars(self, params):
         # If same TF vars has been loaded in previous trial, don't bother loading again
         vars_id = params['vars_id']
-        
+
         if TfEnas._loaded_tf_vars_id_memo == vars_id:
             return  # Skipping loading of vars
 
@@ -255,7 +255,7 @@ class TfEnas(BaseModel):
         else:
             # Otherwise, dataset has previously been loaded, so do nothing
             pass
-        
+
     def _maybe_build_model(self, **knobs):
         train_params = self._train_params
         use_dynamic_arch = knobs['downscale']
@@ -267,14 +267,14 @@ class TfEnas(BaseModel):
                 self._build_model(**knobs)
 
             TfEnas._model_memo = _ModelMemo(
-                train_params, use_dynamic_arch, knobs, 
-                model, graph, sess, saver, monitored_values 
+                train_params, use_dynamic_arch, knobs,
+                model, graph, sess, saver, monitored_values
             )
 
         model_memo = TfEnas._model_memo
-        return (model_memo.model, model_memo.graph, model_memo.sess, model_memo.saver, 
+        return (model_memo.model, model_memo.graph, model_memo.sess, model_memo.saver,
                 model_memo.monitored_values)
-                
+
     def _if_model_same(self, model_memo, knobs, train_params, use_dynamic_arch):
         if model_memo is None:
             return False
@@ -288,12 +288,12 @@ class TfEnas(BaseModel):
         ignored_knobs = ['skip_train', 'quick_train', 'quick_eval', 'downscale', 'epochs']
         if use_dynamic_arch:
             ignored_knobs.append('cell_archs')
-        
+
         for (name, value) in knobs.items():
             if name not in ignored_knobs and value != model_memo.knobs.get(name):
                 utils.logger.log('Detected that knob "{}" is different!'.format(name))
                 return False
-        
+
         return True
 
     ####################################
@@ -301,7 +301,7 @@ class TfEnas(BaseModel):
     ####################################
 
     def _process_knobs(self, knobs):
-        # Activates dynamic architecture with fewer layers 
+        # Activates dynamic architecture with fewer layers
         if knobs['downscale']:
             knobs = {
                 **knobs,
@@ -317,7 +317,7 @@ class TfEnas(BaseModel):
         if knobs['quick_train']:
             knobs = {
                 **knobs,
-                'epochs': knobs['enas_epochs'] 
+                'epochs': knobs['enas_epochs']
             }
 
         return knobs
@@ -326,13 +326,13 @@ class TfEnas(BaseModel):
         max_image_size = knobs['max_image_size']
         image_size = train_params['image_size'] if train_params is not None else max_image_size
 
-        utils.logger.log('Loading dataset...')    
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=image_size, 
+        utils.logger.log('Loading dataset...')
+        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=image_size,
                                                             mode='RGB')
         (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        norm_mean = np.mean(images, axis=(0, 1, 2)).tolist() 
-        norm_std = np.std(images, axis=(0, 1, 2)).tolist()  
-          
+        norm_mean = np.mean(images, axis=(0, 1, 2)).tolist()
+        norm_std = np.std(images, axis=(0, 1, 2)).tolist()
+
         train_params = {
             'N': len(images),
             'image_size': dataset.image_size,
@@ -340,7 +340,7 @@ class TfEnas(BaseModel):
             'norm_mean': norm_mean,
             'norm_std': norm_std
         }
-        
+
         return (images, classes, train_params)
 
     def _build_model(self, **knobs):
@@ -348,7 +348,7 @@ class TfEnas(BaseModel):
 
         # Create graph
         graph = tf.Graph()
-        
+
         with graph.as_default():
             # Define input placeholders to graph
             ph = self._make_placeholders()
@@ -366,27 +366,27 @@ class TfEnas(BaseModel):
             (train_X, train_classes, train_dataset_init_op) = \
                 self._preprocess(ph.train_images, ph.train_classes, is_train=True, **knobs)
             (train_logits, train_aux_logits_list) = self._forward(train_X, step, normal_arch, reduction_arch, is_train=True, **knobs)
-            
-            # Compute training loss 
+
+            # Compute training loss
             total_loss = self._compute_loss(train_logits, train_aux_logits_list, train_classes, **knobs)
 
-            # Optimize training loss 
+            # Optimize training loss
             train_op = self._optimize(total_loss, step, **knobs)
 
-            # Compute predictions 
+            # Compute predictions
             (_, train_corrects) = self._compute_predictions(train_logits, train_classes)
 
             # For pred dataset, preprocess & do inference
             utils.logger.log('Building model for predictions...')
             (pred_X, pred_classes, pred_dataset_init_op) = \
                 self._preprocess(ph.pred_images, ph.pred_classes, is_train=False, **knobs)
-            (pred_logits, _) = self._forward(pred_X, step, normal_arch, reduction_arch, is_train=False, 
+            (pred_logits, _) = self._forward(pred_X, step, normal_arch, reduction_arch, is_train=False,
                                             **knobs)
 
-            # Compute predictions 
+            # Compute predictions
             (pred_probs, pred_corrects) = self._compute_predictions(pred_logits, pred_classes)
 
-            # Count model parameters 
+            # Count model parameters
             model_params_count = self._count_model_parameters()
 
             # Monitor values
@@ -399,7 +399,7 @@ class TfEnas(BaseModel):
             # Allow loading of model variables
             (var_phs, vars_assign_op) = self._add_vars_assign_op(tf_vars)
 
-            model = _Model(train_dataset_init_op, pred_dataset_init_op, train_op, summary_op, 
+            model = _Model(train_dataset_init_op, pred_dataset_init_op, train_op, summary_op,
                             pred_probs, pred_corrects, train_corrects, step, vars_assign_op, ph, var_phs)
 
             # Make session
@@ -419,7 +419,7 @@ class TfEnas(BaseModel):
         # Build feed dict for op for loading vars
         # For each var, use current value of param in session if not in params
         var_feeddict = {
-            m.var_phs[tf_var.name]: params[tf_var.name] 
+            m.var_phs[tf_var.name]: params[tf_var.name]
             if tf_var.name in params else values[i]
             for (i, tf_var) in enumerate(tf_vars)
         }
@@ -438,7 +438,7 @@ class TfEnas(BaseModel):
         normal_arch_ph = tf.placeholder(tf.int32, name='normal_arch_ph', shape=(CELL_NUM_BLOCKS, 4))
         reduction_arch_ph = tf.placeholder(tf.int32, name='reduction_arch_ph', shape=(CELL_NUM_BLOCKS, 4))
 
-        return _ModelPlaceholder(train_images_ph, train_classes_ph, pred_images_ph, pred_classes_ph, 
+        return _ModelPlaceholder(train_images_ph, train_classes_ph, pred_images_ph, pred_classes_ph,
                                 normal_arch_ph, reduction_arch_ph)
 
     def _forward(self, X, step, normal_arch, reduction_arch, is_train=False, **knobs):
@@ -453,9 +453,9 @@ class TfEnas(BaseModel):
         stem_ch_mul = knobs['stem_ch_mul'] # No. of channels for stem convolution as multiple of initial block channels
         use_aux_head = knobs['use_aux_head'] # Whether to use auxiliary head
         stem_ch = initial_block_ch * stem_ch_mul
-        
+
         # Layers with reduction cells (otherwise, normal cells)
-        reduction_layers = [L // 3, L // 3 * 2 + 1] 
+        reduction_layers = [L // 3, L // 3 * 2 + 1]
 
         # Layers with auxiliary heads
         # Aux heads speed up training of good feature repsentations early in the network
@@ -465,7 +465,7 @@ class TfEnas(BaseModel):
             aux_head_layers.append(reduction_layers[-1] + 1)
 
         with tf.variable_scope('model', reuse=(not is_train)):
-            
+
             # "Stem" convolution layer (layer -1)
             with tf.variable_scope('layer_stem'):
                 X = self._do_conv(X, w, h, in_ch, stem_ch, filter_size=3, no_relu=True, is_train=is_train) # 3x3 convolution
@@ -477,11 +477,11 @@ class TfEnas(BaseModel):
             layers = [stem, stem] # Stores previous layers. layers[i] = (<layer (i + 1)>, <width>, <height>, <channels>)
             for l in range(L + 2):
                 utils.logger.log('Building layer {}...'.format(l))
-                
+
                 with tf.variable_scope('layer_{}'.format(l)):
                     layers_ratio = (l + 1) / (L + 2)
                     drop_path_keep_prob = self._get_drop_path_keep_prob(layers_ratio, step, is_train, **knobs)
-                    
+
                     # Either add a reduction cell or normal cell
                     if l in reduction_layers:
                         block_ch *= 2
@@ -501,7 +501,7 @@ class TfEnas(BaseModel):
                             else:
                                 self._add_static_cell(normal_arch, layers, w, h, block_ch, drop_path_keep_prob, is_train)
 
-                    # Maybe add auxiliary heads 
+                    # Maybe add auxiliary heads
                     if l in aux_head_layers:
                         with tf.variable_scope('aux_head'):
                             aux_logits = self._add_aux_head(*layers[-1], K, is_train)
@@ -518,7 +518,7 @@ class TfEnas(BaseModel):
             # Compute logits from X
             with tf.variable_scope('fully_connected'):
                 logits = self._add_fully_connected(X, (ch,), K)
-        
+
         return (logits, aux_logits_list)
 
     def _optimize(self, loss, step, **knobs):
@@ -549,7 +549,7 @@ class TfEnas(BaseModel):
         w = self._train_params['image_size']
         h = self._train_params['image_size']
         in_ch = 3 # Num channels of input images
-        
+
         def _prepare(images, classes):
             # Bulk preprocessing of images
             images = tf.cast(images, tf.float32)
@@ -566,10 +566,10 @@ class TfEnas(BaseModel):
 
             if cutout_size > 0:
                 image = self._do_cutout(image, w, h, cutout_size)
-            
+
             return (image, clazz)
-        
-        (images, classes) = _prepare(images, classes) 
+
+        (images, classes) = _prepare(images, classes)
         dataset = tf.data.Dataset.from_tensor_slices((images, classes)).repeat()
         if is_train:
             dataset = dataset.apply(tf.data.experimental.map_and_batch(map_func=_preprocess_train, batch_size=batch_size))
@@ -580,9 +580,9 @@ class TfEnas(BaseModel):
         dataset_init_op = dataset_itr.initializer
 
         return (images_batch, classes_batch, dataset_init_op)
-    
+
     def _get_drop_path_keep_prob(self, layers_ratio, step, is_train=False, **knobs):
-        batch_size = knobs['batch_size'] 
+        batch_size = knobs['batch_size']
         drop_path_keep_prob = knobs['drop_path_keep_prob'] # Base keep prob for drop path
         drop_path_decay_epochs = knobs['drop_path_decay_epochs']
         N = self._train_params['N']
@@ -592,7 +592,7 @@ class TfEnas(BaseModel):
         if is_train:
             # Decrease keep prob deeper into network
             keep_prob = 1 - layers_ratio * (1 - drop_path_keep_prob)
-            
+
             # Decrease keep prob with increasing steps
             steps_per_epoch = math.ceil(N / batch_size)
             steps_ratio = tf.minimum(((step + 1) / steps_per_epoch) / drop_path_decay_epochs, 1)
@@ -607,11 +607,11 @@ class TfEnas(BaseModel):
 
     def _get_learning_rate(self, step, **knobs):
         N = self._train_params['N']
-        batch_size = knobs['batch_size'] 
+        batch_size = knobs['batch_size']
         lr = knobs['learning_rate'] # Learning rate
         use_sgdr = knobs['use_sgdr']
         sgdr_decay_epochs = knobs['sgdr_decay_epochs']
-        sgdr_alpha = knobs['sgdr_alpha'] 
+        sgdr_alpha = knobs['sgdr_alpha']
         sgdr_t_mul = knobs['sgdr_t_mul']
 
         # Compute epoch from step
@@ -627,7 +627,7 @@ class TfEnas(BaseModel):
     def _init_session(self, sess, model):
         w = self._train_params['image_size']
         h = self._train_params['image_size']
-        in_ch = 3 
+        in_ch = 3
         m = model
 
         # Do initialization of all variables
@@ -653,7 +653,7 @@ class TfEnas(BaseModel):
 
         # Mock classes if required
         classes = classes or [0 for _ in range(len(images))]
-        
+
         if is_train:
             self._sess.run(m.train_dataset_init_op, feed_dict={
                 m.ph.train_images: images,
@@ -669,7 +669,7 @@ class TfEnas(BaseModel):
         num_epochs = knobs['epochs']
         m = self._model
         N = len(images)
-        
+
         self._maybe_feed_dataset_to_model(images, classes, dataset_path=dataset_path, is_train=True)
 
         # Define plots
@@ -683,7 +683,7 @@ class TfEnas(BaseModel):
             utils.logger.log('Running epoch {}...'.format(epoch))
 
             corrects = []
-            itr = self._get_dataset_iterator(N,[m.train_op, m.train_corrects, m.step, m.pred_probs, 
+            itr = self._get_dataset_iterator(N,[m.train_op, m.train_corrects, m.step, m.pred_probs,
                                             *self._monitored_values.values()], **knobs)
             for  (_, batch_corrects, batch_steps, batch_probs, *values) in itr:
                 # To track mean batch accuracy
@@ -691,7 +691,7 @@ class TfEnas(BaseModel):
 
                 # Periodically, log monitored values
                 if log_condition.check():
-                    utils.logger.log(step=batch_steps, 
+                    utils.logger.log(step=batch_steps,
                         **{ name: v for (name, v) in zip(self._monitored_values.keys(), values) })
 
             # Log mean batch accuracy and epoch
@@ -750,7 +750,7 @@ class TfEnas(BaseModel):
         normal_arch = [cell_archs[(4 * i):(4 * i + 4)] for i in range(b)]
         reduction_arch = [cell_archs[(4 * i):(4 * i + 4)] for i in range(b, b + b)]
         return (normal_arch, reduction_arch)
- 
+
     def _add_aux_head(self, X, in_w, in_h, in_ch, K, is_train):
         pool_ksize = 5
         pool_stride = 3
@@ -764,7 +764,7 @@ class TfEnas(BaseModel):
         # Pool
         with tf.variable_scope('pool'):
             X = tf.nn.relu(X)
-            X = tf.nn.avg_pool(X, ksize=(1, pool_ksize, pool_ksize, 1), strides=(1, pool_stride, pool_stride, 1), 
+            X = tf.nn.avg_pool(X, ksize=(1, pool_ksize, pool_ksize, 1), strides=(1, pool_stride, pool_stride, 1),
                             padding='VALID')
         w //= pool_stride
         h //= pool_stride
@@ -778,7 +778,7 @@ class TfEnas(BaseModel):
         with tf.variable_scope('conv_1'):
             X = self._do_conv(X, w, h, ch, global_conv_ch, filter_size=w, no_reg=True, is_train=is_train)
         ch = global_conv_ch
-        
+
         # Global pooling
         X = self._add_global_avg_pool(X, w, h, ch)
 
@@ -814,7 +814,7 @@ class TfEnas(BaseModel):
             log_probs = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=aux_logits, labels=classes)
             aux_loss += aux_loss_mul * tf.reduce_mean(log_probs)
 
-        total_loss = loss + reg_loss + aux_loss      
+        total_loss = loss + reg_loss + aux_loss
 
         return total_loss
 
@@ -841,7 +841,7 @@ class TfEnas(BaseModel):
             for tf_var in vars
         }
         vars_assign_op = tf.group([
-            tf.assign(tf_var, ph) 
+            tf.assign(tf_var, ph)
             for (tf_var, ph) in zip(vars, var_phs.values())
         ], name='vars_assign_op')
 
@@ -857,7 +857,7 @@ class TfEnas(BaseModel):
         # Downsample inputs to have same dimensions as blocks
         with tf.variable_scope('layer_-1_calibrate'):
             layers[-1] = (self._calibrate(*layers[-1], w, h, block_ch, is_train=is_train), w, h, block_ch)
-        
+
         with tf.variable_scope('layer_-2_calibrate'):
             layers[-2] = (self._calibrate(*layers[-2], w, h, block_ch, is_train=is_train), w, h, block_ch)
 
@@ -877,7 +877,7 @@ class TfEnas(BaseModel):
                 with tf.variable_scope('X2'):
                     X2 = self._add_op_dynamic(cell_inputs, blocks, idx2, op2, w, h, block_ch, is_train=is_train)
                     X2 = self._add_drop_path(X2, drop_path_keep_prob)
-                    
+
                 X = tf.add_n([X1, X2])
 
             blocks.append(X)
@@ -914,7 +914,7 @@ class TfEnas(BaseModel):
                 op2 = cell_arch[bi][3]
 
                 with tf.variable_scope('X1'):
-                    X1 = self._add_op(cell_inputs, blocks, idx1, op1, w, h, block_ch, 
+                    X1 = self._add_op(cell_inputs, blocks, idx1, op1, w, h, block_ch,
                                     is_reduction=is_reduction, is_train=is_train)
                     X1 = self._add_drop_path(X1, drop_path_keep_prob)
 
@@ -922,7 +922,7 @@ class TfEnas(BaseModel):
                     X2 = self._add_op(cell_inputs, blocks, idx2, op2, w, h, block_ch,
                                     is_reduction=is_reduction, is_train=is_train)
                     X2 = self._add_drop_path(X2, drop_path_keep_prob)
-                    
+
                 X = tf.add_n([X1, X2])
 
             blocks.append(X)
@@ -932,7 +932,7 @@ class TfEnas(BaseModel):
         X = tf.reshape(X, (-1, w, h, comb_ch)) # Sanity shape check
 
         layers.append((X, w, h, comb_ch))
-    
+
     def _combine_cell_blocks(self, cell_inputs, blocks, cell_arch, w, h, block_ch, is_train=False):
         # Count usage of inputs
         input_use_counts = [0] * len(cell_inputs + blocks)
@@ -986,7 +986,7 @@ class TfEnas(BaseModel):
         ni = len(cell_inputs + blocks)
         inputs = cell_inputs + blocks
         op_map = self._get_op_map()
-    
+
         # Just build output for select operation
         X = inputs[input_idx]
         op_no = OPS[op]
@@ -994,9 +994,9 @@ class TfEnas(BaseModel):
 
         # If we were to account for reduction
         if is_reduction and input_idx < len(cell_inputs):
-            X = op_method(X, input_idx, ni, w << 1, h << 1, ch, is_reduction=True, is_dynamic=False, is_train=is_train) 
+            X = op_method(X, input_idx, ni, w << 1, h << 1, ch, is_reduction=True, is_dynamic=False, is_train=is_train)
         else:
-            X = op_method(X, input_idx, ni, w, h, ch, is_reduction=False, is_dynamic=False, is_train=is_train) 
+            X = op_method(X, input_idx, ni, w, h, ch, is_reduction=False, is_dynamic=False, is_train=is_train)
 
         return X
 
@@ -1005,7 +1005,7 @@ class TfEnas(BaseModel):
         inputs = tf.stack(cell_inputs + blocks, axis=0)
         op_map = self._get_op_map()
 
-        # Build output for each available operation 
+        # Build output for each available operation
         X = inputs[input_idx]
         op_Xs = []
         for op_no in OPS:
@@ -1030,7 +1030,7 @@ class TfEnas(BaseModel):
             1: self._add_separable_conv_5x5_op,
             2: self._add_avg_pool_3x3_op,
             3: self._add_max_pool_3x3_op,
-            4: self._add_identity_op, 
+            4: self._add_identity_op,
             5: self._add_separable_conv_7x7_op
         }
 
@@ -1041,7 +1041,7 @@ class TfEnas(BaseModel):
             X = tf.nn.avg_pool(X, ksize=(1, filter_size, filter_size, 1), strides=[1, stride, stride, 1], padding='SAME')
         X = tf.reshape(X, (-1, w // stride, h // stride, ch)) # Sanity shape check
         return X
-    
+
     def _add_identity_op(self, X, input_idx, ni, w, h, ch, is_reduction, is_dynamic, is_train):
         stride = 2 if is_reduction else 1
         with tf.variable_scope('identity_op'):
@@ -1050,7 +1050,7 @@ class TfEnas(BaseModel):
                 X = self._calibrate(X, w, h, ch, w // stride, h // stride, ch, is_train=is_train)
         X = tf.reshape(X, (-1, w // stride, h // stride, ch)) # Sanity shape check
         return X
-    
+
     def _add_max_pool_3x3_op(self, X, input_idx, ni, w, h, ch, is_reduction, is_dynamic, is_train):
         filter_size = 3
         stride = 2 if is_reduction else 1
@@ -1058,7 +1058,7 @@ class TfEnas(BaseModel):
             X = tf.nn.max_pool(X, ksize=(1, filter_size, filter_size, 1), strides=[1, stride, stride, 1], padding='SAME')
         X = tf.reshape(X, (-1, w // stride, h // stride, ch)) # Sanity shape check
         return X
-    
+
     def _add_separable_conv_3x3_op(self, *args, **kwargs):
         return self._add_separable_conv_op(*args, **kwargs, filter_size=3)
 
@@ -1075,8 +1075,8 @@ class TfEnas(BaseModel):
         with tf.variable_scope('separable_conv_{}x{}_op'.format(filter_size, filter_size)):
             # For each stack of separable convolution (default of 2)
             for stack_no in range(num_stacks):
-                # Only have > 1 stride for first stack 
-                stack_stride = stride if stack_no == 0 else 1 
+                # Only have > 1 stride for first stack
+                stack_stride = stride if stack_no == 0 else 1
                 with tf.variable_scope('stack_{}'.format(stack_no)):
                     W_d = None
                     W_p = None
@@ -1085,15 +1085,15 @@ class TfEnas(BaseModel):
                     if is_dynamic:
                         # Select weights corresponding to input index
                         W_d = self._make_var('W_d', (ni, filter_size, filter_size, ch, 1))
-                        W_d = W_d[input_idx] 
+                        W_d = W_d[input_idx]
                         W_p = self._make_var('W_p', (ni, 1, 1, ch, ch))
                         W_p = W_p[input_idx]
                         batch_norm_offset = self._make_var('batch_norm_offset', (ni, ch), init_constant=0)
                         batch_norm_offset = batch_norm_offset[input_idx]
                         batch_norm_scale = self._make_var('batch_norm_scale', (ni, ch), init_constant=1)
                         batch_norm_scale = batch_norm_scale[input_idx]
-                    
-                    X = self._do_separable_conv(X, w, h, ch, filter_size=filter_size, stride=stack_stride, 
+
+                    X = self._do_separable_conv(X, w, h, ch, filter_size=filter_size, stride=stack_stride,
                                                 W_d=W_d, W_p=W_p, no_batch_norm=True)
                     X = self._add_batch_norm(X, ch, offset=batch_norm_offset, scale=batch_norm_scale,
                                             no_moving_average=is_dynamic, is_train=is_train)
@@ -1185,7 +1185,7 @@ class TfEnas(BaseModel):
         assert in_w % 2 == 0 and in_h % 2 == 0, 'Width & height ({} & {}) must both be even!'.format(in_w, in_h)
 
         with tf.variable_scope('fac_reduc'):
-            # Split area into 2 halves 
+            # Split area into 2 halves
             half_1 = tf.nn.avg_pool(X, ksize=(1, 1, 1, 1), strides=(1, 2, 2, 1), padding='VALID')
             shifted_X = tf.pad(X, ((0, 0), (0, 1), (0, 1), (0, 0)))[:, 1:, 1:, :]
             half_2 = tf.nn.avg_pool(shifted_X, ksize=(1, 1, 1, 1), strides=(1, 2, 2, 1), padding='VALID')
@@ -1195,7 +1195,7 @@ class TfEnas(BaseModel):
             X_half_1 = tf.nn.conv2d(half_1, W_half_1, (1, 1, 1, 1), padding='VALID')
             W_half_2 = self._make_var('W_half_2', (1, 1, in_ch, out_ch >> 1))
             X_half_2 = tf.nn.conv2d(half_2, W_half_2, (1, 1, 1, 1), padding='VALID')
-            
+
             # Concat both halves across channels
             X = tf.concat([X_half_1, X_half_2], axis=3)
 
@@ -1206,7 +1206,7 @@ class TfEnas(BaseModel):
 
         return X
 
-    def _add_batch_norm(self, X, in_ch, decay=0.9, epsilon=1e-5, offset=None, scale=None, is_train=False, 
+    def _add_batch_norm(self, X, in_ch, decay=0.9, epsilon=1e-5, offset=None, scale=None, is_train=False,
                         no_moving_average=False):
         with tf.variable_scope('batch_norm'):
             if offset is None:
@@ -1235,20 +1235,20 @@ class TfEnas(BaseModel):
                 (X, _, _) =  tf.nn.fused_batch_norm(X, scale, offset, epsilon=epsilon, is_training=True)
 
             return X
-    
+
     def _mark_for_monitoring(self, name, value):
         tf.add_to_collection(TF_COLLECTION_MONITORED, tf.identity(value, name))
 
     def _add_monitoring_of_values(self):
         monitored_values = tf.get_collection(TF_COLLECTION_MONITORED)
-        monitored_values = { 
+        monitored_values = {
             value.name.split(':')[0]: value # Get rid of ':0' from name
             for value in monitored_values
         }
 
         for (name, value) in monitored_values.items():
             tf.summary.scalar(name, value)
-            
+
         summary_op = tf.summary.merge_all()
 
         return (summary_op, monitored_values)
@@ -1269,14 +1269,14 @@ class TfEnas(BaseModel):
         if trainable and not no_reg:
             l2_loss = tf.nn.l2_loss(var)
             tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, l2_loss)
-        
+
         return var
 
 class TimedRepeatCondition():
     def __init__(self, every_secs=60):
         self._every_secs = every_secs
         self._last_trigger_time = datetime.now()
-            
+
     def check(self) -> bool:
         if (datetime.now() - self._last_trigger_time).total_seconds() >= self._every_secs:
             self._last_trigger_time = datetime.now()
@@ -1289,7 +1289,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/cifar10_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/cifar10_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/cifar10_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

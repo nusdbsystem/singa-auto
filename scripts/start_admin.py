@@ -18,20 +18,23 @@
 #
 
 import os
+from singa_auto.admin.app import create_app
+from singa_auto.utils.log import configure_logging
+from singa_auto.admin import Admin
+from datetime import datetime
 
-from rafiki.utils.log import configure_logging
-from rafiki.admin import Admin
-from rafiki.admin.app import app
+curr_time = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
+flask_admin_logname = 'flask-web-admin' + '-' + curr_time
 
-configure_logging('admin')
+configure_logging(process_name=flask_admin_logname)
 
 if __name__ == "__main__":
     # Run seed logic for admin at start-up
     admin = Admin()
     admin.seed()
-
+    app = create_app()
     # Run Flask app
     app.run(
-        host='0.0.0.0', 
-        port=os.getenv('ADMIN_PORT', 3000), 
+        host='0.0.0.0',
+        port=os.getenv('ADMIN_PORT', 3000),
         threaded=True)

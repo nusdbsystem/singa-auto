@@ -17,14 +17,14 @@
 # under the License.
 #
 
-FROM node:11.1-alpine
+FROM node:13.5.0-alpine3.11
 
 ARG DOCKER_WORKDIR_PATH
 RUN mkdir -p $DOCKER_WORKDIR_PATH
 WORKDIR $DOCKER_WORKDIR_PATH
 
 # Inject the following commands on docker run
-# ENV RAFIKI_ADDR=ncrs.d2.comp.nus.edu.sg
+# ENV SINGA_AUTO_ADDR=ncrs.d2.comp.nus.edu.sg
 # ENV ADMIN_EXT_PORT=7500
 # ENV WEB_ADMIN_EXT_PORT=7501
 
@@ -37,4 +37,4 @@ COPY web/ web/
 
 EXPOSE 3001
 
-CMD cd web/ && yarn build && node app.js
+CMD cd web/ && yarn build && node serveBuilt.js
