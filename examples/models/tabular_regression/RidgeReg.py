@@ -27,9 +27,9 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class RidgeReg(BaseModel):
     '''
@@ -50,12 +50,12 @@ class RidgeReg(BaseModel):
         self.__dict__.update(knobs)
         self._regressor = self._build_regressor(self.alpha, self.normalize, self.copy_X, self.tol, self.solver, self.random_state)
 
-    
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -64,16 +64,16 @@ class RidgeReg(BaseModel):
         (X, y) = self._extract_xy(data)
 
         X = self.prepare_X(X)
-        
+
         self._regressor.fit(X, y)
 
         # Compute train root mean square error
         preds = self._regressor.predict(X)
-        
+
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
 
-        
+
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -85,23 +85,23 @@ class RidgeReg(BaseModel):
         X = self.prepare_X(X)
 
         preds = self._regressor.predict(X)
-        
+
         rmse = np.sqrt(mean_squared_error(y, preds))
-        
+
         return 1 / rmse
 
-    
+
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         result = self._regressor.predict(data)
         return result.tolist()[0]
-    
-    
+
+
     def destroy(self):
         pass
 
-    
+
     def dump_parameters(self):
         params = {}
 
@@ -110,7 +110,8 @@ class RidgeReg(BaseModel):
         regressor_base64 = base64.b64encode(regressor_bytes).decode('utf-8')
         params['regressor_base64'] = regressor_base64
         params['features'] = json.dumps(self._features)
-        params['target'] = self._target
+        if self._target:
+            params['target'] = self._target
 
         return params
 
@@ -122,9 +123,13 @@ class RidgeReg(BaseModel):
 
         self._regressor = pickle.loads(regressor_bytes)
         self._features = json.loads(params['features'])
-        self._target = params['target']
 
-        
+        if "target" in params:
+            self._target = params['target']
+        else:
+            self._target = None
+
+
     def _extract_xy(self, data):
         features = self._features
         target = self._target
@@ -133,15 +138,15 @@ class RidgeReg(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:
             y = data[target]
 
         return (X, y)
-        
-        
+
+
     def median_dataset(self, df):
         #replace zero values by median so that 0 will not affect median.
         for col in df.columns:
@@ -149,12 +154,12 @@ class RidgeReg(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-    
+
     def prepare_X(self, df):
         data = self.median_dataset(df)
         X = PolynomialFeatures(interaction_only=True).fit_transform(df)
         return X
-    
+
 
     def _build_regressor(self, alpha, normalize, copy_X, tol, solver, random_state):
         regressor = Ridge(
@@ -167,7 +172,6 @@ class RidgeReg(BaseModel):
         )
         return regressor
 
-    
 if __name__ == '__main__':
     test_model_class(
         model_file_path=__file__,

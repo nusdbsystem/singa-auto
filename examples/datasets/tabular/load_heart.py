@@ -19,12 +19,19 @@
 
 from examples.datasets.tabular.csv_file import load
 
-# Loads the "Heart Disease UCI" CSV dataset from kaggle for the `TABULAR_REGRESSION` task
-# (
-# step 1: Install Kaggle API. 
-# step2: From Rafiki root folder, run: `kaggle datasets download ronitf/heart-disease-uci -p data --unzip` 
-# to download the `heart.csv` file to `rafiki/data` folder.
+
+# step 1: Install Kaggle API.
+# step2: From Rafiki root folder, run: `kaggle datasets download ronitf/heart-disease-uci -p data --unzip`
+# to download the `heart.csv` file to `/data` folder.
 #)
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 
 def load_heart():
     load(
@@ -35,4 +42,4 @@ def load_heart():
 
 
 if __name__ == '__main__':
-    load_heart()    
+    load_heart()

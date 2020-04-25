@@ -27,9 +27,9 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
-from rafiki.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
-from rafiki.model.dev import test_model_class
-from rafiki.constants import ModelDependency
+from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
+from singa_auto.model.dev import test_model_class
+from singa_auto.constants import ModelDependency
 
 class TreeReg(BaseModel):
     '''
@@ -45,19 +45,19 @@ class TreeReg(BaseModel):
             'random_state': IntegerKnob(1, 123),
             'min_impurity_decrease': FloatKnob(0.0, 0.2),
             'min_impurity_split': FloatKnob(1e-07, 1e-03)
-            
+
         }
 
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
         self._regressor = self._build_regressor(self.criterion, self.splitter, self.min_samples_split, self.max_features, self.random_state, self.min_impurity_decrease, self.min_impurity_split)
 
-    
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
         self._target = target
-        
+
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -66,16 +66,16 @@ class TreeReg(BaseModel):
         (X, y) = self._extract_xy(data)
 
         X = self.prepare_X(X)
-        
+
         self._regressor.fit(X, y)
 
         # Compute train root mean square error
         preds = self._regressor.predict(X)
-        
+
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
 
-        
+
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -87,22 +87,22 @@ class TreeReg(BaseModel):
         X = self.prepare_X(X)
 
         preds = self._regressor.predict(X)
-        
+
         rmse = np.sqrt(mean_squared_error(y, preds))
         return 1 / rmse
 
-    
+
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         result = self._regressor.predict(data)
         return result.tolist()[0]
-    
-    
+
+
     def destroy(self):
         pass
 
-    
+
     def dump_parameters(self):
         params = {}
 
@@ -111,7 +111,8 @@ class TreeReg(BaseModel):
         regressor_base64 = base64.b64encode(regressor_bytes).decode('utf-8')
         params['regressor_base64'] = regressor_base64
         params['features'] = json.dumps(self._features)
-        params['target'] = self._target
+        if self._target:
+            params['target'] = self._target
 
         return params
 
@@ -123,9 +124,12 @@ class TreeReg(BaseModel):
 
         self._regressor = pickle.loads(regressor_bytes)
         self._features = json.loads(params['features'])
-        self._target = params['target']
 
-        
+        if "target" in params:
+            self._target = params['target']
+        else:
+            self._target = None
+
     def _extract_xy(self, data):
         features = self._features
         target = self._target
@@ -134,15 +138,15 @@ class TreeReg(BaseModel):
             X = data.iloc[:,:-1]
         else:
             X = data[features]
-            
+
         if target is None:
             y = data.iloc[:,-1]
         else:
             y = data[target]
 
         return (X, y)
-        
-        
+
+
     def median_dataset(self, df):
         #replace zero values by median so that 0 will not affect median.
         for col in df.columns:
@@ -150,12 +154,12 @@ class TreeReg(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-    
+
     def prepare_X(self, df):
         data = self.median_dataset(df)
         X = StandardScaler().fit_transform(df)
         return X
-    
+
 
     def _build_regressor(self, criterion, splitter, min_samples_split,  max_features, random_state, min_impurity_decrease, min_impurity_split):
         regressor = DecisionTreeRegressor(
@@ -169,7 +173,7 @@ class TreeReg(BaseModel):
         )
         return regressor
 
-    
+
 if __name__ == '__main__':
     test_model_class(
         model_file_path=__file__,
