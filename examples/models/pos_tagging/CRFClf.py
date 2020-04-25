@@ -155,6 +155,7 @@ class CRFClf(BaseModel):
 
         return clf
 
+
 if __name__ == '__main__':
     test_model_class(
         model_file_path=__file__,
@@ -172,4 +173,3 @@ if __name__ == '__main__':
             ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
         ]
     )
-

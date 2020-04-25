@@ -18,7 +18,14 @@
 #
 
 from examples.datasets.tabular.csv_file import load
+import ssl
 
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 # Loads the "Titantic" CSV dataset from `https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/problem12.html` for the `TABULAR_REGRESSION` task
 def load_titanic():
     load(
@@ -29,5 +36,4 @@ def load_titanic():
 
 
 if __name__ == '__main__':
-    load_titanic()    
-    
+    load_titanic()

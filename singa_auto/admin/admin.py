@@ -153,63 +153,64 @@ class Admin(object):
         # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
+        stat = dict()
+        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(data_file_path)[1] == '.zip':
+            dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
+            if 'images.csv' in dataset_zipfile.namelist():
 
-        dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
-        if 'images.csv' in dataset_zipfile.namelist():
+                for fileName in dataset_zipfile.namelist():
+                    if fileName.endswith('.csv'):
+                        num_samples = len(dataset_zipfile.namelist()) -1
+                        # create tempdir to store unziped csv and a sample image
+                        with tempfile.TemporaryDirectory() as dir_path:
+                            # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
+                            # obtain csv file
+                            # Extract a single file from zip
+                            csv_path = dataset_zipfile.extract(fileName, path=dir_path)
+                            # obtain a sample
+                            sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
+                            if task == 'IMAGE_CLASSIFICATION':
+                                img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                                img = Image.open(img_path)
+                                img_size = str(img.size)
+                            # close dataset zipfile
+                            dataset_zipfile.close()
+                            csv = pd.read_csv(csv_path)
 
-            for fileName in dataset_zipfile.namelist():
-                if fileName.endswith('.csv'):
-                    num_samples = len(dataset_zipfile.namelist()) -1
-                    # create tempdir to store unziped csv and a sample image
-                    with tempfile.TemporaryDirectory() as dir_path:
-                        # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
-                        # obtain csv file
-                        # Extract a single file from zip
-                        csv_path = dataset_zipfile.extract(fileName, path=dir_path)
-                        # obtain a sample
-                        sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
-                        if task == 'IMAGE_CLASSIFICATION':
-                            img_path = dataset_zipfile.extract(sample_name, path=dir_path)
-                            img = Image.open(img_path)
-                            img_size = str(img.size)
-                        # close dataset zipfile
-                        dataset_zipfile.close()
-                        csv = pd.read_csv(csv_path)
+                            # num_classes = len(labels)
+                            if len(csv.columns) == 2:
+                                class_count = csv[csv.columns[1]].value_counts()
+                            else:
+                                labels = pd.read_csv(csv_path, nrows=0).columns[1::].to_list()
+                                class_count = (csv[csv.columns[1::]] == 1).astype(int).sum(axis=0)
 
-                        # num_classes = len(labels)
-                        if len(csv.columns) == 2:
-                            class_count = csv[csv.columns[1]].value_counts()
-                        else:
-                            labels = pd.read_csv(csv_path, nrows=0).columns[1::].to_list()
-                            class_count = (csv[csv.columns[1::]] == 1).astype(int).sum(axis=0)
+                        num_labeled_samples = len(csv[csv.columns[0]].unique())
+                        ratio = class_count / num_labeled_samples
+                        num_unlabeled_samples = num_samples - num_labeled_samples
+                        break
+            else:
+                # if the csv file was not provided in zip
+                with tempfile.TemporaryDirectory() as dir_path:
+                    num_labeled_samples = len(dataset_zipfile.namelist())
+                    num_unlabeled_samples = 0
 
-                    num_labeled_samples = len(csv[csv.columns[0]].unique())
+                    d_list = [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
+                    labels = [os.path.dirname(x) for x in d_list]
+                    class_count = pd.DataFrame( list(Counter(labels).values()), list(Counter(labels).keys()))
+
                     ratio = class_count / num_labeled_samples
-                    num_unlabeled_samples = num_samples - num_labeled_samples
-                    break
-        else:
-            # if the csv file was not provided in zip
-            with tempfile.TemporaryDirectory() as dir_path:
-                num_labeled_samples = len(dataset_zipfile.namelist())
-                num_unlabeled_samples = 0
+                    sample_name = d_list[0]
+                    if task == 'IMAGE_CLASSIFICATION':
+                        img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                        img = Image.open(img_path)
+                        img_size = str(img.size)
 
-                d_list =  [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
-                labels = [os.path.dirname(x) for x in d_list]
-                class_count = pd.DataFrame( list(Counter(labels).values()), list(Counter(labels).keys()))
-
-                ratio = class_count / num_labeled_samples
-                sample_name = d_list[0]
-                if task == 'IMAGE_CLASSIFICATION':
-                    img_path = dataset_zipfile.extract(sample_name, path=dir_path)
-                    img = Image.open(img_path)
-                    img_size = str(img.size)
-
-        if task == 'IMAGE_CLASSIFICATION':
-            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size': img_size}
-        else:
-            stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
+            if task == 'IMAGE_CLASSIFICATION':
+                stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
+                        'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size': img_size}
+            else:
+                stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
+                        'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
 
         print('begin saving to db')
 
