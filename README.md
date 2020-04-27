@@ -17,11 +17,11 @@
     under the License.
 -->
 
-# Rafiki
+# SINGA-AUTO
 
-*Rafiki* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind. To do so, it leverages on automated machine learning (AutoML).
+*SINGA-AUTO* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind. To do so, it leverages on automated machine learning (AutoML).
 
-Read Rafiki's full documentation at https://nginyc.github.io/rafiki/docs/latest
+Read  SINGA-AUTO's full documentation at https://nginyc.github.io/rafiki/docs/latest
 
 ## Quick Setup
 
@@ -33,12 +33,12 @@ Prerequisites: MacOS or Linux environment
 
 3. Clone this project (e.g. with [Git](https://git-scm.com/downloads>))
 
-4. Setup Rafiki's complete stack with the setup script:
+4. Setup  SINGA-AUTO's complete stack with the setup script:
 
    if use docker swarm mode, use this script: 
 
     ```sh
-    bash scripts/start.sh
+    bash scripts/docker_swarm/start.sh
     ```
     
    if use kubernetes mode, use this script:
@@ -47,12 +47,12 @@ Prerequisites: MacOS or Linux environment
     bash scripts/kubernetes/start.sh
     ```
 
-  To completely destroy Rafiki's stack:
+  To completely destroy  SINGA-AUTO's stack:
 
    if use docker swarm mode, use this script:
    
     ```sh
-    bash scripts/stop.sh
+    bash scripts/docker_swarm/stop.sh
     ```
     
    if user kubernetes mode, use this script:

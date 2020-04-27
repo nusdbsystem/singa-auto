@@ -56,7 +56,7 @@ RUN pip install -r singa_auto/container/requirements.txt
 COPY singa_auto/admin/requirements.txt singa_auto/admin/requirements.txt
 RUN pip install -r singa_auto/admin/requirements.txt
 
-RUN pip install singa-auto==0.1.9
+RUN pip install singa-auto==0.2.1
 
 EXPOSE 3000
 
