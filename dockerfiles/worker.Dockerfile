@@ -88,7 +88,6 @@ COPY singa_auto/advisor/requirements.txt singa_auto/advisor/requirements.txt
 RUN pip install -r singa_auto/advisor/requirements.txt
 
 RUN pip install singa-auto==0.2.1
-RUN pip install singa-easy==0.2.0
 
 CMD ["worker"]
 
