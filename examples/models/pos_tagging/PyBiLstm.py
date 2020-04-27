@@ -28,10 +28,12 @@ from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, Categ
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
+
 class PyBiLstm(BaseModel):
     '''
     Implements a Bidrectional LSTM model in Pytorch for POS tagging
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -109,7 +111,7 @@ class PyBiLstm(BaseModel):
 
         batch = dataset[lo:hi]
         N = len(batch)
-        W = max([len(x) for x in batch]) # Max sent length
+        W = max([len(x) for x in batch])  # Max sent length
 
         # Prepare words
         words_tsr = Tensor(N, W)
@@ -139,7 +141,7 @@ class PyBiLstm(BaseModel):
     def _predict(self, dataset):
         N = self._knobs.get('batch_size')
         net = self._net
-        B = math.ceil(len(dataset) / N) # No. of batches
+        B = math.ceil(len(dataset) / N)  # No. of batches
         word_count = len(self._word_dict)
         null_word = word_count
 
@@ -175,8 +177,8 @@ class PyBiLstm(BaseModel):
     def _train(self, dataset):
         N = self._knobs.get('batch_size')
         ep = self._knobs.get('epochs')
-        null_tag = self._tag_count # Tag to ignore (from padding of sentences during batching)
-        B = math.ceil(len(dataset) / N) # No. of batches
+        null_tag = self._tag_count  # Tag to ignore (from padding of sentences during batching)
+        B = math.ceil(len(dataset) / N)  # No. of batches
 
         # Define loss plot
         utils.logger.define_loss_plot()
@@ -238,7 +240,7 @@ class PyBiLstm(BaseModel):
 
         word_count = len(self._word_dict)
         net = PyNet(word_count + 1, self._tag_count + 1, \
-                word_embed_dims, word_rnn_hidden_size, word_dropout)
+                    word_embed_dims, word_rnn_hidden_size, word_dropout)
         optimizer = optim.Adam(net.parameters(), lr=lr)
         return (net, optimizer)
 
@@ -276,7 +278,7 @@ class PyBiLstm(BaseModel):
         # For each param, check for matching namespace, adding to out params without namespace prefix if matching
         for (name, value) in params.items():
             if name.startswith(f'{namespace}:'):
-                param_name = name[(len(namespace)+1):]
+                param_name = name[(len(namespace) + 1):]
                 out_params[param_name] = value
 
         return out_params
@@ -284,7 +286,7 @@ class PyBiLstm(BaseModel):
 
 class PyNet(nn.Module):
     def __init__(self, word_count, tag_count, word_embed_dims=8, \
-                word_rnn_hidden_size=64, word_dropout=0.2):
+                 word_rnn_hidden_size=64, word_dropout=0.2):
         super(PyNet, self).__init__()
 
         # Properties
@@ -299,8 +301,8 @@ class PyNet(nn.Module):
         self._word_dropout = nn.Dropout(p=word_dropout)
 
     def forward(self, words_tsr):
-        N = words_tsr.size(0) # Batch size
-        W = words_tsr.size(1) # No. of words per sentence
+        N = words_tsr.size(0)  # Batch size
+        W = words_tsr.size(1)  # No. of words per sentence
         Ew = self._Ew
         t = self._t
         h = self._h
@@ -320,6 +322,7 @@ class PyNet(nn.Module):
 
         return word_probs_tsr
 
+
 if __name__ == '__main__':
     test_model_class(
         model_file_path=__file__,
@@ -335,4 +338,3 @@ if __name__ == '__main__':
             ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
         ]
     )
-
