@@ -21,7 +21,7 @@ from setuptools import setup, findall, find_packages
 
 
 setup(name='singa-auto',
-      version='0.1.9',
+      version='0.2.1',
       description='The SINGA-Auto',
       url='https://github.com/nusdbsystem/singa-auto.git',
       author='Naili',
