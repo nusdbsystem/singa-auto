@@ -173,6 +173,14 @@ class DatasetUtils():
         images = np.array([np.asarray(x) for x in pil_images])
         return images
 
+    def image_to_byte_array(self, query: List[List]):
+        query = np.asarray(query).astype(np.uint8)
+        image = Image.fromarray(query)
+        imgByteArr = io.BytesIO()
+        image.save(imgByteArr, format='JPEG')
+        imgByteArr = imgByteArr.getvalue()
+        return imgByteArr
+
 
 class ModelDataset():
     '''
