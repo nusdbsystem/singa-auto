@@ -23,9 +23,9 @@ import base64
 import numpy as np
 import argparse
 
-from rafiki.model import BaseModel, IntegerKnob, CategoricalKnob, utils
-from rafiki.constants import ModelDependency
-from rafiki.model.dev import test_model_class
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, utils
+from singa_auto.constants import ModelDependency
+from singa_auto.model.dev import test_model_class
 
 class SkDt(BaseModel):
     '''
@@ -43,7 +43,7 @@ class SkDt(BaseModel):
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
         self._clf = self._build_classifier(self.max_depth, self.criterion, self.splitter)
-       
+
     def train(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
         self._image_size = dataset.image_size
@@ -102,7 +102,7 @@ class SkDt(BaseModel):
             max_depth=max_depth,
             criterion=criterion,
             splitter=splitter
-        ) 
+        )
         return clf
 
 if __name__ == '__main__':
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
     parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
     parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png', 
+    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 

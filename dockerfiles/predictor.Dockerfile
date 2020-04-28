@@ -39,22 +39,22 @@ WORKDIR $DOCKER_WORKDIR_PATH
 ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
-COPY rafiki/requirements.txt rafiki/requirements.txt
-RUN pip install -r rafiki/requirements.txt
-COPY rafiki/utils/requirements.txt rafiki/utils/requirements.txt
-RUN pip install -r rafiki/utils/requirements.txt
-COPY rafiki/meta_store/requirements.txt rafiki/meta_store/requirements.txt
-RUN pip install -r rafiki/meta_store/requirements.txt
-COPY rafiki/redis/requirements.txt rafiki/redis/requirements.txt
-RUN pip install -r rafiki/redis/requirements.txt
-COPY rafiki/kafka/requirements.txt rafiki/kafka/requirements.txt
-RUN pip install -r rafiki/kafka/requirements.txt
-COPY rafiki/predictor/requirements.txt rafiki/predictor/requirements.txt
-RUN pip install -r rafiki/predictor/requirements.txt
+COPY singa_auto/requirements.txt singa_auto/requirements.txt
+RUN pip install -r singa_auto/requirements.txt
+COPY singa_auto/utils/requirements.txt singa_auto/utils/requirements.txt
+RUN pip install -r singa_auto/utils/requirements.txt
+COPY singa_auto/meta_store/requirements.txt singa_auto/meta_store/requirements.txt
+RUN pip install -r singa_auto/meta_store/requirements.txt
+COPY singa_auto/redis/requirements.txt singa_auto/redis/requirements.txt
+RUN pip install -r singa_auto/redis/requirements.txt
+COPY singa_auto/kafka/requirements.txt singa_auto/kafka/requirements.txt
+RUN pip install -r singa_auto/kafka/requirements.txt
+COPY singa_auto/predictor/requirements.txt singa_auto/predictor/requirements.txt
+RUN pip install -r singa_auto/predictor/requirements.txt
 
-COPY rafiki/ rafiki/
-COPY scripts/ scripts/
+RUN pip install singa-auto==0.2.1
 
 EXPOSE 3003
 
-CMD ["python", "scripts/start_predictor.py"]
+CMD ["predict"]
+
