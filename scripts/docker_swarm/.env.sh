@@ -26,7 +26,7 @@ export APP_SECRET=singa_auto
 # Core external configuration for SINGA-auto
 export DOCKER_NETWORK=singa_auto
 export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
-export SINGA_AUTO_VERSION=0.2.0
+export SINGA_AUTO_VERSION=dev_1.0
 export SINGA_AUTO_ADDR=127.0.0.1
 export ADMIN_EXT_PORT=3000
 export WEB_ADMIN_EXT_PORT=3001
