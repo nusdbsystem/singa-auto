@@ -34,15 +34,15 @@ echo "using $1 docker files"
 if [ $1 = "dev" ]
 then
   title "Building SINGA-Auto Admin's image..."
-  docker build --no-cache  -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/admin.Dockerfile \
+  docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/admin.Dockerfile \
       --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
       --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
   title "Building SINGA-Auto Worker's image..."
-  docker build  --no-cache -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/worker.Dockerfile \
+  docker build  -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/worker.Dockerfile \
       --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
       --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
   title "Building SINGA-Auto Predictor's image..."
-  docker build  --no-cache -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/predictor.Dockerfile \
+  docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/predictor.Dockerfile \
       --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
       --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
 fi
