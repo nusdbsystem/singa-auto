@@ -68,7 +68,7 @@ def get_trials_of_train_job(auth, app, app_version, params):
     max_count = int(params['max_count']) if 'max_count' in params else 2
 
     with admin:
-        if params.get('type') == 'best':
+        if "type" in params and params.get('type') == 'best':
             # Return best trials by train job
             return jsonify(
                 admin.get_best_trials_of_train_job(user_id=auth['user_id'], app=app, app_version=int(app_version),

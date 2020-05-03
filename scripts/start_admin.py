@@ -37,4 +37,5 @@ if __name__ == "__main__":
     app.run(
         host='0.0.0.0',
         port=os.getenv('ADMIN_PORT', 3000),
-        threaded=True)
+        # threaded=True,
+        debug=True)
