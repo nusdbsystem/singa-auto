@@ -62,7 +62,7 @@ def predict():
         predictor = get_predictor()
         queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
         predictions = predictor.predict(queries)
-        return jsonify(predictions), 200
+        return jsonify(predictions[0][0]), 200
     except:
         # for debug,print the error
         traceback.print_exc()
