@@ -26,10 +26,10 @@ class FoodDetection(BaseModel):
         self.xception_model = None
         self.det_net = None
         self.det_meta = None
-        self.classes = 231
+        self.classes = 44
         self.image_size = 299
         self.class_dict = {}
-        self.npy_index = "singa_auto/custom_models_base/darknet/cfg/food/food231.npy"
+        self.npy_index = "singa_auto/custom_models_base/darknet/cfg/food/food44.npy"
 
     def train(self, dataset_path, **kwargs):
         pass

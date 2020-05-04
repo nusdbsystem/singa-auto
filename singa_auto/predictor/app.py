@@ -62,7 +62,12 @@ def predict():
         predictor = get_predictor()
         queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
         predictions = predictor.predict(queries)
-        return jsonify(predictions[0][0]), 200
+
+        if isinstance(predictions[0], list):
+            # this is only for pandavgg demo as the frontend only accept the dictionary.
+            return jsonify(predictions[0][0]), 200
+        else:
+            return jsonify(predictions), 200
     except:
         # for debug,print the error
         traceback.print_exc()
