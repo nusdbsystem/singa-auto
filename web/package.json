@@ -1,7 +1,7 @@
 {
   "name": "rafiki_web_admin_panda_dev",
   "version": "0.3.0",
-  "description": "Web Admin Portal for Rafiki Panda-dev",
+  "description": "Web Admin Portal for Rafiki Panda",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.5",
