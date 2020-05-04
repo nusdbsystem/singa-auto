@@ -18,7 +18,14 @@
 #
 
 from examples.datasets.tabular.csv_file import load
+import ssl
 
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 # Loads the "Body Fat" CSV dataset from `http://course1.winona.edu/bdeppa/Stat%20425/Datasets.html` for the `TABULAR_CLASSIFICATION` task
 def load_body_fat():
     load(
@@ -26,7 +33,6 @@ def load_body_fat():
         out_train_dataset_path='data/bodyfat_train.csv',
         out_val_dataset_path='data/bodyfat_val.csv'
     )
-    
+
 if __name__ == '__main__':
-    load_body_fat()    
-    
+    load_body_fat()
