@@ -725,9 +725,9 @@ class Admin(object):
                     res.append({
                                 'id': inference_job.id,
                                 'status': inference_job.status,
-                                'train_job_id': "ByCheckpoint: {}".format(model.checkpoint_id),
-                                'app': 'N/A',
-                                'app_version': 'N/A',
+                                'train_job_id': "checkpoint: {}".format(model.checkpoint_id),
+                                'app': model.name,
+                                'app_version': 'latest',
                                 'datetime_started': inference_job.datetime_started,
                                 'datetime_stopped': inference_job.datetime_stopped
                             })
