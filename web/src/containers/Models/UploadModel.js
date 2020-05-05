@@ -88,6 +88,7 @@ class UploadModel extends React.Component {
     lime01136: false,
     scikitLearn0200: false,
     tensorflow1120: false,
+    singaEasy030: false,
   }
 
   static propTypes = {
@@ -177,6 +178,7 @@ class UploadModel extends React.Component {
     depState["lime01136"] = this.state.lime01136
     depState["scikitLearn0200"] = this.state.scikitLearn0200
     depState["tensorflow1120"] = this.state.tensorflow1120
+    depState["singaEasy030"] = this.state.singaEasy030
     //console.log("depState: ", depState)
 
     const checkedDep = Object.keys(depState)
@@ -187,6 +189,9 @@ class UploadModel extends React.Component {
     let depToPOST = {}
     checkedDep.map(v => {
       switch(v) {
+        case "singa030":
+          depToPOST["singa-easy"] = "0.3.0"
+          return "singa030"
         case "torch101":
           depToPOST["torch"] = "1.0.1"
           return "torch101"
@@ -215,7 +220,7 @@ class UploadModel extends React.Component {
     try {
       const res = await axios.post(
         `${HTTPconfig.gateway}models`,
-        formData, 
+        formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -384,6 +389,10 @@ class UploadModel extends React.Component {
                         <FormControlLabel
                           control={<Checkbox checked={torch101} onChange={this.hancleCheckboxClick('torch101')} value="torch101" />}
                           label="torch 1.0.1"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={false}  value="singa" />}
+                          label="singa 3.0.0"
                         />
                         <FormControlLabel
                           control={<Checkbox checked={torchvision022} onChange={this.hancleCheckboxClick('torchvision022')} value="torchvision022" />}
