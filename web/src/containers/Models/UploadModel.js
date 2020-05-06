@@ -189,9 +189,6 @@ class UploadModel extends React.Component {
     let depToPOST = {}
     checkedDep.map(v => {
       switch(v) {
-        case "singa030":
-          depToPOST["singa-easy"] = "0.3.0"
-          return "singa030"
         case "torch101":
           depToPOST["torch"] = "1.0.1"
           return "torch101"
@@ -210,6 +207,11 @@ class UploadModel extends React.Component {
         case "tensorflow1120":
           depToPOST["tensorflow"] = "1.12.0"
           return "tensorflow1120"
+        // add singa 3.0.0 option May 05 2020
+        // for pip install singa-easy==0.3.0
+        case "singaEasy030":
+          depToPOST["singa-easy"] = "0.3.0"
+          return "singaEasy030"
         default:
           return "NA"
       }
@@ -312,7 +314,8 @@ class UploadModel extends React.Component {
       matplotlib310,
       lime01136,
       scikitLearn0200,
-      tensorflow1120
+      tensorflow1120,
+      singaEasy030,
     } = this.state
 
     const error = [
@@ -321,7 +324,8 @@ class UploadModel extends React.Component {
       matplotlib310,
       lime01136,
       scikitLearn0200,
-      tensorflow1120
+      tensorflow1120,
+      singaEasy030,
     ].filter(v => v).length === 0;
 
     return (
@@ -391,10 +395,6 @@ class UploadModel extends React.Component {
                           label="torch 1.0.1"
                         />
                         <FormControlLabel
-                          control={<Checkbox checked={false}  value="singa" />}
-                          label="singa 3.0.0"
-                        />
-                        <FormControlLabel
                           control={<Checkbox checked={torchvision022} onChange={this.hancleCheckboxClick('torchvision022')} value="torchvision022" />}
                           label="torchvision 0.2.2"
                         />
@@ -415,6 +415,10 @@ class UploadModel extends React.Component {
                             <Checkbox checked={tensorflow1120} onChange={this.hancleCheckboxClick('tensorflow1120')} value="tensorflow1120" />
                           }
                           label="tensorflow 1.12.0"
+                        />
+                        <FormControlLabel
+                          control={<Checkbox checked={singaEasy030} onChange={this.hancleCheckboxClick('singaEasy030')} value="singaEasy030" />}
+                          label="singa 3.0.0"
                         />
                       </FormGroup>
                       <FormHelperText>Can choose multiple</FormHelperText>
