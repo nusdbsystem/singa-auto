@@ -727,7 +727,7 @@ class Admin(object):
                                 'status': inference_job.status,
                                 'train_job_id': "checkpoint: {}".format(model.checkpoint_id),
                                 'app': model.name,
-                                'app_version': 'latest',
+                                'app_version': 1,
                                 'datetime_started': inference_job.datetime_started,
                                 'datetime_stopped': inference_job.datetime_stopped
                             })
