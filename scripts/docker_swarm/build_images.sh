@@ -66,8 +66,8 @@ fi
 title "Building SINGA-Auto Web Admin's image..."
 docker build -t $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/web_admin.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH $PWD || exit 1
-title "Building SINGA-Auto Test's image..."
-docker build -t $SINGA_AUTO_IMAGE_TEST:$SINGA_AUTO_VERSION -f ./dockerfiles/test.Dockerfile \
-    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-    --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+#title "Building SINGA-Auto Test's image..."
+#docker build -t $SINGA_AUTO_IMAGE_TEST:$SINGA_AUTO_VERSION -f ./dockerfiles/test.Dockerfile \
+#    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
+#    --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
 echo "Finished building all SINGA-Auto's images successfully!"

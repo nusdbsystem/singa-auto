@@ -56,7 +56,7 @@ class Admin(object):
         self._meta_store = meta_store or MetaStore()
         if os.getenv('CONTAINER_MODE', 'SWARM') == 'SWARM':
             container_manager = container_manager or DockerSwarmContainerManager()
-        else:
+        elif os.getenv('CONTAINER_MODE', 'SWARM') == 'K8S':
             container_manager = container_manager or KubernetesContainerManager()
         self._data_store: DataStore = data_store or FileDataStore()
         self._param_store: ParamStore = param_store or FileParamStore()

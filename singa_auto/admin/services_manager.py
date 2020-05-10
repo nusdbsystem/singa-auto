@@ -56,7 +56,7 @@ class ServicesManager(object):
         if var_autoforward is None:
             var_autoforward = ENVIRONMENT_VARIABLES_AUTOFORWARD
         self._meta_store: MetaStore = meta_store or MetaStore()
-        self._container_manager: ContainerManager = container_manager or DockerSwarmContainerManager()
+        self._container_manager: ContainerManager = container_manager
 
          # Ensure that environment variable exists, failing fast
         for x in var_autoforward:
