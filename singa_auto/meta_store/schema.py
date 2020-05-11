@@ -96,6 +96,8 @@ class Model(Base):
                           default=ModelAccessRight.PRIVATE)
     checkpoint_id = Column(String, default=None)
     model_description = Column(String, nullable=True)
+    model_type = Column(String, default='py')
+    model_file_name = Column(String, default=None)
     __table_args__ = (UniqueConstraint('name', 'user_id'),)
 
 

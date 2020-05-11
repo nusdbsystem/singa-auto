@@ -25,7 +25,7 @@ import zipfile
 import tempfile
 from collections import Counter
 from PIL import Image
-from singa_auto.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus
+from singa_auto.constants import ServiceStatus, UserType, TrainJobStatus, ModelAccessRight, InferenceJobStatus, ModelType
 from singa_auto.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 from singa_auto.meta_store import MetaStore
 from singa_auto.model import LoggerUtils
@@ -873,7 +873,9 @@ class Admin(object):
                      dependencies=None,
                      access_right=ModelAccessRight.PRIVATE,
                      checkpoint_id=None,
-                     model_description=None):
+                     model_description=None,
+                     model_type=ModelType.PYTHON_FILE,
+                     model_file_name=None):
         if dependencies is None:
             dependencies = {}
 
@@ -887,7 +889,10 @@ class Admin(object):
             dependencies=dependencies,
             access_right=access_right,
             checkpoint_id=checkpoint_id,
-            model_description=model_description)
+            model_description=model_description,
+            model_type=model_type,
+            model_file_name=model_file_name
+        )
         self._meta_store.commit()
 
         return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
@@ -917,7 +922,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description
+            'model_description': model.model_description,
+            'model_type': model.model_type,
+            'model_file_name': model.model_file_name
         }
 
     def get_model(self, model_id):
@@ -936,7 +943,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description
+            'model_description': model.model_description,
+            'model_type': model.model_type,
+            'model_file_name': model.model_file_name
         }
 
     def get_model_file(self, model_id):
@@ -957,7 +966,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description
+            'model_description': model.model_description,
+            'model_type': model.model_type,
+            'model_file_name': model.model_file_name
         } for model in models]
 
     def get_recommend_models(self, user_id, dataset_id):
@@ -976,7 +987,9 @@ class Admin(object):
                     'dependencies': model.dependencies,
                     'access_right': model.access_right,
                     'checkpoint_id': model.checkpoint_id,
-                    'model_description': model.model_description
+                    'model_description': model.model_description,
+                    'model_type': model.model_type,
+                    'model_file_name': model.model_file_name
                 }]
         # If we can not found resnet, return the first model
         for model in models:
@@ -989,7 +1002,9 @@ class Admin(object):
                 'dependencies': model.dependencies,
                 'access_right': model.access_right,
                 'checkpoint_id': model.checkpoint_id,
-                'model_description': model.model_description
+                'model_description': model.model_description,
+                'model_type': model.model_type,
+                'model_file_name': model.model_file_name
             }]
 
     ####################################

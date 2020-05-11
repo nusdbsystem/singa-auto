@@ -61,7 +61,13 @@ def create_model(auth, params):
 
     if 'access_right' in params:
         feed_params['access_right'] = params['access_right']
+    
+    if 'model_file_name' in params:
+        feed_params['model_file_name'] = params['model_file_name']
 
+    if 'model_type' in params:
+        feed_params['model_type'] = params['model_type']
+        
     if 'checkpoint_id' in params and params['checkpoint_id'] is not None:
 
         # if the checkpoint is not .model file, serialize it first

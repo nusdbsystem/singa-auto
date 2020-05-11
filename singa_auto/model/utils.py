@@ -25,29 +25,46 @@ from typing import Type
 from importlib import import_module
 from pkg_resources import parse_version
 import pickle
+import zipfile
 
-from singa_auto.constants import ModelDependency
+from singa_auto.constants import ModelDependency, ModelType
 
 from .model import BaseModel
 from .dataset import DatasetUtils
 from .log import LoggerUtils
 from singa_auto.error_code import InvalidModelClassError
 
+def un_zip(file_name, folder_name):
+    # unzip zip file
+    zip_file = zipfile.ZipFile(file_name)
+    if os.path.isdir(folder_name):
+       pass
+    else:
+        os.mkdir(folder_name)
+    for names in zip_file.namelist():
+        zip_file.extract(names, folder_name+'/')
+    zip_file.close()
 
-def load_model_class(model_file_bytes,
-                     model_class,
-                     temp_mod_name=None) -> Type[BaseModel]:
-    temp_mod_name = temp_mod_name or '{}-{}'.format(model_class,
-                                                    str(uuid.uuid4()))
-    temp_model_file_name = '{}.py'.format(temp_mod_name)
+def load_model_class(model_file_bytes, 
+                     model_class, 
+                     temp_mod_name=None, 
+                     model_type=ModelType.PYTHON_FILE, 
+                     model_file_name=None) -> Type[BaseModel]:
+    
+    temp_mod_name = temp_mod_name or '{}-{}'.format(model_class, str(uuid.uuid4()))
+    temp_model_file_name ='{}.{}'.format(temp_mod_name, model_type)
 
     # Temporarily save the model file to disk
     with open(temp_model_file_name, 'wb') as f:
         f.write(model_file_bytes)
 
+    if model_type == ModelType.ZIP_FILE:
+        un_zip(temp_model_file_name, temp_mod_name)
+        temp_mod_name = temp_mod_name + '.' + model_file_name
+
     try:
         import time
-        time.sleep(3)
+        time.sleep(5)
         # Import model file as module
         mod = import_module(temp_mod_name)
         # Extract model class from module
@@ -59,8 +76,7 @@ def load_model_class(model_file_bytes,
         os.remove(temp_model_file_name)
 
     return clazz
-
-
+    
 def parse_model_install_command(dependencies, enable_gpu=False):
     conda_env = os.environ.get('CONDA_ENVIORNMENT')
     commands = []

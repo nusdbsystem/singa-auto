@@ -243,7 +243,9 @@ class Client:
                      dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
                      docker_image: str = None,
-                     model_description: str = None) -> Dict[str, Any]:
+                     model_description: str = None,
+                     model_type: str = 'py',
+                     model_file_name: str = None) -> Dict[str, Any]:
         '''
         Creates a model on SINGA-Auto.
 
@@ -295,7 +297,9 @@ class Client:
             'docker_image': docker_image,
             'model_class': model_class,
             'access_right': access_right,
-            'model_description': model_description
+            'model_description': model_description,
+            'model_type': model_type,
+            'model_file_name': model_file_name
         }
 
         data = self._post_stream(path='/models',
