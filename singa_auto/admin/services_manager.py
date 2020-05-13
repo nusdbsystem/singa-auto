@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import json
 import os
 import logging
 import traceback
@@ -26,7 +26,8 @@ from contextlib import closing
 
 from singa_auto.constants import ServiceStatus, ServiceType, BudgetOption, InferenceBudgetOption, TrainJobStatus, InferenceJobStatus
 from singa_auto.meta_store import MetaStore
-from singa_auto.container import DockerSwarmContainerManager, ContainerManager, ContainerService
+from singa_auto.container import DockerSwarmContainerManager, ContainerManager, ContainerService, \
+    KubernetesContainerManager
 from singa_auto.model import parse_model_install_command
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,13 @@ class ServiceDeploymentError(Exception): pass
 
 # List of environment variables that will be auto-forwarded to services deployed
 ENVIRONMENT_VARIABLES_AUTOFORWARD = [
-    'POSTGRES_HOST', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD',
-    'SUPERADMIN_PASSWORD', 'POSTGRES_DB', 'REDIS_HOST', 'REDIS_PORT',
-    'ADMIN_HOST', 'ADMIN_PORT', 'DATA_DIR_PATH', 'LOGS_DIR_PATH', 'PARAMS_DIR_PATH', 'KAFKA_HOST', 'KAFKA_PORT',
+    'POSTGRES_HOST', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD','POSTGRES_DB'
+    'SUPERADMIN_PASSWORD',
+    'REDIS_HOST', 'REDIS_PORT',
+    'ADMIN_HOST', 'ADMIN_PORT',
+    'DATA_DIR_PATH', 'LOGS_DIR_PATH', 'PARAMS_DIR_PATH',
+    'KAFKA_HOST', 'KAFKA_PORT',
+
 ]
 
 DEFAULT_TRAIN_GPU_COUNT = 0
@@ -77,11 +82,14 @@ class ServicesManager(object):
         self._singa_auto_addr = os.environ['SINGA_AUTO_ADDR']
         self._app_mode = os.environ['APP_MODE']
 
-    def create_inference_services(self, inference_job_id, use_checkpoint=False):
+        self._ingress_name = os.environ['INGRESS_NAME']
+
+    def create_inference_services(self, inferenceAppName, inference_job_id, use_checkpoint=False):
         inference_job = self._meta_store.get_inference_job(inference_job_id)
         total_gpus = int(inference_job.budget.get(InferenceBudgetOption.GPU_COUNT, DEFAULT_INFERENCE_GPU_COUNT))
         try:
-            predictor_service = self._create_predictor(inference_job)
+            predictor_service = self._create_predictor(inference_job=inference_job,
+                                                       inferenceAppName=inferenceAppName)
             if use_checkpoint:
                 self._create_inference_job_worker(inference_job=inference_job,
                                                   model_id=inference_job.model_id,
@@ -348,7 +356,7 @@ class ServicesManager(object):
 
         return service
 
-    def _create_predictor(self, inference_job):
+    def _create_predictor(self, inference_job, inferenceAppName: str):
         service_type = ServiceType.PREDICT
         environment_vars = {}
 
@@ -356,7 +364,8 @@ class ServicesManager(object):
             service_type=service_type,
             docker_image=self._predictor_image,
             environment_vars=environment_vars,
-            container_port=self._predictor_port
+            container_port=self._predictor_port,
+            inferenceAppName=inferenceAppName
         )
 
         self._meta_store.update_inference_job(inference_job, predictor_service_id=service.id)
@@ -424,7 +433,7 @@ class ServicesManager(object):
 
     def _create_service(self, service_type, docker_image,
                         replicas=1, environment_vars={}, args=[],
-                        container_port=None, gpus=0):
+                        container_port=None, gpus=0, inferenceAppName=None):
 
         # Create service in DB
         container_manager_type = type(self._container_manager).__name__
@@ -476,7 +485,7 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = 'singa-auto-svc-{}-{}'.format(service_type.lower(), service.id)
+            container_service_name = 'singa-auto-{}-{}'.format(service_type.lower(), service.id)
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image,
@@ -499,6 +508,21 @@ class ServicesManager(object):
                 container_service_info=container_service.info
             )
             self._meta_store.commit()
+
+            # if using kubernetes, register the service in db, and update ingress configuration
+            if isinstance(self._container_manager, KubernetesContainerManager) and service_type == ServiceType.PREDICT:
+
+                ingress_info = self._meta_store.update_ingress_config(
+                   ingress_name=self._ingress_name,
+                   inferenceAppName=inferenceAppName,
+                   container_service_name=container_service_name,
+                   service_port=self._predictor_port)
+
+                self._container_manager.update_ingress(ingress_name=self._ingress_name,
+                                                       ingress_body=json.loads(ingress_info.ingress_body)
+                                                       )
+
+                self._meta_store.commit()
 
         except Exception as e:
             logger.error('Error while creating service with ID {}'.format(service.id))

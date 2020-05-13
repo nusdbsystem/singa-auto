@@ -593,7 +593,9 @@ class Admin(object):
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
-            self._services_manager.create_inference_services(inference_job.id, use_checkpoint=True)
+            self._services_manager.create_inference_services(inferenceAppName=model_name,
+                                                             inference_job_id=inference_job.id,
+                                                             use_checkpoint=True)
         return {
             'id': inference_job.id,
             'model_id': model.id,
@@ -628,7 +630,9 @@ class Admin(object):
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
-            self._services_manager.create_inference_services(inference_job.id)
+            self._services_manager.create_inference_services(inferenceAppName=app,
+                                                             inference_job_id=inference_job.id,
+                                                             )
 
         return {
             'id': inference_job.id,

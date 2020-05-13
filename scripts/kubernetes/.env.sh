@@ -17,6 +17,9 @@
 # under the License.
 #
 
+#ingress default configurations
+export INGRESS_NAME=ingress-predictor
+
 # Cluster Mode for SINGA-auto
 export CLUSTER_MODE=SINGLE # CLUSTER or SINGLE
 

@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import json
 from datetime import datetime
 import os
 from sqlalchemy import create_engine, distinct, or_
@@ -27,7 +27,7 @@ from singa_auto.constants import TrainJobStatus, UserType, \
 
 from singa_auto.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWorker, \
     InferenceJob, Trial, Model, User, Service, InferenceJobWorker, \
-    TrialLog, Dataset
+    TrialLog, Dataset, IngressConfig
 
 
 class InvalidModelAccessRightError(Exception): pass
@@ -584,6 +584,62 @@ class MetaStore(object):
         trial_log = TrialLog(trial_id=trial.id, line=line, level=level)
         self._session.add(trial_log)
         return trial_log
+
+    ####################################
+    # ingress update
+    ####################################
+
+    def update_ingress_config(self, ingress_name, inferenceAppName, container_service_name, service_port):
+
+        ingress_info = self._session\
+            .query(IngressConfig)\
+            .filter(name=ingress_name)\
+            .first()
+
+        if ingress_info is None:
+            # first predictor service
+            ingress_body = {"apiVersion": 'networking.k8s.io/v1beta1',
+                            "kind": 'Ingress',
+                            "metadata": {"name": ingress_name},
+                            "spec":
+                                {"rules":
+                                     [{"http":
+                                           {"paths":
+                                                [{"path": "/" + inferenceAppName,
+                                                  "backend":
+                                                      {"serviceName": container_service_name,
+                                                       "servicePort": service_port}
+                                                  }]
+                                            }
+                                       }
+                                      ]
+                                 }
+                            }
+
+            ingress_info = IngressConfig(name=ingress_name,
+                                         ingress_body=json.dumps(ingress_body))
+
+            self._session.add(ingress_info)
+
+        else:
+            ingress_body = json.loads(ingress_info.ingress_body)
+            for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
+                # if the service is updated
+                if path_info["path"] == "/" + inferenceAppName:
+                    path_info["backend"]["serviceName"] = container_service_name
+            else:
+                # if new service path is added
+                path_info = {"path": "/" + inferenceAppName,
+                             "backend": {
+                                 "serviceName": container_service_name,
+                                 "servicePort": service_port
+                             }
+                             }
+                ingress_body["spec"]["rules"][0]["http"]["paths"].append(path_info)
+
+            ingress_info.ingress_body = json.dumps(ingress_body)
+
+        return ingress_info
 
     ####################################
     # Others

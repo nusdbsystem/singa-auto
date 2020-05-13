@@ -63,24 +63,65 @@ class KubernetesContainerManager(ContainerManager):
 
         self._client_deployment = kubernetes.client.AppsV1Api(aApiClient)
         self._client_service = kubernetes.client.CoreV1Api(aApiClient)
+        self.api_instance = kubernetes.client.NetworkingV1beta1Api(aApiClient)
+
+    def update_ingress(self, ingress_name, ingress_body):
+        paths = self._update_ingress_paths(ingress_body)
+        body = kubernetes.client.NetworkingV1beta1Ingress(
+            api_version="networking.k8s.io/v1beta1",
+            kind="Ingress",
+            metadata=kubernetes.client.V1ObjectMeta(
+                                                    name=ingress_name,
+                                                    annotations={
+                                                        "nginx.ingress.kubernetes.io/rewrite-target": "/"
+                                                    }
+                                                    ),
+            spec=kubernetes.client.NetworkingV1beta1IngressSpec(
+                rules=[kubernetes.client.NetworkingV1beta1IngressRule(
+                    http=kubernetes.client.NetworkingV1beta1HTTPIngressRuleValue(
+                        paths=paths
+                    )
+                )
+                ]
+            )
+        )
+
+        self.api_instance.replace_namespaced_ingress_with_http_info(name=ingress_name,
+                                                                    namespace='default',
+                                                                    body=body)
+
+    def _update_ingress_paths(self, ingress_body) -> list:
+        paths = list()
+        for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
+            path_obj = kubernetes.client.NetworkingV1beta1HTTPIngressPath(
+                            path=path_info["path"],
+                            backend=kubernetes.client.NetworkingV1beta1IngressBackend(
+                                service_port=path_info["backend"]["service_port"],
+                                service_name=path_info["backend"]["service_name"])
+
+                        )
+            paths.append(path_obj)
+
+        return paths
 
     def destroy_service(self, service: ContainerService):
         self._client_deployment.delete_namespaced_deployment(service.id, namespace='default')
         self._client_service.delete_namespaced_service(service.id, namespace='default')
 
-    def create_service(self, service_name, docker_image, replicas, 
+    def create_service(self, service_name, docker_image, replicas,
                        args, environment_vars, mounts={}, publish_port=None,
                        gpus=0) -> ContainerService:
         hostname = service_name
         if publish_port is not None:
-            service_config = self._create_service_config(service_name, docker_image, replicas, 
+            service_config = self._create_service_config(service_name, docker_image, replicas,
                             args, environment_vars, mounts, publish_port,
                             gpus)
             service_obj = _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
-        deployment_config = self._create_deployment_config(service_name, docker_image, replicas, 
+        deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
                         args, environment_vars, mounts, publish_port,
                         gpus)
-        deployment_obj = _retry(self._client_deployment.create_namespaced_deployment)(namespace='default', body=deployment_config)
+        deployment_obj = _retry(self._client_deployment.create_namespaced_deployment)(namespace='default',
+                                                                                      body=deployment_config)
 
         info = {
             'node_id': 'default',
@@ -91,12 +132,12 @@ class KubernetesContainerManager(ContainerManager):
 
         service = ContainerService(service_name, hostname, publish_port[0] if publish_port is not None else None, info)
         return service
- 
-    def _create_deployment_config(self, service_name, docker_image, replicas, 
+
+    def _create_deployment_config(self, service_name, docker_image, replicas,
                         args, environment_vars, mounts={}, publish_port=None,
                         gpus=0):
         content = {}
-        content.setdefault('apiVersion', 'apps/v1')      
+        content.setdefault('apiVersion', 'apps/v1')
         content.setdefault('kind', 'Deployment')
         metadata = content.setdefault('metadata', {})
         metadata.setdefault('name', service_name)
@@ -123,8 +164,8 @@ class KubernetesContainerManager(ContainerManager):
         if gpus > 0:
             container.setdefault('resources', {'limits': {'nvidia.com/gpu': gpus}})
         return content
-    
-    def _create_service_config(self, service_name, docker_image, replicas, 
+
+    def _create_service_config(self, service_name, docker_image, replicas,
                         args, environment_vars, mounts={}, publish_port=None,
                         gpus=0):
         #admin service
@@ -156,11 +197,11 @@ def _retry(func):
                 logger.error(f'Error when calling `{func}`:')
                 logger.error(traceback.format_exc())
 
-                # Retried so many times but still errors - raise exception    
+                # Retried so many times but still errors - raise exception
                 if no == RETRY_TIMES:
                     raise e
-                
+
             logger.info(f'Retrying {func} after {wait_secs}s...')
             time.sleep(wait_secs)
-    
+
     return retried_func

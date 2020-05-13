@@ -39,7 +39,7 @@ def configure_logging(process_name):
     logging.basicConfig(
         # change the log level to DEBUG
         # for local development mode
-        level=logging.DEBUG,
+        level=logging.INFO,
         format='%(asctime)s %(name)s %(levelname)s %(message)s',
         datefmt='%d-%b-%y %H:%M:%S',
         filename='{}/process_name_{}.log'.format(
