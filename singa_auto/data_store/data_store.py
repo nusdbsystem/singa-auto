@@ -22,10 +22,13 @@ import sys
 from typing import List, Dict
 import os
 
+
 class Dataset():
+
     def __init__(self, id: str, size_bytes: int):
         self.id = id
         self.size_bytes = size_bytes
+
 
 class DataStore(abc.ABC):
     '''
@@ -50,5 +53,3 @@ class DataStore(abc.ABC):
     def _get_size_bytes(data_file_path):
         st = os.stat(data_file_path)
         return st.st_size
-
-    

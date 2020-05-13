@@ -31,10 +31,12 @@ from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob,
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class RidgeReg(BaseModel):
     '''
     Implements a Linear Ridge Regressor for regression task using boston housing price dataset.
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -48,8 +50,9 @@ class RidgeReg(BaseModel):
 
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
-        self._regressor = self._build_regressor(self.alpha, self.normalize, self.copy_X, self.tol, self.solver, self.random_state)
-
+        self._regressor = self._build_regressor(self.alpha, self.normalize,
+                                                self.copy_X, self.tol,
+                                                self.solver, self.random_state)
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -73,7 +76,6 @@ class RidgeReg(BaseModel):
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
 
-
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -90,17 +92,14 @@ class RidgeReg(BaseModel):
 
         return 1 / rmse
 
-
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         result = self._regressor.predict(data)
         return result.tolist()[0]
 
-
     def destroy(self):
         pass
-
 
     def dump_parameters(self):
         params = {}
@@ -129,23 +128,21 @@ class RidgeReg(BaseModel):
         else:
             self._target = None
 
-
     def _extract_xy(self, data):
         features = self._features
         target = self._target
 
         if features is None:
-            X = data.iloc[:,:-1]
+            X = data.iloc[:, :-1]
         else:
             X = data[features]
 
         if target is None:
-            y = data.iloc[:,-1]
+            y = data.iloc[:, -1]
         else:
             y = data[target]
 
         return (X, y)
-
 
     def median_dataset(self, df):
         #replace zero values by median so that 0 will not affect median.
@@ -154,63 +151,49 @@ class RidgeReg(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-
     def prepare_X(self, df):
         data = self.median_dataset(df)
         X = PolynomialFeatures(interaction_only=True).fit_transform(df)
         return X
-
-
-    def _build_regressor(self, alpha, normalize, copy_X, tol, solver, random_state):
+    def _build_regressor(self, alpha, normalize, copy_X, tol, solver,
+                         random_state):
         regressor = Ridge(
             alpha=alpha,
-            normalize = normalize,
-            copy_X = copy_X,
-            tol = tol,
-            solver = solver,
-            random_state = random_state,
+            normalize=normalize,
+            copy_X=copy_X,
+            tol=tol,
+            solver=solver,
+            random_state=random_state,
         )
         return regressor
 
+
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='RidgeReg',
-        task='TABULAR_REGRESSION',
-        dependencies={
-            ModelDependency.SCIKIT_LEARN: '0.20.0'
-        },
-        train_dataset_path='data/boston_train.csv',
-        val_dataset_path='data/boston_val.csv',
-        train_args={
-            'features': ['CRIM',
-                        'ZN',
-                        'INDUS',
-                        'CHAS',
-                        'NOX',
-                        'RM',
-                        'AGE',
-                        'DIS',
-                        'RAD',
-                        'TAX',
-                        'PTRATIO',
-                        'B',
-                        'LSTAT'],
-            'target': 'MEDV'
-        },
-        queries=[
-             {'CRIM': 60.1,
-            'ZN': 0.001,
-            'INDUS':18.1,
-            'CHAS':0,
-            'NOX':597,
-            'RM':6.23,
-            'AGE': 50.0,
-            'DIS':1.222,
-            'RAD':23,
-            'TAX':700,
-            'PTRATIO':20.1,
-            'B':1.54,
-            'LSTAT':11.09}
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='RidgeReg',
+                     task='TABULAR_REGRESSION',
+                     dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
+                     train_dataset_path='data/boston_train.csv',
+                     val_dataset_path='data/boston_val.csv',
+                     train_args={
+                         'features': [
+                             'CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE',
+                             'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT'
+                         ],
+                         'target': 'MEDV'
+                     },
+                     queries=[{
+                         'CRIM': 60.1,
+                         'ZN': 0.001,
+                         'INDUS': 18.1,
+                         'CHAS': 0,
+                         'NOX': 597,
+                         'RM': 6.23,
+                         'AGE': 50.0,
+                         'DIS': 1.222,
+                         'RAD': 23,
+                         'TAX': 700,
+                         'PTRATIO': 20.1,
+                         'B': 1.54,
+                         'LSTAT': 11.09
+                     }])

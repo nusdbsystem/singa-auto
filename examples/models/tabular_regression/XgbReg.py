@@ -29,10 +29,12 @@ from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class XgbReg(BaseModel):
     '''
     Implements a XGBoost Regressor for tabular data regression task
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -88,7 +90,10 @@ class XgbReg(BaseModel):
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        results = [self._clf.predict(self._features_mapping(query)).tolist()[0] for query in queries]
+        results = [
+            self._clf.predict(self._features_mapping(query)).tolist()[0]
+            for query in queries
+        ]
         return results
 
     def destroy(self):
@@ -123,12 +128,12 @@ class XgbReg(BaseModel):
         target = self._target
 
         if features is None:
-            X = data.iloc[:,:-1]
+            X = data.iloc[:, :-1]
         else:
             X = data[features]
 
         if target is None:
-            y = data.iloc[:,-1]
+            y = data.iloc[:, -1]
         else:
             y = data[target]
 
@@ -136,12 +141,13 @@ class XgbReg(BaseModel):
 
     def _encoding_categorical_type(self, cols):
         # Apply label encoding for those categorical columns
-        cat_cols = list(filter(lambda x: cols[x].dtype == 'object', cols.columns))
+        cat_cols = list(
+            filter(lambda x: cols[x].dtype == 'object', cols.columns))
         encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
             if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
 
         # Recover the missing elements (Use XGBoost to automatically handle them)
-        encoded_cols = encoded_cols.replace(to_replace = -1, value = np.nan)
+        encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
 
         # Generate the dict that maps categorical features to numerical
         encoding_dict = {col: {cat: n for n, cat in enumerate(cols[col].astype('category'). \
@@ -159,58 +165,45 @@ class XgbReg(BaseModel):
         df = df_temp
         return df
 
-    def _build_classifier(self, n_estimators, min_child_weight, max_depth, gamma, subsample, colsample_bytree):
-        clf = xgb.XGBRegressor(
-            n_estimators=n_estimators,
-            min_child_weight=min_child_weight,
-            max_depth=max_depth,
-            gamma=gamma,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree
-        )
+    def _build_classifier(self, n_estimators, min_child_weight, max_depth,
+                          gamma, subsample, colsample_bytree):
+        clf = xgb.XGBRegressor(n_estimators=n_estimators,
+                               min_child_weight=min_child_weight,
+                               max_depth=max_depth,
+                               gamma=gamma,
+                               subsample=subsample,
+                               colsample_bytree=colsample_bytree)
         return clf
 
+
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='XgbReg',
-        task='TABULAR_REGRESSION',
-        dependencies={
-            ModelDependency.XGBOOST: '0.90'
-        },
-        train_dataset_path='data/bodyfat_train.csv',
-        val_dataset_path='data/bodyfat_val.csv',
-        train_args={
-            'features': ['density',
-                        'age',
-                        'weight',
-                        'height',
-                        'neck',
-                        'chest',
-                        'abdomen',
-                        'hip',
-                        'thigh',
-                        'knee',
-                        'ankle',
-                        'biceps',
-                        'forearm',
-                        'wrist'],
-            'target': 'bodyfat'
-        },
-        queries=[
-             {'density': 1.0207,
-             'age': 65,
-             'weight': 224.5,
-             'height': 68.25,
-             'neck': 38.8,
-             'chest': 119.6,
-             'abdomen': 118.0,
-             'hip': 114.3,
-             'thigh': 61.3,
-             'knee': 42.1,
-             'ankle': 23.4,
-             'biceps': 34.9,
-             'forearm': 30.1,
-             'wrist': 19.4}
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='XgbReg',
+                     task='TABULAR_REGRESSION',
+                     dependencies={ModelDependency.XGBOOST: '0.90'},
+                     train_dataset_path='data/bodyfat_train.csv',
+                     val_dataset_path='data/bodyfat_val.csv',
+                     train_args={
+                         'features': [
+                             'density', 'age', 'weight', 'height', 'neck',
+                             'chest', 'abdomen', 'hip', 'thigh', 'knee',
+                             'ankle', 'biceps', 'forearm', 'wrist'
+                         ],
+                         'target': 'bodyfat'
+                     },
+                     queries=[{
+                         'density': 1.0207,
+                         'age': 65,
+                         'weight': 224.5,
+                         'height': 68.25,
+                         'neck': 38.8,
+                         'chest': 119.6,
+                         'abdomen': 118.0,
+                         'hip': 114.3,
+                         'thigh': 61.3,
+                         'knee': 42.1,
+                         'ankle': 23.4,
+                         'biceps': 34.9,
+                         'forearm': 30.1,
+                         'wrist': 19.4
+                     }])

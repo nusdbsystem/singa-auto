@@ -35,7 +35,6 @@ class InferenceBudgetOption:
 
 InferenceBudget = Dict[InferenceBudgetOption, Any]
 
-
 ModelDependencies = Dict[str, str]
 
 
@@ -121,28 +120,51 @@ class RequestsParameters:
     # Datasets
     ####################################
 
-    DATASET_POST = {'files': {'dataset': False},
-                    'data': {'name': True, 'task': True, 'dataset_url': False}
-                    }
+    DATASET_POST = {
+        'files': {
+            'dataset': False
+        },
+        'data': {
+            'name': True,
+            'task': True,
+            'dataset_url': False
+        }
+    }
 
     ####################################
     # Models
     ####################################
 
-    MODEL_CREATE = {'files': {"model_file_bytes": True, "model_pretrained_params_id": False},
-                    'data': {'name': True, 'task': True, 'dependencies': False, 'docker_image': False,
-                             'model_class': True, 'access_right': False,
-                             }
-                   }
+    MODEL_CREATE = {
+        'files': {
+            "model_file_bytes": True,
+            "model_pretrained_params_id": False
+        },
+        'data': {
+            'name': True,
+            'task': True,
+            'dependencies': False,
+            'docker_image': False,
+            'model_class': True,
+            'access_right': False,
+        }
+    }
 
     ####################################
     # Train Jobs
     ####################################
 
-    TRAIN_CREATE = {'json': {'app': True, 'task': True, 'train_dataset_id': True, 'val_dataset_id': True,
-                             'budget': False, 'model_ids': False, 'train_args': False
-                             }
-                   }
+    TRAIN_CREATE = {
+        'json': {
+            'app': True,
+            'task': True,
+            'train_dataset_id': True,
+            'val_dataset_id': True,
+            'budget': False,
+            'model_ids': False,
+            'train_args': False
+        }
+    }
 
     TRAIN_GETBY_USER = {'params': {'user_id': True}}
 
@@ -156,8 +178,19 @@ class RequestsParameters:
     # Inference Jobs
     ####################################
 
-    INFERENCE_CREATE = {'json': {'app': True, 'app_version': False, 'budget': False}}
+    INFERENCE_CREATE = {
+        'json': {
+            'app': True,
+            'app_version': False,
+            'budget': False
+        }
+    }
 
-    INFERENCE_CREATEBY_CHECKOUTPOINT = {'json': {'model_name': True, 'budget': False}}
+    INFERENCE_CREATEBY_CHECKOUTPOINT = {
+        'json': {
+            'model_name': True,
+            'budget': False
+        }
+    }
 
     INFERENCE_GETBY_USER = {'params': {'user_id': True}}

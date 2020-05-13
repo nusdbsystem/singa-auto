@@ -34,16 +34,24 @@ class TfFeedForward(BaseModel):
     '''
     Implements a fully-connected feed-forward neural network with variable hidden layers on Tensorflow for IMAGE_CLASSIFICATION
     '''
+
     @staticmethod
     def get_knob_config():
         return {
-            'max_epochs': FixedKnob(10),
-            'hidden_layer_count': IntegerKnob(1, 2),
-            'hidden_layer_units': IntegerKnob(2, 128),
-            'learning_rate': FloatKnob(1e-5, 1e-1, is_exp=True),
-            'batch_size': CategoricalKnob([16, 32, 64, 128]),
-            'max_image_size': CategoricalKnob([16, 32, 48]),
-            'quick_train': PolicyKnob('EARLY_STOP') # Whether early stopping would be used
+            'max_epochs':
+                FixedKnob(10),
+            'hidden_layer_count':
+                IntegerKnob(1, 2),
+            'hidden_layer_units':
+                IntegerKnob(2, 128),
+            'learning_rate':
+                FloatKnob(1e-5, 1e-1, is_exp=True),
+            'batch_size':
+                CategoricalKnob([16, 32, 64, 128]),
+            'max_image_size':
+                CategoricalKnob([16, 32, 48]),
+            'quick_train':
+                PolicyKnob('EARLY_STOP')  # Whether early stopping would be used
         }
 
     def __init__(self, **knobs):
@@ -63,32 +71,38 @@ class TfFeedForward(BaseModel):
         quick_train = self._knobs['quick_train']
 
         # Define plot for loss against epochs
-        utils.logger.define_plot('Loss Over Epochs', ['loss', 'early_stop_val_loss'], x_axis='epoch')
+        utils.logger.define_plot('Loss Over Epochs',
+                                 ['loss', 'early_stop_val_loss'],
+                                 x_axis='epoch')
 
         # Load dataset
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size,
-                                                            mode='RGB')
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path, max_image_size=max_image_size, mode='RGB')
         num_classes = dataset.classes
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
         (images, norm_mean, norm_std) = utils.dataset.normalize_images(images)
 
         # Setup callbacks, adding early stopping if quick train
-        callbacks = [tf.keras.callbacks.LambdaCallback(on_epoch_end=self._on_train_epoch_end)]
+        callbacks = [
+            tf.keras.callbacks.LambdaCallback(
+                on_epoch_end=self._on_train_epoch_end)
+        ]
         if quick_train:
-            callbacks.append(tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2))
+            callbacks.append(
+                tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                 patience=2))
 
         with self._graph.as_default():
             with self._sess.as_default():
                 self._model = self._build_model(num_classes, dataset.image_size)
-                self._model.fit(
-                    np.asarray(images),
-                    np.asarray(classes),
-                    verbose=0,
-                    epochs=max_epochs,
-                    validation_split=0.05,
-                    batch_size=bs,
-                    callbacks=callbacks
-                )
+                self._model.fit(np.asarray(images),
+                                np.asarray(classes),
+                                verbose=0,
+                                epochs=max_epochs,
+                                validation_split=0.05,
+                                batch_size=bs,
+                                callbacks=callbacks)
 
                 # Compute train accuracy
                 (loss, accuracy) = self._model.evaluate(images, classes)
@@ -107,14 +121,17 @@ class TfFeedForward(BaseModel):
         norm_mean = self._train_params['norm_mean']
         norm_std = self._train_params['norm_std']
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size,
-                                                            mode='RGB')
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path, max_image_size=max_image_size, mode='RGB')
 
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        (images, _, _) = utils.dataset.normalize_images(images, norm_mean, norm_std)
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
+        (images, _, _) = utils.dataset.normalize_images(images, norm_mean,
+                                                        norm_std)
         with self._graph.as_default():
             with self._sess.as_default():
-                (loss, accuracy) = self._model.evaluate(np.asarray(images), np.asarray(classes))
+                (loss, accuracy) = self._model.evaluate(np.asarray(images),
+                                                        np.asarray(classes))
 
         utils.logger.log('Validation loss: {}'.format(loss))
 
@@ -125,8 +142,11 @@ class TfFeedForward(BaseModel):
         norm_mean = self._train_params['norm_mean']
         norm_std = self._train_params['norm_std']
 
-        images = utils.dataset.transform_images(queries, image_size=image_size, mode='RGB')
-        (images, _, _) = utils.dataset.normalize_images(images, norm_mean, norm_std)
+        images = utils.dataset.transform_images(queries,
+                                                image_size=image_size,
+                                                mode='RGB')
+        (images, _, _) = utils.dataset.normalize_images(images, norm_mean,
+                                                        norm_std)
 
         with self._graph.as_default():
             with self._sess.as_default():
@@ -154,7 +174,8 @@ class TfFeedForward(BaseModel):
             with open(tmp.name, 'rb') as f:
                 h5_model_bytes = f.read()
 
-            params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode('utf-8')
+            params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode(
+                'utf-8')
 
         return params
 
@@ -179,7 +200,9 @@ class TfFeedForward(BaseModel):
     def _on_train_epoch_end(self, epoch, logs):
         loss = logs['loss']
         early_stop_val_loss = logs['val_loss']
-        utils.logger.log(loss=loss, early_stop_val_loss=early_stop_val_loss, epoch=epoch)
+        utils.logger.log(loss=loss,
+                         early_stop_val_loss=early_stop_val_loss,
+                         epoch=epoch)
 
     def _build_model(self, num_classes, image_size):
         units = self._knobs['hidden_layer_units']
@@ -193,38 +216,41 @@ class TfFeedForward(BaseModel):
         for _ in range(layers):
             model.add(keras.layers.Dense(units, activation=tf.nn.relu))
 
-        model.add(keras.layers.Dense(
-            num_classes,
-            activation=tf.nn.softmax
-        ))
+        model.add(keras.layers.Dense(num_classes, activation=tf.nn.softmax))
 
-        model.compile(
-            optimizer=keras.optimizers.Adam(lr=lr),
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
+        model.compile(optimizer=keras.optimizers.Adam(lr=lr),
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['accuracy'])
         return model
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
-                        help='Path(s) to query image(s), delimited by commas')
+    parser.add_argument('--train_path',
+                        type=str,
+                        default='data/fashion_mnist_train.zip',
+                        help='Path to train dataset')
+    parser.add_argument('--val_path',
+                        type=str,
+                        default='data/fashion_mnist_val.zip',
+                        help='Path to validation dataset')
+    parser.add_argument('--test_path',
+                        type=str,
+                        default='data/fashion_mnist_test.zip',
+                        help='Path to test dataset')
+    parser.add_argument(
+        '--query_path',
+        type=str,
+        default='examples/data/image_classification/fashion_mnist_test_1.png',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-    test_model_class(
-        model_file_path=__file__,
-        model_class='TfFeedForward',
-        task='IMAGE_CLASSIFICATION',
-        dependencies={
-            ModelDependency.TENSORFLOW: '1.12.0'
-        },
-        train_dataset_path=args.train_path,
-        val_dataset_path=args.val_path,
-        test_dataset_path=args.test_path,
-        queries=queries
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='TfFeedForward',
+                     task='IMAGE_CLASSIFICATION',
+                     dependencies={ModelDependency.TENSORFLOW: '1.12.0'},
+                     train_dataset_path=args.train_path,
+                     val_dataset_path=args.val_path,
+                     test_dataset_path=args.test_path,
+                     queries=queries)

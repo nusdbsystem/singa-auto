@@ -39,19 +39,29 @@ _Deployment = namedtuple('_Deployment', ['node_id', 'gpu_nos'])
 
 
 class DockerSwarmContainerManager(ContainerManager):
-    def __init__(self,
-                 network=os.environ.get('DOCKER_NETWORK', 'singa_auto'),
-                 label_num_services=os.environ.get('DOCKER_NODE_LABEL_NUM_SERVICES', 'num_services'),
-                 label_available_gpus=os.environ.get('DOCKER_NODE_LABEL_AVAILABLE_GPUS', 'available_gpus')):
+
+    def __init__(
+        self,
+        network=os.environ.get('DOCKER_NETWORK', 'singa_auto'),
+        label_num_services=os.environ.get('DOCKER_NODE_LABEL_NUM_SERVICES',
+                                          'num_services'),
+        label_available_gpus=os.environ.get('DOCKER_NODE_LABEL_AVAILABLE_GPUS',
+                                            'available_gpus')):
 
         self._network = network
         self._client = docker.from_env()
         self._label_num_services = label_num_services
         self._label_available_gpus = label_available_gpus
 
-    def create_service(self, service_name, docker_image, replicas,
-                        args, environment_vars, mounts={}, publish_port=None,
-                        gpus=0) -> ContainerService:
+    def create_service(self,
+                       service_name,
+                       docker_image,
+                       replicas,
+                       args,
+                       environment_vars,
+                       mounts={},
+                       publish_port=None,
+                       gpus=0) -> ContainerService:
 
         deployment = self._get_deployment(gpus)
         (service_id, hostname, port) \
@@ -66,7 +76,8 @@ class DockerSwarmContainerManager(ContainerManager):
         service = ContainerService(service_id, hostname, port, info)
         self._mark_deployment(deployment)
 
-        logger.info('Created service of ID "{}" with info {}'.format(service.id, service.info))
+        logger.info('Created service of ID "{}" with info {}'.format(
+            service.id, service.info))
         return service
 
     def destroy_service(self, service: ContainerService):
@@ -85,7 +96,8 @@ class DockerSwarmContainerManager(ContainerManager):
             nodes = [x for x in nodes if len(x.available_gpus) >= gpus]
 
         if len(nodes) == 0:
-            raise InvalidServiceRequestError('Insufficient GPUs to deploy service')
+            raise InvalidServiceRequestError(
+                'Insufficient GPUs to deploy service')
 
         # Choose the node with fewest services
         (_, node) = sorted([(x.num_services, x) for x in nodes])[0]
@@ -102,7 +114,9 @@ class DockerSwarmContainerManager(ContainerManager):
         # Update num services and GPUs available for node
         node = self._get_node(node_id)
         num_services = node.num_services + 1
-        available_gpus = [x for x in node.available_gpus if x not in deployment.gpu_nos]
+        available_gpus = [
+            x for x in node.available_gpus if x not in deployment.gpu_nos
+        ]
 
         self._update_node(node_id, num_services, available_gpus)
 
@@ -122,14 +136,8 @@ class DockerSwarmContainerManager(ContainerManager):
 
     def _create_service(self, deployment, service_name, docker_image, replicas,
                         args, environment_vars, mounts, publish_port):
-        env = [
-            '{}={}'.format(k, v)
-            for (k, v) in environment_vars.items()
-        ]
-        mounts_list = [
-            '{}:{}:rw'.format(k, v)
-            for (k, v) in mounts.items()
-        ]
+        env = ['{}={}'.format(k, v) for (k, v) in environment_vars.items()]
+        mounts_list = ['{}:{}:rw'.format(k, v) for (k, v) in mounts.items()]
         constraints = []
 
         ports_list = []
@@ -146,11 +154,13 @@ class DockerSwarmContainerManager(ContainerManager):
             }]
 
         # Modify service based on deployment info
-        constraints.append('node.id=={}'.format(deployment.node_id)) # Add node constraint
+        constraints.append('node.id=={}'.format(
+            deployment.node_id))  # Add node constraint
         if len(deployment.gpu_nos) > 0:
-            env.append('CUDA_VISIBLE_DEVICES={}'.format(','.join([str(x) for x in deployment.gpu_nos]))) # GPU nos
+            env.append('CUDA_VISIBLE_DEVICES={}'.format(','.join(
+                [str(x) for x in deployment.gpu_nos])))  # GPU nos
         else:
-            env.append('CUDA_VISIBLE_DEVICES=-1') # No GPU
+            env.append('CUDA_VISIBLE_DEVICES=-1')  # No GPU
 
         docker_service = _retry(self._client.services.create)(
             image=docker_image,
@@ -171,8 +181,7 @@ class DockerSwarmContainerManager(ContainerManager):
                 'Replicated': {
                     'Replicas': replicas
                 }
-            }
-        )
+            })
 
         # Host of Docker Swarm service = service's name at the container port
         return (docker_service.id, hostname, container_port)
@@ -191,7 +200,9 @@ class DockerSwarmContainerManager(ContainerManager):
         spec = docker_node.attrs.get('Spec', {})
         spec_labels = spec.get('Labels', {})
         available_gpus_str = spec_labels.get(self._label_available_gpus, '')
-        available_gpus = [int(x) for x in available_gpus_str.split(',') if len(x) > 0]
+        available_gpus = [
+            int(x) for x in available_gpus_str.split(',') if len(x) > 0
+        ]
         num_services = int(spec_labels.get(self._label_num_services, 0))
         return _Node(docker_node.id, available_gpus, num_services)
 
@@ -201,11 +212,11 @@ class DockerSwarmContainerManager(ContainerManager):
         spec_labels = spec.get('Labels', {})
 
         _retry(docker_node.update)({
-            **spec,
-            'Labels': {
-                **spec_labels,
-                self._label_num_services: str(num_services),
-                self._label_available_gpus: ','.join([str(x) for x in available_gpus])
+            **spec, 'Labels': {
+                **spec_labels, self._label_num_services:
+                    str(num_services),
+                self._label_available_gpus:
+                    ','.join([str(x) for x in available_gpus])
             }
         })
 

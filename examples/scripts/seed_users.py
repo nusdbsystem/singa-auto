@@ -24,6 +24,7 @@ import csv
 from singa_auto.client import Client
 from singa_auto.config import SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD
 
+
 def seed_users(client, csv_file_path):
     with open(csv_file_path, 'rt', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
@@ -38,13 +39,15 @@ def seed_users(client, csv_file_path):
                 print('Failed to create user `{}` due to:'.format(email))
                 print(e)
 
+
 if __name__ == '__main__':
     singa_auto_host = os.environ.get('SINGA_AUTO_HOST', 'localhost')
     admin_port = int(os.environ.get('ADMIN_EXT_PORT', 3000))
     web_admin_port = int(os.environ.get('WEB_ADMIN_EXT_PORT', 3001))
     user_email = os.environ.get('USER_EMAIL', SUPERADMIN_EMAIL)
     user_password = os.environ.get('USER_PASSWORD', SUPERADMIN_PASSWORD)
-    csv_file_path = os.environ.get('CSV_FILE_PATH', 'examples/scripts/users.csv')
+    csv_file_path = os.environ.get('CSV_FILE_PATH',
+                                   'examples/scripts/users.csv')
 
     # Initialize client
     client = Client(admin_host=singa_auto_host, admin_port=admin_port)

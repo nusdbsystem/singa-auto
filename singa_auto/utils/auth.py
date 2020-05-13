@@ -29,8 +29,13 @@ from singa_auto.meta_store import MetaStore
 # extend JWT expiration to 1 day!
 TOKEN_EXPIRATION_HOURS = 24
 
-class UnauthorizedError(Exception): pass
-class InvalidAuthorizationHeaderError(Exception): pass
+
+class UnauthorizedError(Exception):
+    pass
+
+
+class InvalidAuthorizationHeaderError(Exception):
+    pass
 
 
 def generate_token(user):
@@ -56,6 +61,7 @@ def auth(user_types=[]):
     user_types.append(UserType.SUPERADMIN)
 
     def decorator(f):
+
         @wraps(f)
         def wrapped(*args, **kwargs):
             auth_header = request.headers.get('authorization', None)
@@ -74,6 +80,7 @@ def auth(user_types=[]):
             return f(auth, *args, **kwargs)
 
         return wrapped
+
     return decorator
 
 
@@ -97,7 +104,7 @@ def superadmin_client():
     from singa_auto.client import Client
     admin_host = os.environ['ADMIN_HOST']
     admin_port = os.environ['ADMIN_PORT']
-    client = Client(admin_host=admin_host,
-                    admin_port=admin_port)
-    client.login(email=SUPERADMIN_EMAIL, password=os.environ['SUPERADMIN_PASSWORD'])
+    client = Client(admin_host=admin_host, admin_port=admin_port)
+    client.login(email=SUPERADMIN_EMAIL,
+                 password=os.environ['SUPERADMIN_PASSWORD'])
     return client

@@ -22,30 +22,32 @@ import uuid
 
 
 class Query:
+
     def __init__(self, query: Any):
         self.id = str(uuid.uuid4())
         self.query = query
-    
+
     def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.id == other.id 
-                and self.query == other.query)
+        return (self.__class__ == other.__class__ and self.id == other.id and
+                self.query == other.query)
 
 
 class Prediction:
-    def __init__(self, 
-                # Raw prediction, or None if the worker is unable to make a prediction (e.g. errored)
-                prediction: Union[Any, None], 
-                # ID of query of prediction
-                query_id: str, 
-                # Worker who made the prediction, if any
-                worker_id: str = None): 
+
+    def __init__(
+        self,
+        # Raw prediction, or None if the worker is unable to make a prediction (e.g. errored)
+        prediction: Union[Any, None],
+        # ID of query of prediction
+        query_id: str,
+        # Worker who made the prediction, if any
+        worker_id: str = None):
         self.prediction = prediction
         self.query_id = query_id
         self.worker_id = worker_id
 
     def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.prediction == other.prediction 
-                and self.query_id == other.query_id
-                and self.worker_id == other.worker_id)
+        return (self.__class__ == other.__class__ and
+                self.prediction == other.prediction and
+                self.query_id == other.query_id and
+                self.worker_id == other.worker_id)

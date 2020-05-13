@@ -34,7 +34,9 @@ from examples.datasets.audio_files.load_librispeech import load_librispeech
 IMAGE_TFDEEPSPEECH_VERSION = os.environ['RAFIKI_VERSION']
 IMAGE_TFDEEPSPEECH = f'rafiki_tfdeepspeech:{IMAGE_TFDEEPSPEECH_VERSION}'
 
-def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus, hours):
+
+def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
+                           hours):
     '''
         Conducts training with the `TfDeepSpeech` model for the task ``SPEECH_RECOGNITION`.
     '''
@@ -47,38 +49,57 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus, h
     tf_model_name = 'TfDeepSpeech_{}'.format(app_id)
 
     print('Creating & uploading datasets onto SINGA-Autp...')
-    train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
+    train_dataset = client.create_dataset('{}_train'.format(app), task,
+                                          train_dataset_path)
     pprint(train_dataset)
-    val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
+    val_dataset = client.create_dataset('{}_val'.format(app), task,
+                                        val_dataset_path)
     pprint(val_dataset)
 
     print('Adding models "{}" to SINGA-Auto...'.format(tf_model_name))
-    tf_model = client.create_model(tf_model_name, task, 'examples/models/speech_recognition/TfDeepSpeech.py',
-                        'TfDeepSpeech',
-                        docker_image=IMAGE_TFDEEPSPEECH,
-                        dependencies={
-                            ModelDependency.TENSORFLOW: '1.12.0',
-                            ModelDependency.DS_CTCDECODER: '0.6.0-alpha.4'
-                        })
+    tf_model = client.create_model(
+        tf_model_name,
+        task,
+        'examples/models/speech_recognition/TfDeepSpeech.py',
+        'TfDeepSpeech',
+        docker_image=IMAGE_TFDEEPSPEECH,
+        dependencies={
+            ModelDependency.TENSORFLOW: '1.12.0',
+            ModelDependency.DS_CTCDECODER: '0.6.0-alpha.4'
+        })
     pprint(tf_model)
 
     print('Creating train job for app "{}" on SINGA-Autp...'.format(app))
-    budget = {
-        BudgetOption.TIME_HOURS: hours,
-        BudgetOption.GPU_COUNT: gpus
-    }
-    train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'],
-                                        budget, models=[tf_model['id']])
+    budget = {BudgetOption.TIME_HOURS: hours, BudgetOption.GPU_COUNT: gpus}
+    train_job = client.create_train_job(app,
+                                        task,
+                                        train_dataset['id'],
+                                        val_dataset['id'],
+                                        budget,
+                                        models=[tf_model['id']])
     pprint(train_job)
 
     print('Monitor the train job on SINGA-Autp Web Admin')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
-    parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')
-    parser.add_argument('--gpus', type=int, default=1, help='How many GPUs to use')
-    parser.add_argument('--hours', type=float, default=12, help='How long the train job should run for (in hours)')
+    parser.add_argument('--email',
+                        type=str,
+                        default=SUPERADMIN_EMAIL,
+                        help='Email of user')
+    parser.add_argument('--password',
+                        type=str,
+                        default=os.environ.get('SUPERADMIN_PASSWORD'),
+                        help='Password of user')
+    parser.add_argument('--gpus',
+                        type=int,
+                        default=1,
+                        help='How many GPUs to use')
+    parser.add_argument('--hours',
+                        type=float,
+                        default=12,
+                        help='How long the train job should run for (in hours)')
     (args, _) = parser.parse_known_args()
 
     # Initialize client
@@ -92,4 +113,5 @@ if __name__ == '__main__':
     train_dataset_path = os.path.join(data_dir, 'train-clean-100.zip')
     val_dataset_path = os.path.join(data_dir, 'dev-clean.zip')
 
-    run_speech_recognition(client, train_dataset_path, val_dataset_path, args.gpus, args.hours)
+    run_speech_recognition(client, train_dataset_path, val_dataset_path,
+                           args.gpus, args.hours)

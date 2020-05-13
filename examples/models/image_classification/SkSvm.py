@@ -27,10 +27,12 @@ from singa_auto.model import BaseModel, CategoricalKnob, FloatKnob, FixedKnob, u
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
+
 class SkSvm(BaseModel):
     '''
     Implements a SVM on Scikit-Learn for IMAGE_CLASSIFICATION
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -44,19 +46,24 @@ class SkSvm(BaseModel):
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.max_iter, self.kernel, self.gamma, self.C)
+        self._clf = self._build_classifier(self.max_iter, self.kernel,
+                                           self.gamma, self.C)
 
     def train(self, dataset_path, **kwargs):
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path, max_image_size=self.max_image_size, mode='L')
         self._image_size = dataset.image_size
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
         X = self._prepare_X(images)
         y = classes
         self._clf.fit(X, y)
 
     def evaluate(self, dataset_path):
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=self.max_image_size, mode='L')
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path, max_image_size=self.max_image_size, mode='L')
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
         X = self._prepare_X(images)
         y = classes
         preds = self._clf.predict(X)
@@ -64,7 +71,9 @@ class SkSvm(BaseModel):
         return accuracy
 
     def predict(self, queries):
-        queries = utils.dataset.transform_images(queries, image_size=self._image_size, mode='L')
+        queries = utils.dataset.transform_images(queries,
+                                                 image_size=self._image_size,
+                                                 mode='L')
         X = self._prepare_X(queries)
         probs = self._clf.predict_proba(X)
         return probs.tolist()
@@ -96,35 +105,41 @@ class SkSvm(BaseModel):
         return [np.asarray(image).flatten() for image in images]
 
     def _build_classifier(self, max_iter, kernel, gamma, C):
-        clf = svm.SVC(
-            max_iter=max_iter,
-            kernel=kernel,
-            gamma=gamma,
-            C=C,
-            probability=True
-        )
+        clf = svm.SVC(max_iter=max_iter,
+                      kernel=kernel,
+                      gamma=gamma,
+                      C=C,
+                      probability=True)
         return clf
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/fashion_mnist_train.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/fashion_mnist_val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/fashion_mnist_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/fashion_mnist_test_1.png',
-                        help='Path(s) to query image(s), delimited by commas')
+    parser.add_argument('--train_path',
+                        type=str,
+                        default='data/fashion_mnist_train.zip',
+                        help='Path to train dataset')
+    parser.add_argument('--val_path',
+                        type=str,
+                        default='data/fashion_mnist_val.zip',
+                        help='Path to validation dataset')
+    parser.add_argument('--test_path',
+                        type=str,
+                        default='data/fashion_mnist_test.zip',
+                        help='Path to test dataset')
+    parser.add_argument(
+        '--query_path',
+        type=str,
+        default='examples/data/image_classification/fashion_mnist_test_1.png',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-    test_model_class(
-        model_file_path=__file__,
-        model_class='SkSvm',
-        task='IMAGE_CLASSIFICATION',
-        dependencies={
-            ModelDependency.SCIKIT_LEARN: '0.20.0'
-        },
-        train_dataset_path=args.train_path,
-        val_dataset_path=args.val_path,
-        test_dataset_path=args.test_path,
-        queries=queries
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='SkSvm',
+                     task='IMAGE_CLASSIFICATION',
+                     dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
+                     train_dataset_path=args.train_path,
+                     val_dataset_path=args.val_path,
+                     test_dataset_path=args.test_path,
+                     queries=queries)

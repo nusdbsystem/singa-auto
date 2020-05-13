@@ -32,29 +32,33 @@ from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob,
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class SVCClf(BaseModel):
     '''
     Implements a C-Support Vector Classifier for classification task using Pima Indian Diabetes dataset.
     '''
+
     @staticmethod
     def get_knob_config():
         return {
-            'C': IntegerKnob(2,3),
-            'kernel': CategoricalKnob(['poly','rbf','linear']),
-            'degree': IntegerKnob(2,3),
-            'gamma': CategoricalKnob(['scale','auto']),
+            'C': IntegerKnob(2, 3),
+            'kernel': CategoricalKnob(['poly', 'rbf', 'linear']),
+            'degree': IntegerKnob(2, 3),
+            'gamma': CategoricalKnob(['scale', 'auto']),
             'coef0': FloatKnob(0.0, 0.1),
-            'shrinking': CategoricalKnob([True,False]),
+            'shrinking': CategoricalKnob([True, False]),
             'tol': FloatKnob(1e-03, 1e-01, is_exp=True),
-            'decision_function_shape' : CategoricalKnob(['ovo','ovr']),
-            'probability' : CategoricalKnob([True,False]),
-
+            'decision_function_shape': CategoricalKnob(['ovo', 'ovr']),
+            'probability': CategoricalKnob([True, False]),
         }
 
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.C, self.kernel, self.degree, self.gamma, self.coef0, self.shrinking, self.tol, self.decision_function_shape, self.probability)
-
+        self._clf = self._build_classifier(self.C, self.kernel, self.degree,
+                                           self.gamma, self.coef0,
+                                           self.shrinking, self.tol,
+                                           self.decision_function_shape,
+                                           self.probability)
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -76,7 +80,6 @@ class SVCClf(BaseModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -90,17 +93,14 @@ class SVCClf(BaseModel):
         accuracy = self._clf.score(X, y)
         return accuracy
 
-
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         probs = self._clf.predict_proba(data)
         return probs.tolist()
 
-
     def destroy(self):
         pass
-
 
     def dump_parameters(self):
         params = {}
@@ -133,12 +133,12 @@ class SVCClf(BaseModel):
         target = self._target
 
         if features is None:
-            X = data.iloc[:,:-1]
+            X = data.iloc[:, :-1]
         else:
             X = data[features]
 
         if target is None:
-            y = data.iloc[:,-1]
+            y = data.iloc[:, -1]
         else:
             y = data[target]
 
@@ -151,42 +151,46 @@ class SVCClf(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-
     def prepare_X(self, df):
         data = self.median_dataset(df)
         X = StandardScaler().fit_transform(data)
         return X
-
-
-    def _build_classifier(self, C, kernel, degree, gamma, coef0, shrinking, tol, decision_function_shape, probability):
+    def _build_classifier(self, C, kernel, degree, gamma, coef0, shrinking, tol,
+                          decision_function_shape, probability):
         clf = SVC(
             C=C,
             kernel=kernel,
-            degree = degree,
-            gamma = gamma,
-            coef0 = coef0,
-            shrinking = shrinking,
-            tol = tol,
-            decision_function_shape = decision_function_shape,
-            probability = probability,
+            degree=degree,
+            gamma=gamma,
+            coef0=coef0,
+            shrinking=shrinking,
+            tol=tol,
+            decision_function_shape=decision_function_shape,
+            probability=probability,
         )
         return clf
 
+
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='SVCClf',
-        task='TABULAR_CLASSIFICATION',
-        dependencies={
-            ModelDependency.SCIKIT_LEARN: '0.20.0'
-        },
-        train_dataset_path='data/diabetes_train.csv',
-        val_dataset_path='data/diabetes_val.csv',
-        train_args={
-                    'features': ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'Age'],
-                    'target':'Outcome'
-                },
-        queries=[
-            { 'Pregnancies': 3, 'Glucose': '130', 'BloodPressure': 92, 'SkinThickness': 30, 'Insulin': 90, 'BMI': 30.4, 'Age': 40 }
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='SVCClf',
+                     task='TABULAR_CLASSIFICATION',
+                     dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
+                     train_dataset_path='data/diabetes_train.csv',
+                     val_dataset_path='data/diabetes_val.csv',
+                     train_args={
+                         'features': [
+                             'Pregnancies', 'Glucose', 'BloodPressure',
+                             'SkinThickness', 'Insulin', 'BMI', 'Age'
+                         ],
+                         'target': 'Outcome'
+                     },
+                     queries=[{
+                         'Pregnancies': 3,
+                         'Glucose': '130',
+                         'BloodPressure': 92,
+                         'SkinThickness': 30,
+                         'Insulin': 90,
+                         'BMI': 30.4,
+                         'Age': 40
+                     }])

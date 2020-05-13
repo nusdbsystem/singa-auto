@@ -34,7 +34,4 @@ if __name__ == "__main__":
     admin.seed()
     app = create_app()
     # Run Flask app
-    app.run(
-        host='0.0.0.0',
-        port=os.getenv('ADMIN_PORT', 3000),
-        threaded=True)
+    app.run(host='0.0.0.0', port=os.getenv('ADMIN_PORT', 3000), threaded=True)

@@ -15,7 +15,7 @@ def reporthook(count, block_size, total_size):
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
     sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                    (percent, progress_size / (1024 * 1024), speed, duration))
+                     (percent, progress_size / (1024 * 1024), speed, duration))
     sys.stdout.flush()
 
 
@@ -28,7 +28,8 @@ print('Finished downloading, starting cleanup \n')
 # Convert to lowercase and cleanup.
 data_lower = '/tmp/lower.txt'
 with open(data_lower, 'w', encoding='utf-8') as lower:
-    with io.TextIOWrapper(io.BufferedReader(gzip.open(data_upper)), encoding='utf8') as upper:
+    with io.TextIOWrapper(io.BufferedReader(gzip.open(data_upper)),
+                          encoding='utf8') as upper:
         for line in upper:
             lower.write(line.lower())
 

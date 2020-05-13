@@ -80,14 +80,14 @@ class PyBiLstm(BaseModel):
         word_dict_params = self._namespace_params(self._word_dict, 'word_dict')
         params = {
             **net_params,
-            **word_dict_params,
-            'tag_count': self._tag_count
+            **word_dict_params, 'tag_count': self._tag_count
         }
         return params
 
     def load_parameters(self, params):
         self._tag_count = params['tag_count']
-        self._word_dict = self._extract_namespace_from_params(params, 'word_dict')
+        self._word_dict = self._extract_namespace_from_params(
+            params, 'word_dict')
         net_params = self._extract_namespace_from_params(params, 'net')
         net_state_dict = self._params_to_state_dict(net_params)
         (self._net, self._optimizer) = self._create_model()
@@ -119,7 +119,8 @@ class PyBiLstm(BaseModel):
             for w in range(W):
                 if w < len(batch[i]):
                     word = batch[i][w][0]
-                    word = word_dict.get(word, random.randint(0, word_count - 1))
+                    word = word_dict.get(word,
+                                         random.randint(0, word_count - 1))
                     words_tsr[i][w] = word
                 else:
                     words_tsr[i][w] = null_word
@@ -154,7 +155,11 @@ class PyBiLstm(BaseModel):
         sents_pred_tags = []
         for i in range(B):
             # Extract batch from dataset
-            (words_tsr, _) = self._prepare_batch(dataset, i * N, i * N + N, Tensor, has_tags=False)
+            (words_tsr, _) = self._prepare_batch(dataset,
+                                                 i * N,
+                                                 i * N + N,
+                                                 Tensor,
+                                                 has_tags=False)
 
             # Forward propagate batch through model
             probs_tsr = net(words_tsr)
@@ -167,7 +172,8 @@ class PyBiLstm(BaseModel):
                 sent_pred_tags = []
 
                 for (pred, word) in zip(sent_preds_tsr, sent_words_tsr):
-                    if word.item() == null_word: break
+                    if word.item() == null_word:
+                        break
                     sent_pred_tags.append(pred.item())
 
                 sents_pred_tags.append(sent_pred_tags)
@@ -197,7 +203,9 @@ class PyBiLstm(BaseModel):
             total_loss = 0
             for i in range(B):
                 # Extract batch from dataset
-                (words_tsr, tags_tsr) = self._prepare_batch(dataset, i * N, i * N + N, Tensor)
+                (words_tsr,
+                 tags_tsr) = self._prepare_batch(dataset, i * N, i * N + N,
+                                                 Tensor)
 
                 # Reset gradients for this batch
                 optimizer.zero_grad()
@@ -228,7 +236,8 @@ class PyBiLstm(BaseModel):
         for (sent, pred_sent_tags) in zip(dataset, sents_tags):
             for ([_, tag], pred_tag) in zip(sent, pred_sent_tags):
                 total += 1
-                if tag == pred_tag: correct += 1
+                if tag == pred_tag:
+                    correct += 1
 
         return correct / total
 
@@ -296,7 +305,10 @@ class PyNet(nn.Module):
 
         # Layers
         self._word_embed = nn.Embedding(word_count, self._Ew)
-        self._word_lstm = nn.LSTM(self._Ew, self._h, batch_first=True, bidirectional=True)
+        self._word_lstm = nn.LSTM(self._Ew,
+                                  self._h,
+                                  batch_first=True,
+                                  bidirectional=True)
         self._word_lin = nn.Linear(2 * self._h, self._t)
         self._word_dropout = nn.Dropout(p=word_dropout)
 
@@ -318,23 +330,23 @@ class PyNet(nn.Module):
         words_hidden_rep_tsr = words_hidden_rep_tsr.contiguous()
 
         # Apply linear + softmax operation for sentence rep for all sentences (N x W x t)
-        word_probs_tsr = F.softmax(self._word_lin(words_hidden_rep_tsr.view(N * W, self._h * 2)), dim=1).view(N, W, t)
+        word_probs_tsr = F.softmax(self._word_lin(
+            words_hidden_rep_tsr.view(N * W, self._h * 2)),
+                                   dim=1).view(N, W, t)
 
         return word_probs_tsr
 
 
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='PyBiLstm',
-        task='POS_TAGGING',
-        dependencies={
-            ModelDependency.TORCH: '0.4.1'
-        },
-        train_dataset_path='data/ptb_train.zip',
-        val_dataset_path='data/ptb_val.zip',
-        queries=[
-            ['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
-            ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='PyBiLstm',
+                     task='POS_TAGGING',
+                     dependencies={ModelDependency.TORCH: '0.4.1'},
+                     train_dataset_path='data/ptb_train.zip',
+                     val_dataset_path='data/ptb_val.zip',
+                     queries=[['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
+                              [
+                                  'The', 'luxury', 'auto', 'maker', 'last',
+                                  'year', 'sold', '1,214', 'cars', 'in', 'the',
+                                  'U.S.'
+                              ]])

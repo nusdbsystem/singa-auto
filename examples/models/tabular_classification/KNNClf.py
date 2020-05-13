@@ -28,22 +28,24 @@ from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class KNNClf(BaseModel):
     '''
     Implements K-Nearest Neighbors Classifier for tabular data classification task
     '''
+
     @staticmethod
     def get_knob_config():
         return {
-            'n_neighbors': IntegerKnob(3,4,6),
+            'n_neighbors': IntegerKnob(3, 4, 6),
             'metric': CategoricalKnob(['minkowski', 'euclidean']),
             'p': IntegerKnob(1, 2),
         }
 
     def __init__(self, **knobs):
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.n_neighbors, self.metric, self.p)
-
+        self._clf = self._build_classifier(self.n_neighbors, self.metric,
+                                           self.p)
 
     def train(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe
@@ -59,7 +61,6 @@ class KNNClf(BaseModel):
         score = self._clf.score(X_train, y_train)
         logger.log('Train accuracy: {}'.format(score))
 
-
     def evaluate(self, dataset_path):
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -70,16 +71,13 @@ class KNNClf(BaseModel):
         accuracy = self._clf.score(X_val, y_val)
         return accuracy
 
-
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         probs = self._clf.predict_proba(queries)
         return probs.tolist()
 
-
     def destroy(self):
         pass
-
 
     def dump_parameters(self):
         params = {}
@@ -89,7 +87,6 @@ class KNNClf(BaseModel):
         params['clf_base64'] = clf_base64
 
         return params
-
 
     def load_parameters(self, params):
         # Load model parameters
@@ -104,27 +101,30 @@ class KNNClf(BaseModel):
         sc = StandardScaler()
         return sc.fit_transform(X)
 
-
     def _build_classifier(self, n_neighbors, metric, p):
-        clf = KNeighborsClassifier(
-            n_neighbors=n_neighbors,
-            metric=metric,
-            p = p
-        )
+        clf = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric, p=p)
         return clf
 
-if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='KNNClf',
-        task='TABULAR_CLASSIFICATION',
-        dependencies={
-            ModelDependency.SCIKIT_LEARN: '0.20.0'
-        },
-        train_dataset_path='data/heart_train.csv',
-        val_dataset_path='data/heart_test.csv',
-        queries=[
-            { 'age': 50, 'Sex': '0', 'cp': 3, 'trestbps': 130, 'chol': 220, 'fbs': 1, 'restecg': 0, 'thalach': 170, 'exang': 1, 'oldpeak': 1.7, 'slope': 2, 'ca': 0, 'thal': 3 }
-        ]
-    )
 
+if __name__ == '__main__':
+    test_model_class(model_file_path=__file__,
+                     model_class='KNNClf',
+                     task='TABULAR_CLASSIFICATION',
+                     dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
+                     train_dataset_path='data/heart_train.csv',
+                     val_dataset_path='data/heart_test.csv',
+                     queries=[{
+                         'age': 50,
+                         'Sex': '0',
+                         'cp': 3,
+                         'trestbps': 130,
+                         'chol': 220,
+                         'fbs': 1,
+                         'restecg': 0,
+                         'thalach': 170,
+                         'exang': 1,
+                         'oldpeak': 1.7,
+                         'slope': 2,
+                         'ca': 0,
+                         'thal': 3
+                     }])

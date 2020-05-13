@@ -16,7 +16,7 @@
 # under the License.
 #
 
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -34,7 +34,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'SINGA-Auto'
@@ -42,10 +41,9 @@ copyright = '2020, nginyc, cadmusthefounder, nudles'
 author = 'nginyc, cadmusthefounder, nudles'
 
 # The short X.Y version
-version = '0.3.0' # os.environ['RAFIKI_VERSION']
+version = '0.3.0'  # os.environ['RAFIKI_VERSION']
 # The full version, including alpha/beta/rc tags
 release = ''
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -57,9 +55,7 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
+    'sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
     'sphinx.ext.viewcode'
 ]
 
@@ -90,7 +86,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'env']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -119,12 +114,10 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'singaautodoc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -154,16 +147,12 @@ latex_elements = {
 #     'nginyc, cadmusthefounder, nudles', 'manual'),
 #]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'singa auto', 'SINGA Auto Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'singa auto', 'SINGA Auto Documentation', [author], 1)
+            ]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -175,7 +164,6 @@ man_pages = [
 #     author, 'Rafiki', 'One line description of project.',
 #     'Miscellaneous'),
 #]
-
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -193,7 +181,6 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
 
 # -- Extension configuration -------------------------------------------------
 

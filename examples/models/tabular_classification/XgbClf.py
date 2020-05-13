@@ -28,10 +28,12 @@ from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class XgbClf(BaseModel):
     '''
     Implements a XGBoost Classifier for tabular data classification task
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -88,7 +90,10 @@ class XgbClf(BaseModel):
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        probs = [self._clf.predict_proba(self._features_mapping(query)).tolist()[0] for query in queries]
+        probs = [
+            self._clf.predict_proba(self._features_mapping(query)).tolist()[0]
+            for query in queries
+        ]
         return probs
 
     def destroy(self):
@@ -123,12 +128,12 @@ class XgbClf(BaseModel):
         target = self._target
 
         if features is None:
-            X = data.iloc[:,:-1]
+            X = data.iloc[:, :-1]
         else:
             X = data[features]
 
         if target is None:
-            y = data.iloc[:,-1]
+            y = data.iloc[:, -1]
         else:
             y = data[target]
 
@@ -136,12 +141,13 @@ class XgbClf(BaseModel):
 
     def _encoding_categorical_type(self, cols):
         # Apply label encoding for those categorical columns
-        cat_cols = list(filter(lambda x: cols[x].dtype == 'object', cols.columns))
+        cat_cols = list(
+            filter(lambda x: cols[x].dtype == 'object', cols.columns))
         encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
             if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
 
         # Recover the missing elements (Use XGBoost to automatically handle them)
-        encoded_cols = encoded_cols.replace(to_replace = -1, value = np.nan)
+        encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
 
         # Generate the dict that maps categorical features to numerical
         encoding_dict = {col: {cat: n for n, cat in enumerate(cols[col].astype('category'). \
@@ -159,46 +165,42 @@ class XgbClf(BaseModel):
         df = df_temp
         return df
 
-    def _build_classifier(self, n_estimators, min_child_weight, max_depth, gamma, subsample, colsample_bytree, num_class):
+    def _build_classifier(self, n_estimators, min_child_weight, max_depth,
+                          gamma, subsample, colsample_bytree, num_class):
         assert num_class >= 2
 
         if num_class == 2:
-            clf = xgb.XGBClassifier(
-            n_estimators=n_estimators,
-            min_child_weight=min_child_weight,
-            max_depth=max_depth,
-            gamma=gamma,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree
-        )
+            clf = xgb.XGBClassifier(n_estimators=n_estimators,
+                                    min_child_weight=min_child_weight,
+                                    max_depth=max_depth,
+                                    gamma=gamma,
+                                    subsample=subsample,
+                                    colsample_bytree=colsample_bytree)
         else:
-            clf = xgb.XGBClassifier(
-            n_estimators=n_estimators,
-            min_child_weight=min_child_weight,
-            max_depth=max_depth,
-            gamma=gamma,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree,
-            objective='multi:softmax',
-            num_class=num_class
-        )
+            clf = xgb.XGBClassifier(n_estimators=n_estimators,
+                                    min_child_weight=min_child_weight,
+                                    max_depth=max_depth,
+                                    gamma=gamma,
+                                    subsample=subsample,
+                                    colsample_bytree=colsample_bytree,
+                                    objective='multi:softmax',
+                                    num_class=num_class)
         return clf
 
+
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='XgbClf',
-        task='TABULAR_CLASSIFICATION',
-        dependencies={
-            ModelDependency.XGBOOST: '0.90'
-        },
-        train_dataset_path='data/titanic_train.csv',
-        val_dataset_path='data/titanic_val.csv',
-        train_args={
-            'features': ['Pclass', 'Sex', 'Age'],
-            'target':'Survived'
-        },
-        queries=[
-            { 'Pclass': 1, 'Sex': 'female', 'Age': 2.0 }
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='XgbClf',
+                     task='TABULAR_CLASSIFICATION',
+                     dependencies={ModelDependency.XGBOOST: '0.90'},
+                     train_dataset_path='data/titanic_train.csv',
+                     val_dataset_path='data/titanic_val.csv',
+                     train_args={
+                         'features': ['Pclass', 'Sex', 'Age'],
+                         'target': 'Survived'
+                     },
+                     queries=[{
+                         'Pclass': 1,
+                         'Sex': 'female',
+                         'Age': 2.0
+                     }])

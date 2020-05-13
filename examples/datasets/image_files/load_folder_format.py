@@ -27,9 +27,10 @@ from tqdm import tqdm
 from PIL import Image
 import argparse
 
-def load(data_dir: str, image_width: int, image_height: int, 
-        out_train_dataset_path: str, out_val_dataset_path: str, 
-        out_meta_csv_path: str, validation_split: float):
+
+def load(data_dir: str, image_width: int, image_height: int,
+         out_train_dataset_path: str, out_val_dataset_path: str,
+         out_meta_csv_path: str, validation_split: float):
     '''
         Loads and converts a set of labelled folders of images as a Rafiki-conformant dataset for IMAGE_CLASSIFICATION.
 
@@ -43,8 +44,11 @@ def load(data_dir: str, image_width: int, image_height: int,
     '''
 
     print('Loading datasets into memory...')
-    (pil_images, labels, label_to_name) = _load_dataset_from_files(data_dir, image_width, image_height)
-    (train_pil_images, train_labels, val_pil_images, val_labels) = _split_train_dataset(pil_images, labels, validation_split)
+    (pil_images, labels,
+     label_to_name) = _load_dataset_from_files(data_dir, image_width,
+                                               image_height)
+    (train_pil_images, train_labels, val_pil_images,
+     val_labels) = _split_train_dataset(pil_images, labels, validation_split)
 
     print('Converting and writing datasets...')
 
@@ -52,12 +56,15 @@ def load(data_dir: str, image_width: int, image_height: int,
     print('Dataset metadata file is saved at {}'.format(out_meta_csv_path))
 
     _write_dataset(train_pil_images, train_labels, out_train_dataset_path)
-    print('Train dataset file is saved at {}. This should be submitted as `train_dataset` of a train job.'
-            .format(out_train_dataset_path))
+    print(
+        'Train dataset file is saved at {}. This should be submitted as `train_dataset` of a train job.'
+        .format(out_train_dataset_path))
 
     _write_dataset(val_pil_images, val_labels, out_val_dataset_path)
-    print('Validation dataset file is saved at {}. This should be submitted as `val_dataset` of a train job.'
-            .format(out_val_dataset_path))
+    print(
+        'Validation dataset file is saved at {}. This should be submitted as `val_dataset` of a train job.'
+        .format(out_val_dataset_path))
+
 
 def _split_train_dataset(train_pil_images, train_labels, validation_split):
     # Shuffle for consistency between train & val datasets
@@ -72,13 +79,15 @@ def _split_train_dataset(train_pil_images, train_labels, validation_split):
     train_labels = train_labels[:val_start_idx]
     return (train_pil_images, train_labels, val_pil_images, val_labels)
 
+
 def _write_meta_csv(label_to_name, out_meta_csv_path):
     with open(out_meta_csv_path, mode='w') as f:
         writer = csv.DictWriter(f, fieldnames=['class', 'name'])
         writer.writeheader()
 
         for (label, name) in label_to_name.items():
-            writer.writerow({ 'class': label, 'name': name })
+            writer.writerow({'class': label, 'name': name})
+
 
 def _write_dataset(pil_images, labels, out_dataset_path):
     with tempfile.TemporaryDirectory() as d:
@@ -90,15 +99,19 @@ def _write_dataset(pil_images, labels, out_dataset_path):
         with open(images_csv_path, mode='w') as f:
             writer = csv.DictWriter(f, fieldnames=['path', 'class'])
             writer.writeheader()
-            for (i, pil_image, label) in tqdm(zip(range(n), pil_images, labels), total=n, unit='images'):
+            for (i, pil_image, label) in tqdm(zip(range(n), pil_images, labels),
+                                              total=n,
+                                              unit='images'):
                 image_name = '{}-{}.png'.format(label, i)
                 image_path = os.path.join(d, image_name)
                 pil_image.save(image_path)
-                writer.writerow({ 'path': image_name, 'class': label })
+                writer.writerow({'path': image_name, 'class': label})
 
         # Zip and export folder as dataset
         out_path = shutil.make_archive(out_dataset_path, 'zip', d)
-        os.rename(out_path, out_dataset_path) # Remove additional trailing `.zip`
+        os.rename(out_path,
+                  out_dataset_path)  # Remove additional trailing `.zip`
+
 
 def _load_dataset_from_files(data_dir, image_width, image_height):
     sub_dir_names = get_immediate_subdir_names(data_dir)
@@ -119,11 +132,17 @@ def _load_dataset_from_files(data_dir, image_width, image_height):
 
     return (pil_images, labels, label_to_name)
 
+
 def get_image_names(root_dir):
     return [x for x in os.listdir(root_dir) if re.search(r'\.(jpg|jpeg)$', x)]
 
+
 def get_immediate_subdir_names(root_dir):
-    return [x for x in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, x))]
+    return [
+        x for x in os.listdir(root_dir)
+        if os.path.isdir(os.path.join(root_dir, x))
+    ]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -143,5 +162,3 @@ if __name__ == '__main__':
         out_meta_csv_path='data/{}_meta.csv'.format(args.name),
         validation_split=args.validation_split,
     )
-
-    
