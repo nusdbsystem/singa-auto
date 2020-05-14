@@ -737,20 +737,6 @@ class TfDeepSpeech(BaseModel):
                 ' or removing the contents of {0}.'.format(checkpoint_path))
             sys.exit(1)
 
-    def samples_to_mfccs(self, samples, sample_rate):
-        Config = self.c
-        spectrogram = contrib_audio.audio_spectrogram(
-            samples,
-            window_size=Config.audio_window_samples,
-            stride=Config.audio_step_samples,
-            magnitude_squared=True)
-        mfccs = contrib_audio.mfcc(spectrogram,
-                                   sample_rate,
-                                   dct_coefficient_count=Config.n_input)
-        mfccs = tf.reshape(mfccs, [-1, Config.n_input])
-
-        return mfccs, tf.shape(mfccs)[0]
-
     def create_inference_graph(self, batch_size=1, n_steps=16):
         Config = self.c
 

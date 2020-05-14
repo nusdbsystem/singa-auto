@@ -61,15 +61,18 @@ class SqueezeNet(BaseModel):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._model = self._build_classifier(self.learning_rate,
-                                             self.decay_rate, self.momentum)
+        self._model = self._build_classifier(self._knobs.get("learning_rate"),
+                                             self._knobs.get("decay_rate"),
+                                             self._knobs.get("momentum"))
 
     def train(self, dataset_path, **kwargs):
         epochs = self._knobs.get('epochs')
         batch_size = self._knobs.get('batch_size')
 
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
@@ -82,9 +85,12 @@ class SqueezeNet(BaseModel):
         (train_loss, train_acc) = self._model.evaluate(X, y)
         utils.logger.log('Train loss: {}'.format(train_loss))
         utils.logger.log('Train accuracy: {}'.format(train_acc))
+
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])

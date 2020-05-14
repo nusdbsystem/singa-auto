@@ -131,6 +131,8 @@ class InferenceCache(object):
 def testquery():
     batch_size = 10
     worker_id = 10001
+    # Need to define RQueue first before the test routine can be used
+    # pylint: disable = undefined-variable
     op = RQueue(host='172.17.0.3', port=9092)
     queries = [i for i in range(batch_size)]
     op.add_queries_for_worker(worker_id, queries)
@@ -141,6 +143,8 @@ def testquery():
 
 def testprediction():
     worker_id = 358
+    # Need to define RQueue first before the test routine can be used
+    # pylint: disable = undefined-variable
     op = RQueue(host='172.17.0.3', port=9092)
     predictions = []
     for i in range(5):

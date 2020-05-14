@@ -43,9 +43,11 @@ class KNNClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.n_neighbors, self.metric,
-                                           self.p)
+        self._clf = self._build_classifier(self._knobs.get("n_neighbors"),
+                                           self._knobs.get("metric"),
+                                           self._knobs.get("p"))
 
     def train(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe

@@ -57,6 +57,7 @@ class LightGBM(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
 
     def train(self,
@@ -105,11 +106,11 @@ class LightGBM(BaseModel):
                 'metric': 'cross_entropy',
                 'nthread': 4,
                 'n_estimators': 10,
-                'learning_rate': self.learning_rate,
-                'num_leaves': self.num_leaves,
-                'colsample_bytree': self.colsample_bytree,
-                'subsample': self.subsample,
-                'max_depth': self.max_depth,
+                'learning_rate': self._knobs.get("learning_rate"),
+                'num_leaves': self._knobs.get("num_leaves"),
+                'colsample_bytree': self._knobs.get("colsample_bytree"),
+                'subsample': self._knobs.get("subsample"),
+                'max_depth': self._knobs.get("max_depth"),
                 'verbose': -1,
             }
 

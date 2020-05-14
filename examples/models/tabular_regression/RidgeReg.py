@@ -49,10 +49,14 @@ class RidgeReg(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._regressor = self._build_regressor(self.alpha, self.normalize,
-                                                self.copy_X, self.tol,
-                                                self.solver, self.random_state)
+        self._regressor = self._build_regressor(self._knobs.get("alpha"),
+                                                self._knobs.get("normalize"),
+                                                self._knobs.get("copy_X"),
+                                                self._knobs.get("tol"),
+                                                self._knobs.get("solver"),
+                                                self._knobs.get("random_state"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target

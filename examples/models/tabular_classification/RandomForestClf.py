@@ -25,9 +25,12 @@ class RandomForestClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.n_estimators, self.max_depth,
-                                           self.oob_score, self.max_features)
+        self._clf = self._build_classifier(self._knobs.get("n_estimators"),
+                                           self._knobs.get("max_depth"),
+                                           self._knobs.get("oob_score"),
+                                           self._knobs.get("max_features"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -140,6 +143,7 @@ class RandomForestClf(BaseModel):
             df_temp[col] = df[col].map(self._encoding_dict[col])
         df = df_temp
         return df
+
     def _build_classifier(self, n_estimators, max_depth, oob_score,
                           max_features):
         clf = RandomForestClassifier(n_estimators=n_estimators,

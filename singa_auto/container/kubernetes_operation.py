@@ -20,8 +20,7 @@
 import os
 import time
 import kubernetes
-import kubernetes.client
-from kubernetes import config
+from kubernetes import client
 import logging
 import traceback
 from collections import namedtuple
@@ -44,7 +43,7 @@ class KubernetesContainerManager(ContainerManager):
             aToken = fToken.read()
 
         # Create a configuration object
-        aConfiguration = kubernetes.client.Configuration()
+        aConfiguration = client.Configuration()
 
         # Specify the endpoint of your Kube cluster
         aConfiguration.host = "https://{}:{}".format(
@@ -63,10 +62,10 @@ class KubernetesContainerManager(ContainerManager):
         aConfiguration.api_key = {"authorization": "Bearer " + aToken}
 
         # Create a ApiClient with our config
-        aApiClient = kubernetes.client.ApiClient(aConfiguration)
+        aApiClient = client.ApiClient(aConfiguration)
 
-        self._client_deployment = kubernetes.client.AppsV1Api(aApiClient)
-        self._client_service = kubernetes.client.CoreV1Api(aApiClient)
+        self._client_deployment = client.AppsV1Api(aApiClient)
+        self._client_service = client.CoreV1Api(aApiClient)
 
     def destroy_service(self, service: ContainerService):
         self._client_deployment.delete_namespaced_deployment(

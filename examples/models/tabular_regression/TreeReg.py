@@ -50,13 +50,14 @@ class TreeReg(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._regressor = self._build_regressor(self.criterion, self.splitter,
-                                                self.min_samples_split,
-                                                self.max_features,
-                                                self.random_state,
-                                                self.min_impurity_decrease,
-                                                self.min_impurity_split)
+        self._regressor = self._build_regressor(
+            self._knobs.get("criterion"), self._knobs.get("splitter"),
+            self._knobs.get("min_samples_split"),
+            self._knobs.get("max_features"), self._knobs.get("random_state"),
+            self._knobs.get("min_impurity_decrease"),
+            self._knobs.get("min_impurity_split"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -158,6 +159,7 @@ class TreeReg(BaseModel):
         data = self.median_dataset(df)
         X = StandardScaler().fit_transform(df)
         return X
+
     def _build_regressor(self, criterion, splitter, min_samples_split,
                          max_features, random_state, min_impurity_decrease,
                          min_impurity_split):

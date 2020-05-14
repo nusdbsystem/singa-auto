@@ -43,13 +43,17 @@ class SkDt(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.max_depth, self.criterion,
-                                           self.splitter)
+        self._clf = self._build_classifier(self._knobs.get("max_depth"),
+                                           self._knobs.get("criterion"),
+                                           self._knobs.get("splitter"))
 
     def train(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
@@ -64,7 +68,9 @@ class SkDt(BaseModel):
 
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
         X = self._prepare_X(images)

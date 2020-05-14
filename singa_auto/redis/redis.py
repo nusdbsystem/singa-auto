@@ -144,11 +144,12 @@ class RedisSession(object):
     def _make_redis_client(self, host, port):
         if host is not None and port is not None:
             import redis
+            from redis import ConnectionPool
+            from redis import StrictRedis
             cache_connection_url = 'redis://{}:{}'.format(host, port)
-            connection_pool = redis.ConnectionPool.from_url(
-                cache_connection_url)
-            client = redis.StrictRedis(connection_pool=connection_pool,
-                                       decode_responses=True)
+            connection_pool = ConnectionPool.from_url(cache_connection_url)
+            client = StrictRedis(connection_pool=connection_pool,
+                                 decode_responses=True)
             logger.info(
                 f'Connecting to Redis at namespace {self._namespace}...')
         else:

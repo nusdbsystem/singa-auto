@@ -237,6 +237,7 @@ class DNNTorch(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
 
     def train(self,
@@ -277,7 +278,7 @@ class DNNTorch(BaseModel):
         self._model = self._model.to(device)
         criterion = F.nll_loss
         optimizer = torch.optim.SGD(self._model.parameters(),
-                                    lr=self.learning_rate,
+                                    lr=self._knobs.get("learning_rate"),
                                     momentum=0.9)
 
         # prepare train/valid dataset
@@ -299,7 +300,7 @@ class DNNTorch(BaseModel):
         gc.collect()
 
         # start training
-        for i in range(self.epoch):
+        for i in range(self._knobs.get("epoch")):
 
             train_losses = []
             valid_losses = []

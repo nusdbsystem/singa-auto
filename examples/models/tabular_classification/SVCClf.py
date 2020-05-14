@@ -53,12 +53,14 @@ class SVCClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.C, self.kernel, self.degree,
-                                           self.gamma, self.coef0,
-                                           self.shrinking, self.tol,
-                                           self.decision_function_shape,
-                                           self.probability)
+        self._clf = self._build_classifier(
+            self._knobs.get("C"), self._knobs.get("kernel"),
+            self._knobs.get("degree"), self._knobs.get("gamma"),
+            self._knobs.get("coef0"), self._knobs.get("shrinking"),
+            self._knobs.get("tol"), self._knobs.get("decision_function_shape"),
+            self._knobs.get("probability"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target

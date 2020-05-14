@@ -51,12 +51,14 @@ class PassiveAClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.C, self.tol,
-                                           self.validation_fraction,
-                                           self.n_iter_no_change, self.shuffle,
-                                           self.loss, self.random_state,
-                                           self.warm_start, self.average)
+        self._clf = self._build_classifier(
+            self._knobs.get("C"), self._knobs.get("tol"),
+            self._knobs.get("validation_fraction"),
+            self._knobs.get("n_iter_no_change"), self._knobs.get("shuffle"),
+            self._knobs.get("loss"), self._knobs.get("random_state"),
+            self._knobs.get("warm_start"), self._knobs.get("average"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -156,6 +158,7 @@ class PassiveAClf(BaseModel):
         X = PolynomialFeatures(
             interaction_only=True).fit_transform(data).astype(int)
         return X
+
     def _build_classifier(self, C, tol, validation_fraction, n_iter_no_change,
                           shuffle, loss, random_state, warm_start, average):
         clf = PassiveAggressiveClassifier(

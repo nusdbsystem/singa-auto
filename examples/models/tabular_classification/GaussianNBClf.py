@@ -41,8 +41,9 @@ class GaussianClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.var_smoothing)
+        self._clf = self._build_classifier(self._knobs.get("var_smoothing"))
 
     def train(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe

@@ -29,9 +29,13 @@ class LogisticRegClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.penalty, self.tol, self.C,
-                                           self.fit_intercept, self.solver)
+        self._clf = self._build_classifier(self._knobs.get("penalty"),
+                                           self._knobs.get("tol"),
+                                           self._knobs.get("C"),
+                                           self._knobs.get("fit_intercept"),
+                                           self._knobs.get("solver"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target

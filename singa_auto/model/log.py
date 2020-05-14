@@ -208,7 +208,8 @@ class LoggerUtilsDebugHandler(logging.Handler):
             title = log_dict.get('title')
             metrics = log_dict.get('metrics')
             x_axis = log_dict.get('x_axis')
-
+            # In pylint, allow many format args in this specific case
+            # pylint: disable = too-many-format-args
             self._print('Plot `{}` will be registered when this model is being trained on SINGA-Auto' \
                 .format(title, ', '.join(metrics), x_axis or 'time'))
 

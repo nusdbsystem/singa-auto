@@ -46,6 +46,7 @@ class XgbClf(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
@@ -65,8 +66,13 @@ class XgbClf(BaseModel):
 
         num_class = y.unique().size
 
-        self._clf = self._build_classifier(self.n_estimators, self.min_child_weight, \
-            self.max_depth, self.gamma, self.subsample, self.colsample_bytree, num_class)
+        self._clf = self._build_classifier(self._knobs.get("n_estimators"),
+                                           self._knobs.get("min_child_weight"),
+                                           self._knobs.get("max_depth"),
+                                           self._knobs.get("gamma"),
+                                           self._knobs.get("subsample"),
+                                           self._knobs.get("colsample_bytree"),
+                                           num_class)
 
         self._clf.fit(X, y)
 

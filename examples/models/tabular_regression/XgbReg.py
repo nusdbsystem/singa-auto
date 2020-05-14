@@ -47,9 +47,14 @@ class XgbReg(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.n_estimators, self.min_child_weight, \
-            self.max_depth, self.gamma, self.subsample, self.colsample_bytree)
+        self._clf = self._build_classifier(self._knobs.get("n_estimators"),
+                                           self._knobs.get("min_child_weight"),
+                                           self._knobs.get("max_depth"),
+                                           self._knobs.get("gamma"),
+                                           self._knobs.get("subsample"),
+                                           self._knobs.get("colsample_bytree"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target

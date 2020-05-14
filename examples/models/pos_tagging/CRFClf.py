@@ -33,7 +33,7 @@ from collections import Counter
 
 from singa_auto.model import BaseModel, utils, FixedKnob, FloatKnob
 from singa_auto.model.dev import test_model_class
-
+from singa_auto.constants import ModelDependency
 
 class CRFClf(BaseModel):
     '''
@@ -53,8 +53,9 @@ class CRFClf(BaseModel):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.c1, self.c2,
-                                           self.max_iterations)
+        self._clf = self._build_classifier(self._knobs.get("c1"),
+                                           self._knobs.get("c2"),
+                                           self._knobs.get("max_iterations"))
 
     def train(self, dataset_path, **kwargs):
         with open(dataset_path, "rb") as fp:

@@ -45,13 +45,18 @@ class SkSvm(BaseModel):
 
     def __init__(self, **knobs):
         super().__init__(**knobs)
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.max_iter, self.kernel,
-                                           self.gamma, self.C)
+        self._clf = self._build_classifier(self._knobs.get("max_iter"),
+                                           self._knobs.get("kernel"),
+                                           self._knobs.get("gamma"),
+                                           self._knobs.get("C"))
 
     def train(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
@@ -61,7 +66,9 @@ class SkSvm(BaseModel):
 
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
         X = self._prepare_X(images)

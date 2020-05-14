@@ -22,6 +22,7 @@ from time import time
 import os
 import base64
 import pickle
+import argparse
 import tensorflow as tf
 from keras import models, layers
 from tensorflow import keras
@@ -56,14 +57,16 @@ class LeNet5(BaseModel):
         super().__init__(**knobs)
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._model = self._build_classifier(self.l_rate)
+        self._model = self._build_classifier(self._knobs.get("l_rate"))
 
     def train(self, dataset_path, **kwargs):
         ep = self._knobs.get('epochs')
         bs = self._knobs.get('batch_size')
 
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         self._image_size = dataset.image_size
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
@@ -111,9 +114,12 @@ class LeNet5(BaseModel):
                                                        y_validation)
         utils.logger.log('Train loss: {}'.format(train_loss))
         utils.logger.log('Train accuracy: {}'.format(train_acc))
+
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path, max_image_size=self.max_image_size, mode='L')
+            dataset_path,
+            max_image_size=self._knobs.get("max_image_size"),
+            mode='L')
         (images, classes) = zip(*[(image, image_class)
                                   for (image, image_class) in dataset])
         images = self._prepare_X(images)
