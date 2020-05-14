@@ -594,10 +594,11 @@ class MetaStore(object):
         ingress_info = self._session\
             .query(IngressConfig)\
             .filter(name=ingress_name)\
+            .with_for_update(read=False) \
             .first()
 
         if ingress_info is None:
-            # first predictor service
+            # if there isn't ingress info in db
             ingress_body = {"apiVersion": 'networking.k8s.io/v1beta1',
                             "kind": 'Ingress',
                             "metadata": {"name": ingress_name},
@@ -631,13 +632,14 @@ class MetaStore(object):
                 # if new service path is added
                 path_info = {"path": "/" + inferenceAppName,
                              "backend": {
-                                 "serviceName": container_service_name,
-                                 "servicePort": service_port
-                             }
+                                     "serviceName": container_service_name,
+                                     "servicePort": service_port
+                                 }
                              }
                 ingress_body["spec"]["rules"][0]["http"]["paths"].append(path_info)
 
             ingress_info.ingress_body = json.dumps(ingress_body)
+            self._session.add(ingress_info)
 
         return ingress_info
 

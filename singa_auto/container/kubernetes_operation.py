@@ -65,7 +65,7 @@ class KubernetesContainerManager(ContainerManager):
         self._client_service = kubernetes.client.CoreV1Api(aApiClient)
         self.api_instance = kubernetes.client.NetworkingV1beta1Api(aApiClient)
 
-    def update_ingress(self, ingress_name, ingress_body):
+    def update_ingress(self, ingress_name: str, ingress_body: dict):
         paths = self._update_ingress_paths(ingress_body)
         body = kubernetes.client.NetworkingV1beta1Ingress(
             api_version="networking.k8s.io/v1beta1",
@@ -74,7 +74,7 @@ class KubernetesContainerManager(ContainerManager):
                                                     name=ingress_name,
                                                     annotations={
                                                         "nginx.ingress.kubernetes.io/rewrite-target": "/"
-                                                    }
+                                                        }
                                                     ),
             spec=kubernetes.client.NetworkingV1beta1IngressSpec(
                 rules=[kubernetes.client.NetworkingV1beta1IngressRule(
