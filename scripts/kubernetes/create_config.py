@@ -81,6 +81,7 @@ if __name__ == '__main__':
     CLUSTER_MODE = sys.argv[50]
 
     DB_DIR_PATH = sys.argv[51]
+    INGRESS_NAME = sys.argv[52]
 
     #zk service
     content = {}
@@ -319,6 +320,7 @@ if __name__ == '__main__':
     env.append({'name': 'LOGS_DIR_PATH', 'value': LOGS_DIR_PATH})
     env.append({'name': 'APP_MODE', 'value': APP_MODE})
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
+    env.append({'name': 'INGRESS_NAME', 'value': INGRESS_NAME})
     container.setdefault('env', env)
     with open('{}/scripts/kubernetes/start_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
