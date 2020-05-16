@@ -30,9 +30,9 @@ title "Using K8S"
 # Docker build -t <label-of-docker-image>
 # Docker build -f <path-to-dockerfile>
 
-echo "using $1 docker files"
+echo "using $APP_MODE docker files"
 
-if [[ $1 = "dev" ]]
+if [[ $APP_MODE = "DEV" ]]
 then
   title "Building SINGA-Auto Admin's image..."
   docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/admin.Dockerfile \

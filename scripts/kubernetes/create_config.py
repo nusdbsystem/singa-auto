@@ -273,7 +273,7 @@ if __name__ == '__main__':
     container = {}
     container.setdefault('name', ADMIN_HOST)
     container.setdefault('image', f'{SINGA_AUTO_IMAGE_ADMIN}:{SINGA_AUTO_VERSION}')
-    if CONTAINER_MODE == 'DEV':
+    if APP_MODE == 'DEV':
         container.setdefault('volumeMounts', [{'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'},
                                               {'name': 'admin-log', 'mountPath': DOCKER_WORKDIR_PATH}])
         template.setdefault('spec', {'containers': [container],
