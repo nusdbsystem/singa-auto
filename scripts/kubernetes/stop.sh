@@ -23,7 +23,7 @@ source ./scripts/kubernetes/utils.sh
 
 echo "Stop option: $1"
 
-if [[ $1 = "svc" ]]
+if [[ $1 = "allsvc" ]]
 then
       title "Only stop predictor and training services"
       kubectl get deployments | grep singa-auto-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
@@ -32,6 +32,15 @@ then
       kubectl get deployments | grep singa-auto-train | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
 
       kubectl get services | grep singa-auto-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete services {}
+elif [[ $1 = "failsvc" ]]
+then
+      title "Only stop failed predictor and training services"
+
+      kubectl get deployments | grep singa-auto-predict | grep 0/ | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {} |  awk '{print $2}'| sudo xargs -I {} kubectl delete svc {}
+      kubectl get deployments | grep singa-auto-inference | grep 0/ | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+      kubectl get deployments | grep singa-auto-advisor | grep 0/ | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+      kubectl get deployments | grep singa-auto-train | grep 0/ | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+
 else
 
       title "Stopping any existing jobs..."
