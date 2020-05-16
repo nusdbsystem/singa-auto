@@ -593,7 +593,7 @@ class MetaStore(object):
 
         ingress_info = self._session\
             .query(IngressConfig)\
-            .filter(name=ingress_name)\
+            .filter(IngressConfig.name == ingress_name)\
             .with_for_update(read=False) \
             .first()
 
