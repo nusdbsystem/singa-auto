@@ -155,7 +155,7 @@ if __name__ == '__main__':
     container.setdefault('image', IMAGE_KAFKA)
     env = []
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
-    env.append({'name': 'KAFKA_ZOOKEEPER_CONNECT', 'value': f'{ZOOKEEPER_HOST}:{ZOOKEEPER_PORT}'})
+    env.append({'name': 'KAFKA_ZOOKEEPER_CONNECT', 'value': '{}:{}'.format(ZOOKEEPER_HOST, ZOOKEEPER_PORT)})
     env.append({'name': 'KAFKA_ADVERTISED_HOST_NAME', 'value': KAFKA_HOST})
     env.append({'name': 'KAFKA_MESSAGE_MAX_BYTES', 'value': "134217728"})
     env.append({'name': 'KAFKA_FETCH_MAX_BYTES', 'value': "134217728"})
@@ -208,7 +208,7 @@ if __name__ == '__main__':
         template.setdefault('spec', {'containers': [container],
                                      'volumes': [
                                                  {'name': 'db-path',
-                                                  'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{DB_DIR_PATH}'}}
+                                                  'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, DB_DIR_PATH)}}
                                                  ]
                                      }
                             )
@@ -273,7 +273,7 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': ADMIN_HOST}})
     container = {}
     container.setdefault('name', ADMIN_HOST)
-    container.setdefault('image', f'{SINGA_AUTO_IMAGE_ADMIN}:{SINGA_AUTO_VERSION}')
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_ADMIN, SINGA_AUTO_VERSION))
     if APP_MODE == 'DEV':
         container.setdefault('volumeMounts', [{'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'},
                                               {'name': 'admin-log', 'mountPath': DOCKER_WORKDIR_PATH}])
@@ -285,13 +285,13 @@ if __name__ == '__main__':
                                      }
                             )
     else:
-        container.setdefault('volumeMounts', [{'name': 'work-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{DATA_DIR_PATH}'}, \
-                                              {'name': 'param-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{PARAMS_DIR_PATH}'}, \
-                                              {'name': 'log-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{LOGS_DIR_PATH}'}, \
+        container.setdefault('volumeMounts', [{'name': 'work-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, DATA_DIR_PATH)}, \
+                                              {'name': 'param-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, PARAMS_DIR_PATH)}, \
+                                              {'name': 'log-path', 'mountPath': '{}/{}'.foramt(DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
                                               {'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'}])
-        template.setdefault('spec', {'containers': [container], 'volumes': [{'name': 'work-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{DATA_DIR_PATH}'}}, \
-                                    {'name': 'param-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{PARAMS_DIR_PATH}'}}, \
-                                    {'name': 'log-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{LOGS_DIR_PATH}'}}, \
+        template.setdefault('spec', {'containers': [container], 'volumes': [{'name': 'work-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, DATA_DIR_PATH)}}, \
+                                    {'name': 'param-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, PARAMS_DIR_PATH)}}, \
+                                    {'name': 'log-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, LOGS_DIR_PATH)}}, \
                                     {'name': ADMIN_HOST, 'hostPath': {'path': '/var/run/docker.sock'}}]})
     env = []
     env.append({'name': 'POSTGRES_HOST', 'value': POSTGRES_HOST})
@@ -370,7 +370,7 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': WEB_ADMIN_HOST}})
     container = {}
     container.setdefault('name', WEB_ADMIN_HOST)
-    container.setdefault('image', f'{SINGA_AUTO_IMAGE_WEB_ADMIN}:{SINGA_AUTO_VERSION}')
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_WEB_ADMIN, SINGA_AUTO_VERSION))
     template.setdefault('spec', {'containers': [container]})
     env = []
     env.append({'name': 'SINGA_AUTO_ADDR', 'value': SINGA_AUTO_ADDR})
