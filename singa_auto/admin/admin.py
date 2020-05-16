@@ -712,7 +712,7 @@ class Admin(object):
 
         res = list()
         for inference_job in inference_jobs:
-            if inference_job.status in ['RUNNING', 'STARTED', 'ERRORED']:
+            if inference_job.status in ['RUNNING']:
                 if inference_job.train_job_id:
                     train_job = self._meta_store.get_train_job(inference_job.train_job_id)
                     res.append({
