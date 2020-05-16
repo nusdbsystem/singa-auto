@@ -45,10 +45,7 @@ then
   docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/predictor.Dockerfile \
       --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
       --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-fi
-
-if [[ $1 = "prod" ]]
-then
+else
   title "Building SINGA-Auto Admin's image..."
   docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/admin.Dockerfile \
       --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
