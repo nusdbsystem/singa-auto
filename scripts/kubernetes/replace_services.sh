@@ -29,19 +29,19 @@ if [[ $1 = "admin" ]]
 then
 
     kubectl replace --force -f scripts/kubernetes/start_admin_deployment.json
-    kubectl apply -f scripts/kubernetes/start_admin_service.json --record
+    kubectl replace --force -f scripts/kubernetes/start_admin_service.json
 fi
 
 if [[ $1 = "db" ]]
 then
-    kubectl apply -f scripts/kubernetes/start_db_deployment.json --record
-    kubectl apply -f scripts/kubernetes/start_db_service.json --record
+    kubectl replace --force -f scripts/kubernetes/start_db_deployment.json
+    kubectl replace --force -f scripts/kubernetes/start_db_service.json
 fi
 
 if [[ $1 = "web" ]]
 then
-    kubectl apply -f scripts/kubernetes/start_web_admin_deployment.json --record
-    kubectl apply -f scripts/kubernetes/start_web_admin_service.json --record
+    kubectl replace --force -f scripts/kubernetes/start_web_admin_deployment.json
+    kubectl replace --force -f scripts/kubernetes/start_web_admin_service.json
 fi
 
 bash ./scripts/kubernetes/remove_config.sh

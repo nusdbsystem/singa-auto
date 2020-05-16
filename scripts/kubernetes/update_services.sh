@@ -23,7 +23,7 @@ title "updating SINGA-Auto's services"
 
 bash ./scripts/kubernetes/generate_config.sh
 
-kubectl replace --force -f scripts/kubernetes/start_admin_deployment.json
+kubectl apply -f scripts/kubernetes/start_admin_deployment.json --record
 kubectl apply -f scripts/kubernetes/start_admin_service.json --record
 
 kubectl apply -f scripts/kubernetes/start_db_deployment.json --record
