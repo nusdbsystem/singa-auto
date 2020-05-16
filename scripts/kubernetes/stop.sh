@@ -21,43 +21,58 @@ source ./scripts/kubernetes/.env.sh
 
 source ./scripts/kubernetes/utils.sh
 
-title "Stopping any existing jobs..."
-python ./scripts/stop_all_jobs.py
+echo "Stop option: $1"
 
-title "Stopping SINGA-Auto's Web Admin Deployment..."
-kubectl delete deployment $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Deployment"
+if [[ $1 = "svc" ]]
+then
+      title "Only stop predictor and training services"
+      kubectl get deployments | grep singa-auto-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+      kubectl get deployments | grep singa-auto-inference | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+      kubectl get deployments | grep singa-auto-advisor | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
+      kubectl get deployments | grep singa-auto-train | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
 
-title "Stopping SINGA-Auto's Admin Deployment..."
-kubectl delete deployment $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin Deployment"
-
-title "Stopping SINGA-Auto's Redis Deployment..."
-kubectl delete deployment $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis Deployment"
-
-title "Stopping SINGA-Auto's Kafka Deployment..."
-kubectl delete deployment $KAFKA_HOST || echo "Failed to stop SINGA-Auto's Kafka Deployment"
-
-title "Stopping SINGA-Auto's Zookeeper Deployment..."
-kubectl delete deployment $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Deployment"
-
-title "Stopping SINGA-Auto's Web Admin Service..."
-kubectl delete service $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Service"
-
-title "Stopping SINGA-Auto's Admin Service..."
-kubectl delete service $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin Service"
-
-title "Stopping SINGA-Auto's Redis Service..."
-kubectl delete service $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis Service"
-
-title "Stopping SINGA-Auto's Kafka Service..."
-kubectl delete service $KAFKA_HOST || echo "Failed to stop SINGA-Auto's Kafka Service"
-
-title "Stopping SINGA-Auto's Zookeeper Service..."
-kubectl delete service $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Service"
-
-if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-    bash scripts/kubernetes/stop_db.sh || exit 1
+      kubectl get services | grep singa-auto-svc-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete services {}
 else
-    bash scripts/kubernetes/stop_stolon.sh || exit 1
+
+      title "Stopping any existing jobs..."
+      python ./scripts/stop_all_jobs.py
+
+      title "Stopping SINGA-Auto's Web Admin Deployment..."
+      kubectl delete deployment $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Deployment"
+
+      title "Stopping SINGA-Auto's Admin Deployment..."
+      kubectl delete deployment $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin Deployment"
+
+      title "Stopping SINGA-Auto's Redis Deployment..."
+      kubectl delete deployment $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis Deployment"
+
+      title "Stopping SINGA-Auto's Kafka Deployment..."
+      kubectl delete deployment $KAFKA_HOST || echo "Failed to stop SINGA-Auto's Kafka Deployment"
+
+      title "Stopping SINGA-Auto's Zookeeper Deployment..."
+      kubectl delete deployment $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Deployment"
+
+      title "Stopping SINGA-Auto's Web Admin Service..."
+      kubectl delete service $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Service"
+
+      title "Stopping SINGA-Auto's Admin Service..."
+      kubectl delete service $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin Service"
+
+      title "Stopping SINGA-Auto's Redis Service..."
+      kubectl delete service $REDIS_HOST || echo "Failed to stop SINGA-Auto's Redis Service"
+
+      title "Stopping SINGA-Auto's Kafka Service..."
+      kubectl delete service $KAFKA_HOST || echo "Failed to stop SINGA-Auto's Kafka Service"
+
+      title "Stopping SINGA-Auto's Zookeeper Service..."
+      kubectl delete service $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Service"
+
+      if [ "$CLUSTER_MODE" = "SINGLE" ]; then
+          bash scripts/kubernetes/stop_db.sh || exit 1
+      else
+          bash scripts/kubernetes/stop_stolon.sh || exit 1
+      fi
+
 fi
 
 # Prompt if should stop DB
