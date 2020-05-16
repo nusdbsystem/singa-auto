@@ -674,11 +674,18 @@ class Admin(object):
                 raise InvalidRunningInferenceJobError('Have you start a train job or uploaded a checkpoint file for {}?'
                                                       .format(app))
             else:
+                train_job_id = None
+                app = app
+                app_version = app_version
+
                 inference_job = self._meta_store.get_deployed_inference_job_by_model_id(model.id)
                 if inference_job is None:
                     raise InvalidRunningInferenceJobError()
 
         else:
+            train_job_id = train_job.id
+            app = train_job.app
+            app_version = train_job.app_version
             inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
             if inference_job is None:
                 raise InvalidRunningInferenceJobError()
@@ -697,9 +704,9 @@ class Admin(object):
         return {
             'id': inference_job.id,
             'status': inference_job.status,
-            'train_job_id': train_job.id,
-            'app': train_job.app,
-            'app_version': train_job.app_version,
+            'train_job_id': train_job_id,
+            'app': app,
+            'app_version': app_version,
             'datetime_started': inference_job.datetime_started,
             'datetime_stopped': inference_job.datetime_stopped,
             'predictor_host':  predictor_host
