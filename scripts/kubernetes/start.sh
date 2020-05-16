@@ -62,7 +62,10 @@ echo "Deploy ingress-nginx"
     then
       echo "Detected that Ingress-controller is already running!"
     else
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/baremetal/deploy.yaml || exit 1
+      # this is the source yaml
+      # kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/baremetal/deploy.yaml
+      # customer yaml: add replica to 3, fix the port to 3005
+      kubectl apply -f scripts/kubernetes/ingress_controller_deploy.yaml || exit 1
     fi
 
 

@@ -297,6 +297,13 @@ class MetaStore(object):
 
         return inference_job
 
+    def get_deployed_inference_job_by_model_id(self, model_id):
+        inference_job = self._session.query(InferenceJob) \
+            .filter(InferenceJob.model_id == model_id) \
+            .filter(InferenceJob.status.in_([InferenceJobStatus.RUNNING, InferenceJobStatus.STARTED])).first()
+
+        return inference_job
+
     def get_inference_jobs_by_user(self, user_id):
         inference_jobs = self._session.query(InferenceJob) \
             .filter(InferenceJob.user_id == user_id).all()

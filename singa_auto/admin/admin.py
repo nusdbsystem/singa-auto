@@ -54,9 +54,10 @@ class InvalidDatasetError(Exception): pass
 class Admin(object):
     def __init__(self, meta_store=None, container_manager=None, data_store=None, param_store=None):
         self._meta_store = meta_store or MetaStore()
-        if os.getenv('CONTAINER_MODE', 'SWARM') == 'SWARM':
+        self.container_model = os.getenv('CONTAINER_MODE', 'SWARM')
+        if self.container_model == 'SWARM':
             container_manager = container_manager or DockerSwarmContainerManager()
-        elif os.getenv('CONTAINER_MODE', 'SWARM') == 'K8S':
+        elif self.container_model == 'K8S':
             container_manager = container_manager or KubernetesContainerManager()
         self._data_store: DataStore = data_store or FileDataStore()
         self._param_store: ParamStore = param_store or FileParamStore()
@@ -667,18 +668,31 @@ class Admin(object):
     def get_running_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
         if train_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
+            # in the inference job created by checkpoint, model name is the same as app name
+            model = self._meta_store.get_model_by_name(user_id=user_id, name=app)
+            if model.checkpoint_id is None:
+                raise InvalidRunningInferenceJobError('Have you start a train job or uploaded a checkpoint file for {}?'
+                                                      .format(app))
+            else:
+                inference_job = self._meta_store.get_deployed_inference_job_by_model_id(model.id)
+                if inference_job is None:
+                    raise InvalidRunningInferenceJobError()
 
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
-        if inference_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
+        else:
+            inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
+            if inference_job is None:
+                raise InvalidRunningInferenceJobError()
 
         predictor_service = self._meta_store.get_service(inference_job.predictor_service_id) \
                             if inference_job.predictor_service_id is not None else None
+        if self.container_model == 'K8S':
+            _ingress_port = os.environ["INGRESS_EXT_PORT"]
+            ingress_host = f'{predictor_service.ext_hostname}:{_ingress_port}/{app}'
+            predictor_host = ",".join([predictor_service.host, ingress_host]) if predictor_service is not None else None
+        elif self.container_model == 'SWARM':
+            predictor_host = predictor_service.host if predictor_service is not None else None
+        else:
+            predictor_host = None
 
         return {
             'id': inference_job.id,
@@ -688,7 +702,7 @@ class Admin(object):
             'app_version': train_job.app_version,
             'datetime_started': inference_job.datetime_started,
             'datetime_stopped': inference_job.datetime_stopped,
-            'predictor_host': predictor_service.host if predictor_service is not None else None
+            'predictor_host':  predictor_host
         }
 
     def get_inference_jobs_of_app(self, user_id, app):

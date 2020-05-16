@@ -19,6 +19,7 @@
 
 #ingress default configurations
 export INGRESS_NAME=ingress-predictor
+export INGRESS_EXT_PORT=3005
 
 # Cluster Mode for SINGA-auto
 export CLUSTER_MODE=SINGLE # CLUSTER or SINGLE
