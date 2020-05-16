@@ -38,7 +38,7 @@ class ServiceDeploymentError(Exception): pass
 
 # List of environment variables that will be auto-forwarded to services deployed
 ENVIRONMENT_VARIABLES_AUTOFORWARD = [
-    'POSTGRES_HOST', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD','POSTGRES_DB'
+    'POSTGRES_HOST', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB',
     'SUPERADMIN_PASSWORD',
     'REDIS_HOST', 'REDIS_PORT',
     'ADMIN_HOST', 'ADMIN_PORT',
