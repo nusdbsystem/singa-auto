@@ -90,14 +90,14 @@ class KubernetesContainerManager(ContainerManager):
                                                                     namespace='default',
                                                                     body=body)
 
-    def _update_ingress_paths(self, ingress_body) -> list:
+    def _update_ingress_paths(self, ingress_body: dict) -> list:
         paths = list()
         for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
             path_obj = kubernetes.client.NetworkingV1beta1HTTPIngressPath(
                             path=path_info["path"],
                             backend=kubernetes.client.NetworkingV1beta1IngressBackend(
-                                service_port=path_info["backend"]["service_port"],
-                                service_name=path_info["backend"]["service_name"])
+                                service_port=path_info["backend"]["servicePort"],
+                                service_name=path_info["backend"]["serviceName"])
 
                         )
             paths.append(path_obj)

@@ -525,6 +525,7 @@ class ServicesManager(object):
         except Exception as e:
             logger.error('Error while creating service with ID {}'.format(service.id))
             logger.error(traceback.format_exc())
+            self._meta_store.rollback()
             self._meta_store.mark_service_as_errored(service)
             self._meta_store.commit()
             raise e

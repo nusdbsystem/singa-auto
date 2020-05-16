@@ -31,7 +31,7 @@ then
       kubectl get deployments | grep singa-auto-advisor | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
       kubectl get deployments | grep singa-auto-train | awk '{print $1}' | sudo xargs -I {} kubectl delete deployment {}
 
-      kubectl get services | grep singa-auto-svc-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete services {}
+      kubectl get services | grep singa-auto-predict | awk '{print $1}' | sudo xargs -I {} kubectl delete services {}
 else
 
       title "Stopping any existing jobs..."

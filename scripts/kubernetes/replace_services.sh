@@ -19,26 +19,29 @@
 source ./scripts/kubernetes/.env.sh
 source ./scripts/kubernetes/utils.sh
 
-title "updating SINGA-Auto's services"
+title "replce SINGA-Auto's services, this scipt is used to update the service with only code change, while yaml file stay same"
 
 bash ./scripts/kubernetes/generate_config.sh
 
-kubectl replace --force -f scripts/kubernetes/start_admin_deployment.json
-kubectl apply -f scripts/kubernetes/start_admin_service.json --record
+echo "repalcing $1 "
 
-kubectl apply -f scripts/kubernetes/start_db_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_db_service.json --record
+if [[ $1 = "admin" ]]
+then
 
-kubectl apply -f scripts/kubernetes/start_kafka_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_kafka_service.json --record
+    kubectl replace --force -f scripts/kubernetes/start_admin_deployment.json
+    kubectl apply -f scripts/kubernetes/start_admin_service.json --record
+fi
 
-kubectl apply -f scripts/kubernetes/start_redis_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_redis_service.json --record
+if [[ $1 = "db" ]]
+then
+    kubectl apply -f scripts/kubernetes/start_db_deployment.json --record
+    kubectl apply -f scripts/kubernetes/start_db_service.json --record
+fi
 
-kubectl apply -f scripts/kubernetes/start_web_admin_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_web_admin_service.json --record
-
-kubectl apply -f scripts/kubernetes/start_zookeeper_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_zookeeper_service.json --record
+if [[ $1 = "web" ]]
+then
+    kubectl apply -f scripts/kubernetes/start_web_admin_deployment.json --record
+    kubectl apply -f scripts/kubernetes/start_web_admin_service.json --record
+fi
 
 bash ./scripts/kubernetes/remove_config.sh

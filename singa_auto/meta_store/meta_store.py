@@ -667,6 +667,9 @@ class MetaStore(object):
             else:
                 raise e
 
+    def rollback(self):
+        self._session.rollback()
+
     # Ensures that future database queries load fresh data from underlying database
     def expire(self):
         self._session.expire_all()
