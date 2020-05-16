@@ -514,7 +514,7 @@ class ServicesManager(object):
                    ingress_name=_ingress_name,
                    inferenceAppName=inferenceAppName,
                    container_service_name=container_service_name,
-                   service_port=self._predictor_port)
+                   service_port=int(self._predictor_port))
 
                 self._container_manager.update_ingress(ingress_name=_ingress_name,
                                                        ingress_body=json.loads(ingress_info.ingress_body)

@@ -589,7 +589,7 @@ class MetaStore(object):
     # ingress update
     ####################################
 
-    def update_ingress_config(self, ingress_name, inferenceAppName, container_service_name, service_port):
+    def update_ingress_config(self, ingress_name: str, inferenceAppName: str, container_service_name: str, service_port: int):
 
         ingress_info = self._session\
             .query(IngressConfig)\
