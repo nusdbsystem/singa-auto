@@ -82,8 +82,6 @@ class ServicesManager(object):
         self._singa_auto_addr = os.environ['SINGA_AUTO_ADDR']
         self._app_mode = os.environ['APP_MODE']
 
-        self._ingress_name = os.environ['INGRESS_NAME']
-
     def create_inference_services(self, inferenceAppName, inference_job_id, use_checkpoint=False):
         inference_job = self._meta_store.get_inference_job(inference_job_id)
         total_gpus = int(inference_job.budget.get(InferenceBudgetOption.GPU_COUNT, DEFAULT_INFERENCE_GPU_COUNT))
@@ -511,14 +509,14 @@ class ServicesManager(object):
 
             # if using kubernetes, register the service in db, and update ingress configuration
             if isinstance(self._container_manager, KubernetesContainerManager) and service_type == ServiceType.PREDICT:
-
+                _ingress_name = os.environ['INGRESS_NAME']
                 ingress_info = self._meta_store.update_ingress_config(
-                   ingress_name=self._ingress_name,
+                   ingress_name=_ingress_name,
                    inferenceAppName=inferenceAppName,
                    container_service_name=container_service_name,
                    service_port=self._predictor_port)
 
-                self._container_manager.update_ingress(ingress_name=self._ingress_name,
+                self._container_manager.update_ingress(ingress_name=_ingress_name,
                                                        ingress_body=json.loads(ingress_info.ingress_body)
                                                        )
 
