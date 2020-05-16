@@ -1,3 +1,4 @@
+#!/usr/bin python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     ports = spec.setdefault('ports', [])
     ports.append({'port': int(ZOOKEEPER_PORT), 'targetPort': int(ZOOKEEPER_PORT), 'nodePort': int(ZOOKEEPER_EXT_PORT)})
     spec.setdefault('selector', {'name': ZOOKEEPER_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_zookeeper_service.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_zookeeper_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #zk deployment
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
     container.setdefault('env', env)
     template.setdefault('spec', {'containers': [container]})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_zookeeper_deployment.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_zookeeper_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #kafka service
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     ports = spec.setdefault('ports', [])
     ports.append({'port': int(KAFKA_PORT), 'targetPort': int(KAFKA_PORT), 'nodePort': int(KAFKA_EXT_PORT)})
     spec.setdefault('selector', {'name': KAFKA_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_kafka_service.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_kafka_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #kafka deployment
@@ -161,7 +162,7 @@ if __name__ == '__main__':
     env.append({'name': 'KAFKA_ADVERTISED_PORT', 'value': KAFKA_PORT})
     container.setdefault('env', env)
     template.setdefault('spec', {'containers': [container]})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_kafka_deployment.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_kafka_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #db service
@@ -178,7 +179,7 @@ if __name__ == '__main__':
         ports = spec.setdefault('ports', [])
         ports.append({'port': int(POSTGRES_PORT), 'targetPort': int(POSTGRES_PORT), 'nodePort': int(POSTGRES_EXT_PORT)})
         spec.setdefault('selector', {'name': POSTGRES_HOST})
-        with open(f'{PYTHONPATH}/scripts/kubernetes/start_db_service.json', 'w') as f:
+        with open('{}/scripts/kubernetes/start_db_service.json'.format(PYTHONPATH), 'w') as f:
             f.write(json.dumps(content, indent=4))
 
         #db deployment
@@ -218,7 +219,7 @@ if __name__ == '__main__':
         env.append({'name': 'POSTGRES_PASSWORD', 'value': POSTGRES_PASSWORD})
         container.setdefault('env', env)
         template.setdefault('spec', {'containers': [container]})
-        with open(f'{PYTHONPATH}/scripts/kubernetes/start_db_deployment.json', 'w') as f:
+        with open('{}/scripts/kubernetes/start_db_deployment.json'.format(PYTHONPATH), 'w') as f:
             f.write(json.dumps(content, indent=4))
 
     #redis service
@@ -234,7 +235,7 @@ if __name__ == '__main__':
     ports = spec.setdefault('ports', [])
     ports.append({'port': int(REDIS_PORT), 'targetPort': int(REDIS_PORT), 'nodePort': int(REDIS_EXT_PORT)})
     spec.setdefault('selector', {'name': REDIS_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_redis_service.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_redis_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #redis deployment
@@ -254,7 +255,7 @@ if __name__ == '__main__':
     container.setdefault('name', REDIS_HOST)
     container.setdefault('image', IMAGE_REDIS)
     template.setdefault('spec', {'containers': [container]})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_redis_deployment.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_redis_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #admin deployment
@@ -319,7 +320,7 @@ if __name__ == '__main__':
     env.append({'name': 'APP_MODE', 'value': APP_MODE})
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
     container.setdefault('env', env)
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_admin_deployment.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #admin service
@@ -335,7 +336,7 @@ if __name__ == '__main__':
     ports = spec.setdefault('ports', [])
     ports.append({'port': int(ADMIN_PORT), 'targetPort': int(ADMIN_PORT), 'nodePort': int(ADMIN_EXT_PORT)})
     spec.setdefault('selector', {'name': ADMIN_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_admin_service.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_admin_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #web service
@@ -351,7 +352,7 @@ if __name__ == '__main__':
     ports = spec.setdefault('ports', [])
     ports.append({'port': int(3001), 'targetPort': int(3001), 'nodePort': int(WEB_ADMIN_EXT_PORT)})
     spec.setdefault('selector', {'name': WEB_ADMIN_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_web_admin_service.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_web_admin_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #web deployment
@@ -375,6 +376,6 @@ if __name__ == '__main__':
     env.append({'name': 'SINGA_AUTO_ADDR', 'value': SINGA_AUTO_ADDR})
     env.append({'name': 'ADMIN_EXT_PORT', 'value': ADMIN_EXT_PORT})
     container.setdefault('env', env)
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_web_admin_deployment.json', 'w') as f:
+    with open('{}/scripts/kubernetes/start_web_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 

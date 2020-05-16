@@ -4,3 +4,8 @@ __pycache__
 **/node_modules
 
 .cache/**
+db/**
+data/**
+docs/**
+params/**
+logs/**
