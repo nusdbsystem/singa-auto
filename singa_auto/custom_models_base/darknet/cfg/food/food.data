@@ -1,4 +1,0 @@
-classes= 1
-train  = ""
-valid  = ""
-names = ./singa_auto/custom_models_base/darknet/cfg/food/food.names
