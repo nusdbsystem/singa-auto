@@ -33,7 +33,8 @@ from singa_auto.model import parse_model_install_command
 logger = logging.getLogger(__name__)
 
 
-class ServiceDeploymentError(Exception): pass
+class ServiceDeploymentError(Exception):
+    pass
 
 
 # List of environment variables that will be auto-forwarded to services deployed
@@ -57,16 +58,20 @@ class ServicesManager(object):
         Manages deployment of services and statuses of train jobs & inference jobs
     """
 
-    def __init__(self, meta_store=None, container_manager=None, var_autoforward=None):
+    def __init__(self,
+                 meta_store=None,
+                 container_manager=None,
+                 var_autoforward=None):
         if var_autoforward is None:
             var_autoforward = ENVIRONMENT_VARIABLES_AUTOFORWARD
         self._meta_store: MetaStore = meta_store or MetaStore()
         self._container_manager: ContainerManager = container_manager
 
-         # Ensure that environment variable exists, failing fast
+        # Ensure that environment variable exists, failing fast
         for x in var_autoforward:
             if x not in os.environ:
-                raise ServiceDeploymentError('{} is not in environment variables'.format(x))
+                raise ServiceDeploymentError(
+                    '{} is not in environment variables'.format(x))
 
         self._var_autoforward = var_autoforward
 
@@ -84,25 +89,28 @@ class ServicesManager(object):
 
     def create_inference_services(self, inferenceAppName, inference_job_id, use_checkpoint=False):
         inference_job = self._meta_store.get_inference_job(inference_job_id)
-        total_gpus = int(inference_job.budget.get(InferenceBudgetOption.GPU_COUNT, DEFAULT_INFERENCE_GPU_COUNT))
+        total_gpus = int(
+            inference_job.budget.get(InferenceBudgetOption.GPU_COUNT,
+                                     DEFAULT_INFERENCE_GPU_COUNT))
         try:
             predictor_service = self._create_predictor(inference_job=inference_job,
                                                        inferenceAppName=inferenceAppName)
             if use_checkpoint:
-                self._create_inference_job_worker(inference_job=inference_job,
-                                                  model_id=inference_job.model_id,
-                                                  gpus=total_gpus)
+                self._create_inference_job_worker(
+                    inference_job=inference_job,
+                    model_id=inference_job.model_id,
+                    gpus=total_gpus)
             else:
-                sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(inference_job.train_job_id)
+                sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(
+                    inference_job.train_job_id)
                 # Determine trials to be deployed & GPU allocation for these trials
                 (jobs_ids, jobs_gpus) = \
                     self._get_deployment_for_inference_job(total_gpus, sub_train_jobs)
                 # Create worker for each trial to be deployed
                 for (trial_id, gpus) in zip(jobs_ids, jobs_gpus):
                     trial = self._meta_store.get_trial(trial_id)
-                    self._create_inference_job_worker(inference_job=inference_job,
-                                                      trial=trial,
-                                                      gpus=gpus)
+                    self._create_inference_job_worker(
+                        inference_job=inference_job, trial=trial, gpus=gpus)
 
             return (inference_job, predictor_service)
 
@@ -117,11 +125,13 @@ class ServicesManager(object):
 
         # Stop predictor
         if inference_job.predictor_service_id is not None:
-            service = self._meta_store.get_service(inference_job.predictor_service_id)
+            service = self._meta_store.get_service(
+                inference_job.predictor_service_id)
             self._stop_service(service)
 
         # Stop all workers for inference job
-        workers = self._meta_store.get_workers_of_inference_job(inference_job_id)
+        workers = self._meta_store.get_workers_of_inference_job(
+            inference_job_id)
         for worker in workers:
             service = self._meta_store.get_service(worker.service_id)
             self._stop_service(service)
@@ -139,8 +149,10 @@ class ServicesManager(object):
             return
 
         predictor_service_id = inference_job.predictor_service_id
-        workers = self._meta_store.get_workers_of_inference_job(inference_job_id)
-        predictor_service = self._meta_store.get_service(predictor_service_id) if predictor_service_id is not None else None
+        workers = self._meta_store.get_workers_of_inference_job(
+            inference_job_id)
+        predictor_service = self._meta_store.get_service(
+            predictor_service_id) if predictor_service_id is not None else None
         services = [self._meta_store.get_service(x.service_id) for x in workers]
 
         # Count statuses of workers
@@ -153,7 +165,8 @@ class ServicesManager(object):
         # If predictor is running and at least 1 worker, it is running
         # If predictor is stopped, it is stopped
         # If predictor is errored or all workers are errored, it is errored, and stop all services
-        if predictor_status == ServiceStatus.RUNNING and worker_counts[ServiceStatus.RUNNING] >= 1:
+        if predictor_status == ServiceStatus.RUNNING and worker_counts[
+                ServiceStatus.RUNNING] >= 1:
             self._meta_store.mark_inference_job_as_running(inference_job)
         elif predictor_status == ServiceStatus.STOPPED:
             self._meta_store.mark_inference_job_as_stopped(inference_job)
@@ -166,15 +179,20 @@ class ServicesManager(object):
 
     def create_train_services(self, train_job_id):
         train_job = self._meta_store.get_train_job(train_job_id)
-        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(train_job_id)
+        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(
+            train_job_id)
 
         # Determine CPU & GPU allocation across sub train jobs
-        total_gpus = int(train_job.budget.get(BudgetOption.GPU_COUNT, DEFAULT_TRAIN_GPU_COUNT))
-        (jobs_gpus, jobs_cpus) = self._get_deployment_for_train_job(total_gpus, sub_train_jobs)
+        total_gpus = int(
+            train_job.budget.get(BudgetOption.GPU_COUNT,
+                                 DEFAULT_TRAIN_GPU_COUNT))
+        (jobs_gpus, jobs_cpus) = self._get_deployment_for_train_job(
+            total_gpus, sub_train_jobs)
 
         # Try to create advisors & workers for each sub train job
         try:
-            for (sub_train_job, gpus, cpus) in zip(sub_train_jobs, jobs_gpus, jobs_cpus):
+            for (sub_train_job, gpus, cpus) in zip(sub_train_jobs, jobs_gpus,
+                                                   jobs_cpus):
                 # Create advisor
                 self._create_advisor(sub_train_job)
 
@@ -197,7 +215,8 @@ class ServicesManager(object):
     def stop_train_services(self, train_job_id):
         train_job = self._meta_store.get_train_job(train_job_id)
         assert train_job is not None
-        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(train_job_id)
+        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(
+            train_job_id)
 
         # Stop all sub train jobs for train job
         for sub_train_job in sub_train_jobs:
@@ -206,11 +225,13 @@ class ServicesManager(object):
     def stop_sub_train_job_services(self, sub_train_job_id):
         sub_train_job = self._meta_store.get_sub_train_job(sub_train_job_id)
         assert sub_train_job is not None
-        workers = self._meta_store.get_workers_of_sub_train_job(sub_train_job_id)
+        workers = self._meta_store.get_workers_of_sub_train_job(
+            sub_train_job_id)
 
         # Stop advisor for sub train job
         if sub_train_job.advisor_service_id is not None:
-            service = self._meta_store.get_service(sub_train_job.advisor_service_id)
+            service = self._meta_store.get_service(
+                sub_train_job.advisor_service_id)
             self._stop_service(service)
 
         # Stop all workers for sub train job
@@ -231,8 +252,10 @@ class ServicesManager(object):
             return
 
         advisor_service_id = sub_train_job.advisor_service_id
-        workers = self._meta_store.get_workers_of_sub_train_job(sub_train_job_id)
-        advisor_service = self._meta_store.get_service(advisor_service_id) if advisor_service_id is not None else None
+        workers = self._meta_store.get_workers_of_sub_train_job(
+            sub_train_job_id)
+        advisor_service = self._meta_store.get_service(
+            advisor_service_id) if advisor_service_id is not None else None
         services = [self._meta_store.get_service(x.service_id) for x in workers]
 
         # Count statuses of workers
@@ -245,7 +268,8 @@ class ServicesManager(object):
         # If advisor is running and at least 1 worker, it is running
         # If advisor is stopped, it is stopped
         # If advisor is errored or all workers are errored, it is errored, and stop all services
-        if advisor_status == ServiceStatus.RUNNING and worker_counts[ServiceStatus.RUNNING] >= 1:
+        if advisor_status == ServiceStatus.RUNNING and worker_counts[
+                ServiceStatus.RUNNING] >= 1:
             self._meta_store.mark_sub_train_job_as_running(sub_train_job)
         elif advisor_status == ServiceStatus.STOPPED:
             self._meta_store.mark_sub_train_job_as_stopped(sub_train_job)
@@ -262,7 +286,8 @@ class ServicesManager(object):
     def refresh_train_job_status(self, train_job_id):
         train_job = self._meta_store.get_train_job(train_job_id)
         assert train_job is not None
-        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(train_job_id)
+        sub_train_jobs = self._meta_store.get_sub_train_jobs_of_train_job(
+            train_job_id)
 
         # If train job once errored, keep it errored
         if train_job.status == TrainJobStatus.ERRORED:
@@ -293,7 +318,8 @@ class ServicesManager(object):
         N = len(sub_train_jobs)
         base_gpus = total_gpus // N
         extra_gpus = total_gpus - base_gpus * N
-        jobs_gpus = ([base_gpus + 1] * extra_gpus) + [base_gpus] * (N - extra_gpus)
+        jobs_gpus = ([base_gpus + 1] *
+                     extra_gpus) + [base_gpus] * (N - extra_gpus)
 
         # For jobs with no GPU, add 1 CPU
         jobs_cpus = []
@@ -306,7 +332,8 @@ class ServicesManager(object):
         trial_ids = []
         # For each sub train job, to deploy best-scoring trial
         for sub_train_job in sub_train_jobs:
-            trials = self._meta_store.get_best_trials_of_sub_train_job(sub_train_job.id, max_count=1)
+            trials = self._meta_store.get_best_trials_of_sub_train_job(
+                sub_train_job.id, max_count=1)
             if len(trials) == 0:
                 continue
             trial_ids.append(trials[0].id)
@@ -315,15 +342,21 @@ class ServicesManager(object):
         N = len(trial_ids)
         base_gpus = total_gpus // N
         extra_gpus = total_gpus - base_gpus * N
-        jobs_gpus = ([base_gpus + 1] * extra_gpus) + [base_gpus] * (N - extra_gpus)
+        jobs_gpus = ([base_gpus + 1] *
+                     extra_gpus) + [base_gpus] * (N - extra_gpus)
 
         return (trial_ids, jobs_gpus)
 
-    def _create_inference_job_worker(self, inference_job, trial=None, model_id=None, gpus=0):
+    def _create_inference_job_worker(self,
+                                     inference_job,
+                                     trial=None,
+                                     model_id=None,
+                                     gpus=0):
         trial_id = None
         checkpoint_id = None
         if trial is not None:
-            sub_train_job = self._meta_store.get_sub_train_job(trial.sub_train_job_id)
+            sub_train_job = self._meta_store.get_sub_train_job(
+                trial.sub_train_job_id)
             model = self._meta_store.get_model(sub_train_job.model_id)
             trial_id = trial.id
         elif model_id is not None:
@@ -332,24 +365,22 @@ class ServicesManager(object):
         else:
             raise ServiceDeploymentError("No model found")
         service_type = ServiceType.INFERENCE
-        install_command = parse_model_install_command(model.dependencies, enable_gpu=(gpus > 0))
+        install_command = parse_model_install_command(model.dependencies,
+                                                      enable_gpu=(gpus > 0))
         environment_vars = {
             'WORKER_INSTALL_COMMAND': install_command,
         }
 
-        service = self._create_service(
-            service_type=service_type,
-            docker_image=model.docker_image,
-            environment_vars=environment_vars,
-            gpus=gpus
-        )
+        service = self._create_service(service_type=service_type,
+                                       docker_image=model.docker_image,
+                                       environment_vars=environment_vars,
+                                       gpus=gpus)
 
         self._meta_store.create_inference_job_worker(
             service_id=service.id,
             inference_job_id=inference_job.id,
             trial_id=trial_id,
-            checkpoint_id=checkpoint_id
-        )
+            checkpoint_id=checkpoint_id)
         self._meta_store.commit()
 
         return service
@@ -366,7 +397,9 @@ class ServicesManager(object):
             inferenceAppName=inferenceAppName
         )
 
-        self._meta_store.update_inference_job(inference_job, predictor_service_id=service.id)
+
+        self._meta_store.update_inference_job(inference_job,
+                                              predictor_service_id=service.id)
         self._meta_store.commit()
 
         return service
@@ -374,22 +407,19 @@ class ServicesManager(object):
     def _create_train_job_worker(self, sub_train_job, gpus=1):
         model = self._meta_store.get_model(sub_train_job.model_id)
         service_type = ServiceType.TRAIN
-        install_command = parse_model_install_command(model.dependencies, enable_gpu=(gpus > 0))
+        install_command = parse_model_install_command(model.dependencies,
+                                                      enable_gpu=(gpus > 0))
         environment_vars = {
             'WORKER_INSTALL_COMMAND': install_command,
         }
 
-        service = self._create_service(
-            service_type=service_type,
-            docker_image=model.docker_image,
-            environment_vars=environment_vars,
-            gpus=gpus
-        )
+        service = self._create_service(service_type=service_type,
+                                       docker_image=model.docker_image,
+                                       environment_vars=environment_vars,
+                                       gpus=gpus)
 
         self._meta_store.create_train_job_worker(
-            service_id=service.id,
-            sub_train_job_id=sub_train_job.id
-        )
+            service_id=service.id, sub_train_job_id=sub_train_job.id)
         self._meta_store.commit()
 
         return service
@@ -397,41 +427,51 @@ class ServicesManager(object):
     def _create_advisor(self, sub_train_job):
         model = self._meta_store.get_model(sub_train_job.model_id)
         service_type = ServiceType.ADVISOR
-        install_command = parse_model_install_command(model.dependencies, enable_gpu=False)
+        install_command = parse_model_install_command(model.dependencies,
+                                                      enable_gpu=False)
         environment_vars = {
             'WORKER_INSTALL_COMMAND': install_command,
         }
 
-        service = self._create_service(
-            service_type=service_type,
-            docker_image=model.docker_image,
-            environment_vars=environment_vars
-        )
+        service = self._create_service(service_type=service_type,
+                                       docker_image=model.docker_image,
+                                       environment_vars=environment_vars)
 
-        self._meta_store.update_sub_train_job(sub_train_job, advisor_service_id=service.id)
+        self._meta_store.update_sub_train_job(sub_train_job,
+                                              advisor_service_id=service.id)
         self._meta_store.commit()
 
         return service
 
     def _stop_service(self, service):
         if service.status == ServiceStatus.STOPPED:
-            logger.info('Service of ID "{}" already stopped!'.format(service.id))
+            logger.info('Service of ID "{}" already stopped!'.format(
+                service.id))
             return
 
         try:
-            container_service = self._get_container_service_from_service(service)
+            container_service = self._get_container_service_from_service(
+                service)
             self._container_manager.destroy_service(container_service)
         except:
             # Allow exception to be thrown if deleting service fails (maybe concurrent service deletion)
-            logger.info('Error while deleting service with ID {} - maybe already deleted'.format(service.id))
+            logger.info(
+                'Error while deleting service with ID {} - maybe already deleted'
+                .format(service.id))
             logger.info(traceback.format_exc())
 
         self._meta_store.mark_service_as_stopped(service)
         self._meta_store.commit()
 
-    def _create_service(self, service_type, docker_image,
-                        replicas=1, environment_vars={}, args=[],
-                        container_port=None, gpus=0, inferenceAppName=None):
+
+    def _create_service(self,
+                        service_type,
+                        docker_image,
+                        replicas=1,
+                        environment_vars={},
+                        args=[],
+                        container_port=None,
+                        gpus=0):
 
         # Create service in DB
         container_manager_type = type(self._container_manager).__name__
@@ -440,17 +480,13 @@ class ServicesManager(object):
             container_manager_type=container_manager_type,
             docker_image=docker_image,
             replicas=replicas,
-            gpus=gpus
-        )
+            gpus=gpus)
         self._meta_store.commit()
 
         # Pass service details as environment variables
         environment_vars = {
             # Autofoward environment variables
-            **{
-                x: os.environ[x]
-                for x in self._var_autoforward
-            },
+            **{x: os.environ[x] for x in self._var_autoforward},
             **environment_vars,
             'SINGA_AUTO_SERVICE_ID': service.id,
             'SINGA_AUTO_SERVICE_TYPE': service_type,
@@ -459,18 +495,19 @@ class ServicesManager(object):
 
         if self._app_mode == 'DEV':
             # Mount whole root directory
-            mounts = {
-                self._host_workdir_path: self._docker_workdir_path
-            }
+            mounts = {self._host_workdir_path: self._docker_workdir_path}
         else:
             # Mount only data, logs and params folders to containers' work directories
             mounts = {
                 os.path.join(self._host_workdir_path, self._data_dir_path):
-                    os.path.join(self._docker_workdir_path, self._data_dir_path),
+                    os.path.join(self._docker_workdir_path,
+                                 self._data_dir_path),
                 os.path.join(self._host_workdir_path, self._logs_dir_path):
-                    os.path.join(self._docker_workdir_path, self._logs_dir_path),
+                    os.path.join(self._docker_workdir_path,
+                                 self._logs_dir_path),
                 os.path.join(self._host_workdir_path, self._params_dir_path):
-                    os.path.join(self._docker_workdir_path, self._params_dir_path)
+                    os.path.join(self._docker_workdir_path,
+                                 self._params_dir_path)
             }
 
         # Expose container port if it exists
@@ -483,7 +520,8 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = 'singa-auto-{}-{}'.format(service_type.lower(), service.id)
+            container_service_name = 'singa-auto-svc-{}-{}'.format(
+                service_type.lower(), service.id)
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image,
@@ -492,8 +530,7 @@ class ServicesManager(object):
                 environment_vars=environment_vars,
                 mounts=mounts,
                 publish_port=publish_port,
-                gpus=gpus
-            )
+                gpus=gpus)
 
             self._meta_store.mark_service_as_deploying(
                 service,
@@ -503,8 +540,7 @@ class ServicesManager(object):
                 port=container_service.port,
                 ext_hostname=ext_hostname,
                 ext_port=ext_port,
-                container_service_info=container_service.info
-            )
+                container_service_info=container_service.info)
             self._meta_store.commit()
 
             # if using kubernetes, register the service in db, and update ingress configuration
@@ -523,7 +559,8 @@ class ServicesManager(object):
                 self._meta_store.commit()
 
         except Exception as e:
-            logger.error('Error while creating service with ID {}'.format(service.id))
+            logger.error('Error while creating service with ID {}'.format(
+                service.id))
             logger.error(traceback.format_exc())
             self._meta_store.rollback()
             self._meta_store.mark_service_as_errored(service)

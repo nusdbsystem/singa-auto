@@ -39,6 +39,7 @@ from singa_auto.model.dev import test_model_class
 
 _Model = namedtuple('_Model', ['net', 'step'])
 
+
 class PyDenseNetBc(BaseModel):
     '''
         Implements DenseNet-BC of "Densely Connected Convolutional Networks" for IMAGE_CLASSIFICATION,
@@ -47,6 +48,7 @@ class PyDenseNetBc(BaseModel):
         Original paper: https://arxiv.org/abs/1608.06993
         Implementation is with credits to https://github.com/gpleiss/efficient_densenet_pytorch
     '''
+
     def __init__(self, **knobs):
         super().__init__(**knobs)
         self._knobs = knobs
@@ -72,12 +74,15 @@ class PyDenseNetBc(BaseModel):
         }
 
     def train(self, dataset_path, shared_params=None):
-        (train_dataset, train_val_dataset, self._train_params) = self._load_train_dataset(dataset_path)
+        (train_dataset, train_val_dataset,
+         self._train_params) = self._load_train_dataset(dataset_path)
         self._model = self._build_model()
         if self._knobs['share_params'] and shared_params is not None:
             utils.logger.log('Loading shared parameters...')
-            self._model = self._load_model_parameters(self._model, shared_params)
-        self._model = self._train_model(self._model, train_dataset, train_val_dataset)
+            self._model = self._load_model_parameters(self._model,
+                                                      shared_params)
+        self._model = self._train_model(self._model, train_dataset,
+                                        train_val_dataset)
 
     def evaluate(self, dataset_path):
         dataset = self._load_val_dataset(dataset_path, self._train_params)
@@ -96,8 +101,7 @@ class PyDenseNetBc(BaseModel):
         net_params = self._namespace_params(net_params, 'net')
 
         params = {
-            **net_params,
-            'train_params': json.dumps(self._train_params),
+            **net_params, 'train_params': json.dumps(self._train_params),
             'step': step
         }
 
@@ -134,7 +138,8 @@ class PyDenseNetBc(BaseModel):
         probs = []
         with torch.no_grad():
             for (batch_images, batch_classes) in dataloader:
-                [batch_images, batch_classes] = self._set_device([batch_images, batch_classes])
+                [batch_images, batch_classes
+                ] = self._set_device([batch_images, batch_classes])
                 batch_probs = net(batch_images)
                 probs.extend(batch_probs.cpu().tolist())
                 batch_preds = batch_probs.max(1)[1]
@@ -164,13 +169,20 @@ class PyDenseNetBc(BaseModel):
         (net, step) = model
 
         # Define plots
-        utils.logger.define_plot('Losses over Epoch', ['train_loss', 'train_val_loss'], x_axis='epoch')
-        utils.logger.define_plot('Accuracies over Epoch', ['train_acc', 'train_val_acc'], x_axis='epoch')
+        utils.logger.define_plot('Losses over Epoch',
+                                 ['train_loss', 'train_val_loss'],
+                                 x_axis='epoch')
+        utils.logger.define_plot('Accuracies over Epoch',
+                                 ['train_acc', 'train_val_acc'],
+                                 x_axis='epoch')
 
         utils.logger.log('Training model...')
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        train_val_dataloader = DataLoader(train_val_dataset, batch_size=batch_size)
+        train_dataloader = DataLoader(train_dataset,
+                                      batch_size=batch_size,
+                                      shuffle=True)
+        train_val_dataloader = DataLoader(train_val_dataset,
+                                          batch_size=batch_size)
         (optimizer, scheduler) = self._get_optimizer(net, trial_epochs)
 
         net.train()
@@ -186,7 +198,8 @@ class PyDenseNetBc(BaseModel):
             train_loss = RunningAverage()
             train_acc = RunningAverage()
             for (batch_images, batch_classes) in train_dataloader:
-                [batch_images, batch_classes] = self._set_device([batch_images, batch_classes])
+                [batch_images, batch_classes
+                ] = self._set_device([batch_images, batch_classes])
                 probs = net(batch_images)
                 loss = F.cross_entropy(probs, batch_classes)
                 preds = probs.max(1)[1]
@@ -200,15 +213,18 @@ class PyDenseNetBc(BaseModel):
                 train_loss.add(loss.item())
                 train_acc.add(acc)
 
-            utils.logger.log(epoch=epoch, step=step,
-                            train_loss=train_loss.get(), train_acc=train_acc.get())
+            utils.logger.log(epoch=epoch,
+                             step=step,
+                             train_loss=train_loss.get(),
+                             train_acc=train_acc.get())
 
             # Run through train-val dataset, if exists
             if len(train_val_dataset) > 0:
                 train_val_loss = RunningAverage()
                 train_val_acc = RunningAverage()
                 for (batch_images, batch_classes) in train_val_dataloader:
-                    [batch_images, batch_classes] = self._set_device([batch_images, batch_classes])
+                    [batch_images, batch_classes
+                    ] = self._set_device([batch_images, batch_classes])
                     probs = net(batch_images)
                     loss = F.cross_entropy(probs, batch_classes)
                     preds = probs.max(1)[1]
@@ -216,12 +232,15 @@ class PyDenseNetBc(BaseModel):
                     train_val_loss.add(loss.item())
                     train_val_acc.add(acc)
 
-                utils.logger.log(epoch=epoch, train_val_loss=train_val_loss.get(),
-                                train_val_acc=train_val_acc.get())
+                utils.logger.log(epoch=epoch,
+                                 train_val_loss=train_val_loss.get(),
+                                 train_val_acc=train_val_acc.get())
 
                 # Early stop on train-val batch loss
                 if early_stop_condition.check(train_val_loss.get()):
-                    utils.logger.log('Average train-val batch loss has not improved for {} epochs'.format(early_stop_condition.patience))
+                    utils.logger.log(
+                        'Average train-val batch loss has not improved for {} epochs'
+                        .format(early_stop_condition.patience))
                     utils.logger.log('Early stopping...')
                     break
 
@@ -229,7 +248,8 @@ class PyDenseNetBc(BaseModel):
         return model
 
     def _load_train_dataset(self, dataset_path):
-        early_stop_train_val_samples = self._knobs['early_stop_train_val_samples']
+        early_stop_train_val_samples = self._knobs[
+            'early_stop_train_val_samples']
         max_image_size = self._knobs['max_image_size']
         quick_train = self._knobs['quick_train']
 
@@ -238,21 +258,39 @@ class PyDenseNetBc(BaseModel):
 
         utils.logger.log('Loading train dataset...')
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=max_image_size,
-                                                        mode='RGB', if_shuffle=True)
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        train_val_samples = min(dataset.size // 5, train_val_samples) # up to 1/5 of samples for train-val
-        (train_images, train_classes) = (images[train_val_samples:], classes[train_val_samples:])
-        (train_val_images, train_val_classes) = (images[:train_val_samples], classes[:train_val_samples])
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path,
+            max_image_size=max_image_size,
+            mode='RGB',
+            if_shuffle=True)
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
+        train_val_samples = min(
+            dataset.size // 5,
+            train_val_samples)  # up to 1/5 of samples for train-val
+        (train_images, train_classes) = (images[train_val_samples:],
+                                         classes[train_val_samples:])
+        (train_val_images, train_val_classes) = (images[:train_val_samples],
+                                                 classes[:train_val_samples])
 
         # Compute normalization params from train data
-        norm_mean = np.mean(np.asarray(train_images) / 255, axis=(0, 1, 2)).tolist()
-        norm_std = np.std(np.asarray(train_images) / 255, axis=(0, 1, 2)).tolist()
+        norm_mean = np.mean(np.asarray(train_images) / 255,
+                            axis=(0, 1, 2)).tolist()
+        norm_std = np.std(np.asarray(train_images) / 255,
+                          axis=(0, 1, 2)).tolist()
 
-        train_dataset = ImageDataset(train_images, train_classes, dataset.image_size,
-                                    norm_mean, norm_std, is_train=True)
-        train_val_dataset = ImageDataset(train_val_images, train_val_classes, dataset.image_size,
-                                        norm_mean, norm_std, is_train=False)
+        train_dataset = ImageDataset(train_images,
+                                     train_classes,
+                                     dataset.image_size,
+                                     norm_mean,
+                                     norm_std,
+                                     is_train=True)
+        train_val_dataset = ImageDataset(train_val_images,
+                                         train_val_classes,
+                                         dataset.image_size,
+                                         norm_mean,
+                                         norm_std,
+                                         is_train=False)
         train_params = {
             'norm_mean': norm_mean,
             'norm_std': norm_std,
@@ -261,8 +299,10 @@ class PyDenseNetBc(BaseModel):
             'K': dataset.classes
         }
 
-        utils.logger.log('Train dataset has {} samples'.format(len(train_dataset)))
-        utils.logger.log('Train-val dataset has {} samples'.format(len(train_val_dataset)))
+        utils.logger.log('Train dataset has {} samples'.format(
+            len(train_dataset)))
+        utils.logger.log('Train-val dataset has {} samples'.format(
+            len(train_val_dataset)))
 
         return (train_dataset, train_val_dataset, train_params)
 
@@ -273,11 +313,16 @@ class PyDenseNetBc(BaseModel):
 
         utils.logger.log('Loading val dataset...')
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, max_image_size=image_size,
-                                                        mode='RGB')
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        val_dataset = ImageDataset(images, classes, dataset.image_size,
-                                    norm_mean, norm_std, is_train=False)
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path, max_image_size=image_size, mode='RGB')
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
+        val_dataset = ImageDataset(images,
+                                   classes,
+                                   dataset.image_size,
+                                   norm_mean,
+                                   norm_std,
+                                   is_train=False)
         return val_dataset
 
     def _load_predict_dataset(self, images, train_params):
@@ -285,9 +330,16 @@ class PyDenseNetBc(BaseModel):
         norm_mean = train_params['norm_mean']
         norm_std = train_params['norm_std']
 
-        images = utils.dataset.transform_images(images, image_size=image_size, mode='RGB')
+        images = utils.dataset.transform_images(images,
+                                                image_size=image_size,
+                                                mode='RGB')
         classes = [0 for _ in range(len(images))]
-        dataset = ImageDataset(images, classes, image_size, norm_mean, norm_std, is_train=False)
+        dataset = ImageDataset(images,
+                               classes,
+                               image_size,
+                               norm_mean,
+                               norm_std,
+                               is_train=False)
         return dataset
 
     def _get_optimizer(self, net, trial_epochs):
@@ -296,15 +348,21 @@ class PyDenseNetBc(BaseModel):
         opt_weight_decay = self._knobs['opt_weight_decay']
         opt_momentum = self._knobs['opt_momentum']
 
-        optimizer = optim.SGD(net.parameters(), lr=lr, nesterov=True,
-                            momentum=opt_momentum, weight_decay=opt_weight_decay)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[0.5 * trial_epochs, 0.75 * trial_epochs],
-                            gamma=lr_decay)
+        optimizer = optim.SGD(net.parameters(),
+                              lr=lr,
+                              nesterov=True,
+                              momentum=opt_momentum,
+                              weight_decay=opt_weight_decay)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=[0.5 * trial_epochs, 0.75 * trial_epochs],
+            gamma=lr_decay)
 
         return (optimizer, scheduler)
 
     def _count_model_parameters(self, net):
-        params_count = sum(p.numel() for p in net.parameters() if p.requires_grad)
+        params_count = sum(
+            p.numel() for p in net.parameters() if p.requires_grad)
         utils.logger.log('Model has {} parameters'.format(params_count))
         return params_count
 
@@ -354,16 +412,19 @@ class PyDenseNetBc(BaseModel):
         # For each param, check for matching namespace, adding to out params without namespace prefix if matching
         for (name, value) in params.items():
             if name.startswith(f'{namespace}:'):
-                param_name = name[(len(namespace)+1):]
+                param_name = name[(len(namespace) + 1):]
                 out_params[param_name] = value
 
         return out_params
+
 
 #####################################################################################
 # Implementation of DenseNet
 #####################################################################################
 
+
 def _bn_function_factory(norm, relu, conv):
+
     def bn_function(*inputs):
         concated_features = torch.cat(inputs, 1)
         bottleneck_output = conv(relu(norm(concated_features)))
@@ -371,44 +432,78 @@ def _bn_function_factory(norm, relu, conv):
 
     return bn_function
 
+
 class _DenseLayer(nn.Module):
-    def __init__(self, num_input_features, growth_rate, bn_size, drop_rate, efficient=False):
+
+    def __init__(self,
+                 num_input_features,
+                 growth_rate,
+                 bn_size,
+                 drop_rate,
+                 efficient=False):
         super(_DenseLayer, self).__init__()
         self.add_module('norm1', nn.BatchNorm2d(num_input_features)),
         self.add_module('relu1', nn.ReLU(inplace=True)),
-        self.add_module('conv1', nn.Conv2d(num_input_features, bn_size * growth_rate,
-                        kernel_size=1, stride=1, bias=False)),
+        self.add_module(
+            'conv1',
+            nn.Conv2d(num_input_features,
+                      bn_size * growth_rate,
+                      kernel_size=1,
+                      stride=1,
+                      bias=False)),
         self.add_module('norm2', nn.BatchNorm2d(bn_size * growth_rate)),
         self.add_module('relu2', nn.ReLU(inplace=True)),
-        self.add_module('conv2', nn.Conv2d(bn_size * growth_rate, growth_rate,
-                        kernel_size=3, stride=1, padding=1, bias=False)),
+        self.add_module(
+            'conv2',
+            nn.Conv2d(bn_size * growth_rate,
+                      growth_rate,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=False)),
         self.drop_rate = drop_rate
         self.efficient = efficient
 
     def forward(self, *prev_features):
         bn_function = _bn_function_factory(self.norm1, self.relu1, self.conv1)
-        if self.efficient and any(prev_feature.requires_grad for prev_feature in prev_features):
+        if self.efficient and any(
+                prev_feature.requires_grad for prev_feature in prev_features):
             bottleneck_output = cp.checkpoint(bn_function, *prev_features)
         else:
             bottleneck_output = bn_function(*prev_features)
         new_features = self.conv2(self.relu2(self.norm2(bottleneck_output)))
         if self.drop_rate > 0:
-            new_features = F.dropout(new_features, p=self.drop_rate, training=self.training)
+            new_features = F.dropout(new_features,
+                                     p=self.drop_rate,
+                                     training=self.training)
         return new_features
 
 
 class _Transition(nn.Sequential):
+
     def __init__(self, num_input_features, num_output_features):
         super(_Transition, self).__init__()
         self.add_module('norm', nn.BatchNorm2d(num_input_features))
         self.add_module('relu', nn.ReLU(inplace=True))
-        self.add_module('conv', nn.Conv2d(num_input_features, num_output_features,
-                                          kernel_size=1, stride=1, bias=False))
+        self.add_module(
+            'conv',
+            nn.Conv2d(num_input_features,
+                      num_output_features,
+                      kernel_size=1,
+                      stride=1,
+                      bias=False))
         self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
 
 
 class _DenseBlock(nn.Module):
-    def __init__(self, num_layers, num_input_features, bn_size, growth_rate, drop_rate, efficient=False):
+
+    def __init__(self,
+                 num_layers,
+                 num_input_features,
+                 bn_size,
+                 growth_rate,
+                 drop_rate,
+                 efficient=False):
         super(_DenseBlock, self).__init__()
         for i in range(num_layers):
             layer = _DenseLayer(
@@ -442,9 +537,17 @@ class DenseNet(nn.Module):
         small_inputs (bool) - set to True if images are 32x32. Otherwise assumes images are larger.
         efficient (bool) - set to True to use checkpointing. Much more memory efficient, but slower.
     """
-    def __init__(self, growth_rate=12, block_config=(16, 16, 16), compression=0.5,
-                 num_init_features=24, bn_size=4, drop_rate=0,
-                 num_classes=10, small_inputs=True, efficient=False):
+
+    def __init__(self,
+                 growth_rate=12,
+                 block_config=(16, 16, 16),
+                 compression=0.5,
+                 num_init_features=24,
+                 bn_size=4,
+                 drop_rate=0,
+                 num_classes=10,
+                 small_inputs=True,
+                 efficient=False):
 
         super(DenseNet, self).__init__()
         assert 0 < compression <= 1, 'compression of densenet should be between 0 and 1'
@@ -452,17 +555,35 @@ class DenseNet(nn.Module):
 
         # First convolution
         if small_inputs:
-            self.features = nn.Sequential(OrderedDict([
-                ('conv0', nn.Conv2d(3, num_init_features, kernel_size=3, stride=1, padding=1, bias=False)),
-            ]))
+            self.features = nn.Sequential(
+                OrderedDict([
+                    ('conv0',
+                     nn.Conv2d(3,
+                               num_init_features,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)),
+                ]))
         else:
-            self.features = nn.Sequential(OrderedDict([
-                ('conv0', nn.Conv2d(3, num_init_features, kernel_size=7, stride=2, padding=3, bias=False)),
-            ]))
+            self.features = nn.Sequential(
+                OrderedDict([
+                    ('conv0',
+                     nn.Conv2d(3,
+                               num_init_features,
+                               kernel_size=7,
+                               stride=2,
+                               padding=3,
+                               bias=False)),
+                ]))
             self.features.add_module('norm0', nn.BatchNorm2d(num_init_features))
             self.features.add_module('relu0', nn.ReLU(inplace=True))
-            self.features.add_module('pool0', nn.MaxPool2d(kernel_size=3, stride=2, padding=1,
-                                                           ceil_mode=False))
+            self.features.add_module(
+                'pool0',
+                nn.MaxPool2d(kernel_size=3,
+                             stride=2,
+                             padding=1,
+                             ceil_mode=False))
 
         # Each denseblock
         num_features = num_init_features
@@ -479,7 +600,8 @@ class DenseNet(nn.Module):
             num_features = num_features + num_layers * growth_rate
             if i != len(block_config) - 1:
                 trans = _Transition(num_input_features=num_features,
-                                    num_output_features=int(num_features * compression))
+                                    num_output_features=int(num_features *
+                                                            compression))
                 self.features.add_module('transition%d' % (i + 1), trans)
                 num_features = int(num_features * compression)
 
@@ -504,16 +626,26 @@ class DenseNet(nn.Module):
     def forward(self, x):
         features = self.features(x)
         out = F.relu(features, inplace=True)
-        out = F.avg_pool2d(out, kernel_size=self.avgpool_size).view(features.size(0), -1)
+        out = F.avg_pool2d(out, kernel_size=self.avgpool_size).view(
+            features.size(0), -1)
         out = self.classifier(out)
         return out
+
 
 #####################################################################################
 # Utils
 #####################################################################################
 
+
 class ImageDataset(Dataset):
-    def __init__(self, images, classes, image_size, norm_mean, norm_std, is_train=False):
+
+    def __init__(self,
+                 images,
+                 classes,
+                 image_size,
+                 norm_mean,
+                 norm_std,
+                 is_train=False):
         self._images = images
         self._classes = classes
         if is_train:
@@ -534,7 +666,7 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
         image = self._images[idx]
-        image_class =  self._classes[idx]
+        image_class = self._classes[idx]
 
         image_class = torch.tensor(image_class)
         if self._transform:
@@ -544,34 +676,42 @@ class ImageDataset(Dataset):
 
         return (image, image_class)
 
+
 class RunningAverage():
+
     def __init__(self):
         self._avg = 0
         self._count = 0
 
     def add(self, val):
-        self._avg = self._avg * self._count / (self._count + 1) + val / (self._count + 1)
+        self._avg = self._avg * self._count / (self._count +
+                                               1) + val / (self._count + 1)
         self._count += 1
 
     def get(self) -> float:
         return self._avg
 
+
 class TimedRepeatCondition():
+
     def __init__(self, every_secs=60):
         self._every_secs = every_secs
         self._last_trigger_time = datetime.now()
 
     def check(self) -> bool:
-        if (datetime.now() - self._last_trigger_time).total_seconds() >= self._every_secs:
+        if (datetime.now() -
+                self._last_trigger_time).total_seconds() >= self._every_secs:
             self._last_trigger_time = datetime.now()
             return True
         else:
             return False
 
+
 class EarlyStopCondition():
     '''
     :param int patience: How many steps should the condition tolerate before calling early stop (-1 for no stop)
     '''
+
     def __init__(self, patience=5, if_max=False):
         self._patience = patience
         self._if_max = if_max
@@ -584,7 +724,7 @@ class EarlyStopCondition():
 
     # Returns whether should early stop
     def check(self, value) -> bool:
-        if self._patience < 0: # No stop
+        if self._patience < 0:  # No stop
             return False
 
         if (not self._if_max and value < self._last_best) or \
@@ -599,26 +739,37 @@ class EarlyStopCondition():
         else:
             return False
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/cifar10_train.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/cifar10_val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/cifar10_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png',
-                        help='Path(s) to query image(s), delimited by commas')
+    parser.add_argument('--train_path',
+                        type=str,
+                        default='data/cifar10_train.zip',
+                        help='Path to train dataset')
+    parser.add_argument('--val_path',
+                        type=str,
+                        default='data/cifar10_val.zip',
+                        help='Path to validation dataset')
+    parser.add_argument('--test_path',
+                        type=str,
+                        default='data/cifar10_test.zip',
+                        help='Path to test dataset')
+    parser.add_argument(
+        '--query_path',
+        type=str,
+        default='examples/data/image_classification/cifar10_test_1.png',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-    test_model_class(
-        model_file_path=__file__,
-        model_class='PyDenseNetBc',
-        task='IMAGE_CLASSIFICATION',
-        dependencies={
-            ModelDependency.TORCH: '1.0.1',
-            ModelDependency.TORCHVISION: '0.2.2'
-        },
-        train_dataset_path=args.train_path,
-        val_dataset_path=args.val_path,
-        test_dataset_path=args.test_path,
-        queries=queries
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='PyDenseNetBc',
+                     task='IMAGE_CLASSIFICATION',
+                     dependencies={
+                         ModelDependency.TORCH: '1.0.1',
+                         ModelDependency.TORCHVISION: '0.2.2'
+                     },
+                     train_dataset_path=args.train_path,
+                     val_dataset_path=args.val_path,
+                     test_dataset_path=args.test_path,
+                     queries=queries)

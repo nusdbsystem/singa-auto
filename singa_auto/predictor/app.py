@@ -30,7 +30,8 @@ app = Flask(__name__)
 CORS(app)
 
 
-class InvalidQueryFormatError(Exception): pass
+class InvalidQueryFormatError(Exception):
+    pass
 
 
 def get_predictor() -> Predictor:
@@ -51,7 +52,9 @@ def predict():
 
     if request.files.getlist('img'):
         img_stores = request.files.getlist('img')
-        img_bytes = [img for img in [img_store.read() for img_store in img_stores] if img]
+        img_bytes = [
+            img for img in [img_store.read() for img_store in img_stores] if img
+        ]
         print("img_stores", img_stores)
         print("img_bytes", img_bytes)
         if not img_bytes:

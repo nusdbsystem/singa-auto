@@ -30,10 +30,12 @@ from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, u
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
+
 class TfVgg16(BaseModel):
     '''
     Implements VGG16 on Tensorflow for IMAGE_CLASSIFICATION
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -56,34 +58,42 @@ class TfVgg16(BaseModel):
         bs = self._knobs.get('batch_size')
         max_epochs = self._knobs.get('max_epochs')
 
-        utils.logger.log('Available devices: {}'.format(str(device_lib.list_local_devices())))
+        utils.logger.log('Available devices: {}'.format(
+            str(device_lib.list_local_devices())))
 
         # Define plot for loss against epochs
-        utils.logger.define_plot('Loss Over Epochs', ['loss', 'early_stop_val_loss'], x_axis='epoch')
+        utils.logger.define_plot('Loss Over Epochs',
+                                 ['loss', 'early_stop_val_loss'],
+                                 x_axis='epoch')
 
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32,
-                                                            max_image_size=max_image_size, mode='RGB')
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path,
+            min_image_size=32,
+            max_image_size=max_image_size,
+            mode='RGB')
         self._image_size = dataset.image_size
         num_classes = dataset.classes
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        (images, self._normalize_mean, self._normalize_std) = utils.dataset.normalize_images(images)
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
+        (images, self._normalize_mean,
+         self._normalize_std) = utils.dataset.normalize_images(images)
         images = np.asarray(images)
         classes = np.asarray(keras.utils.to_categorical(classes))
 
         with self._graph.as_default():
             with self._sess.as_default():
                 self._model = self._build_model(num_classes, dataset.image_size)
-                self._model.fit(
-                    images,
-                    classes,
-                    epochs=max_epochs,
-                    validation_split=0.05,
-                    batch_size=bs,
-                    callbacks=[
-                        tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2),
-                        tf.keras.callbacks.LambdaCallback(on_epoch_end=self._on_train_epoch_end)
-                    ]
-                )
+                self._model.fit(images,
+                                classes,
+                                epochs=max_epochs,
+                                validation_split=0.05,
+                                batch_size=bs,
+                                callbacks=[
+                                    tf.keras.callbacks.EarlyStopping(
+                                        monitor='val_loss', patience=2),
+                                    tf.keras.callbacks.LambdaCallback(
+                                        on_epoch_end=self._on_train_epoch_end)
+                                ])
 
                 # Compute train accuracy
                 (loss, accuracy) = self._model.evaluate(images, classes)
@@ -93,10 +103,16 @@ class TfVgg16(BaseModel):
 
     def evaluate(self, dataset_path):
         max_image_size = self._knobs.get('max_image_size')
-        dataset = utils.dataset.load_dataset_of_image_files(dataset_path, min_image_size=32,
-                                                            max_image_size=max_image_size, mode='RGB')
-        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
-        (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
+        dataset = utils.dataset.load_dataset_of_image_files(
+            dataset_path,
+            min_image_size=32,
+            max_image_size=max_image_size,
+            mode='RGB')
+        (images, classes) = zip(*[(image, image_class)
+                                  for (image, image_class) in dataset])
+        (images, _, _) = utils.dataset.normalize_images(images,
+                                                        self._normalize_mean,
+                                                        self._normalize_std)
         images = np.asarray(images)
         classes = keras.utils.to_categorical(classes)
         classes = np.asarray(classes)
@@ -111,8 +127,12 @@ class TfVgg16(BaseModel):
 
     def predict(self, queries):
         image_size = self._image_size
-        images = utils.dataset.transform_images(queries, image_size=image_size, mode='RGB')
-        (images, _, _) = utils.dataset.normalize_images(images, self._normalize_mean, self._normalize_std)
+        images = utils.dataset.transform_images(queries,
+                                                image_size=image_size,
+                                                mode='RGB')
+        (images, _, _) = utils.dataset.normalize_images(images,
+                                                        self._normalize_mean,
+                                                        self._normalize_std)
 
         with self._graph.as_default():
             with self._sess.as_default():
@@ -137,7 +157,8 @@ class TfVgg16(BaseModel):
             with open(tmp.name, 'rb') as f:
                 h5_model_bytes = f.read()
 
-            params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode('utf-8')
+            params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode(
+                'utf-8')
 
         # Save pre-processing params
         params['image_size'] = self._image_size
@@ -169,45 +190,52 @@ class TfVgg16(BaseModel):
     def _on_train_epoch_end(self, epoch, logs):
         loss = logs['loss']
         early_stop_val_loss = logs['val_loss']
-        utils.logger.log(loss=loss, early_stop_val_loss=early_stop_val_loss, epoch=epoch)
+        utils.logger.log(loss=loss,
+                         early_stop_val_loss=early_stop_val_loss,
+                         epoch=epoch)
 
     def _build_model(self, num_classes, image_size):
         lr = self._knobs.get('learning_rate')
 
-        model = keras.applications.VGG16(
-            include_top=True,
-            input_shape=(image_size, image_size, 3),
-            weights=None,
-            classes=num_classes
-        )
+        model = keras.applications.VGG16(include_top=True,
+                                         input_shape=(image_size, image_size,
+                                                      3),
+                                         weights=None,
+                                         classes=num_classes)
 
-        model.compile(
-            optimizer=keras.optimizers.Adam(lr=lr),
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
-        )
+        model.compile(optimizer=keras.optimizers.Adam(lr=lr),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
         return model
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/cifar10_train.zip', help='Path to train dataset')
-    parser.add_argument('--val_path', type=str, default='data/cifar10_val.zip', help='Path to validation dataset')
-    parser.add_argument('--test_path', type=str, default='data/cifar10_test.zip', help='Path to test dataset')
-    parser.add_argument('--query_path', type=str, default='examples/data/image_classification/cifar10_test_1.png',
-                        help='Path(s) to query image(s), delimited by commas')
+    parser.add_argument('--train_path',
+                        type=str,
+                        default='data/cifar10_train.zip',
+                        help='Path to train dataset')
+    parser.add_argument('--val_path',
+                        type=str,
+                        default='data/cifar10_val.zip',
+                        help='Path to validation dataset')
+    parser.add_argument('--test_path',
+                        type=str,
+                        default='data/cifar10_test.zip',
+                        help='Path to test dataset')
+    parser.add_argument(
+        '--query_path',
+        type=str,
+        default='examples/data/image_classification/cifar10_test_1.png',
+        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
     queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
-    test_model_class(
-        model_file_path=__file__,
-        model_class='TfVgg16',
-        task='IMAGE_CLASSIFICATION',
-        dependencies={
-            ModelDependency.TENSORFLOW: '1.12.0'
-        },
-        train_dataset_path=args.train_path,
-        val_dataset_path=args.val_path,
-        test_dataset_path=args.test_path,
-        queries=queries
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='TfVgg16',
+                     task='IMAGE_CLASSIFICATION',
+                     dependencies={ModelDependency.TENSORFLOW: '1.12.0'},
+                     train_dataset_path=args.train_path,
+                     val_dataset_path=args.val_path,
+                     test_dataset_path=args.test_path,
+                     queries=queries)

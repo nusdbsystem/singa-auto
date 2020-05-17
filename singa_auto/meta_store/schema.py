@@ -40,7 +40,9 @@ class InferenceJob(Base):
     __tablename__ = 'inference_job'
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_started = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     train_job_id = Column(String, ForeignKey('train_job.id'))
     model_id = Column(String, ForeignKey('model.id'))
     budget = Column(JSON, default={})
@@ -68,7 +70,9 @@ class Dataset(Base):
     store_dataset_id = Column(String, nullable=False)
     size_bytes = Column(BigInteger, default=0)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
-    datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_created = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     stat = Column(JSON, default={})
 
 
@@ -76,7 +80,9 @@ class Model(Base):
     __tablename__ = 'model'
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    datetime_created = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_created = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     user_id = Column(String, ForeignKey('user.id'), nullable=False)
     name = Column(String, nullable=False)
     task = Column(String, nullable=False)
@@ -84,7 +90,9 @@ class Model(Base):
     model_class = Column(String, nullable=False)
     docker_image = Column(String, nullable=False)
     dependencies = Column(JSON, nullable=False)
-    access_right = Column(String, nullable=False, default=ModelAccessRight.PRIVATE)
+    access_right = Column(String,
+                          nullable=False,
+                          default=ModelAccessRight.PRIVATE)
     checkpoint_id = Column(String, default=None)
     __table_args__ = (UniqueConstraint('name', 'user_id'),)
 
@@ -107,7 +115,9 @@ class Service(Base):
     container_service_name = Column(String)
     container_service_id = Column(String)
     container_service_info = Column(JSON)
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_started = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     datetime_stopped = Column(DateTime, default=None)
 
     @hybrid_property
@@ -121,7 +131,9 @@ class TrainJob(Base):
     __tablename__ = 'train_job'
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_started = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     app = Column(String, nullable=False)
     app_version = Column(Integer, nullable=False)
     task = Column(String, nullable=False)
@@ -141,7 +153,9 @@ class SubTrainJob(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     train_job_id = Column(String, ForeignKey('train_job.id'))
     model_id = Column(String, ForeignKey('model.id'))
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_started = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     status = Column(String, nullable=False, default=TrainJobStatus.STARTED)
     datetime_stopped = Column(DateTime, default=None)
     advisor_service_id = Column(String, ForeignKey('service.id'))
@@ -151,7 +165,9 @@ class TrainJobWorker(Base):
     __tablename__ = 'train_job_worker'
 
     service_id = Column(String, ForeignKey('service.id'), primary_key=True)
-    sub_train_job_id = Column(String, ForeignKey('sub_train_job.id'), nullable=False)
+    sub_train_job_id = Column(String,
+                              ForeignKey('sub_train_job.id'),
+                              nullable=False)
 
 
 class Trial(Base):
@@ -159,10 +175,16 @@ class Trial(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     no = Column(Integer, nullable=False)
-    sub_train_job_id = Column(String, ForeignKey('sub_train_job.id'), nullable=False)
+    sub_train_job_id = Column(String,
+                              ForeignKey('sub_train_job.id'),
+                              nullable=False)
     model_id = Column(String, ForeignKey('model.id'), nullable=False)
-    datetime_started = Column(DateTime, nullable=False, default=generate_datetime)
-    datetime_updated = Column(DateTime, nullable=False, default=generate_datetime)
+    datetime_started = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
+    datetime_updated = Column(DateTime,
+                              nullable=False,
+                              default=generate_datetime)
     datetime_stopped = Column(DateTime, default=None)
     status = Column(String, nullable=False, default=TrialStatus.PENDING)
     worker_id = Column(String, nullable=False)
@@ -175,7 +197,10 @@ class Trial(Base):
     def is_params_saved(self):
         return self.store_params_id is not None
 
-    __table_args__ = (UniqueConstraint('sub_train_job_id', 'no', name='_sub_train_job_id_no_uc'),) # Unique by (sub train job, trial no)
+    __table_args__ = (UniqueConstraint('sub_train_job_id',
+                                       'no',
+                                       name='_sub_train_job_id_no_uc'),
+                     )  # Unique by (sub train job, trial no)
 
 
 class TrialLog(Base):
@@ -183,7 +208,10 @@ class TrialLog(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     datetime = Column(DateTime, default=generate_datetime)
-    trial_id = Column(String, ForeignKey('trial.id'), nullable=False, index=True)
+    trial_id = Column(String,
+                      ForeignKey('trial.id'),
+                      nullable=False,
+                      index=True)
     line = Column(String, nullable=False)
     level = Column(String)
 

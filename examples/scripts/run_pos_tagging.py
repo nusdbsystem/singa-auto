@@ -30,6 +30,7 @@ from examples.scripts.quickstart import get_predictor_host, \
 
 from examples.datasets.corpus.load_sample_ptb import load_sample_ptb
 
+
 def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     '''
         Conducts a full train-inference flow on the Penn Treebank sample dataset with
@@ -48,15 +49,18 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     load_sample_ptb(train_dataset_path, val_dataset_path)
 
     print('Creating & uploading datasets onto SINGA-Auto...')
-    train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
+    train_dataset = client.create_dataset('{}_train'.format(app), task,
+                                          train_dataset_path)
     pprint(train_dataset)
-    val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
+    val_dataset = client.create_dataset('{}_val'.format(app), task,
+                                        val_dataset_path)
     pprint(val_dataset)
 
     print('Preprocessing datasets...')
     load_sample_ptb(train_dataset_path, val_dataset_path)
 
-    print('Adding models "{}" and "{}" to SINGA-Auto...'.format(bihmm_model_name, py_model_name))
+    print('Adding models "{}" and "{}" to SINGA-Auto...'.format(
+        bihmm_model_name, py_model_name))
     bihmm_model = client.create_model(bihmm_model_name, task, 'examples/models/pos_tagging/BigramHmm.py', \
                         'BigramHmm', dependencies={})
 
@@ -67,12 +71,13 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     model_ids = [bihmm_model['id'], py_model['id']]
 
     print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
-    budget = {
-        BudgetOption.TIME_HOURS: hours,
-        BudgetOption.GPU_COUNT: gpus
-    }
-    train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'],
-                                        budget, models=model_ids)
+    budget = {BudgetOption.TIME_HOURS: hours, BudgetOption.GPU_COUNT: gpus}
+    train_job = client.create_train_job(app,
+                                        task,
+                                        train_dataset['id'],
+                                        val_dataset['id'],
+                                        budget,
+                                        models=model_ids)
     pprint(train_job)
 
     print('Waiting for train job to complete...')
@@ -86,14 +91,16 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Creating inference job for app "{}" on SINGA-Auto...'.format(app))
     pprint(client.create_inference_job(app))
     predictor_host = get_predictor_host(client, app)
-    if not predictor_host: raise Exception('Inference job has errored or stopped')
+    if not predictor_host:
+        raise Exception('Inference job has errored or stopped')
     print('Inference job is running!')
 
     print('Making predictions for queries:')
-    queries = [
-        ['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
-        ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
-    ]
+    queries = [['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
+               [
+                   'The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold',
+                   '1,214', 'cars', 'in', 'the', 'U.S.'
+               ]]
     print(queries)
     predictions = make_predictions(client, predictor_host, queries)
     print('Predictions are:')
@@ -102,12 +109,25 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
     print('Stopping inference job...')
     pprint(client.stop_inference_job(app))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
-    parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')
-    parser.add_argument('--gpus', type=int, default=0, help='How many GPUs to use for training')
-    parser.add_argument('--hours', type=float, default=0.1, help='How long the train job should run for (in hours)')
+    parser.add_argument('--email',
+                        type=str,
+                        default=SUPERADMIN_EMAIL,
+                        help='Email of user')
+    parser.add_argument('--password',
+                        type=str,
+                        default=os.environ.get('SUPERADMIN_PASSWORD'),
+                        help='Password of user')
+    parser.add_argument('--gpus',
+                        type=int,
+                        default=0,
+                        help='How many GPUs to use for training')
+    parser.add_argument('--hours',
+                        type=float,
+                        default=0.1,
+                        help='How long the train job should run for (in hours)')
     (args, _) = parser.parse_known_args()
     out_train_dataset_path = 'data/ptb_train.zip'
     out_val_dataset_path = 'data/ptb_val.zip'
@@ -117,4 +137,5 @@ if __name__ == '__main__':
     client.login(email=args.email, password=args.password)
 
     # Run quickstart
-    run_pos_tagging(client, out_train_dataset_path, out_val_dataset_path, args.gpus, args.hours)
+    run_pos_tagging(client, out_train_dataset_path, out_val_dataset_path,
+                    args.gpus, args.hours)

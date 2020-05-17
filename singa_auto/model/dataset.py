@@ -35,7 +35,8 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-class InvalidDatasetFormatException(Exception): pass
+class InvalidDatasetFormatException(Exception):
+    pass
 
 
 class DatasetUtils():
@@ -60,6 +61,7 @@ class DatasetUtils():
             utils.dataset.load_dataset_of_image_files(dataset_path)
             ...
     '''
+
     def load_dataset_of_corpus(self, dataset_path, tags=None, split_by='\\n'):
         '''
             Loads dataset for the task ``POS_TAGGING``
@@ -69,8 +71,13 @@ class DatasetUtils():
         '''
         return CorpusDataset(dataset_path, tags or ['tag'], split_by)
 
-    def load_dataset_of_image_files(self, dataset_path, min_image_size=None,
-                                    max_image_size=None, mode='RGB', if_shuffle=False, lazy_load=False):
+    def load_dataset_of_image_files(self,
+                                    dataset_path,
+                                    min_image_size=None,
+                                    max_image_size=None,
+                                    mode='RGB',
+                                    if_shuffle=False,
+                                    lazy_load=False):
         '''
             Loads dataset for the task ``IMAGE_CLASSIFICATION``.
 
@@ -82,11 +89,17 @@ class DatasetUtils():
             :returns: An instance of ``ImageFilesDataset``
         '''
         if lazy_load:
-            return ImageFilesDatasetLazy(dataset_path, min_image_size=min_image_size, max_image_size=max_image_size,
-                mode=mode, if_shuffle=if_shuffle)
+            return ImageFilesDatasetLazy(dataset_path,
+                                         min_image_size=min_image_size,
+                                         max_image_size=max_image_size,
+                                         mode=mode,
+                                         if_shuffle=if_shuffle)
         else:
-            return ImageFilesDataset(dataset_path, min_image_size=min_image_size, max_image_size=max_image_size,
-                                mode=mode, if_shuffle=if_shuffle)
+            return ImageFilesDataset(dataset_path,
+                                     min_image_size=min_image_size,
+                                     max_image_size=max_image_size,
+                                     mode=mode,
+                                     if_shuffle=if_shuffle)
 
     def load_dataset_of_audio_files(self, dataset_path, dataset_dir):
         '''
@@ -115,9 +128,10 @@ class DatasetUtils():
         images = np.asarray(images) / 255
 
         if mean is None:
-            mean = np.mean(images, axis=(0, 1, 2)).tolist() # shape = (channels,)
+            mean = np.mean(images,
+                           axis=(0, 1, 2)).tolist()  # shape = (channels,)
         if std is None:
-            std = np.std(images, axis=(0, 1, 2)).tolist() # shape = (channels,)
+            std = np.std(images, axis=(0, 1, 2)).tolist()  # shape = (channels,)
 
         # Normalize all images
         images = (images - mean) / std
@@ -133,7 +147,9 @@ class DatasetUtils():
             :param str mode: Pillow image mode to convert all images to. Refer to https://pillow.readthedocs.io/en/3.1.x/handbook/concepts.html#concept-modes
             :returns: output images as a (N x width x height x channels) numpy array
         '''
-        images = [Image.fromarray(np.asarray(x, dtype=np.uint8)) for x in images]
+        images = [
+            Image.fromarray(np.asarray(x, dtype=np.uint8)) for x in images
+        ]
 
         if image_size is not None:
             images = [x.resize([image_size, image_size]) for x in images]
@@ -143,7 +159,9 @@ class DatasetUtils():
 
         return np.asarray([np.asarray(x) for x in images]), images
 
-    def load_images(self, image_paths: List[str], mode: str = 'RGB') -> np.ndarray:
+    def load_images(self,
+                    image_paths: List[str],
+                    mode: str = 'RGB') -> np.ndarray:
         '''
             Loads multiple images from the local filesystem.
             Assumes that images are of the same dimensions.
@@ -156,7 +174,9 @@ class DatasetUtils():
         images = np.array([np.asarray(x) for x in pil_images])
         return images
 
-    def load_images_from_bytes(self, image_bytes: List[bytes], mode: str = 'RGB') -> np.ndarray:
+    def load_images_from_bytes(self,
+                               image_bytes: List[bytes],
+                               mode: str = 'RGB') -> np.ndarray:
         '''
             Loads multiple images from the bytes
             Assumes that images are of the same dimensions.
@@ -188,6 +208,7 @@ class ModelDataset():
 
     ``size`` should be the total number of samples of the dataset
     '''
+
     def __init__(self, dataset_path):
         super().__init__()
         self.path = dataset_path
@@ -256,7 +277,10 @@ class CorpusDataset(ModelDataset):
                         sent.append([token, *token_tags])
 
                         # Maintain max classes of tags
-                        tag_num_classes = [max(x + 1, m) for (x, m) in zip(token_tags, tag_num_classes)]
+                        tag_num_classes = [
+                            max(x + 1, m)
+                            for (x, m) in zip(token_tags, tag_num_classes)
+                        ]
 
                         # Maintain max token length
                         max_token_len = max(len(token), max_token_len)
@@ -285,12 +309,22 @@ class ImageFilesDataset(ModelDataset):
         - Each class is an integer from 0 to (k - 1)
     '''
 
-    def __init__(self, dataset_path, min_image_size=None, max_image_size=None, mode='RGB', if_shuffle=False):
+    def __init__(self,
+                 dataset_path,
+                 min_image_size=None,
+                 max_image_size=None,
+                 mode='RGB',
+                 if_shuffle=False):
         super().__init__(dataset_path)
-        (pil_images, self._image_classes, self.size, self.classes) = self._load(self.path, mode)
-        (self._images, self.image_size) = self._preprocess(pil_images, min_image_size, max_image_size)
+        (pil_images, self._image_classes, self.size,
+         self.classes) = self._load(self.path, mode)
+        (self._images,
+         self.image_size) = self._preprocess(pil_images, min_image_size,
+                                             max_image_size)
         if if_shuffle:
-            (self._images, self._image_classes) = self._shuffle(self._images, self._image_classes)
+            (self._images,
+             self._image_classes) = self._shuffle(self._images,
+                                                  self._image_classes)
 
     def __getitem__(self, index):
         image = self._images[index]
@@ -299,11 +333,13 @@ class ImageFilesDataset(ModelDataset):
 
     def _preprocess(self, pil_images, min_image_size, max_image_size):
         if len(pil_images) == 0:
-            raise InvalidDatasetFormatException('Dataset should contain at least 1 image!')
+            raise InvalidDatasetFormatException(
+                'Dataset should contain at least 1 image!')
 
         # Decide on image size, adhering to min/max, making it square and trying not to stretch it
         (width, height) = pil_images[0].size
-        image_size = max(min([width, height, max_image_size or width]), min_image_size or 0)
+        image_size = max(min([width, height, max_image_size or width]),
+                         min_image_size or 0)
 
         # Resize all images
         pil_images = [x.resize([image_size, image_size]) for x in pil_images]
@@ -319,7 +355,7 @@ class ImageFilesDataset(ModelDataset):
             dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
             # obtain csv file
             for fileName in dataset_zipfile.namelist():
-               if fileName.endswith('.csv'):
+                if fileName.endswith('.csv'):
                     images_csv_path = os.path.join(d, fileName)
             dataset_zipfile.extractall(path=d)
             dataset_zipfile.close()
@@ -331,7 +367,9 @@ class ImageFilesDataset(ModelDataset):
             try:
                 with open(images_csv_path, mode='r') as f:
                     reader = csv.DictReader(f)
-                    (image_paths, image_classes) = zip(*[(row['path'], int(row['class'])) for row in reader])
+                    (image_paths,
+                     image_classes) = zip(*[(row['path'], int(row['class']))
+                                            for row in reader])
             except:
                 traceback.print_stack()
                 raise InvalidDatasetFormatException()
@@ -360,26 +398,37 @@ class ImageFilesDatasetLazy(ModelDataset):
         - Each class is an integer from 0 to (k - 1)
     '''
 
-    def __init__(self, dataset_path, min_image_size=None, max_image_size=None, mode='RGB', if_shuffle=False):
+    def __init__(self,
+                 dataset_path,
+                 min_image_size=None,
+                 max_image_size=None,
+                 mode='RGB',
+                 if_shuffle=False):
         super().__init__(dataset_path)
         self.mode = mode
         self.dataset_zipfile = None
-        (self._image_names, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
+        (self._image_names, self._image_classes, self.size,
+         self.classes) = self._extract_zip(self.path)
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
         self.label_mapper = dict()
         if if_shuffle:
-            (self._image_names, self._image_classes) = self._shuffle(self._image_names, self._image_classes)
+            (self._image_names,
+             self._image_classes) = self._shuffle(self._image_names,
+                                                  self._image_classes)
 
     def __getitem__(self, index):
         try:
             pil_image = self._extract_item(self.path, self._image_names[index])
             # pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
-            (image, image_size) = self._preprocess(pil_image, self.min_image_size, self.max_image_size)
+            (image, image_size) = self._preprocess(pil_image,
+                                                   self.min_image_size,
+                                                   self.max_image_size)
             image_class = self._image_classes[index]
 
         except:
-            print('image is not readable, error accurs during handling :', len(self._image_names), index)
+            print('image is not readable, error accurs during handling :',
+                  len(self._image_names), index)
             (image, image_class) = self.get_item(index - 1)
         return (image, image_class)
 
@@ -393,7 +442,8 @@ class ImageFilesDatasetLazy(ModelDataset):
         crop_pil_image = pil_image.crop((left, top, right, bottom))
 
         # Decide on image size, adhering to min/max, making it square and trying not to stretch it
-        image_size = max(min([width, height, max_image_size or width]), min_image_size or 0)
+        image_size = max(min([width, height, max_image_size or width]),
+                         min_image_size or 0)
 
         # Resize all images
         images = crop_pil_image.resize([image_size, image_size])
@@ -403,8 +453,10 @@ class ImageFilesDatasetLazy(ModelDataset):
     def _extract_item(self, dataset_path, item_path):
         # Create temp directory to unzip to extract 1 item
         with tempfile.TemporaryDirectory() as d:
-            extracted_item_path = self.dataset_zipfile.extract(item_path, path=d)
-            pil_image = _load_pil_images([extracted_item_path], mode=self.mode)[0]
+            extracted_item_path = self.dataset_zipfile.extract(item_path,
+                                                               path=d)
+            pil_image = _load_pil_images([extracted_item_path],
+                                         mode=self.mode)[0]
 
         return pil_image
 
@@ -417,7 +469,8 @@ class ImageFilesDatasetLazy(ModelDataset):
                 for fileName in self.dataset_zipfile.namelist():
                     if fileName.endswith('.csv'):
                         # Extract a single csv file from zip
-                        images_csv_path = self.dataset_zipfile.extract(fileName, path=d)
+                        images_csv_path = self.dataset_zipfile.extract(fileName,
+                                                                       path=d)
                         break
                 try:
                     csv = pd.read_csv(images_csv_path)
@@ -433,7 +486,10 @@ class ImageFilesDatasetLazy(ModelDataset):
 
         else:
             # make image name list and remove dir from list
-            image_paths = [x for x in self.dataset_zipfile.namelist() if x.endswith('/') == False]
+            image_paths = [
+                x for x in self.dataset_zipfile.namelist()
+                if x.endswith('/') == False
+            ]
             num_labeled_samples = len(image_paths)
             str_labels = [os.path.dirname(x) for x in image_paths]
             self.str_labels_set = list(set(str_labels))
@@ -474,6 +530,7 @@ class ImageFilesDatasetLazy(ModelDataset):
         mu = np.mean(x, axis=0)
         std = np.std(x, axis=0)
         return mu, std
+
 
 class AudioFilesDataset(ModelDataset):
     '''
@@ -518,7 +575,7 @@ def _load_pil_images(image_paths, mode='RGB'):
                 pil_image = Image.open(encoded).convert(mode)
                 pil_images.append(pil_image)
         except:
-            print ('error accurs when handling : ', image_path)
+            print('error accurs when handling : ', image_path)
             pil_images.append(pil_images[-1])
 
     return pil_images

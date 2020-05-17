@@ -38,11 +38,14 @@ class RedisSession(object):
 
             <namespace>:lock  | 0-1 lock for this namespace, 1 for acquired
     '''
-    def __init__(self,
-                namespace, # Namespace to use for redis
-                redis_host=None,
-                redis_port=None):
-        self._uid = str(uuid.uuid4()) # Process identifier for distributed locking
+
+    def __init__(
+        self,
+        namespace,  # Namespace to use for redis
+        redis_host=None,
+        redis_port=None):
+        self._uid = str(
+            uuid.uuid4())  # Process identifier for distributed locking
         self._namespace = namespace
         self._redis = self._make_redis_client(redis_host, redis_port)
 
@@ -53,10 +56,15 @@ class RedisSession(object):
         # Keep trying to acquire lock
         res = None
         while not res:
-            res = self._redis.set(lock_name, lock_value, nx=True, ex=REDIS_LOCK_EXPIRE_SECONDS)
+            res = self._redis.set(lock_name,
+                                  lock_value,
+                                  nx=True,
+                                  ex=REDIS_LOCK_EXPIRE_SECONDS)
             if not res:
                 sleep_secs = REDIS_LOCK_WAIT_SLEEP_SECONDS
-                logger.info('Waiting for lock to be released, sleeping for {}s...'.format(sleep_secs))
+                logger.info(
+                    'Waiting for lock to be released, sleeping for {}s...'.
+                    format(sleep_secs))
                 time.sleep(sleep_secs)
 
     def release_lock(self):
@@ -66,7 +74,8 @@ class RedisSession(object):
         # Only release lock if it's confirmed to be the one I acquired
         # Possible that it was a lock acquired by someone else after my lock expired
         cur_lock_value = self._redis.get(lock_name)
-        cur_lock_value = cur_lock_value.decode() if cur_lock_value is not None else None
+        cur_lock_value = cur_lock_value.decode(
+        ) if cur_lock_value is not None else None
         if cur_lock_value == lock_value:
             self._redis.delete(lock_name)
         else:
@@ -135,10 +144,14 @@ class RedisSession(object):
     def _make_redis_client(self, host, port):
         if host is not None and port is not None:
             import redis
+            from redis import ConnectionPool
+            from redis import StrictRedis
             cache_connection_url = 'redis://{}:{}'.format(host, port)
-            connection_pool = redis.ConnectionPool.from_url(cache_connection_url)
-            client = redis.StrictRedis(connection_pool=connection_pool, decode_responses=True)
-            logger.info(f'Connecting to Redis at namespace {self._namespace}...')
+            connection_pool = ConnectionPool.from_url(cache_connection_url)
+            client = StrictRedis(connection_pool=connection_pool,
+                                 decode_responses=True)
+            logger.info(
+                f'Connecting to Redis at namespace {self._namespace}...')
         else:
             client = MockRedis()
             logger.info('Using mock Redis...')

@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 curr_time = datetime.now().strftime("%Y-%m-%d_%I.%M.%S.%p")
 
 
+
 def run_worker(meta_store, start_worker, stop_worker):
     service_id = os.environ['SINGA_AUTO_SERVICE_ID']
     service_type = os.environ['SINGA_AUTO_SERVICE_TYPE']
@@ -52,7 +53,8 @@ def run_worker(meta_store, start_worker, stop_worker):
         meta_store.mark_service_as_running(service)
 
     try:
-        logger.info('Starting worker "{}" for service of ID "{}"...'.format(container_id, service_id))
+        logger.info('Starting worker "{}" for service of ID "{}"...'.format(
+            container_id, service_id))
         start_worker(service_id, service_type, container_id)
         logger.info('Stopping worker...')
         stop_worker()
@@ -69,9 +71,4 @@ def run_worker(meta_store, start_worker, stop_worker):
         stop_worker()
 
         raise e
-
-
-
-
-
 

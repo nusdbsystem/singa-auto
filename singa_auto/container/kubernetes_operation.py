@@ -20,8 +20,7 @@
 import os
 import time
 import kubernetes
-import kubernetes.client
-from kubernetes import config
+from kubernetes import client
 import logging
 import traceback
 from collections import namedtuple
@@ -36,16 +35,20 @@ logger = logging.getLogger(__name__)
 
 
 class KubernetesContainerManager(ContainerManager):
+
     def __init__(self, **kwargs):
         aToken = None
-        with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as fToken:
+        with open('/var/run/secrets/kubernetes.io/serviceaccount/token',
+                  'r') as fToken:
             aToken = fToken.read()
 
         # Create a configuration object
-        aConfiguration = kubernetes.client.Configuration()
+        aConfiguration = client.Configuration()
 
         # Specify the endpoint of your Kube cluster
-        aConfiguration.host = "https://{}:{}".format(os.getenv('KUBERNETES_SERVICE_HOST'), os.getenv('KUBERNETES_SERVICE_PORT'))
+        aConfiguration.host = "https://{}:{}".format(
+            os.getenv('KUBERNETES_SERVICE_HOST'),
+            os.getenv('KUBERNETES_SERVICE_PORT'))
 
         # Security part.
         # In this simple example we are not going to verify the SSL certificate of
@@ -59,7 +62,7 @@ class KubernetesContainerManager(ContainerManager):
         aConfiguration.api_key = {"authorization": "Bearer " + aToken}
 
         # Create a ApiClient with our config
-        aApiClient = kubernetes.client.ApiClient(aConfiguration)
+        aApiClient = client.ApiClient(aConfiguration)
 
         self._client_deployment = kubernetes.client.AppsV1Api(aApiClient)
         self._client_service = kubernetes.client.CoreV1Api(aApiClient)
@@ -108,8 +111,14 @@ class KubernetesContainerManager(ContainerManager):
         self._client_deployment.delete_namespaced_deployment(service.id, namespace='default')
         self._client_service.delete_namespaced_service(service.id, namespace='default')
 
-    def create_service(self, service_name, docker_image, replicas,
-                       args, environment_vars, mounts={}, publish_port=None,
+    def create_service(self,
+                       service_name,
+                       docker_image,
+                       replicas,
+                       args,
+                       environment_vars,
+                       mounts={},
+                       publish_port=None,
                        gpus=0) -> ContainerService:
         hostname = service_name
         if publish_port is not None:
@@ -130,12 +139,20 @@ class KubernetesContainerManager(ContainerManager):
             'replicas': replicas
         }
 
-        service = ContainerService(service_name, hostname, publish_port[0] if publish_port is not None else None, info)
+        service = ContainerService(
+            service_name, hostname,
+            publish_port[0] if publish_port is not None else None, info)
         return service
 
-    def _create_deployment_config(self, service_name, docker_image, replicas,
-                        args, environment_vars, mounts={}, publish_port=None,
-                        gpus=0):
+    def _create_deployment_config(self,
+                                  service_name,
+                                  docker_image,
+                                  replicas,
+                                  args,
+                                  environment_vars,
+                                  mounts={},
+                                  publish_port=None,
+                                  gpus=0):
         content = {}
         content.setdefault('apiVersion', 'apps/v1')
         content.setdefault('kind', 'Deployment')
@@ -155,19 +172,39 @@ class KubernetesContainerManager(ContainerManager):
         volumes = []
         mounts_count = 0
         for (k, v) in mounts.items():
-            volumeMounts.append({'name': 'v' + str(mounts_count), 'mountPath': v})
-            volumes.append({'name': 'v' + str(mounts_count), 'hostPath': {'path': k}})
+            volumeMounts.append({
+                'name': 'v' + str(mounts_count),
+                'mountPath': v
+            })
+            volumes.append({
+                'name': 'v' + str(mounts_count),
+                'hostPath': {
+                    'path': k
+                }
+            })
             mounts_count += 1
-        template.setdefault('spec', {'containers': [container], 'volumes': volumes})
+        template.setdefault('spec', {
+            'containers': [container],
+            'volumes': volumes
+        })
         env = [{'name': k, 'value': v} for (k, v) in environment_vars.items()]
         container.setdefault('env', env)
         if gpus > 0:
-            container.setdefault('resources', {'limits': {'nvidia.com/gpu': gpus}})
+            container.setdefault('resources',
+                                 {'limits': {
+                                     'nvidia.com/gpu': gpus
+                                 }})
         return content
 
-    def _create_service_config(self, service_name, docker_image, replicas,
-                        args, environment_vars, mounts={}, publish_port=None,
-                        gpus=0):
+    def _create_service_config(self,
+                               service_name,
+                               docker_image,
+                               replicas,
+                               args,
+                               environment_vars,
+                               mounts={},
+                               publish_port=None,
+                               gpus=0):
         #admin service
         content = {}
         content.setdefault('apiVersion', 'v1')
@@ -180,9 +217,14 @@ class KubernetesContainerManager(ContainerManager):
         if publish_port is not None:
             spec.setdefault('type', 'NodePort')
             ports = spec.setdefault('ports', [])
-            ports.append({'port': int(publish_port[1]), 'targetPort': int(publish_port[1]), 'nodePort': int(publish_port[0])})
+            ports.append({
+                'port': int(publish_port[1]),
+                'targetPort': int(publish_port[1]),
+                'nodePort': int(publish_port[0])
+            })
         spec.setdefault('selector', {'name': service_name})
         return content
+
 
 # Decorator that retries a method call a number of times
 def _retry(func):

@@ -30,28 +30,35 @@ from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob,
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
+
 class PassiveAClf(BaseModel):
     '''
     Implements a Passive Aggressive Classifier for classification task using Pima Indian Diabetes dataset.
     '''
+
     @staticmethod
     def get_knob_config():
         return {
-            'C': FloatKnob(1.0,1.5),
-            'tol' : FloatKnob(1e-03, 1e-01, is_exp=True),
+            'C': FloatKnob(1.0, 1.5),
+            'tol': FloatKnob(1e-03, 1e-01, is_exp=True),
             'validation_fraction': FloatKnob(0.01, 0.1),
             'n_iter_no_change': IntegerKnob(3, 5),
-            'shuffle': CategoricalKnob([True,False]),
+            'shuffle': CategoricalKnob([True, False]),
             'loss': CategoricalKnob(['hinge', 'squared_hinge']),
             'random_state': IntegerKnob(1, 2),
-            'warm_start': CategoricalKnob([True,False]),
+            'warm_start': CategoricalKnob([True, False]),
             'average': IntegerKnob(1, 5),
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self.C, self.tol, self.validation_fraction, self.n_iter_no_change, self.shuffle, self.loss, self.random_state, self.warm_start, self.average)
-
+        self._clf = self._build_classifier(
+            self._knobs.get("C"), self._knobs.get("tol"),
+            self._knobs.get("validation_fraction"),
+            self._knobs.get("n_iter_no_change"), self._knobs.get("shuffle"),
+            self._knobs.get("loss"), self._knobs.get("random_state"),
+            self._knobs.get("warm_start"), self._knobs.get("average"))
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -73,7 +80,6 @@ class PassiveAClf(BaseModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-
     def evaluate(self, dataset_path):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
@@ -87,17 +93,14 @@ class PassiveAClf(BaseModel):
         accuracy = self._clf.score(X, y)
         return accuracy
 
-
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         data = self.prepare_X(queries)
         probs = self._clf.predict_proba(data)
         return probs.tolist()
 
-
     def destroy(self):
         pass
-
 
     def dump_parameters(self):
         params = {}
@@ -127,23 +130,21 @@ class PassiveAClf(BaseModel):
         else:
             self._target = None
 
-
     def _extract_xy(self, data):
         features = self._features
         target = self._target
 
         if features is None:
-            X = data.iloc[:,:-1]
+            X = data.iloc[:, :-1]
         else:
             X = data[features]
 
         if target is None:
-            y = data.iloc[:,-1]
+            y = data.iloc[:, -1]
         else:
             y = data[target]
 
         return (X, y)
-
 
     def median_dataset(self, df):
         #replace zero values by median so that 0 will not affect median.
@@ -152,42 +153,48 @@ class PassiveAClf(BaseModel):
             df[col].fillna(df[col].median(), inplace=True)
         return df
 
-
     def prepare_X(self, df):
         data = self.median_dataset(df)
-        X = PolynomialFeatures(interaction_only=True).fit_transform(data).astype(int)
+        X = PolynomialFeatures(
+            interaction_only=True).fit_transform(data).astype(int)
         return X
 
-
-    def _build_classifier(self, C, tol, validation_fraction, n_iter_no_change, shuffle, loss, random_state, warm_start, average):
+    def _build_classifier(self, C, tol, validation_fraction, n_iter_no_change,
+                          shuffle, loss, random_state, warm_start, average):
         clf = PassiveAggressiveClassifier(
             C=C,
-            tol = tol,
-            validation_fraction = validation_fraction,
-            n_iter_no_change = n_iter_no_change,
-            shuffle = shuffle,
-            loss = loss,
-            random_state = random_state,
-            warm_start = warm_start,
-            average = average,
+            tol=tol,
+            validation_fraction=validation_fraction,
+            n_iter_no_change=n_iter_no_change,
+            shuffle=shuffle,
+            loss=loss,
+            random_state=random_state,
+            warm_start=warm_start,
+            average=average,
         )
         return clf
 
+
 if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='PassiveAClf',
-        task='TABULAR_CLASSIFICATION',
-        dependencies={
-            ModelDependency.SCIKIT_LEARN: '0.20.0'
-        },
-        train_dataset_path='data/diabetes_train.csv',
-        val_dataset_path='data/diabetes_val.csv',
-        train_args={
-            'features': ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'Age'],
-            'target':'Outcome'
-        },
-        queries=[
-            { 'Pregnancies': 3, 'Glucose': '130', 'BloodPressure': 92, 'SkinThickness': 30, 'Insulin': 90, 'BMI': 30.4, 'Age': 40 }
-        ]
-    )
+    test_model_class(model_file_path=__file__,
+                     model_class='PassiveAClf',
+                     task='TABULAR_CLASSIFICATION',
+                     dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
+                     train_dataset_path='data/diabetes_train.csv',
+                     val_dataset_path='data/diabetes_val.csv',
+                     train_args={
+                         'features': [
+                             'Pregnancies', 'Glucose', 'BloodPressure',
+                             'SkinThickness', 'Insulin', 'BMI', 'Age'
+                         ],
+                         'target': 'Outcome'
+                     },
+                     queries=[{
+                         'Pregnancies': 3,
+                         'Glucose': '130',
+                         'BloodPressure': 92,
+                         'SkinThickness': 30,
+                         'Insulin': 90,
+                         'BMI': 30.4,
+                         'Age': 40
+                     }])

@@ -27,13 +27,14 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
+
 # Loads the "Boston Housing price" CSV dataset from `http://course1.winona.edu/bdeppa/Stat%20425/Data` for the `TABULAR_REGRESSION` task
 def load_boston_housing():
-    load(
-        dataset_url='http://course1.winona.edu/bdeppa/Stat%20425/Data/Boston_Housing.csv',
-        out_train_dataset_path='data/boston_train.csv',
-        out_val_dataset_path='data/boston_val.csv'
-    )
+    load(dataset_url=
+         'http://course1.winona.edu/bdeppa/Stat%20425/Data/Boston_Housing.csv',
+         out_train_dataset_path='data/boston_train.csv',
+         out_val_dataset_path='data/boston_val.csv')
+
 
 if __name__ == '__main__':
     load_boston_housing()

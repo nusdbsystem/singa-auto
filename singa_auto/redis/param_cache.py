@@ -34,8 +34,14 @@ from .redis import RedisSession
 
 logger = logging.getLogger(__name__)
 
-class InvalidParamsError(Exception): pass
-class InvalidParamsFormatError(Exception): pass
+
+class InvalidParamsError(Exception):
+    pass
+
+
+class InvalidParamsFormatError(Exception):
+    pass
+
 
 REDIS_NAMESPACE = 'PARAMS'
 PARAM_DATA_TYPE_SEPARATOR = '//'
@@ -50,7 +56,6 @@ class ParamCache(object):
 
     :param str session_id: Session ID associated with the parameters
     '''
-
     '''
         Internally, organises data into these namespaces:
             
@@ -61,11 +66,11 @@ class ParamCache(object):
     '''
 
     def __init__(self,
-                session_id='local',
-                redis_host=None,
-                redis_port=None,
-                cache_size=4):
-        self._params: Dict[str, _ParamMeta] = {} # Stores params metadata
+                 session_id='local',
+                 redis_host=None,
+                 redis_port=None,
+                 cache_size=4):
+        self._params: Dict[str, _ParamMeta] = {}  # Stores params metadata
         redis_namespace = f'{REDIS_NAMESPACE}:{session_id}'
         self._redis = RedisSession(redis_namespace, redis_host, redis_port)
         self._local_cache = LocalCache(cache_size)
@@ -77,7 +82,11 @@ class ParamCache(object):
     :param datetime time: When the parameters were produced
     :param float score: Score associated with the parameters
     '''
-    def store_params(self, params: Params, score: float = None, time: datetime = None):
+
+    def store_params(self,
+                     params: Params,
+                     score: float = None,
+                     time: datetime = None):
         if params is None:
             raise InvalidParamsError('`params` cannot be `None`')
 
@@ -104,6 +113,7 @@ class ParamCache(object):
     :returns: Parameters as a { <name>: <numpy array> } dictionary
     :rtype: Params
     '''
+
     def retrieve_params(self, params_type: ParamsType) -> Params:
         self._redis.acquire_lock()
         try:
@@ -137,6 +147,7 @@ class ParamCache(object):
     '''
     Clears all parameters for this session from underlying storage.
     '''
+
     def clear_all_params(self):
         self._clear_all_from_redis()
 
@@ -149,7 +160,7 @@ class ParamCache(object):
     def _update_params_meta(self, score: float, time: datetime):
         score = score or 0
         time = time or datetime.now()
-        param_id = str(uuid.uuid4()) # Give it an ID
+        param_id = str(uuid.uuid4())  # Give it an ID
         param_meta = _ParamMeta(param_id, score, time)
 
         # Update local recent params
@@ -186,7 +197,8 @@ class ParamCache(object):
         elif params_type == ParamsType.GLOBAL_BEST:
             return self._get_global_best_params()
         else:
-            raise InvalidParamsError('No such params type: "{}"'.format(params_type))
+            raise InvalidParamsError(
+                'No such params type: "{}"'.format(params_type))
 
     def _get_local_recent_params(self):
         param_meta = self._params.get('LOCAL_RECENT')
@@ -233,7 +245,11 @@ class ParamCache(object):
         params_to_push = ['GLOBAL_BEST', 'GLOBAL_RECENT']
 
         # Extract params meta to share
-        params_shared = { param_type: param_meta for (param_type, param_meta) in self._params.items() if param_type in params_to_push }
+        params_shared = {
+            param_type: param_meta
+            for (param_type, param_meta) in self._params.items()
+            if param_type in params_to_push
+        }
 
         # Compare new against old params, and determine which params to push and delete from Redis
         redis_params = self._pull_metadata_from_redis()
@@ -256,10 +272,11 @@ class ParamCache(object):
         self._push_metadata_to_redis(params_shared)
 
     def _push_metadata_to_redis(self, params):
-        redis_params = { param_type: self._param_meta_to_jsonable(param_meta) for (param_type, param_meta) in params.items() }
-        metadata = {
-            'params': redis_params
+        redis_params = {
+            param_type: self._param_meta_to_jsonable(param_meta)
+            for (param_type, param_meta) in params.items()
         }
+        metadata = {'params': redis_params}
         logger.info('Pushing metadata to Redis: {}...'.format(metadata))
 
         metadata_str = json.dumps(metadata)
@@ -275,7 +292,10 @@ class ParamCache(object):
 
             # For each param stored on Redis, update its metadata
             params = metadata.get('params', {})
-            params = { param_type: self._jsonable_to_param_meta(jsonable) for (param_type, jsonable) in params.items() }
+            params = {
+                param_type: self._jsonable_to_param_meta(jsonable)
+                for (param_type, jsonable) in params.items()
+            }
             return params
 
         return {}
@@ -313,7 +333,8 @@ class ParamCache(object):
         return jsonable
 
     def _jsonable_to_param_meta(self, jsonable):
-        jsonable['time'] = datetime.strptime(jsonable['time'], '%Y-%m-%d %H:%M:%S.%f')
+        jsonable['time'] = datetime.strptime(jsonable['time'],
+                                             '%Y-%m-%d %H:%M:%S.%f')
         param_meta = _ParamMeta(**jsonable)
         return param_meta
 
@@ -339,7 +360,7 @@ def _simplify_params(params):
         assert isinstance(params, dict)
         for (name, value) in params.items():
             assert isinstance(name, str)
-            assert PARAM_DATA_TYPE_SEPARATOR not in name # Internally used as separator for types
+            assert PARAM_DATA_TYPE_SEPARATOR not in name  # Internally used as separator for types
 
             # If value is a numpy array, prefix it with type
             # Otherwise, it must be one of the basic types

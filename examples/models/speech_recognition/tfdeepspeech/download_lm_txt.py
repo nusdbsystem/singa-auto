@@ -25,6 +25,7 @@ import os
 from urllib import request
 import argparse
 
+
 def reporthook(count, block_size, total_size):
     global start_time
     if count == 0:
@@ -35,8 +36,9 @@ def reporthook(count, block_size, total_size):
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
     sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                    (percent, progress_size / (1024 * 1024), speed, duration))
+                     (percent, progress_size / (1024 * 1024), speed, duration))
     sys.stdout.flush()
+
 
 def download_lm_txt(lm_txt_path):
     url = 'http://www.openslr.org/resources/11/librispeech-lm-norm.txt.gz'
@@ -45,13 +47,15 @@ def download_lm_txt(lm_txt_path):
 
     # Convert to lowercase and cleanup.
     with open(lm_txt_path, 'w', encoding='utf-8') as lower:
-        with io.TextIOWrapper(io.BufferedReader(gzip.open(data_upper)), encoding='utf8') as upper:
+        with io.TextIOWrapper(io.BufferedReader(gzip.open(data_upper)),
+                              encoding='utf8') as upper:
             for line in upper:
                 lower.write(line.lower())
 
     print(f'Converted to {lm_txt_path}')
     print('Starting cleanup')
     os.remove(data_upper)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
