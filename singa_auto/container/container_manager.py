@@ -21,25 +21,38 @@ import abc
 from typing import List, Dict, Tuple, Any
 
 
-class InvalidServiceRequestError(Exception): pass
+class InvalidServiceRequestError(Exception):
+    pass
 
 
 class ContainerService():
-    def __init__(self, id: str, hostname: str, port: int, info: Dict[str, Any] = {}):
-        self.id = id # ID for the service created
-        self.hostname = hostname # Hostname for the service created (in the internal network)
-        self.port = port # Port for the service created (in the internal network), None if no container port is passed
+
+    def __init__(self,
+                 id: str,
+                 hostname: str,
+                 port: int,
+                 info: Dict[str, Any] = {}):
+        self.id = id  # ID for the service created
+        self.hostname = hostname  # Hostname for the service created (in the internal network)
+        self.port = port  # Port for the service created (in the internal network), None if no container port is passed
         self.info = info
 
 
 class ContainerManager(abc.ABC):
+
     def __init__(self, **kwargs):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def create_service(self, service_name: str, docker_image: str, args: List[str], environment_vars: Dict[str, str], 
-                        mounts: Dict[str, str] = {}, replicas: int = 1, publish_port: List[Tuple[int, int]] = None, 
-                        gpus: int = 0) -> ContainerService:
+    def create_service(self,
+                       service_name: str,
+                       docker_image: str,
+                       args: List[str],
+                       environment_vars: Dict[str, str],
+                       mounts: Dict[str, str] = {},
+                       replicas: int = 1,
+                       publish_port: List[Tuple[int, int]] = None,
+                       gpus: int = 0) -> ContainerService:
         '''
             Creates a service with a set number of replicas. Replicas will be created *on the same node*.
             The service should regenerate replicas if they exit with a non-zero code. 

@@ -26,10 +26,12 @@ import numpy as np
 
 MODEL_LOG_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
+
 class LogType():
     PLOT = 'PLOT'
     METRICS = 'METRICS'
     MESSAGE = 'MESSAGE'
+
 
 class LoggerUtils():
     '''
@@ -95,7 +97,11 @@ class LoggerUtils():
         :type metrics: str[]
         :param str x_axis: Metric that should be plotted on the x-axis, against all other metrics. Defaults to ``'time'``, which is automatically logged
         '''
-        self._log(LogType.PLOT, { 'title': title, 'metrics': metrics, 'x_axis': x_axis })
+        self._log(LogType.PLOT, {
+            'title': title,
+            'metrics': metrics,
+            'x_axis': x_axis
+        })
 
     def log(self, msg='', **metrics):
         '''
@@ -112,7 +118,7 @@ class LoggerUtils():
         :type metrics: dict[str, int|float]
         '''
         if msg:
-            self._log(LogType.MESSAGE, { 'message': str(msg) })
+            self._log(LogType.MESSAGE, {'message': str(msg)})
 
         if metrics:
             metrics = self._validate_metrics(metrics)
@@ -126,7 +132,7 @@ class LoggerUtils():
         self._logger = logger
 
     def _validate_metrics(self, metrics):
-        return { n: self._validate_metric(n, v) for (n, v) in metrics.items() }
+        return {n: self._validate_metric(n, v) for (n, v) in metrics.items()}
 
     def _log(self, log_type, log_dict={}):
         log_dict['type'] = log_type
@@ -141,8 +147,9 @@ class LoggerUtils():
             return float(value)
 
         if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError('Metric of name "{}" should be an `int` or `float`, but is of `{}`'
-                                .format(name, type(value)))
+            raise TypeError(
+                'Metric of name "{}" should be an `int` or `float`, but is of `{}`'
+                .format(name, type(value)))
 
         return value
 
@@ -153,10 +160,7 @@ class LoggerUtils():
             return json.loads(log_line)
         except ValueError:
             # An unserializable log line is a message
-            return {
-                'type': LogType.MESSAGE,
-                'message': log_line
-            }
+            return {'type': LogType.MESSAGE, 'message': log_line}
 
     @staticmethod
     # Parses logs into (messages, metrics, plots) for visualization.
@@ -181,19 +185,16 @@ class LoggerUtils():
                 })
 
             elif log_type == LogType.METRICS:
-                metrics.append({
-                    'time': log_dict.get('time'),
-                    **log_dict
-                })
+                metrics.append({'time': log_dict.get('time'), **log_dict})
 
             elif log_type == LogType.PLOT:
-                plots.append({
-                    **log_dict
-                })
+                plots.append({**log_dict})
 
         return (messages, metrics, plots)
 
+
 class LoggerUtilsDebugHandler(logging.Handler):
+
     def __init__(self):
         logging.Handler.__init__(self)
 
@@ -207,12 +208,16 @@ class LoggerUtilsDebugHandler(logging.Handler):
             title = log_dict.get('title')
             metrics = log_dict.get('metrics')
             x_axis = log_dict.get('x_axis')
-
+            # In pylint, allow many format args in this specific case
+            # pylint: disable = too-many-format-args
             self._print('Plot `{}` will be registered when this model is being trained on SINGA-Auto' \
                 .format(title, ', '.join(metrics), x_axis or 'time'))
 
         elif log_type == LogType.METRICS:
-            metrics_log = ', '.join(['{}={}'.format(metric, value) for (metric, value) in log_dict.items()])
+            metrics_log = ', '.join([
+                '{}={}'.format(metric, value)
+                for (metric, value) in log_dict.items()
+            ])
             self._print('Metric(s) logged: {}'.format(metrics_log))
 
         elif log_type == LogType.MESSAGE:

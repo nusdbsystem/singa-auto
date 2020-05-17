@@ -27,7 +27,8 @@ from singa_auto.meta_store import MetaStore
 install_command = os.environ.get('WORKER_INSTALL_COMMAND', '')
 exit_code = os.system(install_command)
 if exit_code != 0:
-    raise Exception('Install command gave non-zero exit code: "{}"'.format(install_command))
+    raise Exception(
+        'Install command gave non-zero exit code: "{}"'.format(install_command))
 
 worker = None
 

@@ -37,7 +37,6 @@ class InferenceCache:
 
     :param str session_id: Associated session ID
     '''
-
     '''
         Internally, organises data into these Redis namespaces:
 
@@ -46,10 +45,7 @@ class InferenceCache:
         workers:<worker_id>:<query_id>:prediction   | Prediction for query of ID for worker of ID 
     '''
 
-    def __init__(self,
-                session_id='local',
-                redis_host=None,
-                redis_port=None):
+    def __init__(self, session_id='local', redis_host=None, redis_port=None):
         redis_namespace = f'{REDIS_NAMESPACE}:{session_id}'
         self._redis = RedisSession(redis_namespace, redis_host, redis_port)
 
@@ -64,10 +60,12 @@ class InferenceCache:
     def add_queries_for_worker(self, worker_id: str, queries: List[Query]):
         name = f'workers:{worker_id}:queries'
         queries = [pickle.dumps(x) for x in queries]
-        logger.info(f'Adding {len(queries)} querie(s) for worker "{worker_id}"...')
+        logger.info(
+            f'Adding {len(queries)} querie(s) for worker "{worker_id}"...')
         self._redis.prepend_to_list(name, *queries)
 
-    def take_prediction_for_worker(self, worker_id: str, query_id: str) -> Union[Prediction, None]:
+    def take_prediction_for_worker(self, worker_id: str,
+                                   query_id: str) -> Union[Prediction, None]:
         name = f'workers:{worker_id}:{query_id}:prediction'
         prediction = self._redis.get(name)
         if prediction is None:
@@ -76,7 +74,8 @@ class InferenceCache:
         # Delete prediction from cache
         self._redis.delete(name)
         prediction = pickle.loads(prediction)
-        logger.info(f'Took prediction for query "{query_id}" from worker "{worker_id}"')
+        logger.info(
+            f'Took prediction for query "{query_id}" from worker "{worker_id}"')
         return prediction
 
     def clear_all(self):
@@ -91,7 +90,8 @@ class InferenceCache:
     def add_worker(self, worker_id: str):
         self._redis.add_to_set('workers', worker_id)
 
-    def pop_queries_for_worker(self, worker_id: str, batch_size: int) -> List[Query]:
+    def pop_queries_for_worker(self, worker_id: str,
+                               batch_size: int) -> List[Query]:
         name = f'workers:{worker_id}:queries'
         queries = []
 
@@ -104,12 +104,15 @@ class InferenceCache:
             queries.append(query)
 
         if len(queries) > 0:
-            logger.info(f'Popped {len(queries)} querie(s) for worker "{worker_id}"')
+            logger.info(
+                f'Popped {len(queries)} querie(s) for worker "{worker_id}"')
 
         return queries
 
-    def add_predictions_for_worker(self, worker_id: str, predictions: List[Prediction]):
-        logger.info(f'Adding {len(predictions)} prediction(s) for worker "{worker_id}"')
+    def add_predictions_for_worker(self, worker_id: str,
+                                   predictions: List[Prediction]):
+        logger.info(
+            f'Adding {len(predictions)} prediction(s) for worker "{worker_id}"')
         for prediction in predictions:
             name = f'workers:{worker_id}:{prediction.query_id}:prediction'
             prediction = pickle.dumps(prediction)

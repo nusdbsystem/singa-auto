@@ -22,6 +22,7 @@ import math
 import tempfile
 from tqdm import tqdm
 
+
 def download_dataset_from_url(dataset_url):
     '''
         Download the dataset at URL over HTTP/HTTPS, ensuring that the dataset ends up in the local filesystem.
@@ -35,9 +36,9 @@ def download_dataset_from_url(dataset_url):
     r = requests.get(dataset_url, stream=True)
 
     # Show a progress bar while downloading
-    total_size = int(r.headers.get('content-length', 0)); 
+    total_size = int(r.headers.get('content-length', 0))
     block_size = 1024
-    iters = math.ceil(total_size / block_size) 
+    iters = math.ceil(total_size / block_size)
     with tempfile.NamedTemporaryFile(delete=False) as f:
         for data in tqdm(r.iter_content(block_size), total=iters, unit='KB'):
             f.write(data)

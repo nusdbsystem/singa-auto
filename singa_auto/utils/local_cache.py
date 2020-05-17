@@ -19,6 +19,7 @@
 
 
 class _CacheNode:
+
     def __init__(self):
         self.key = None
         self.val = None
@@ -27,12 +28,13 @@ class _CacheNode:
 
 
 class LocalCache:
+
     def __init__(self, size: int):
         assert size > 0
         self._size = size
-        self._head = None # Doubly linked list of nodes
-        self._tail = None # Tail of linked list
-        self._key_to_node = {} # { <key>: <node> }
+        self._head = None  # Doubly linked list of nodes
+        self._tail = None  # Tail of linked list
+        self._key_to_node = {}  # { <key>: <node> }
 
     def __len__(self):
         return len(self._key_to_node)
@@ -51,11 +53,11 @@ class LocalCache:
             node.val = value
             self._move_to_front(node)
             return
-            
+
         # Get node to place data
         node = self._maybe_evict()
 
-        # Populate data 
+        # Populate data
         node.key = key
         node.val = value
         self._key_to_node[key] = node
@@ -73,7 +75,7 @@ class LocalCache:
         # If there's space
         if len(self._key_to_node) < self._size:
             return _CacheNode()
-        
+
         # Evict tail
         node = self._tail
         if node.prev is not None:
@@ -102,7 +104,7 @@ class LocalCache:
         # If node is tail, update tail to prev node
         if node is self._tail:
             self._tail = node.prev
-        
+
         # Remove node from list
         node.prev.next = node.next
         if node.next is not None:
@@ -116,4 +118,3 @@ class LocalCache:
 
     def __str__(self):
         return 'Param cache has {} / {} items'.format(len(self), self.size)
-

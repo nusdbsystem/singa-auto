@@ -33,12 +33,16 @@ from .dataset import DatasetUtils
 from .log import LoggerUtils
 
 
-class InvalidModelClassError(Exception): pass
+class InvalidModelClassError(Exception):
+    pass
 
 
-def load_model_class(model_file_bytes, model_class, temp_mod_name=None) -> Type[BaseModel]:
-    temp_mod_name = temp_mod_name or '{}-{}'.format(model_class, str(uuid.uuid4()))
-    temp_model_file_name ='{}.py'.format(temp_mod_name)
+def load_model_class(model_file_bytes,
+                     model_class,
+                     temp_mod_name=None) -> Type[BaseModel]:
+    temp_mod_name = temp_mod_name or '{}-{}'.format(model_class,
+                                                    str(uuid.uuid4()))
+    temp_model_file_name = '{}.py'.format(temp_mod_name)
 
     # Temporarily save the model file to disk
     with open(temp_model_file_name, 'wb') as f:
@@ -71,27 +75,35 @@ def parse_model_install_command(dependencies, enable_gpu=False):
         elif dep == ModelDependency.TORCH:
             commands.append('pip --no-cache-dir install torch=={}'.format(ver))
         elif dep == ModelDependency.TORCHVISION:
-            commands.append('pip --no-cache-dir install torchvision=={}'.format(ver))
+            commands.append(
+                'pip --no-cache-dir install torchvision=={}'.format(ver))
         elif dep == ModelDependency.SCIKIT_LEARN:
-            commands.append('pip --no-cache-dir install scikit-learn=={}'.format(ver))
+            commands.append(
+                'pip --no-cache-dir install scikit-learn=={}'.format(ver))
         elif dep == ModelDependency.TENSORFLOW:
             if enable_gpu:
-                commands.append('pip --no-cache-dir install tensorflow-gpu=={}'.format(ver))
+                commands.append(
+                    'pip --no-cache-dir install tensorflow-gpu=={}'.format(ver))
             else:
-                commands.append('pip --no-cache-dir install tensorflow=={}'.format(ver))
+                commands.append(
+                    'pip --no-cache-dir install tensorflow=={}'.format(ver))
         elif dep == ModelDependency.SINGA:
             options = '-y -c nusdbsystem'
             if conda_env is not None:
                 options += ' -n {}'.format(conda_env)
             if enable_gpu:
-                commands.append('conda install {} singa-gpu={}'.format(options, ver))
+                commands.append('conda install {} singa-gpu={}'.format(
+                    options, ver))
             else:
-                commands.append('conda install {} singa-cpu={}'.format(options, ver))
+                commands.append('conda install {} singa-cpu={}'.format(
+                    options, ver))
         elif dep == ModelDependency.DS_CTCDECODER:
-            commands.append('pip --no-cache-dir install {}'.format(parse_ctc_decoder_url(ver)))
+            commands.append('pip --no-cache-dir install {}'.format(
+                parse_ctc_decoder_url(ver)))
         else:
             # Assume that dependency is the exact PIP package name
-            commands.append('pip --no-cache-dir install {}=={}'.format(dep, ver))
+            commands.append('pip --no-cache-dir install {}=={}'.format(
+                dep, ver))
 
     return '; '.join(commands)
 
@@ -130,11 +142,14 @@ def parse_ctc_decoder_url(ver):
         pyver=pyver,
         m_or_mu=m_or_mu,
         platform=plat,
-        arch=arch
-    )
+        arch=arch)
 
     deepspeech_scheme = 'https://index.taskcluster.net/v1/task/project.deepspeech.deepspeech.native_client.%(branch_name)s.%(arch_string)s/artifacts/public/%(artifact_name)s'
-    return deepspeech_scheme % {'arch_string': ctc_arch, 'artifact_name': artifact, 'branch_name': branch}
+    return deepspeech_scheme % {
+        'arch_string': ctc_arch,
+        'artifact_name': artifact,
+        'branch_name': branch
+    }
 
 
 def deserialize_knob_config(knob_config_bytes):
@@ -148,10 +163,12 @@ def serialize_knob_config(knob_config):
 
 
 class ModelUtils():
+
     def __init__(self):
         self._trial_id = None
         self.dataset = DatasetUtils()
         self.logger = LoggerUtils()
+
 
 # Initialize a global instance
 utils = ModelUtils()
