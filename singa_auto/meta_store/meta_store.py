@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import json
 from datetime import datetime
 import os
 from sqlalchemy import create_engine, distinct, or_
@@ -27,7 +27,7 @@ from singa_auto.constants import TrainJobStatus, UserType, \
 
 from singa_auto.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWorker, \
     InferenceJob, Trial, Model, User, Service, InferenceJobWorker, \
-    TrialLog, Dataset
+    TrialLog, Dataset, IngressConfig
 
 
 class InvalidModelAccessRightError(Exception):
@@ -304,6 +304,13 @@ class MetaStore(object):
     def get_deployed_inference_job_by_train_job(self, train_job_id):
         inference_job = self._session.query(InferenceJob) \
             .filter(InferenceJob.train_job_id == train_job_id) \
+            .filter(InferenceJob.status.in_([InferenceJobStatus.RUNNING, InferenceJobStatus.STARTED])).first()
+
+        return inference_job
+
+    def get_deployed_inference_job_by_model_id(self, model_id):
+        inference_job = self._session.query(InferenceJob) \
+            .filter(InferenceJob.model_id == model_id) \
             .filter(InferenceJob.status.in_([InferenceJobStatus.RUNNING, InferenceJobStatus.STARTED])).first()
 
         return inference_job
@@ -596,6 +603,64 @@ class MetaStore(object):
         return trial_log
 
     ####################################
+    # ingress update
+    ####################################
+
+    def update_ingress_config(self, ingress_name: str, inferenceAppName: str, container_service_name: str, service_port: int):
+
+        ingress_info = self._session\
+            .query(IngressConfig)\
+            .filter(IngressConfig.name == ingress_name)\
+            .with_for_update(read=False) \
+            .first()
+
+        if ingress_info is None:
+            # if there isn't ingress info in db
+            ingress_body = {"apiVersion": 'networking.k8s.io/v1beta1',
+                            "kind": 'Ingress',
+                            "metadata": {"name": ingress_name},
+                            "spec":
+                                {"rules":
+                                     [{"http":
+                                           {"paths":
+                                                [{"path": "/" + inferenceAppName,
+                                                  "backend":
+                                                      {"serviceName": container_service_name,
+                                                       "servicePort": service_port}
+                                                  }]
+                                            }
+                                       }
+                                      ]
+                                 }
+                            }
+
+            ingress_info = IngressConfig(name=ingress_name,
+                                         ingress_body=json.dumps(ingress_body))
+
+            self._session.add(ingress_info)
+
+        else:
+            ingress_body = json.loads(ingress_info.ingress_body)
+            for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
+                # if the service is updated
+                if path_info["path"] == "/" + inferenceAppName:
+                    path_info["backend"]["serviceName"] = container_service_name
+            else:
+                # if new service path is added
+                path_info = {"path": "/" + inferenceAppName,
+                             "backend": {
+                                     "serviceName": container_service_name,
+                                     "servicePort": service_port
+                                 }
+                             }
+                ingress_body["spec"]["rules"][0]["http"]["paths"].append(path_info)
+
+            ingress_info.ingress_body = json.dumps(ingress_body)
+            self._session.add(ingress_info)
+
+        return ingress_info
+
+    ####################################
     # Others
     ####################################
 
@@ -618,6 +683,9 @@ class MetaStore(object):
                 raise DuplicateModelNameError()
             else:
                 raise e
+
+    def rollback(self):
+        self._session.rollback()
 
     # Ensures that future database queries load fresh data from underlying database
     def expire(self):

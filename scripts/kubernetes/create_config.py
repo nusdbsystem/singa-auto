@@ -1,3 +1,4 @@
+#!/usr/bin python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -80,6 +81,8 @@ if __name__ == '__main__':
     CLUSTER_MODE = sys.argv[50]
 
     DB_DIR_PATH = sys.argv[51]
+    INGRESS_NAME = sys.argv[52]
+    INGRESS_EXT_PORT = sys.argv[53]
 
     #zk service
     content = {}
@@ -98,8 +101,7 @@ if __name__ == '__main__':
         'nodePort': int(ZOOKEEPER_EXT_PORT)
     })
     spec.setdefault('selector', {'name': ZOOKEEPER_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_zookeeper_service.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_zookeeper_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #zk deployment
@@ -122,9 +124,7 @@ if __name__ == '__main__':
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
     container.setdefault('env', env)
     template.setdefault('spec', {'containers': [container]})
-    with open(
-            f'{PYTHONPATH}/scripts/kubernetes/start_zookeeper_deployment.json',
-            'w') as f:
+    with open('{}/scripts/kubernetes/start_zookeeper_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #kafka service
@@ -144,8 +144,7 @@ if __name__ == '__main__':
         'nodePort': int(KAFKA_EXT_PORT)
     })
     spec.setdefault('selector', {'name': KAFKA_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_kafka_service.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_kafka_service.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #kafka deployment
@@ -166,18 +165,14 @@ if __name__ == '__main__':
     container.setdefault('image', IMAGE_KAFKA)
     env = []
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
-    env.append({
-        'name': 'KAFKA_ZOOKEEPER_CONNECT',
-        'value': f'{ZOOKEEPER_HOST}:{ZOOKEEPER_PORT}'
-    })
+    env.append({'name': 'KAFKA_ZOOKEEPER_CONNECT', 'value': '{}:{}'.format(ZOOKEEPER_HOST, ZOOKEEPER_PORT)})
     env.append({'name': 'KAFKA_ADVERTISED_HOST_NAME', 'value': KAFKA_HOST})
     env.append({'name': 'KAFKA_MESSAGE_MAX_BYTES', 'value': "134217728"})
     env.append({'name': 'KAFKA_FETCH_MAX_BYTES', 'value': "134217728"})
     env.append({'name': 'KAFKA_ADVERTISED_PORT', 'value': KAFKA_PORT})
     container.setdefault('env', env)
     template.setdefault('spec', {'containers': [container]})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_kafka_deployment.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_kafka_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #db service
@@ -198,8 +193,7 @@ if __name__ == '__main__':
             'nodePort': int(POSTGRES_EXT_PORT)
         })
         spec.setdefault('selector', {'name': POSTGRES_HOST})
-        with open(f'{PYTHONPATH}/scripts/kubernetes/start_db_service.json',
-                  'w') as f:
+        with open('{}/scripts/kubernetes/start_db_service.json'.format(PYTHONPATH), 'w') as f:
             f.write(json.dumps(content, indent=4))
 
         #db deployment
@@ -226,16 +220,14 @@ if __name__ == '__main__':
             },
         ])
 
-        template.setdefault(
-            'spec', {
-                'containers': [container],
-                'volumes': [{
-                    'name': 'db-path',
-                    'hostPath': {
-                        'path': f'{HOST_WORKDIR_PATH}/{DB_DIR_PATH}'
-                    }
-                }]
-            })
+        template.setdefault('spec', {'containers': [container],
+                                     'volumes': [
+                                                 {'name': 'db-path',
+                                                  'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, DB_DIR_PATH)}}
+                                                 ]
+                                     }
+                            )
+
         env = []
         env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
         env.append({'name': 'POSTGRES_HOST', 'value': POSTGRES_HOST})
@@ -243,8 +235,7 @@ if __name__ == '__main__':
         env.append({'name': 'POSTGRES_PASSWORD', 'value': POSTGRES_PASSWORD})
         container.setdefault('env', env)
         template.setdefault('spec', {'containers': [container]})
-        with open(f'{PYTHONPATH}/scripts/kubernetes/start_db_deployment.json',
-                  'w') as f:
+        with open('{}/scripts/kubernetes/start_db_deployment.json'.format(PYTHONPATH), 'w') as f:
             f.write(json.dumps(content, indent=4))
 
     #redis service
@@ -264,8 +255,8 @@ if __name__ == '__main__':
         'nodePort': int(REDIS_EXT_PORT)
     })
     spec.setdefault('selector', {'name': REDIS_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_redis_service.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_redis_service.json'.format(PYTHONPATH), 'w') as f:
+
         f.write(json.dumps(content, indent=4))
 
     #redis deployment
@@ -285,8 +276,8 @@ if __name__ == '__main__':
     container.setdefault('name', REDIS_HOST)
     container.setdefault('image', IMAGE_REDIS)
     template.setdefault('spec', {'containers': [container]})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_redis_deployment.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_redis_deployment.json'.format(PYTHONPATH), 'w') as f:
+
         f.write(json.dumps(content, indent=4))
 
     #admin deployment
@@ -304,26 +295,26 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': ADMIN_HOST}})
     container = {}
     container.setdefault('name', ADMIN_HOST)
-    container.setdefault('image',
-                         f'{SINGA_AUTO_IMAGE_ADMIN}:{SINGA_AUTO_VERSION}')
-    if CONTAINER_MODE == 'DEV':
-        container.setdefault('volumeMounts', [{
-            'name': ADMIN_HOST,
-            'mountPath': '/var/run/docker.sock'
-        }, {
-            'name': 'admin-log',
-            'mountPath': DOCKER_WORKDIR_PATH
-        }])
-        template.setdefault('spec', {'containers': [container], 'volumes': [{'name': ADMIN_HOST, 'hostPath': {'path': '/var/run/docker.sock'}}, \
-                                    {'name': 'admin-log', 'hostPath': {'path': os.getenv('PWD', '')}}]})
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_ADMIN, SINGA_AUTO_VERSION))
+    if APP_MODE == 'DEV':
+        container.setdefault('volumeMounts', [{'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'},
+                                              {'name': 'admin-log', 'mountPath': DOCKER_WORKDIR_PATH}])
+        template.setdefault('spec', {'containers': [container],
+                                     'volumes': [
+                                         {'name': ADMIN_HOST, 'hostPath': {'path': '/var/run/docker.sock'}},
+                                         {'name': 'admin-log', 'hostPath': {'path': os.getenv('PWD', '')}}
+                                     ]
+                                     }
+                            )
+
     else:
-        container.setdefault('volumeMounts', [{'name': 'work-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{DATA_DIR_PATH}'}, \
-                                              {'name': 'param-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{PARAMS_DIR_PATH}'}, \
-                                              {'name': 'log-path', 'mountPath': f'{DOCKER_WORKDIR_PATH}/{LOGS_DIR_PATH}'}, \
+        container.setdefault('volumeMounts', [{'name': 'work-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, DATA_DIR_PATH)}, \
+                                              {'name': 'param-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, PARAMS_DIR_PATH)}, \
+                                              {'name': 'log-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
                                               {'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'}])
-        template.setdefault('spec', {'containers': [container], 'volumes': [{'name': 'work-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{DATA_DIR_PATH}'}}, \
-                                    {'name': 'param-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{PARAMS_DIR_PATH}'}}, \
-                                    {'name': 'log-path', 'hostPath': {'path': f'{HOST_WORKDIR_PATH}/{LOGS_DIR_PATH}'}}, \
+        template.setdefault('spec', {'containers': [container], 'volumes': [{'name': 'work-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, DATA_DIR_PATH)}}, \
+                                    {'name': 'param-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, PARAMS_DIR_PATH)}}, \
+                                    {'name': 'log-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, LOGS_DIR_PATH)}}, \
                                     {'name': ADMIN_HOST, 'hostPath': {'path': '/var/run/docker.sock'}}]})
     env = []
     env.append({'name': 'POSTGRES_HOST', 'value': POSTGRES_HOST})
@@ -357,9 +348,10 @@ if __name__ == '__main__':
     env.append({'name': 'LOGS_DIR_PATH', 'value': LOGS_DIR_PATH})
     env.append({'name': 'APP_MODE', 'value': APP_MODE})
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
+    env.append({'name': 'INGRESS_NAME', 'value': INGRESS_NAME})
+    env.append({'name': 'INGRESS_EXT_PORT', 'value': INGRESS_EXT_PORT})
     container.setdefault('env', env)
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_admin_deployment.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
 
     #admin service
@@ -379,8 +371,8 @@ if __name__ == '__main__':
         'nodePort': int(ADMIN_EXT_PORT)
     })
     spec.setdefault('selector', {'name': ADMIN_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_admin_service.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_admin_service.json'.format(PYTHONPATH), 'w') as f:
+
         f.write(json.dumps(content, indent=4))
 
     #web service
@@ -400,8 +392,8 @@ if __name__ == '__main__':
         'nodePort': int(WEB_ADMIN_EXT_PORT)
     })
     spec.setdefault('selector', {'name': WEB_ADMIN_HOST})
-    with open(f'{PYTHONPATH}/scripts/kubernetes/start_web_admin_service.json',
-              'w') as f:
+    with open('{}/scripts/kubernetes/start_web_admin_service.json'.format(PYTHONPATH), 'w') as f:
+
         f.write(json.dumps(content, indent=4))
 
     #web deployment
@@ -419,14 +411,12 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': WEB_ADMIN_HOST}})
     container = {}
     container.setdefault('name', WEB_ADMIN_HOST)
-    container.setdefault('image',
-                         f'{SINGA_AUTO_IMAGE_WEB_ADMIN}:{SINGA_AUTO_VERSION}')
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_WEB_ADMIN, SINGA_AUTO_VERSION))
+
     template.setdefault('spec', {'containers': [container]})
     env = []
     env.append({'name': 'SINGA_AUTO_ADDR', 'value': SINGA_AUTO_ADDR})
     env.append({'name': 'ADMIN_EXT_PORT', 'value': ADMIN_EXT_PORT})
     container.setdefault('env', env)
-    with open(
-            f'{PYTHONPATH}/scripts/kubernetes/start_web_admin_deployment.json',
-            'w') as f:
+    with open('{}/scripts/kubernetes/start_web_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))

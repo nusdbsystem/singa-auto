@@ -42,7 +42,7 @@ function ProductHero(props) {
         alt="increase priority"
       />
       <Typography color="inherit" align="center" variant="h2" marked="center">
-        Panda-dev
+        Panda
       </Typography>
       <Typography
         color="inherit"
@@ -50,7 +50,7 @@ function ProductHero(props) {
         variant="h5"
         className={classes.h5}
       >
-        Panda-dev is a distributed system that trains machine learning (ML)
+        Panda is a distributed system that trains machine learning (ML)
         models <br />
         and deploys trained models, built with ease-of-use in mind.
       </Typography>
@@ -62,7 +62,7 @@ function ProductHero(props) {
         component={Link}
         to={`/console/datasets/list-datasets`}
       >
-        Try Panda-dev
+        Try Panda
       </Button>
       <Typography variant="body2" color="inherit" className={classes.more}>
         Discover the experience

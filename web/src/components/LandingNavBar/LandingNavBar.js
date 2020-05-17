@@ -174,7 +174,7 @@ class LandingNavBar extends React.Component {
                 <img alt="logo" src={Logo} className={classes.logo} />
               </Link>
               <Link to="/" className={classes.title}>
-                {"Panda-dev"}
+                {"Panda"}
               </Link>
               <Hidden smDown>
                 {navLinks.map((link, index) =>

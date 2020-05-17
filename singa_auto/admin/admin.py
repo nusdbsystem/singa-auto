@@ -90,12 +90,12 @@ class Admin(object):
                  data_store=None,
                  param_store=None):
         self._meta_store = meta_store or MetaStore()
-        if os.getenv('CONTAINER_MODE', 'SWARM') == 'SWARM':
-            container_manager = container_manager or DockerSwarmContainerManager(
-            )
-        else:
-            container_manager = container_manager or KubernetesContainerManager(
-            )
+        self.container_model = os.getenv('CONTAINER_MODE', 'SWARM')
+        if self.container_model == 'SWARM':
+            container_manager = container_manager or DockerSwarmContainerManager()
+        elif self.container_model == 'K8S':
+            container_manager = container_manager or KubernetesContainerManager()
+
         self._data_store: DataStore = data_store or FileDataStore()
         self._param_store: ParamStore = param_store or FileParamStore()
         self._base_worker_image = '{}:{}'.format(
@@ -662,7 +662,9 @@ class Admin(object):
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
-            self._services_manager.create_inference_services(inference_job.id, use_checkpoint=True)
+            self._services_manager.create_inference_services(inferenceAppName=model_name,
+                                                             inference_job_id=inference_job.id,
+                                                             use_checkpoint=True)
         return {
             'id': inference_job.id,
             'model_id': model.id,
@@ -699,7 +701,9 @@ class Admin(object):
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
-            self._services_manager.create_inference_services(inference_job.id)
+            self._services_manager.create_inference_services(inferenceAppName=app,
+                                                             inference_job_id=inference_job.id,
+                                                             )
 
         return {
             'id': inference_job.id,
@@ -738,63 +742,90 @@ class Admin(object):
         train_job = self._meta_store.get_train_job_by_app_version(
             user_id, app, app_version=app_version)
         if train_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
+            # in the inference job created by checkpoint, model name is the same as app name
+            model = self._meta_store.get_model_by_name(user_id=user_id, name=app)
+            if model.checkpoint_id is None:
+                raise InvalidRunningInferenceJobError('Have you start a train job or uploaded a checkpoint file for {}?'
+                                                      .format(app))
+            else:
+                train_job_id = None
+                app = app
+                app_version = app_version
 
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
-            train_job.id)
-        if inference_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
+                inference_job = self._meta_store.get_deployed_inference_job_by_model_id(model.id)
+                if inference_job is None:
+                    raise InvalidRunningInferenceJobError()
+
+        else:
+            train_job_id = train_job.id
+            app = train_job.app
+            app_version = train_job.app_version
+            inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
+            if inference_job is None:
+                raise InvalidRunningInferenceJobError()
+
 
         predictor_service = self._meta_store.get_service(inference_job.predictor_service_id) \
                             if inference_job.predictor_service_id is not None else None
+        if self.container_model == 'K8S':
+            _ingress_port = os.environ["INGRESS_EXT_PORT"]
+            ingress_host = f'{predictor_service.ext_hostname}:{_ingress_port}/{app}'
+            predictor_host = ",".join([predictor_service.host, ingress_host]) if predictor_service is not None else None
+        elif self.container_model == 'SWARM':
+            predictor_host = predictor_service.host if predictor_service is not None else None
+        else:
+            predictor_host = None
 
-        return {
-            'id':
-                inference_job.id,
-            'status':
-                inference_job.status,
-            'train_job_id':
-                train_job.id,
-            'app':
-                train_job.app,
-            'app_version':
-                train_job.app_version,
-            'datetime_started':
-                inference_job.datetime_started,
-            'datetime_stopped':
-                inference_job.datetime_stopped,
-            'predictor_host':
-                predictor_service.host
-                if predictor_service is not None else None
-        }
+            return {
+                'id': inference_job.id,
+                'status': inference_job.status,
+                'train_job_id': train_job_id,
+                'app': app,
+                'app_version': app_version,
+                'datetime_started': inference_job.datetime_started,
+                'datetime_stopped': inference_job.datetime_stopped,
+                'predictor_host': predictor_host
+            }
+
+        def get_inference_jobs_of_app(self, user_id, app):
+            inference_jobs = self._meta_store.get_inference_jobs_of_app(user_id, app)
+            train_jobs = [self._meta_store.get_train_job(x.train_job_id) for x in inference_jobs]
+            return [
+                {
+                    'id': inference_job.id,
+                    'status': inference_job.status,
+                    'train_job_id': train_job.id,
+                    'app': train_job.app,
+                    'app_version': train_job.app_version,
+                    'datetime_started': inference_job.datetime_started,
+                    'datetime_stopped': inference_job.datetime_stopped
+                }
+                for (inference_job, train_job) in zip(inference_jobs, train_jobs)
+            ]
 
     def get_inference_jobs_of_app(self, user_id, app):
-        inference_jobs = self._meta_store.get_inference_jobs_of_app(
-            user_id, app)
-        train_jobs = [
-            self._meta_store.get_train_job(x.train_job_id)
-            for x in inference_jobs
+        inference_jobs = self._meta_store.get_inference_jobs_of_app(user_id, app)
+        train_jobs = [self._meta_store.get_train_job(x.train_job_id) for x in inference_jobs]
+        return [
+            {
+                'id': inference_job.id,
+                'status': inference_job.status,
+                'train_job_id': train_job.id,
+                'app': train_job.app,
+                'app_version': train_job.app_version,
+                'datetime_started': inference_job.datetime_started,
+                'datetime_stopped': inference_job.datetime_stopped
+            }
+            for (inference_job, train_job) in zip(inference_jobs, train_jobs)
         ]
-        return [{
-            'id': inference_job.id,
-            'status': inference_job.status,
-            'train_job_id': train_job.id,
-            'app': train_job.app,
-            'app_version': train_job.app_version,
-            'datetime_started': inference_job.datetime_started,
-            'datetime_stopped': inference_job.datetime_stopped
-        } for (inference_job, train_job) in zip(inference_jobs, train_jobs)]
+
 
     def get_inference_jobs_by_user(self, user_id):
         inference_jobs = self._meta_store.get_inference_jobs_by_user(user_id)
 
         res = list()
         for inference_job in inference_jobs:
-            if inference_job.status in ['RUNNING', 'STARTED', 'ERRORED']:
+            if inference_job.status in ['RUNNING']:
                 if inference_job.train_job_id:
                     train_job = self._meta_store.get_train_job(
                         inference_job.train_job_id)
@@ -810,21 +841,15 @@ class Admin(object):
                 elif inference_job.model_id:
                     model = self._meta_store.get_model(inference_job.model_id)
                     res.append({
-                        'id':
-                            inference_job.id,
-                        'status':
-                            inference_job.status,
-                        'train_job_id':
-                            "ByCheckpoint: {}".format(model.checkpoint_id),
-                        'app':
-                            'N/A',
-                        'app_version':
-                            'N/A',
-                        'datetime_started':
-                            inference_job.datetime_started,
-                        'datetime_stopped':
-                            inference_job.datetime_stopped
-                    })
+                                'id': inference_job.id,
+                                'status': inference_job.status,
+                                'train_job_id': "checkpoint: {}".format(model.checkpoint_id),
+                                'app': model.name,
+                                'app_version': 1,
+                                'datetime_started': inference_job.datetime_started,
+                                'datetime_stopped': inference_job.datetime_stopped
+                            })
+
         return res
 
     def stop_all_inference_jobs(self):

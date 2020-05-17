@@ -58,10 +58,6 @@ RUN apt-get -y install curl bzip2 \
   && conda clean --all --yes
 ENV PATH /usr/local/envs/$CONDA_ENVIORNMENT/bin:$PATH
 
-RUN apt-get update
-RUN apt-get install -y libsm6 libxext6 libxrender-dev
-RUN apt-get update && apt-get -y install libglib2.0; apt-get clean
-RUN pip install opencv-contrib-python-headless
 
 RUN pip install --upgrade pip
 ENV PYTHONUNBUFFERED 1

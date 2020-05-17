@@ -13,8 +13,8 @@ curl -i -H "Accept: application/json" \
 # GET the token
 curl -i "${URL}tokens" \
   -X POST \
-  -d 'email=superadmin@singaauto' \
-  -d 'password=singa_auto'
+  --data '{"email":"superadmin@singaauto", "password":"singa_auto"}' \
+  --header "Content-Type: application/json"
 
 # the token will expire after a while
 # {

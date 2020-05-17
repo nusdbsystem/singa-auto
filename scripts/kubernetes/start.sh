@@ -57,6 +57,18 @@ bash ./scripts/kubernetes/start_web_admin.sh || exit 1
 
 bash ./scripts/kubernetes/remove_config.sh || exit 1
 
+echo "Deploy ingress-nginx"
+ if is_running_ingress
+    then
+      echo "Detected that Ingress-controller is already running!"
+    else
+      # this is the source yaml
+      # kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/baremetal/deploy.yaml
+      # customer yaml: add replica to 3, fix the port to 3005
+      kubectl apply -f scripts/kubernetes/ingress_controller_deploy.yaml || exit 1
+    fi
+
+
 echo "To use Rafiki, use Rafiki Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/docs/src/user/quickstart.html"
 echo "To configure Rafiki, refer to Rafiki's developer docs at https://nginyc.github.io/rafiki/docs/latest/docs/src/dev/setup.html"

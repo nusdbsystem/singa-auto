@@ -172,7 +172,7 @@ class RequestsParameters:
     # Trials
     ####################################
 
-    TRIAL_GET_BEST = {'params': {'type': True, 'max_count': False}}
+    TRIAL_GET_BEST = {'params': {'type': False, 'max_count': False}}
 
     ####################################
     # Inference Jobs

@@ -224,3 +224,11 @@ class User(Base):
     password_hash = Column(LargeBinary, nullable=False)
     user_type = Column(String, nullable=False)
     banned_date = Column(DateTime, default=None)
+
+
+class IngressConfig(Base):
+    __tablename__ = 'ingress_config'
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String)
+    ingress_body = Column(String)

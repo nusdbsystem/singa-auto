@@ -19,11 +19,9 @@
 
 import os
 import time
-import kubernetes
 from kubernetes import client
 import logging
 import traceback
-from collections import namedtuple
 from functools import wraps
 
 from .container_manager import ContainerManager, InvalidServiceRequestError, ContainerService
@@ -66,12 +64,50 @@ class KubernetesContainerManager(ContainerManager):
 
         self._client_deployment = client.AppsV1Api(aApiClient)
         self._client_service = client.CoreV1Api(aApiClient)
+        self.api_instance = client.NetworkingV1beta1Api(aApiClient)
+
+    def update_ingress(self, ingress_name: str, ingress_body: dict):
+        paths = self._update_ingress_paths(ingress_body)
+        body = client.NetworkingV1beta1Ingress(
+            api_version="networking.k8s.io/v1beta1",
+            kind="Ingress",
+            metadata=client.V1ObjectMeta(
+                                                    name=ingress_name,
+                                                    annotations={
+                                                        "nginx.ingress.kubernetes.io/rewrite-target": "/"
+                                                        }
+                                                    ),
+            spec=client.NetworkingV1beta1IngressSpec(
+                rules=[client.NetworkingV1beta1IngressRule(
+                    http=client.NetworkingV1beta1HTTPIngressRuleValue(
+                        paths=paths
+                    )
+                )
+                ]
+            )
+        )
+
+        self.api_instance.replace_namespaced_ingress_with_http_info(name=ingress_name,
+                                                                    namespace='default',
+                                                                    body=body)
+
+    def _update_ingress_paths(self, ingress_body: dict) -> list:
+        paths = list()
+        for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
+            path_obj = client.NetworkingV1beta1HTTPIngressPath(
+                            path=path_info["path"],
+                            backend=client.NetworkingV1beta1IngressBackend(
+                                service_port=path_info["backend"]["servicePort"],
+                                service_name=path_info["backend"]["serviceName"])
+
+                        )
+            paths.append(path_obj)
+
+        return paths
 
     def destroy_service(self, service: ContainerService):
-        self._client_deployment.delete_namespaced_deployment(
-            service.id, namespace='default')
-        self._client_service.delete_namespaced_service(service.id,
-                                                       namespace='default')
+        self._client_deployment.delete_namespaced_deployment(service.id, namespace='default')
+        self._client_service.delete_namespaced_service(service.id, namespace='default')
 
     def create_service(self,
                        service_name,
@@ -84,18 +120,15 @@ class KubernetesContainerManager(ContainerManager):
                        gpus=0) -> ContainerService:
         hostname = service_name
         if publish_port is not None:
-            service_config = self._create_service_config(
-                service_name, docker_image, replicas, args, environment_vars,
-                mounts, publish_port, gpus)
-            service_obj = _retry(
-                self._client_service.create_namespaced_service)(
-                    namespace='default', body=service_config)
-        deployment_config = self._create_deployment_config(
-            service_name, docker_image, replicas, args, environment_vars,
-            mounts, publish_port, gpus)
-        deployment_obj = _retry(
-            self._client_deployment.create_namespaced_deployment)(
-                namespace='default', body=deployment_config)
+            service_config = self._create_service_config(service_name, docker_image, replicas,
+                            args, environment_vars, mounts, publish_port,
+                            gpus)
+            service_obj = _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
+        deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
+                        args, environment_vars, mounts, publish_port,
+                        gpus)
+        deployment_obj = _retry(self._client_deployment.create_namespaced_deployment)(namespace='default',
+                                                                                      body=deployment_config)
 
         info = {
             'node_id': 'default',
