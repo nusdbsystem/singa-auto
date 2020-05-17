@@ -45,7 +45,6 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn_pandas import DataFrameMapper
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
 ''' 
     This model is desigined for Home Credit Default Risk `https://www.kaggle
     .com/c/home-credit-default-risk` and only uses the main table 
@@ -60,9 +59,11 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # fastai.structured module
 ##########################
 
+
 def get_sample(df, n):
     idxs = sorted(np.random.permutation(len(df))[:n])
     return df.iloc[idxs].copy()
+
 
 # for numeric data, fill up with median values
 def fix_missing(df, col, name, na_dict):
@@ -76,44 +77,68 @@ def fix_missing(df, col, name, na_dict):
 
 
 def scale_vars(df, mapper):
-    warnings.filterwarnings('ignore', category=sklearn.exceptions.DataConversionWarning)
+    warnings.filterwarnings('ignore',
+                            category=sklearn.exceptions.DataConversionWarning)
     if mapper is None:
-        map_f = [([n],StandardScaler()) for n in df.columns if is_numeric_dtype(df[n])]
+        map_f = [([n], StandardScaler())
+                 for n in df.columns
+                 if is_numeric_dtype(df[n])]
         mapper = DataFrameMapper(map_f).fit(df)
     df[mapper.transformed_names_] = mapper.transform(df)
     return mapper
 
+
 # for category data, convert to indexes, and plus 1
 # the NA was remarked as -1 and then become 0
 def numericalize(df, col, name, max_n_cat):
-    if not is_numeric_dtype(col) and ( max_n_cat is None or col.nunique()>max_n_cat):
-        df[name] = col.cat.codes+1
+    if not is_numeric_dtype(col) and (max_n_cat is None or
+                                      col.nunique() > max_n_cat):
+        df[name] = col.cat.codes + 1
 
 
-def proc_df(df, y_fld=None, skip_flds=None, ignore_flds=None, do_scale=False, na_dict=None,
-            preproc_fn=None, max_n_cat=None, subset=None, mapper=None):
-    if not ignore_flds: ignore_flds=[]
-    if not skip_flds: skip_flds=[]
-    if subset: df = get_sample(df,subset)
+def proc_df(df,
+            y_fld=None,
+            skip_flds=None,
+            ignore_flds=None,
+            do_scale=False,
+            na_dict=None,
+            preproc_fn=None,
+            max_n_cat=None,
+            subset=None,
+            mapper=None):
+    if not ignore_flds:
+        ignore_flds = []
+    if not skip_flds:
+        skip_flds = []
+    if subset:
+        df = get_sample(df, subset)
     ignored_flds = df.loc[:, ignore_flds]
     df.drop(ignore_flds, axis=1, inplace=True)
     df = df.copy()
-    if preproc_fn: preproc_fn(df)
-    if y_fld is None: y = None
+    if preproc_fn:
+        preproc_fn(df)
+    if y_fld is None:
+        y = None
     else:
-        if not is_numeric_dtype(df[y_fld]): df[y_fld] = df[y_fld].cat.codes
+        if not is_numeric_dtype(df[y_fld]):
+            df[y_fld] = df[y_fld].cat.codes
         y = df[y_fld].values
         skip_flds += [y_fld]
     df.drop(skip_flds, axis=1, inplace=True)
 
-    if na_dict is None: na_dict = {}
-    for n,c in df.items(): na_dict = fix_missing(df, c, n, na_dict)
-    if do_scale: mapper = scale_vars(df, mapper)
-    for n,c in df.items(): numericalize(df, c, n, max_n_cat)
+    if na_dict is None:
+        na_dict = {}
+    for n, c in df.items():
+        na_dict = fix_missing(df, c, n, na_dict)
+    if do_scale:
+        mapper = scale_vars(df, mapper)
+    for n, c in df.items():
+        numericalize(df, c, n, max_n_cat)
     df = pd.get_dummies(df, dummy_na=True)
     df = pd.concat([ignored_flds, df], axis=1)
     res = [df, y, na_dict]
-    if do_scale: res = res + [mapper]
+    if do_scale:
+        res = res + [mapper]
     return res
 
 
@@ -121,7 +146,9 @@ def proc_df(df, y_fld=None, skip_flds=None, ignore_flds=None, do_scale=False, na
 # pytorch dataset for the home credit data
 ##########################################
 
+
 class HomeCreditData(Dataset):
+
     def __init__(self, source, target, cat_list):
         self.x_cat = source[cat_list].values.tolist()
         self.x_cont = source.drop(cat_list, axis=1).values.tolist()
@@ -145,6 +172,7 @@ class HomeCreditData(Dataset):
 # This modle receiving mixed inputs
 # category and continuous data type
 ####################################
+
 
 class MixedInputModel(nn.Module):
     def __init__(self, emb_sizes, n_cont, emb_drop, out_size, sizes, drops, \
@@ -187,7 +215,8 @@ class MixedInputModel(nn.Module):
         x = torch.cat([x, x2], 1)
         for l, d, b in zip(self.linears, self.drops, self.bns):
             x = F.relu(l(x))
-            if self.use_bn: x = b(x)
+            if self.use_bn:
+                x = b(x)
             x = d(x)
         x = self.outp(x)
         x = F.log_softmax(x, dim=1)
@@ -198,6 +227,7 @@ class DNNTorch(BaseModel):
     '''
     Implements a Multi-input neural network for tabular data classification task
     '''
+
     @staticmethod
     def get_knob_config():
         return {
@@ -207,9 +237,15 @@ class DNNTorch(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
 
-    def train(self, dataset_url, features=None, target=None, exclude=None, **kwargs):
+    def train(self,
+              dataset_url,
+              features=None,
+              target=None,
+              exclude=None,
+              **kwargs):
 
         utils.logger.define_plot(
             'Loss Over Epochs',
@@ -222,7 +258,8 @@ class DNNTorch(BaseModel):
 
         # Load CSV file as pandas dataframe
         df = pd.read_csv(dataset_url, index_col=0)
-        if exclude and set(df.columns.tolist()).intersection(set(exclude)) == set(exclude):
+        if exclude and set(df.columns.tolist()).intersection(
+                set(exclude)) == set(exclude):
             df = df.drop(exclude, axis=1)
 
         # Optional: Remove 4 applications with XNA CODE_GENDER (train set)
@@ -241,21 +278,29 @@ class DNNTorch(BaseModel):
         self._model = self._model.to(device)
         criterion = F.nll_loss
         optimizer = torch.optim.SGD(self._model.parameters(),
-                                    lr=self.learning_rate, momentum=0.9)
+                                    lr=self._knobs.get("learning_rate"),
+                                    momentum=0.9)
 
         # prepare train/valid dataset
         cat_list = [n for n in self._encoding_dict]
-        x_train, x_valid, y_train, y_valid = train_test_split(df_train, y,
-                                    test_size=0.2, random_state=23, stratify=y)
+        x_train, x_valid, y_train, y_valid = train_test_split(df_train,
+                                                              y,
+                                                              test_size=0.2,
+                                                              random_state=23,
+                                                              stratify=y)
         tarin_loader = DataLoader(HomeCreditData(x_train, y_train, cat_list),
-                                  batch_size=1000, num_workers=0, shuffle=True)
+                                  batch_size=1000,
+                                  num_workers=0,
+                                  shuffle=True)
         valid_loader = DataLoader(HomeCreditData(x_valid, y_valid, cat_list),
-                                  batch_size=5000, num_workers=0, shuffle=True)
+                                  batch_size=5000,
+                                  num_workers=0,
+                                  shuffle=True)
         del x_train, x_valid, y_train, y_valid, df_train, y
         gc.collect()
 
         # start training
-        for i in range(self.epoch):
+        for i in range(self._knobs.get("epoch")):
 
             train_losses = []
             valid_losses = []
@@ -264,7 +309,8 @@ class DNNTorch(BaseModel):
             # training progress
             self._model.train()
             for idx, (x_cat, x_cont, y) in enumerate(tarin_loader):
-                x_cat, x_cont, y = map(lambda x: x.to(device), [x_cat, x_cont, y])
+                x_cat, x_cont, y = map(lambda x: x.to(device),
+                                       [x_cat, x_cont, y])
 
                 optimizer.zero_grad()
                 output = self._model(x_cat, x_cont)
@@ -282,7 +328,8 @@ class DNNTorch(BaseModel):
             # validating progress
             self._model.eval()
             for idx, (x_cat, x_cont, y) in enumerate(valid_loader):
-                x_cat, x_cont, y = map(lambda x: x.to(device), [x_cat, x_cont, y])
+                x_cat, x_cont, y = map(lambda x: x.to(device),
+                                       [x_cat, x_cont, y])
 
                 with torch.no_grad():
                     output = self._model(x_cat, x_cont)
@@ -319,7 +366,9 @@ class DNNTorch(BaseModel):
         # prepare valid dataset
         cat_list = [n for n in self._encoding_dict]
         eval_loader = DataLoader(HomeCreditData(df_eval, y, cat_list),
-                                 batch_size=1000, num_workers=0, shuffle=False)
+                                 batch_size=1000,
+                                 num_workers=0,
+                                 shuffle=False)
         del df_eval, y
         gc.collect()
 
@@ -352,7 +401,9 @@ class DNNTorch(BaseModel):
         # prepare valid dataset
         cat_list = [n for n in self._encoding_dict]
         test_loader = DataLoader(HomeCreditData(df_test, y, cat_list),
-                                 batch_size=1000, num_workers=0, shuffle=False)
+                                 batch_size=1000,
+                                 num_workers=0,
+                                 shuffle=False)
         del df_test, y
         gc.collect()
 
@@ -389,8 +440,10 @@ class DNNTorch(BaseModel):
             self._nas, self._mapper
         ])
 
-        params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode('utf-8')
-        params['data_config_base64'] = base64.b64encode(data_config_bytes).decode('utf-8')
+        params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode(
+            'utf-8')
+        params['data_config_base64'] = base64.b64encode(
+            data_config_bytes).decode('utf-8')
 
         return params
 
@@ -440,20 +493,29 @@ class DNNTorch(BaseModel):
             df[name] = df[name].astype('category').cat.as_ordered()
             cat_codes = dict(enumerate(df[name].cat.categories))
             # make way for NaN (index:0)
-            encoding_dict[name] = {cat: code + 1 for code, cat in cat_codes.items()}
+            encoding_dict[name] = {
+                cat: code + 1 for code, cat in cat_codes.items()
+            }
         self._encoding_dict = encoding_dict
         return df
 
-    def _preprocessing(self,df):
+    def _preprocessing(self, df):
         # encoding, filling NaN and apply scaling on data
         nas = self._nas if hasattr(self, '_nas') else None
         mapper = self._mapper if hasattr(self, '_mapper') else None
-        df_numeric, _, nas, mapper = proc_df(df, do_scale=True, na_dict=nas, mapper=mapper)
+        df_numeric, _, nas, mapper = proc_df(df,
+                                             do_scale=True,
+                                             na_dict=nas,
+                                             mapper=mapper)
 
         # trim extra NA flag columns
         mapper.features = [f for f in mapper.features if f[0][0][-3:] != '_na']
-        mapper.built_features = [f for f in mapper.built_features if f[0][0][-3:] != '_na']
-        mapper.transformed_names_ = [f for f in mapper.transformed_names_ if f[-3:] != '_na']
+        mapper.built_features = [
+            f for f in mapper.built_features if f[0][0][-3:] != '_na'
+        ]
+        mapper.transformed_names_ = [
+            f for f in mapper.transformed_names_ if f[-3:] != '_na'
+        ]
         df_numeric = df_numeric.iloc[:, :len(df.columns)]
 
         self._nas, self._mapper = nas, mapper

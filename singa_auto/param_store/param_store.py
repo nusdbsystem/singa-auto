@@ -24,7 +24,8 @@ import numpy as np
 from singa_auto.model import Params
 
 
-class InvalidParamsFormatError(Exception): pass
+class InvalidParamsFormatError(Exception):
+    pass
 
 
 PARAM_DATA_TYPE_SEPARATOR = '//'
@@ -72,7 +73,7 @@ def _simplify_params(params):
         assert isinstance(params, dict)
         for (name, value) in params.items():
             assert isinstance(name, str)
-            assert PARAM_DATA_TYPE_SEPARATOR not in name # Internally used as separator for types
+            assert PARAM_DATA_TYPE_SEPARATOR not in name  # Internally used as separator for types
 
             # If value is a numpy array, prefix it with type
             # Otherwise, it must be one of the basic types

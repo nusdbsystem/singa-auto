@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 REDIS_NAMESPACE = 'TRAIN'
 
+
 class TrainCache(object):
     '''
     Caches proposals and trial results to facilitate communication between advisor & train workers.
@@ -35,7 +36,6 @@ class TrainCache(object):
 
     :param str session_id: Associated session ID
     '''
-
     '''
         Internally, organises data into these Redis namespaces:
 
@@ -44,10 +44,7 @@ class TrainCache(object):
         workers                       | Set of IDs of workers that are free
     '''
 
-    def __init__(self,
-                session_id='local',
-                redis_host=None,
-                redis_port=None):
+    def __init__(self, session_id='local', redis_host=None, redis_port=None):
         redis_namespace = f'{REDIS_NAMESPACE}:{session_id}'
         self._redis = RedisSession(redis_namespace, redis_host, redis_port)
 
@@ -81,7 +78,8 @@ class TrainCache(object):
     def create_proposal(self, worker_id: str, proposal: Proposal):
         name = f'workers:{worker_id}:proposal'
         assert self._redis.get(name) is None
-        logger.info(f'Creating proposal "{proposal}" for worker "{worker_id}"...')
+        logger.info(
+            f'Creating proposal "{proposal}" for worker "{worker_id}"...')
         self._redis.set(name, proposal.to_jsonable())
 
     def clear_all(self):
@@ -109,4 +107,3 @@ class TrainCache(object):
         assert self._redis.get(name) is None
         logger.info(f'Creating result "{result}" for worker "{worker_id}"...')
         self._redis.set(name, result.to_jsonable())
-

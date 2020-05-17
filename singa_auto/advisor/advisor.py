@@ -31,15 +31,21 @@ from .constants import AdvisorType, Proposal, TrialResult
 DEFAULT_TRAIN_HOURS = 0.1
 DEFAULT_MAX_TRIALS = -1
 
-class UnsupportedKnobConfigError(Exception): pass
-class UnsupportedKnobError(Exception): pass
+
+class UnsupportedKnobConfigError(Exception):
+    pass
+
+
+class UnsupportedKnobError(Exception):
+    pass
+
 
 # Advisor to use, in descending priority
-ADVISOR_TYPES = [AdvisorType.FIXED,
-                AdvisorType.BAYES_OPT_WITH_PARAM_SHARING,
-                AdvisorType.BAYES_OPT,
-                AdvisorType.ENAS,
-                AdvisorType.RANDOM]
+ADVISOR_TYPES = [
+    AdvisorType.FIXED, AdvisorType.BAYES_OPT_WITH_PARAM_SHARING,
+    AdvisorType.BAYES_OPT, AdvisorType.ENAS, AdvisorType.RANDOM
+]
+
 
 def make_advisor(knob_config: KnobConfig, budget: Budget):
     for advisor_type in ADVISOR_TYPES:
@@ -48,6 +54,7 @@ def make_advisor(knob_config: KnobConfig, budget: Budget):
             return clazz(knob_config, budget)
 
     raise UnsupportedKnobConfigError()
+
 
 def _get_advisor_class_from_type(advisor_type):
     if advisor_type == AdvisorType.ENAS:
@@ -69,6 +76,7 @@ class BaseAdvisor(abc.ABC):
     '''
     Base advisor class
     '''
+
     @staticmethod
     @abc.abstractmethod
     def is_compatible(knob_config: KnobConfig, budget: Budget) -> bool:
@@ -76,12 +84,15 @@ class BaseAdvisor(abc.ABC):
 
     def __init__(self, knob_config: KnobConfig, budget: BudgetOption):
         self.knob_config = knob_config
-        self.total_train_hours = float(budget.get(BudgetOption.TIME_HOURS, DEFAULT_TRAIN_HOURS))
-        self.max_trials = budget.get(BudgetOption.MODEL_TRIAL_COUNT, DEFAULT_MAX_TRIALS)
+        self.total_train_hours = float(
+            budget.get(BudgetOption.TIME_HOURS, DEFAULT_TRAIN_HOURS))
+        self.max_trials = budget.get(BudgetOption.MODEL_TRIAL_COUNT,
+                                     DEFAULT_MAX_TRIALS)
 
         # Keep track of time budget
         self._start_time = datetime.now()
-        self._stop_time = self._start_time + timedelta(hours=self.total_train_hours)
+        self._stop_time = self._start_time + timedelta(
+            hours=self.total_train_hours)
 
     @abc.abstractmethod
     def propose(self, worker_id: str, trial_no: int) -> Union[Proposal, None]:
@@ -114,7 +125,11 @@ class BaseAdvisor(abc.ABC):
     # Helps detect presence of policies in knob config
     @staticmethod
     def has_policies(knob_config: KnobConfig, policies: List[str]):
-        avail_policies = [x.policy for (name, x) in knob_config.items() if isinstance(x, PolicyKnob)]
+        avail_policies = [
+            x.policy
+            for (name, x) in knob_config.items()
+            if isinstance(x, PolicyKnob)
+        ]
         for policy in policies:
             if policy not in avail_policies:
                 return False
@@ -123,7 +138,8 @@ class BaseAdvisor(abc.ABC):
 
     # Helps detect presence of knob types in knob config
     @staticmethod
-    def has_only_knob_types(knob_config: KnobConfig, knob_types: List[Type[BaseKnob]]):
+    def has_only_knob_types(knob_config: KnobConfig,
+                            knob_types: List[Type[BaseKnob]]):
         for (name, knob) in knob_config.items():
             if not isinstance(knob, tuple(knob_types)):
                 return False
@@ -133,20 +149,34 @@ class BaseAdvisor(abc.ABC):
     # Helps extraction of a certain type of knob from knob config
     @staticmethod
     def extract_knob_type(knob_config, knob_type):
-        sub_knob_config = {name: knob for (name, knob) in knob_config.items() if isinstance(knob, knob_type)}
-        knob_config = {name: knob for (name, knob) in knob_config.items() if not isinstance(knob, knob_type)}
+        sub_knob_config = {
+            name: knob
+            for (name, knob) in knob_config.items()
+            if isinstance(knob, knob_type)
+        }
+        knob_config = {
+            name: knob
+            for (name, knob) in knob_config.items()
+            if not isinstance(knob, knob_type)
+        }
         return (sub_knob_config, knob_config)
 
     # Merge fixed knobs into `knobs`
     @staticmethod
     def merge_fixed_knobs(knobs, fixed_knob_config):
-        return {**knobs, **{name: x.value.value for (name, x) in fixed_knob_config.items()}}
+        return {
+            **knobs,
+            **{name: x.value.value for (name, x) in fixed_knob_config.items()}
+        }
 
     # Merge policy knobs into `knobs`, activating `policies`
     @staticmethod
     def merge_policy_knobs(knobs, policy_knob_config, policies):
         policies = policies or []
-        policy_knobs = {name: (True if x.policy in policies else False) for (name, x) in policy_knob_config.items()}
+        policy_knobs = {
+            name: (True if x.policy in policies else False)
+            for (name, x) in policy_knob_config.items()
+        }
         return {**knobs, **policy_knobs}
 
 
@@ -154,17 +184,21 @@ class FixedAdvisor(BaseAdvisor):
     '''
     Advisor that runs a single trial
     '''
+
     @staticmethod
     def is_compatible(knob_config, budget):
         # Must only have fixed & policy knobs
-        return BaseAdvisor.has_only_knob_types(knob_config, [FixedKnob, PolicyKnob])
+        return BaseAdvisor.has_only_knob_types(knob_config,
+                                               [FixedKnob, PolicyKnob])
 
     def propose(self, worker_id, trial_no):
         if trial_no > 1:
             return None
 
         # Propose fixed knob values
-        knobs = {name: knob.value.value for (name, knob) in self.knob_config.items()}
+        knobs = {
+            name: knob.value.value for (name, knob) in self.knob_config.items()
+        }
 
         proposal = Proposal(trial_no, knobs)
         return proposal
@@ -178,6 +212,7 @@ class RandomAdvisor(BaseAdvisor):
     '''
     Advisor that uniformly randomly chooses knobs.
     '''
+
     @staticmethod
     def is_compatible(knob_config, budget):
         # Compatible with all knobs
@@ -195,8 +230,7 @@ class RandomAdvisor(BaseAdvisor):
         # Randomly propose knobs
         knobs = {
             name: self._propose_knob(knob)
-            for (name, knob)
-            in self.knob_config.items()
+            for (name, knob) in self.knob_config.items()
         }
 
         proposal = Proposal(trial_no, knobs)
@@ -208,7 +242,8 @@ class RandomAdvisor(BaseAdvisor):
             return knob.value_min + u * (knob.value_max - knob.value_min)
         elif isinstance(knob, IntegerKnob):
             u = random.uniform(0, 1)
-            return knob.value_min + int(u * (knob.value_max - knob.value_min + 1))
+            return knob.value_min + int(u *
+                                        (knob.value_max - knob.value_min + 1))
         elif isinstance(knob, CategoricalKnob):
             u = random.uniform(0, 1)
             i = int(u * len(knob.values))

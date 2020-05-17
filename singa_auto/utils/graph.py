@@ -20,7 +20,8 @@
 from copy import deepcopy
 
 
-class InvalidDAGException(Exception): pass
+class InvalidDAGException(Exception):
+    pass
 
 
 def build_dag(sub_train_jobs, ensemble):
@@ -35,7 +36,10 @@ def build_dag(sub_train_jobs, ensemble):
         if ensemble_sub_train_job is not None and sub_train_job.id == ensemble_sub_train_job.id:
             adjacency_list[ensemble_sub_train_job.id] = []
         else:
-            adjacency_list[sub_train_job.id] = [] if ensemble_sub_train_job is None else [ensemble_sub_train_job.id]
+            adjacency_list[
+                sub_train_job.id] = [] if ensemble_sub_train_job is None else [
+                    ensemble_sub_train_job.id
+                ]
     return adjacency_list
 
 
@@ -80,8 +84,8 @@ def _get_topological_order(adjacency_list):
         for node in get_nodes_with_zero_incoming_degrees(adjacency_list):
             if node not in queue:
                 queue.append(node)
-    
+
     if adjacency_list:
         raise InvalidDAGException
     else:
-        return topological_order  
+        return topological_order

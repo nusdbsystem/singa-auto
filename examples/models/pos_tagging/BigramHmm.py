@@ -23,14 +23,17 @@ import json
 from singa_auto.model import BaseModel, utils, FixedKnob
 from singa_auto.model.dev import test_model_class
 
+
 class BigramHmm(BaseModel):
     '''
     Implements Bigram Hidden Markov Model (HMM) for POS tagging
     '''
+
     @staticmethod
     def get_knob_config():
         return {
-            'min_value': FixedKnob(-9999999999) # Min numeric value
+            'min_value':
+                FixedKnob(-9999999999)  # Min numeric value
         }
 
     def __init__(self, **knobs):
@@ -41,19 +44,24 @@ class BigramHmm(BaseModel):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         (sents_tokens, sents_tags) = zip(*[zip(*sent) for sent in dataset])
         self._num_tags = dataset.tag_num_classes[0]
-        (self._trans_probs, self._emiss_probs) = self._compute_probs(self._num_tags, sents_tokens, sents_tags)
+        (self._trans_probs,
+         self._emiss_probs) = self._compute_probs(self._num_tags, sents_tokens,
+                                                  sents_tags)
         utils.logger.log('No. of tags: {}'.format(self._num_tags))
 
     def evaluate(self, dataset_path):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         (sents_tokens, sents_tags) = zip(*[zip(*sent) for sent in dataset])
-        (sents_pred_tags) = self._tag_sents(self._num_tags, sents_tokens, self._trans_probs, self._emiss_probs)
+        (sents_pred_tags) = self._tag_sents(self._num_tags, sents_tokens,
+                                            self._trans_probs,
+                                            self._emiss_probs)
         acc = self._compute_accuracy(sents_tags, sents_pred_tags)
         return acc
 
     def predict(self, queries):
         sents_tokens = queries
-        (sents_tags) = self._tag_sents(self._num_tags, sents_tokens, self._trans_probs, self._emiss_probs)
+        (sents_tags) = self._tag_sents(self._num_tags, sents_tokens,
+                                       self._trans_probs, self._emiss_probs)
         return sents_tags
 
     def dump_parameters(self):
@@ -75,16 +83,17 @@ class BigramHmm(BaseModel):
         for (tags, pred_tags) in zip(sents_tags, sents_pred_tags):
             for (tag, pred_tag) in zip(tags, pred_tags):
                 total += 1
-                if tag == pred_tag: correct += 1
+                if tag == pred_tag:
+                    correct += 1
 
         return correct / total
 
     def _compute_probs(self, num_tags, sents_tokens, sents_tags):
 
         # Total number of states in HMM as tags
-        T = num_tags + 2 # Last 2 for START & END tags
-        START = num_tags # <s>
-        END = num_tags + 1 # </s>
+        T = num_tags + 2  # Last 2 for START & END tags
+        START = num_tags  # <s>
+        END = num_tags + 1  # </s>
 
         # Unigram (tag i) counts
         uni_counts = [0 for i in range(T)]
@@ -125,7 +134,8 @@ class BigramHmm(BaseModel):
                 if bi_counts[i][j] == 0:
                     trans_probs[i][j] = self._min_value
                 else:
-                    trans_probs[i][j] = math.log(bi_counts[i][j] / uni_counts[i])
+                    trans_probs[i][j] = math.log(bi_counts[i][j] /
+                                                 uni_counts[i])
 
         # Emission function as (tag i, word w) -> <log prob of emitting word w at state i>
         emiss_probs = [{} for i in range(T)]
@@ -138,9 +148,9 @@ class BigramHmm(BaseModel):
     def _tag_sents(self, num_tags, sents_tokens, trans_probs, emiss_probs):
         sents_tags = []
 
-        T = num_tags + 2 # Last 2 for START & END tags
-        START = num_tags # <s>
-        END = num_tags + 1 # </s>
+        T = num_tags + 2  # Last 2 for START & END tags
+        START = num_tags  # <s>
+        END = num_tags + 1  # </s>
 
         for tokens in sents_tokens:
             if len(tokens) == 0:
@@ -196,17 +206,17 @@ class BigramHmm(BaseModel):
 
         return sents_tags
 
-if __name__ == '__main__':
-    test_model_class(
-        model_file_path=__file__,
-        model_class='BigramHmm',
-        task='POS_TAGGING',
-        dependencies={},
-        train_dataset_path='data/ptb_train.zip',
-        val_dataset_path='data/ptb_val.zip',
-        queries=[
-            ['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
-            ['The', 'luxury', 'auto', 'maker', 'last', 'year', 'sold', '1,214', 'cars', 'in', 'the', 'U.S.']
-        ]
-    )
 
+if __name__ == '__main__':
+    test_model_class(model_file_path=__file__,
+                     model_class='BigramHmm',
+                     task='POS_TAGGING',
+                     dependencies={},
+                     train_dataset_path='data/ptb_train.zip',
+                     val_dataset_path='data/ptb_val.zip',
+                     queries=[['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
+                              [
+                                  'The', 'luxury', 'auto', 'maker', 'last',
+                                  'year', 'sold', '1,214', 'cars', 'in', 'the',
+                                  'U.S.'
+                              ]])

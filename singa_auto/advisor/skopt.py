@@ -28,28 +28,36 @@ from singa_auto.model import CategoricalKnob, FixedKnob, IntegerKnob, FloatKnob,
 from .constants import ParamsType, Proposal
 from .advisor import BaseAdvisor, UnsupportedKnobError
 
-FINAL_TRAIN_HOURS = 1 # No. of hours to conduct final train trials
+FINAL_TRAIN_HOURS = 1  # No. of hours to conduct final train trials
+
 
 class BayesOptAdvisor(BaseAdvisor):
     '''
         Performs standard hyperparameter tuning of models using Bayesian Optimization with Gaussian Processes.
     '''
+
     @staticmethod
     def is_compatible(knob_config, budget):
         # Supports only CategoricalKnob, FixedKnob, IntegerKnob & FloatKnob
-        return BaseAdvisor.has_only_knob_types(knob_config, [CategoricalKnob, FixedKnob, IntegerKnob, FloatKnob, PolicyKnob])
+        return BaseAdvisor.has_only_knob_types(
+            knob_config,
+            [CategoricalKnob, FixedKnob, IntegerKnob, FloatKnob, PolicyKnob])
 
     def __init__(self, knob_config, budget):
         super().__init__(knob_config, budget)
-        (self._fixed_knob_config, knob_config) = self.extract_knob_type(knob_config, FixedKnob)
-        (self._policy_knob_config, knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
+        (self._fixed_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, FixedKnob)
+        (self._policy_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
         self._dimensions = self._get_dimensions(knob_config)
         self._optimizer = self._make_optimizer(self._dimensions)
         self._search_results: (float, Proposal) = []
 
         # Prefer having certain policies
         if not self.has_policies(self.knob_config, ['EARLY_STOP']):
-            print('To speed up hyperparameter search with Bayesian Optimization, having `EARLY_STOP` policy is preferred.')
+            print(
+                'To speed up hyperparameter search with Bayesian Optimization, having `EARLY_STOP` policy is preferred.'
+            )
 
     def propose(self, worker_id, trial_no):
         proposal_type = self._get_proposal_type(trial_no)
@@ -81,18 +89,13 @@ class BayesOptAdvisor(BaseAdvisor):
 
     def _make_optimizer(self, dimensions):
         n_initial_points = 10
-        return Optimizer(
-            list(dimensions.values()),
-            n_initial_points=n_initial_points,
-            base_estimator='gp'
-        )
+        return Optimizer(list(dimensions.values()),
+                         n_initial_points=n_initial_points,
+                         base_estimator='gp')
 
     def _get_dimensions(self, knob_config):
-        dimensions = OrderedDict({
-            name: _knob_to_dimension(x)
-                for (name, x)
-                in knob_config.items()
-        })
+        dimensions = OrderedDict(
+            {name: _knob_to_dimension(x) for (name, x) in knob_config.items()})
         return dimensions
 
     def _propose_knobs(self, policies=None):
@@ -100,13 +103,13 @@ class BayesOptAdvisor(BaseAdvisor):
         point = self._optimizer.ask()
         knobs = {
             name: _simplify_value(value)
-            for (name, value)
-            in zip(self._dimensions.keys(), point)
+            for (name, value) in zip(self._dimensions.keys(), point)
         }
 
         # Add fixed & policy knobs
         knobs = self.merge_fixed_knobs(knobs, self._fixed_knob_config)
-        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config, policies or [])
+        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config,
+                                        policies or [])
 
         return knobs
 
@@ -122,7 +125,8 @@ class BayesOptAdvisor(BaseAdvisor):
         knobs = proposal.knobs
 
         # Add policy knobs
-        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config, policies or [])
+        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config,
+                                        policies or [])
 
         return knobs
 
@@ -147,11 +151,13 @@ class BayesOptAdvisor(BaseAdvisor):
         else:
             return 'SEARCH'
 
+
 class BayesOptWithParamSharingAdvisor(BaseAdvisor):
     '''
         Performs hyperparameter tuning of models using Bayesian Optimization with Gaussian Processes,
         sharing globally best-scoring parameters in a greedy way.
     '''
+
     @staticmethod
     def is_compatible(knob_config, budget):
         # Supports only CategoricalKnob, FixedKnob, IntegerKnob & FloatKnob, and must have param sharing
@@ -160,14 +166,18 @@ class BayesOptWithParamSharingAdvisor(BaseAdvisor):
 
     def __init__(self, knob_config, budget):
         super().__init__(knob_config, budget)
-        (self._fixed_knob_config, knob_config) = self.extract_knob_type(knob_config, FixedKnob)
-        (self._policy_knob_config, knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
+        (self._fixed_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, FixedKnob)
+        (self._policy_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
         self._dimensions = self._get_dimensions(knob_config)
         self._optimizer = self._make_optimizer(self._dimensions)
 
         # Prefer having certain policies
         if not self.has_policies(self.knob_config, ['EARLY_STOP']):
-            print('To speed up hyperparameter search with Bayesian Optimization, having `EARLY_STOP` policy is preferred.')
+            print(
+                'To speed up hyperparameter search with Bayesian Optimization, having `EARLY_STOP` policy is preferred.'
+            )
 
     def propose(self, worker_id, trial_no):
         proposal_type = self._get_proposal_type(trial_no)
@@ -187,23 +197,18 @@ class BayesOptWithParamSharingAdvisor(BaseAdvisor):
         if score is None:
             return
 
-        point = [ knobs[name] for name in self._dimensions.keys() ]
+        point = [knobs[name] for name in self._dimensions.keys()]
         self._optimizer.tell(point, -score)
 
     def _make_optimizer(self, dimensions):
         n_initial_points = 10
-        return Optimizer(
-            list(dimensions.values()),
-            n_initial_points=n_initial_points,
-            base_estimator='gp'
-        )
+        return Optimizer(list(dimensions.values()),
+                         n_initial_points=n_initial_points,
+                         base_estimator='gp')
 
     def _get_dimensions(self, knob_config):
-        dimensions = OrderedDict({
-            name: _knob_to_dimension(x)
-                for (name, x)
-                in knob_config.items()
-        })
+        dimensions = OrderedDict(
+            {name: _knob_to_dimension(x) for (name, x) in knob_config.items()})
         return dimensions
 
     def _propose_knobs(self, policies=None):
@@ -211,13 +216,13 @@ class BayesOptWithParamSharingAdvisor(BaseAdvisor):
         point = self._optimizer.ask()
         knobs = {
             name: _simplify_value(value)
-            for (name, value)
-            in zip(self._dimensions.keys(), point)
+            for (name, value) in zip(self._dimensions.keys(), point)
         }
 
         # Add fixed & policy knobs
         knobs = self.merge_fixed_knobs(knobs, self._fixed_knob_config)
-        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config, policies or [])
+        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config,
+                                        policies or [])
 
         return knobs
 
@@ -238,13 +243,15 @@ class BayesOptWithParamSharingAdvisor(BaseAdvisor):
         # Keep conducting search trials
         return 'SEARCH'
 
+
 def _propose_exp_greedy_param(t, t_div):
-    e = math.exp(-4 * t / t_div) # e ^ (-4x) => 1 -> 0 exponential decay
+    e = math.exp(-4 * t / t_div)  # e ^ (-4x) => 1 -> 0 exponential decay
     # No params with decreasing probability
     if np.random.random() < e:
         return ParamsType.NONE
     else:
         return ParamsType.GLOBAL_BEST
+
 
 def _knob_to_dimension(knob):
     if isinstance(knob, CategoricalKnob):
@@ -261,6 +268,7 @@ def _knob_to_dimension(knob):
             return Real(knob.value_min, knob.value_max, 'uniform')
     else:
         raise UnsupportedKnobError(knob.__class__)
+
 
 def _simplify_value(value):
     if isinstance(value, (np.int64)):

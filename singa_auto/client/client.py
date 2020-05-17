@@ -29,7 +29,8 @@ from singa_auto.constants import ModelAccessRight, ModelDependencies, Budget, Bu
 from singa_auto.model import Params, BaseModel
 
 
-class SingaAutoConnectionError(ConnectionError): pass
+class SingaAutoConnectionError(ConnectionError):
+    pass
 
 
 DOCS_URL = 'https://nginyc.github.io/rafiki/docs/latest/docs/src/python/rafiki.client.Client.html'
@@ -37,6 +38,7 @@ DOCS_URL = 'https://nginyc.github.io/rafiki/docs/latest/docs/src/python/rafiki.c
 
 # Returns a decorator that warns user about the method being deprecated
 def _deprecated(msg=None):
+
     def deco(func):
         nonlocal msg
         msg = msg or f'`{func.__name__}` has been deprecated.'
@@ -48,11 +50,11 @@ def _deprecated(msg=None):
             return func(*args, **kwargs)
 
         return deprecated_func
+
     return deco
 
 
 class Client:
-
     '''
     Initializes the Client to connect to a running
     SINGA-Auto Admin instance that the Client connects to.
@@ -60,8 +62,11 @@ class Client:
     :param admin_host: Host of SINGA-Auto Admin
     :param admin_port: Port of SINGA-Auto Admin
     '''
-    def __init__(self, admin_host: str = os.environ.get('SINGA_AUTO_ADDR', 'localhost'),
-                    admin_port: int = os.environ.get('ADMIN_EXT_PORT', 3000)):
+
+    def __init__(self,
+                 admin_host: str = os.environ.get('SINGA_AUTO_ADDR',
+                                                  'localhost'),
+                 admin_port: int = os.environ.get('ADMIN_EXT_PORT', 3000)):
         self._admin_host = admin_host
         self._admin_port = admin_port
         self._token = None
@@ -81,17 +86,15 @@ class Client:
 
         :returns: Logged-in user as dictionary
         '''
-        data = self._post('/tokens', json={
-            'email': email,
-            'password': password
-        })
+        data = self._post('/tokens',
+                          json={
+                              'email': email,
+                              'password': password
+                          })
         self._token = data['token']
 
         # Save user's data
-        self._user = {
-            'id': data['user_id'],
-            'user_type': data['user_type']
-        }
+        self._user = {'id': data['user_id'], 'user_type': data['user_type']}
 
         return self._user
 
@@ -114,7 +117,8 @@ class Client:
     # User
     ####################################
 
-    def create_user(self, email: str, password: str, user_type: UserType) -> Dict[str, Any]:
+    def create_user(self, email: str, password: str,
+                    user_type: UserType) -> Dict[str, Any]:
         '''
         Creates a SINGA-Auto user.
 
@@ -127,11 +131,12 @@ class Client:
 
         :returns: Created user as dictionary
         '''
-        data = self._post('/users', json={
-            'email': email,
-            'password': password,
-            'user_type': user_type
-        })
+        data = self._post('/users',
+                          json={
+                              'email': email,
+                              'password': password,
+                              'user_type': user_type
+                          })
         return data
 
     @_deprecated('`create_users` has been removed')
@@ -161,16 +166,18 @@ class Client:
 
         :returns: Banned user as dictionary
         '''
-        data = self._delete('/users', json={
-            'email': email
-        })
+        data = self._delete('/users', json={'email': email})
         return data
 
     ####################################
     # Datasets
     ####################################
 
-    def create_dataset(self, name: str, task: str, dataset_path: str = None, dataset_url: str = None) -> Dict[str, Any]:
+    def create_dataset(self,
+                       name: str,
+                       task: str,
+                       dataset_path: str = None,
+                       dataset_url: str = None) -> Dict[str, Any]:
         '''
         Creates a dataset on SINGA-Auto, either by uploading the dataset file from your filesystem or specifying a URL where the dataset file can be downloaded.
         The dataset should be in a format specified by the task
@@ -190,11 +197,17 @@ class Client:
         form_data = {'name': name, 'task': task, 'dataset_url': dataset_url}
 
         if dataset_path is not None:
-            dataset = {'dataset': ('dataset', open(dataset_path, 'rb'), 'application/zip')}
+            dataset = {
+                'dataset': ('dataset', open(dataset_path,
+                                            'rb'), 'application/zip')
+            }
         else:
-            print('Waiting for server finish downloading the dataset from URL...')
+            print(
+                'Waiting for server finish downloading the dataset from URL...')
 
-        data = self._post_stream(path='/datasets', files=dataset, form_data=form_data)
+        data = self._post_stream(path='/datasets',
+                                 files=dataset,
+                                 form_data=form_data)
 
         return data
 
@@ -205,18 +218,22 @@ class Client:
         :param task: Task name
         :returns: List of datasets as list of dictionaries
         '''
-        data = self._get('/datasets', params={
-            'task': task
-        })
+        data = self._get('/datasets', params={'task': task})
         return data
 
     ####################################
     # Models
     ####################################
 
-    def create_model(self, name: str, task: str, model_file_path: str, model_class: str,
-                     model_pretrained_params_id: str = None, dependencies: ModelDependencies = None,
-                     access_right: ModelAccessRight = ModelAccessRight.PRIVATE, docker_image: str = None) -> Dict[str, Any]:
+    def create_model(self,
+                     name: str,
+                     task: str,
+                     model_file_path: str,
+                     model_class: str,
+                     model_pretrained_params_id: str = None,
+                     dependencies: ModelDependencies = None,
+                     access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
+                     docker_image: str = None) -> Dict[str, Any]:
         '''
         Creates a model on SINGA-Auto.
 
@@ -247,7 +264,10 @@ class Client:
         Refer to :ref:`configuring-model-environment` to understand more about this option.
         '''
 
-        model_files = {'model_file_bytes': (model_file_path, open(model_file_path, 'rb'), 'application/octet-stream')}
+        model_files = {
+            'model_file_bytes': (model_file_path, open(model_file_path, 'rb'),
+                                 'application/octet-stream')
+        }
         pretrained_files = {}
 
         if model_pretrained_params_id is not None:
@@ -267,7 +287,9 @@ class Client:
             'access_right': access_right
         }
 
-        data = self._post_stream(path='/models', files=files, form_data=form_data)
+        data = self._post_stream(path='/models',
+                                 files=files,
+                                 form_data=form_data)
 
         return data
 
@@ -285,7 +307,8 @@ class Client:
         data = self._get('/models/{}'.format(model_id))
         return data
 
-    def download_model_file(self, model_id: str, out_model_file_path: str) -> Dict[str, any]:
+    def download_model_file(self, model_id: str,
+                            out_model_file_path: str) -> Dict[str, any]:
         '''
         Downloads the Python model class file for the SINGA-Auto model.
 
@@ -306,20 +329,27 @@ class Client:
         dependencies = data.get('dependencies')
         model_class = data.get('model_class')
 
-        print('Model file downloaded to "{}"!'.format(os.path.join(os.getcwd(), out_model_file_path)))
+        print('Model file downloaded to "{}"!'.format(
+            os.path.join(os.getcwd(), out_model_file_path)))
 
         if dependencies:
-            print('You\'ll need to install the following model dependencies locally: {}'.format(dependencies))
+            print(
+                'You\'ll need to install the following model dependencies locally: {}'
+                .format(dependencies))
 
         print('From the file, import the model class `{}`.'.format(model_class))
 
         return data
 
-    @_deprecated('`get_models` & `get_models_of_task` have been combined into `get_available_models`')
+    @_deprecated(
+        '`get_models` & `get_models_of_task` have been combined into `get_available_models`'
+    )
     def get_models(self, *args, **kwargs):
         pass
 
-    @_deprecated('`get_models` & `get_models_of_task` have been combined into `get_available_models`')
+    @_deprecated(
+        '`get_models` & `get_models_of_task` have been combined into `get_available_models`'
+    )
     def get_models_of_task(self, *args, **kwargs):
         pass
 
@@ -330,9 +360,7 @@ class Client:
         :param task: Task name
         :returns: Available models as list of dictionaries
         '''
-        data = self._get('/models/available', params={
-            'task': task
-        })
+        data = self._get('/models/available', params={'task': task})
         return data
 
     def delete_model(self, model_id: str) -> Dict[str, Any]:
@@ -351,8 +379,14 @@ class Client:
     # Train Jobs
     ####################################
 
-    def create_train_job(self, app: str, task: str, train_dataset_id: str, val_dataset_id: str,
-                         budget: Budget, models: List[str] = None, train_args: Dict[str, any] = None) -> Dict[str, Any]:
+    def create_train_job(self,
+                         app: str,
+                         task: str,
+                         train_dataset_id: str,
+                         val_dataset_id: str,
+                         budget: Budget,
+                         models: List[str] = None,
+                         train_args: Dict[str, any] = None) -> Dict[str, Any]:
         '''
         Creates and starts a train job on SINGA-Auto.
 
@@ -387,7 +421,9 @@ class Client:
         ``MODEL_TRIAL_COUNT``       Max no. of trials to conduct for each model (soft target). -1 for unlimited. Defaults to -1.
         =====================       =====================
         '''
-        _note('`create_train_job` now requires `models` as a list of model IDs instead of a list of model names')
+        _note(
+            '`create_train_job` now requires `models` as a list of model IDs instead of a list of model names'
+        )
 
         if 'ENABLE_GPU' in budget:
             _warn('The `ENABLE_GPU` option has been changed to `GPU_COUNT`')
@@ -431,9 +467,7 @@ class Client:
         :param user_id: ID of the user
         :returns: Train jobs as list of dictionaries
         '''
-        data = self._get('/train_jobs', params={
-            'user_id': user_id
-        })
+        data = self._get('/train_jobs', params={'user_id': user_id})
         return data
 
     def get_train_jobs_of_app(self, app: str) -> List[Dict[str, Any]]:
@@ -484,7 +518,11 @@ class Client:
         data = self._get('/trials/{}'.format(trial_id))
         return data
 
-    def get_best_trials_of_train_job(self, app: str, app_version: int = -1, max_count: int = 2) -> List[Dict[str, Any]]:
+    def get_best_trials_of_train_job(
+            self,
+            app: str,
+            app_version: int = -1,
+            max_count: int = 2) -> List[Dict[str, Any]]:
         '''
         Lists the best scoring trials of the current user's train job identified by an app and an app version,
         ordered by descending score.
@@ -494,13 +532,16 @@ class Client:
         :param max_count: Maximum number of trials to return
         :returns: Trials as list of dictionaries
         '''
-        data = self._get('/train_jobs/{}/{}/trials'.format(app, app_version), params={
-            'type': 'best',
-            'max_count': max_count
-        })
+        data = self._get('/train_jobs/{}/{}/trials'.format(app, app_version),
+                         params={
+                             'type': 'best',
+                             'max_count': max_count
+                         })
         return data
 
-    def get_trials_of_train_job(self, app: str, app_version: int = -1) -> List[Dict[str, Any]]:
+    def get_trials_of_train_job(self,
+                                app: str,
+                                app_version: int = -1) -> List[Dict[str, Any]]:
         '''
         Lists all trials of the current user's train job identified by an app and an app version,
         ordered by when the trial started.
@@ -533,7 +574,8 @@ class Client:
         parameters = pickle.loads(data)
         return parameters
 
-    def load_trial_model(self, trial_id: str, ModelClass: Type[BaseModel]) -> BaseModel:
+    def load_trial_model(self, trial_id: str,
+                         ModelClass: Type[BaseModel]) -> BaseModel:
         '''
         Loads an instance of a trial's model with the trial's knobs & parameters.
 
@@ -559,7 +601,10 @@ class Client:
     # Inference Jobs
     ####################################
 
-    def create_inference_job(self, app: str, app_version: int = -1, budget: InferenceBudget = None) -> Dict[str, Any]:
+    def create_inference_job(self,
+                             app: str,
+                             app_version: int = -1,
+                             budget: InferenceBudget = None) -> Dict[str, Any]:
         '''
         Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
@@ -588,16 +633,14 @@ class Client:
         '''
 
         # Have defaults for budget
-        budget = {
-            InferenceBudgetOption.GPU_COUNT: 0,
-            **(budget or {})
-        }
+        budget = {InferenceBudgetOption.GPU_COUNT: 0, **(budget or {})}
 
-        data = self._post('/inference_jobs', json={
-            'app': app,
-            'app_version': app_version,
-            'budget': budget
-        })
+        data = self._post('/inference_jobs',
+                          json={
+                              'app': app,
+                              'app_version': app_version,
+                              'budget': budget
+                          })
         return data
 
     def create_inference_job_by_checkpoint(self, model_name: str, budget: InferenceBudget = None) -> Dict[str, Any]:
@@ -647,9 +690,7 @@ class Client:
         :param user_id: ID of the user
         :returns: Inference jobs as list of dictionaries
         '''
-        data = self._get('/inference_jobs', params={
-            'user_id': user_id
-        })
+        data = self._get('/inference_jobs', params={'user_id': user_id})
         return data
 
     def get_inference_jobs_of_app(self, app: str) -> List[Dict[str, Any]]:
@@ -662,7 +703,9 @@ class Client:
         data = self._get('/inference_jobs/{}'.format(app))
         return data
 
-    def get_running_inference_job(self, app: str, app_version: int = -1) -> Dict[str, Any]:
+    def get_running_inference_job(self,
+                                  app: str,
+                                  app_version: int = -1) -> Dict[str, Any]:
         '''
         Retrieves details of the *running* inference job identified by an app and an app version,
         including workers' details.
@@ -674,7 +717,9 @@ class Client:
         data = self._get('/inference_jobs/{}/{}'.format(app, app_version))
         return data
 
-    def stop_inference_job(self, app: str, app_version: int = -1) -> Dict[str, Any]:
+    def stop_inference_job(self,
+                           app: str,
+                           app_version: int = -1) -> Dict[str, Any]:
         '''
         Stops the inference job identified by an app and an app version.
 
@@ -715,24 +760,18 @@ class Client:
     def _get(self, path, params=None):
         url = self._make_url(path)
         headers = self._get_headers()
-        res = requests.get(
-            url,
-            headers=headers,
-            params=params or {}
-        )
+        res = requests.get(url, headers=headers, params=params or {})
         return self._parse_response(res)
 
     def _post(self, path, params=None, files=None, form_data=None, json=None):
         url = self._make_url(path)
         headers = self._get_headers()
-        res = requests.post(
-            url,
-            headers=headers,
-            params=params or {},
-            data=form_data,
-            json=json,
-            files=files or {}
-        )
+        res = requests.post(url,
+                            headers=headers,
+                            params=params or {},
+                            data=form_data,
+                            json=json,
+                            files=files or {})
         return self._parse_response(res)
 
     def _post_stream(self, path, files=None, form_data=None):
@@ -740,25 +779,36 @@ class Client:
 
         def my_callback(monitor):
             progress = (monitor.bytes_read / monitor.len) * 100
-            print("\r uploading...：%d%%(%d/%d)" % (progress, monitor.bytes_read, monitor.len), end=" ")
+            print("\r uploading...：%d%%(%d/%d)" %
+                  (progress, monitor.bytes_read, monitor.len),
+                  end=" ")
 
         url = self._make_url(path)
         headers = self._get_headers()
-        m = MultipartEncoderMonitor(MultipartEncoder(fields={**files, **form_data}), my_callback)
-        res = requests.post(url, data=m, headers={**{'Content-Type': m.content_type}, **headers})
+        m = MultipartEncoderMonitor(
+            MultipartEncoder(fields={
+                **files,
+                **form_data
+            }), my_callback)
+        res = requests.post(url,
+                            data=m,
+                            headers={
+                                **{
+                                    'Content-Type': m.content_type
+                                },
+                                **headers
+                            })
         return self._parse_response(res)
 
     def _delete(self, path, params=None, files=None, form_data=None, json=None):
         url = self._make_url(path)
         headers = self._get_headers()
-        res = requests.delete(
-            url,
-            headers=headers,
-            params=params or {},
-            data=form_data or {},
-            json=json,
-            files=files
-        )
+        res = requests.delete(url,
+                              headers=headers,
+                              params=params or {},
+                              data=form_data or {},
+                              json=json,
+                              files=files)
         return self._parse_response(res)
 
     def _make_url(self, path):
@@ -775,18 +825,19 @@ class Client:
         elif content_type == 'application/octet-stream':
             return res.content
         else:
-            raise SingaAutoConnectionError('Invalid response content type: {}'.format(content_type))
+            raise SingaAutoConnectionError(
+                'Invalid response content type: {}'.format(content_type))
 
     def _get_headers(self):
         if self._token is not None:
-            return {
-                'Authorization': 'Bearer ' + self._token
-            }
+            return {'Authorization': 'Bearer ' + self._token}
         else:
             return {}
 
+
 def _warn(msg):
     print(f'\033[93mWARNING: {msg}\033[0m')
+
 
 def _note(msg):
     print(f'\033[94m{msg}\033[0m')

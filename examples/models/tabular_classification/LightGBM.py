@@ -17,7 +17,7 @@
 # under the License.
 #
 
-from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob,IntegerKnob,utils
+from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, IntegerKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -37,12 +37,12 @@ import pickle
 from urllib.parse import urlparse, parse_qs
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
 ''' 
     This model is desigined for Home Credit Default Risk `https://www.kaggle
     .com/c/home-credit-default-risk` and only uses the main table 
     'application_{train|test}.csv' of this competition as dataset.
 '''
+
 
 class LightGBM(BaseModel):
 
@@ -57,9 +57,15 @@ class LightGBM(BaseModel):
         }
 
     def __init__(self, **knobs):
+        self._knobs = knobs
         self.__dict__.update(knobs)
 
-    def train(self, dataset_url, features=None, target=None, exclude=None, **kwargs):
+    def train(self,
+              dataset_url,
+              features=None,
+              target=None,
+              exclude=None,
+              **kwargs):
         utils.logger.define_plot('Loss Over Epochs',
                                  ['loss', 'early_stop_val_loss'],
                                  x_axis='epoch')
@@ -68,7 +74,8 @@ class LightGBM(BaseModel):
         self._target = target
 
         df = pd.read_csv(dataset_url, index_col=0)
-        if exclude and set(df.columns.tolist()).intersection(set(exclude)) == set(exclude):
+        if exclude and set(df.columns.tolist()).intersection(
+                set(exclude)) == set(exclude):
             df = df.drop(exclude, axis=1)
 
         # Optional: Remove 4 applications with XNA CODE_GENDER (train set)
@@ -82,36 +89,44 @@ class LightGBM(BaseModel):
         df_train = self._preprocessing(X)
 
         # Cross validation model
-        folds = KFold(n_splits= 10, shuffle=True)
-        flag=0
+        folds = KFold(n_splits=10, shuffle=True)
+        flag = 0
         for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X, y)):
-            lgb_train = lgb.Dataset(X.iloc[train_idx], y.iloc[train_idx],)
-            lgb_valid = lgb.Dataset(X.iloc[valid_idx], y.iloc[valid_idx],)
+            lgb_train = lgb.Dataset(
+                X.iloc[train_idx],
+                y.iloc[train_idx],
+            )
+            lgb_valid = lgb.Dataset(
+                X.iloc[valid_idx],
+                y.iloc[valid_idx],
+            )
             params = {
                 'boosting_type': 'gbdt',
                 'objective': 'binary',
                 'metric': 'cross_entropy',
                 'nthread': 4,
                 'n_estimators': 10,
-                'learning_rate': self.learning_rate,
-                'num_leaves': self.num_leaves,
-                'colsample_bytree': self.colsample_bytree,
-                'subsample': self.subsample,
-                'max_depth': self.max_depth,
+                'learning_rate': self._knobs.get("learning_rate"),
+                'num_leaves': self._knobs.get("num_leaves"),
+                'colsample_bytree': self._knobs.get("colsample_bytree"),
+                'subsample': self._knobs.get("subsample"),
+                'max_depth': self._knobs.get("max_depth"),
                 'verbose': -1,
             }
 
-            abc={}
+            abc = {}
             self._model = lgb.train(params,
-                lgb_train,
-                num_boost_round=1000,
-                valid_sets=[lgb_train,lgb_valid],verbose_eval=100,callbacks=[lgb.record_evaluation(abc)])
+                                    lgb_train,
+                                    num_boost_round=1000,
+                                    valid_sets=[lgb_train, lgb_valid],
+                                    verbose_eval=100,
+                                    callbacks=[lgb.record_evaluation(abc)])
 
             utils.logger.log(
                 loss=abc['training']['cross_entropy'][-1],
                 early_stop_val_loss=abc['valid_1']['cross_entropy'][-1],
                 epoch=flag)
-            flag+=1
+            flag += 1
 
     def evaluate(self, dataset_url):
         df = pd.read_csv(dataset_url, index_col=0)
@@ -127,8 +142,8 @@ class LightGBM(BaseModel):
         df_train = self._preprocessing(X)
 
         # oof_preds = np.zeros(df.shape[0])
-        oof_preds=self._model.predict(X)
-        return roc_auc_score(y,oof_preds)
+        oof_preds = self._model.predict(X)
+        return roc_auc_score(y, oof_preds)
 
     def predict(self, queries):
         df = pd.DataFrame(queries)
@@ -140,7 +155,7 @@ class LightGBM(BaseModel):
         # other preprocessing
         df_train = self._preprocessing(X)
 
-        predictions=self._model.predict(X)
+        predictions = self._model.predict(X)
         predicts = []
         for prediction in predictions:
             predicts.append(prediction)
@@ -161,8 +176,10 @@ class LightGBM(BaseModel):
 
         data_config_bytes = pickle.dumps([self._features, self._target])
 
-        params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode('utf-8')
-        params['data_config_base64'] = base64.b64encode(data_config_bytes).decode('utf-8')
+        params['h5_model_base64'] = base64.b64encode(h5_model_bytes).decode(
+            'utf-8')
+        params['data_config_base64'] = base64.b64encode(
+            data_config_bytes).decode('utf-8')
 
         return params
 
@@ -180,7 +197,7 @@ class LightGBM(BaseModel):
             with open(tmp.name, 'wb') as f:
                 f.write(h5_model_bytes)
             # Load model from temp file
-            self._model =lgb.Booster(model_file=tmp.name)
+            self._model = lgb.Booster(model_file=tmp.name)
 
     def _extract_xy(self, data):
         if self._target is None:
@@ -205,9 +222,9 @@ class LightGBM(BaseModel):
                 df[col] = df[col].astype('category')
         return df
 
-    def _preprocessing(self,df):
+    def _preprocessing(self, df):
         # NaN values for DAYS_EMPLOYED: 365.243 -> nan
-        df['DAYS_EMPLOYED'].replace(365243, np.nan, inplace= True)
+        df['DAYS_EMPLOYED'].replace(365243, np.nan, inplace=True)
         # Some simple new features (percentages)
         df['DAYS_EMPLOYED_PERC'] = df['DAYS_EMPLOYED'] / df['DAYS_BIRTH']
         df['INCOME_CREDIT_PERC'] = df['AMT_INCOME_TOTAL'] / df['AMT_CREDIT']
@@ -234,7 +251,6 @@ if __name__ == '__main__':
 
     test_queries = pd.read_csv(test_set_url, index_col=0).iloc[:5]
     test_queries = json.loads(test_queries.to_json(orient='records'))
-
 
     test_model_class(
         model_file_path=__file__,

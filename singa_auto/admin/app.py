@@ -37,7 +37,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(dataset_bp, url_prefix='/datasets')
     app.register_blueprint(model_bp, url_prefix='/models')
-    app.register_blueprint(trainjob_bp,  url_prefix='/train_jobs')
+    app.register_blueprint(trainjob_bp, url_prefix='/train_jobs')
     app.register_blueprint(trial_bp)
     app.register_blueprint(inference_bp, url_prefix='/inference_jobs')
     app.register_blueprint(events_bp)

@@ -28,6 +28,7 @@ from singa_auto.constants import BudgetOption, ModelDependency
 from examples.scripts.utils import gen_id
 from examples.datasets.image_files.load_cifar10 import load_cifar10
 
+
 def run_enas(client, train_dataset_path, val_dataset_path, gpus, hours):
     '''
         Conducts training of model `TfEnas` on the CIFAR-10 dataset for IMAGE_CLASSIFICATION.
@@ -43,9 +44,11 @@ def run_enas(client, train_dataset_path, val_dataset_path, gpus, hours):
     load_cifar10(train_dataset_path, val_dataset_path)
 
     print('Creating & uploading datasets onto SINGA-Auto...')
-    train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
+    train_dataset = client.create_dataset('{}_train'.format(app), task,
+                                          train_dataset_path)
     pprint(train_dataset)
-    val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
+    val_dataset = client.create_dataset('{}_val'.format(app), task,
+                                        val_dataset_path)
     pprint(val_dataset)
 
     print('Creating model...')
@@ -54,28 +57,42 @@ def run_enas(client, train_dataset_path, val_dataset_path, gpus, hours):
         task='IMAGE_CLASSIFICATION',
         model_file_path='examples/models/image_classification/TfEnas.py',
         model_class='TfEnas',
-        dependencies={ModelDependency.TENSORFLOW: '1.12.0'}
-    )
+        dependencies={ModelDependency.TENSORFLOW: '1.12.0'})
     pprint(model)
 
     print('Creating train job...')
-    budget = {
-        BudgetOption.TIME_HOURS: hours,
-        BudgetOption.GPU_COUNT: gpus
-    }
-    train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'], budget, models=[model['id']])
+    budget = {BudgetOption.TIME_HOURS: hours, BudgetOption.GPU_COUNT: gpus}
+    train_job = client.create_train_job(app,
+                                        task,
+                                        train_dataset['id'],
+                                        val_dataset['id'],
+                                        budget,
+                                        models=[model['id']])
     pprint(train_job)
 
     print('Monitor the train job on SINGA-Auto Web Admin')
 
     # TODO: Evaluate on test dataset?
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
-    parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')
-    parser.add_argument('--gpus', type=int, default=0, help='How many GPUs to use')
-    parser.add_argument('--hours', type=float, default=24, help='How long the train job should run for (in hours)')
+    parser.add_argument('--email',
+                        type=str,
+                        default=SUPERADMIN_EMAIL,
+                        help='Email of user')
+    parser.add_argument('--password',
+                        type=str,
+                        default=os.environ.get('SUPERADMIN_PASSWORD'),
+                        help='Password of user')
+    parser.add_argument('--gpus',
+                        type=int,
+                        default=0,
+                        help='How many GPUs to use')
+    parser.add_argument('--hours',
+                        type=float,
+                        default=24,
+                        help='How long the train job should run for (in hours)')
     out_train_dataset_path = 'data/cifar10_train.zip'
     out_val_dataset_path = 'data/cifar10_val.zip'
     (args, _) = parser.parse_known_args()
@@ -84,4 +101,5 @@ if __name__ == '__main__':
     client = Client()
     client.login(email=args.email, password=args.password)
 
-    run_enas(client, out_train_dataset_path, out_val_dataset_path, args.gpus, args.hours)
+    run_enas(client, out_train_dataset_path, out_val_dataset_path, args.gpus,
+             args.hours)

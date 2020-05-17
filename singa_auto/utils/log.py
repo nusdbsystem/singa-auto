@@ -32,18 +32,13 @@ def configure_logging(process_name):
     %(asctime)s Human-readable time
     %(name)s Name of the logger used to log the call.
     """
-    logs_folder_path = os.path.join(
-        os.environ['WORKDIR_PATH'],
-        os.environ['LOGS_DIR_PATH']
-    )
+    logs_folder_path = os.path.join(os.environ['WORKDIR_PATH'],
+                                    os.environ['LOGS_DIR_PATH'])
     logging.basicConfig(
         # change the log level to DEBUG
         # for local development mode
         level=logging.DEBUG,
         format='%(asctime)s %(name)s %(levelname)s %(message)s',
         datefmt='%d-%b-%y %H:%M:%S',
-        filename='{}/process_name_{}.log'.format(
-            logs_folder_path,
-            process_name
-        )
-    )
+        filename='{}/process_name_{}.log'.format(logs_folder_path,
+                                                 process_name))

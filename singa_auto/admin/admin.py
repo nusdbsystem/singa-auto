@@ -38,31 +38,71 @@ from .services_manager import ServicesManager
 logger = logging.getLogger(__name__)
 
 
-class UserExistsError(Exception): pass
-class UserAlreadyBannedError(Exception): pass
-class InvalidUserError(Exception): pass
-class InvalidPasswordError(Exception): pass
-class InvalidRunningInferenceJobError(Exception): pass
-class InvalidModelError(Exception): pass
-class InvalidTrainJobError(Exception): pass
-class InvalidTrialError(Exception): pass
-class RunningInferenceJobExistsError(Exception): pass
-class NoModelsForTrainJobError(Exception): pass
-class InvalidDatasetError(Exception): pass
+class UserExistsError(Exception):
+    pass
+
+
+class UserAlreadyBannedError(Exception):
+    pass
+
+
+class InvalidUserError(Exception):
+    pass
+
+
+class InvalidPasswordError(Exception):
+    pass
+
+
+class InvalidRunningInferenceJobError(Exception):
+    pass
+
+
+class InvalidModelError(Exception):
+    pass
+
+
+class InvalidTrainJobError(Exception):
+    pass
+
+
+class InvalidTrialError(Exception):
+    pass
+
+
+class RunningInferenceJobExistsError(Exception):
+    pass
+
+
+class NoModelsForTrainJobError(Exception):
+    pass
+
+
+class InvalidDatasetError(Exception):
+    pass
 
 
 class Admin(object):
-    def __init__(self, meta_store=None, container_manager=None, data_store=None, param_store=None):
+
+    def __init__(self,
+                 meta_store=None,
+                 container_manager=None,
+                 data_store=None,
+                 param_store=None):
         self._meta_store = meta_store or MetaStore()
         if os.getenv('CONTAINER_MODE', 'SWARM') == 'SWARM':
-            container_manager = container_manager or DockerSwarmContainerManager()
+            container_manager = container_manager or DockerSwarmContainerManager(
+            )
         else:
-            container_manager = container_manager or KubernetesContainerManager()
+            container_manager = container_manager or KubernetesContainerManager(
+            )
         self._data_store: DataStore = data_store or FileDataStore()
         self._param_store: ParamStore = param_store or FileParamStore()
-        self._base_worker_image = '{}:{}'.format(os.environ['SINGA_AUTO_IMAGE_WORKER'],
-                                                 os.environ['SINGA_AUTO_VERSION'])
-        self._services_manager = ServicesManager(self._meta_store, container_manager)
+        self._base_worker_image = '{}:{}'.format(
+            os.environ['SINGA_AUTO_IMAGE_WORKER'],
+            os.environ['SINGA_AUTO_VERSION'])
+        self._services_manager = ServicesManager(self._meta_store,
+                                                 container_manager)
 
     def __enter__(self):
         self._meta_store.connect()
@@ -96,23 +136,16 @@ class Admin(object):
 
     def create_user(self, email, password, user_type):
         user = self._create_user(email, password, user_type)
-        return {
-            'id': user.id,
-            'email': user.email,
-            'user_type': user.user_type
-        }
+        return {'id': user.id, 'email': user.email, 'user_type': user.user_type}
 
     def get_users(self):
         users = self._meta_store.get_users()
-        return [
-            {
-                'id': user.id,
-                'email': user.email,
-                'user_type': user.user_type,
-                'banned_date': user.banned_date
-            }
-            for user in users
-        ]
+        return [{
+            'id': user.id,
+            'email': user.email,
+            'user_type': user.user_type,
+            'banned_date': user.banned_date
+        } for user in users]
 
     def get_user_by_email(self, email):
         user = self._meta_store.get_user_by_email(email)
@@ -154,23 +187,27 @@ class Admin(object):
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
         stat = dict()
-        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(data_file_path)[1] == '.zip':
+        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(
+                data_file_path)[1] == '.zip':
             dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
             if 'images.csv' in dataset_zipfile.namelist():
 
                 for fileName in dataset_zipfile.namelist():
                     if fileName.endswith('.csv'):
-                        num_samples = len(dataset_zipfile.namelist()) -1
+                        num_samples = len(dataset_zipfile.namelist()) - 1
                         # create tempdir to store unziped csv and a sample image
                         with tempfile.TemporaryDirectory() as dir_path:
                             # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
                             # obtain csv file
                             # Extract a single file from zip
-                            csv_path = dataset_zipfile.extract(fileName, path=dir_path)
+                            csv_path = dataset_zipfile.extract(fileName,
+                                                               path=dir_path)
                             # obtain a sample
-                            sample_name = pd.read_csv(csv_path,nrows=1).iloc[0][0]
+                            sample_name = pd.read_csv(csv_path,
+                                                      nrows=1).iloc[0][0]
                             if task == 'IMAGE_CLASSIFICATION':
-                                img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                                img_path = dataset_zipfile.extract(
+                                    sample_name, path=dir_path)
                                 img = Image.open(img_path)
                                 img_size = str(img.size)
                             # close dataset zipfile
@@ -181,8 +218,11 @@ class Admin(object):
                             if len(csv.columns) == 2:
                                 class_count = csv[csv.columns[1]].value_counts()
                             else:
-                                labels = pd.read_csv(csv_path, nrows=0).columns[1::].to_list()
-                                class_count = (csv[csv.columns[1::]] == 1).astype(int).sum(axis=0)
+                                labels = pd.read_csv(
+                                    csv_path, nrows=0).columns[1::].to_list()
+                                class_count = (
+                                    csv[csv.columns[1::]] == 1).astype(int).sum(
+                                        axis=0)
 
                         num_labeled_samples = len(csv[csv.columns[0]].unique())
                         ratio = class_count / num_labeled_samples
@@ -194,27 +234,43 @@ class Admin(object):
                     num_labeled_samples = len(dataset_zipfile.namelist())
                     num_unlabeled_samples = 0
 
-                    d_list = [x for x in dataset_zipfile.namelist() if x.endswith('/')==False]
+                    d_list = [
+                        x for x in dataset_zipfile.namelist()
+                        if x.endswith('/') == False
+                    ]
                     labels = [os.path.dirname(x) for x in d_list]
-                    class_count = pd.DataFrame( list(Counter(labels).values()), list(Counter(labels).keys()))
+                    class_count = pd.DataFrame(list(Counter(labels).values()),
+                                               list(Counter(labels).keys()))
 
                     ratio = class_count / num_labeled_samples
                     sample_name = d_list[0]
                     if task == 'IMAGE_CLASSIFICATION':
-                        img_path = dataset_zipfile.extract(sample_name, path=dir_path)
+                        img_path = dataset_zipfile.extract(sample_name,
+                                                           path=dir_path)
                         img = Image.open(img_path)
                         img_size = str(img.size)
 
             if task == 'IMAGE_CLASSIFICATION':
-                stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
-                        'class_count': class_count.to_json(), 'ratio': ratio.to_json(), 'img_size': img_size}
+                stat = {
+                    'num_labeled_samples': num_labeled_samples,
+                    'num_unlabeled_samples': num_unlabeled_samples,
+                    'class_count': class_count.to_json(),
+                    'ratio': ratio.to_json(),
+                    'img_size': img_size
+                }
             else:
-                stat = {'num_labeled_samples': num_labeled_samples, 'num_unlabeled_samples': num_unlabeled_samples,
-                        'class_count': class_count.to_json(), 'ratio': ratio.to_json()}
+                stat = {
+                    'num_labeled_samples': num_labeled_samples,
+                    'num_unlabeled_samples': num_unlabeled_samples,
+                    'class_count': class_count.to_json(),
+                    'ratio': ratio.to_json()
+                }
 
         print('begin saving to db')
 
-        dataset = self._meta_store.create_dataset(name, task, size_bytes, store_dataset_id, user_id, stat)
+        dataset = self._meta_store.create_dataset(name, task, size_bytes,
+                                                  store_dataset_id, user_id,
+                                                  stat)
         self._meta_store.commit()
 
         return {
@@ -222,8 +278,8 @@ class Admin(object):
             'name': dataset.name,
             'task': dataset.task,
             'size_bytes': dataset.size_bytes,
-            'store_dataset_id' : dataset.store_dataset_id,
-            'owner_id' : dataset.owner_id,
+            'store_dataset_id': dataset.store_dataset_id,
+            'owner_id': dataset.owner_id,
             'stat': dataset.stat,
         }
 
@@ -245,15 +301,15 @@ class Admin(object):
     def get_datasets(self, user_id, task=None):
         datasets = self._meta_store.get_datasets(user_id, task)
 
-        datasetdicts=[]
+        datasetdicts = []
         for x in datasets:
-            datasetdict={
+            datasetdict = {
                 'id': x.id,
                 'name': x.name,
                 'task': x.task,
                 'datetime_created': x.datetime_created,
                 'size_bytes': x.size_bytes,
-                'store_dataset_id' : x.store_dataset_id,
+                'store_dataset_id': x.store_dataset_id,
                 'stat': x.stat,
             }
             datasetdicts.append(datasetdict)
@@ -264,8 +320,15 @@ class Admin(object):
     # Train Job
     ####################################
 
-    def create_train_job(self, user_id, app, task, train_dataset_id,
-                        val_dataset_id, budget, model_ids=None, train_args=None):
+    def create_train_job(self,
+                         user_id,
+                         app,
+                         task,
+                         train_dataset_id,
+                         val_dataset_id,
+                         budget,
+                         model_ids=None,
+                         train_args=None):
         """
               Creates and starts a train job on SINGA-Auto.
 
@@ -308,8 +371,12 @@ class Admin(object):
 
         # Ensure there is no existing train job for app
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
-        if any([x.status in [TrainJobStatus.RUNNING, TrainJobStatus.STARTED] for x in train_jobs]):
-            raise InvalidTrainJobError('Another train job for app "{}" is still running!'.format(app))
+        if any([
+                x.status in [TrainJobStatus.RUNNING, TrainJobStatus.STARTED]
+                for x in train_jobs
+        ]):
+            raise InvalidTrainJobError(
+                'Another train job for app "{}" is still running!'.format(app))
 
         # Ensure at least 1 model
         if len(model_ids) == 0:
@@ -321,16 +388,21 @@ class Admin(object):
         app_version = max([x.app_version for x in train_jobs], default=0) + 1
 
         # Get models available to user
-        avail_model_ids = [x.id for x in self._meta_store.get_available_models(user_id, task)]
+        avail_model_ids = [
+            x.id for x in self._meta_store.get_available_models(user_id, task)
+        ]
 
         # Warn if there are no models for task
         if len(avail_model_ids) == 0:
-            raise InvalidModelError(f'No models are available for task "{task}"')
+            raise InvalidModelError(
+                f'No models are available for task "{task}"')
 
         # Ensure all specified models are available
         for model_id in model_ids:
             if model_id not in avail_model_ids:
-                raise InvalidModelError(f'model with ID "{model_id}" does not belong to the user "{user_id}" for task "{task}"')
+                raise InvalidModelError(
+                    f'model with ID "{model_id}" does not belong to the user "{user_id}" for task "{task}"'
+                )
 
         # Ensure that datasets are valid and of the correct task
         try:
@@ -352,15 +424,12 @@ class Admin(object):
             budget=budget,
             train_dataset_id=train_dataset_id,
             val_dataset_id=val_dataset_id,
-            train_args=train_args
-        )
+            train_args=train_args)
         self._meta_store.commit()
 
         for model_id in model_ids:
-            self._meta_store.create_sub_train_job(
-                train_job_id=train_job.id,
-                model_id=model_id
-            )
+            self._meta_store.create_sub_train_job(train_job_id=train_job.id,
+                                                  model_id=model_id)
 
         self._meta_store.commit()
 
@@ -373,7 +442,8 @@ class Admin(object):
         }
 
     def stop_train_job(self, user_id, app, app_version=-1):
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
 
@@ -388,16 +458,16 @@ class Admin(object):
     def stop_sub_train_job(self, sub_train_job_id):
         self._services_manager.stop_sub_train_job_services(sub_train_job_id)
 
-        return {
-            'id': sub_train_job_id
-        }
-    def get_train_job(self, user_id, app, app_version=-1): # by app ver
+        return {'id': sub_train_job_id}
+
+    def get_train_job(self, user_id, app, app_version=-1):  # by app ver
         """
         get_train_job() is called by:
         @app.route('/train_jobs/<app>/<app_version>',
         methods=['GET'])
         """
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
 
@@ -421,22 +491,19 @@ class Admin(object):
         GET /train_jobs/{app}
         """
         train_jobs = self._meta_store.get_train_jobs_by_app(user_id, app)
-        return [
-            {
-                'id': x.id,
-                'status': x.status,
-                'app': x.app,
-                'app_version': x.app_version,
-                'task': x.task,
-                'train_dataset_id': x.train_dataset_id,
-                'val_dataset_id': x.val_dataset_id,
-                'train_args': x.train_args,
-                'datetime_started': x.datetime_started,
-                'datetime_stopped': x.datetime_stopped,
-                'budget': x.budget
-            }
-            for x in train_jobs
-        ]
+        return [{
+            'id': x.id,
+            'status': x.status,
+            'app': x.app,
+            'app_version': x.app_version,
+            'task': x.task,
+            'train_dataset_id': x.train_dataset_id,
+            'val_dataset_id': x.val_dataset_id,
+            'train_args': x.train_args,
+            'datetime_started': x.datetime_started,
+            'datetime_stopped': x.datetime_stopped,
+            'budget': x.budget
+        } for x in train_jobs]
 
     def get_train_jobs_by_user(self, user_id):
         """
@@ -445,35 +512,27 @@ class Admin(object):
         @app.route('/train_jobs', methods=['GET'])
         """
         train_jobs = self._meta_store.get_train_jobs_by_user(user_id)
-        return [
-            {
-                'id': x.id,
-                'status': x.status,
-                'app': x.app,
-                'app_version': x.app_version,
-                'task': x.task,
-                'train_dataset_id': x.train_dataset_id,
-                'val_dataset_id': x.val_dataset_id,
-                'train_args': x.train_args,
-                'datetime_started': x.datetime_started,
-                'datetime_stopped': x.datetime_stopped,
-                'budget': x.budget
-            }
-            for x in train_jobs
-        ]
+        return [{
+            'id': x.id,
+            'status': x.status,
+            'app': x.app,
+            'app_version': x.app_version,
+            'task': x.task,
+            'train_dataset_id': x.train_dataset_id,
+            'val_dataset_id': x.val_dataset_id,
+            'train_args': x.train_args,
+            'datetime_started': x.datetime_started,
+            'datetime_stopped': x.datetime_stopped,
+            'budget': x.budget
+        } for x in train_jobs]
 
     def stop_all_train_jobs(self):
         train_jobs = self._meta_store.get_train_jobs_by_statuses(
-                    [TrainJobStatus.STARTED, TrainJobStatus.RUNNING])
+            [TrainJobStatus.STARTED, TrainJobStatus.RUNNING])
         for train_job in train_jobs:
             self._services_manager.stop_train_services(train_job.id)
 
-        return [
-            {
-                'id': train_job.id
-            }
-            for train_job in train_jobs
-        ]
+        return [{'id': train_job.id} for train_job in train_jobs]
 
     ####################################
     # Trials
@@ -499,27 +558,32 @@ class Admin(object):
             'is_params_saved': trial.is_params_saved
         }
 
-    def get_best_trials_of_train_job(self, user_id, app, app_version=-1, max_count=2):
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+    def get_best_trials_of_train_job(self,
+                                     user_id,
+                                     app,
+                                     app_version=-1,
+                                     max_count=2):
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
 
-        best_trials = self._meta_store.get_best_trials_of_train_job(train_job.id, max_count=max_count)
-        trials_models = [self._meta_store.get_model(x.model_id) for x in best_trials]
-
-        return [
-            {
-                'id': trial.id,
-                'proposal': trial.proposal,
-                'datetime_started': trial.datetime_started,
-                'status': trial.status,
-                'datetime_stopped': trial.datetime_stopped,
-                'model_name': model.name,
-                'score': trial.score,
-                'is_params_saved': trial.is_params_saved
-            }
-            for (trial, model) in zip(best_trials, trials_models)
+        best_trials = self._meta_store.get_best_trials_of_train_job(
+            train_job.id, max_count=max_count)
+        trials_models = [
+            self._meta_store.get_model(x.model_id) for x in best_trials
         ]
+
+        return [{
+            'id': trial.id,
+            'proposal': trial.proposal,
+            'datetime_started': trial.datetime_started,
+            'status': trial.status,
+            'datetime_stopped': trial.datetime_stopped,
+            'model_name': model.name,
+            'score': trial.score,
+            'is_params_saved': trial.is_params_saved
+        } for (trial, model) in zip(best_trials, trials_models)]
 
     def get_trial_logs(self, trial_id):
         trial = self._meta_store.get_trial(trial_id)
@@ -530,11 +594,7 @@ class Admin(object):
         log_lines = [x.line for x in trial_logs]
         (messages, metrics, plots) = LoggerUtils.parse_logs(log_lines)
 
-        return {
-            'plots': plots,
-            'metrics': metrics,
-            'messages': messages
-        }
+        return {'plots': plots, 'metrics': metrics, 'messages': messages}
 
     def get_trial_parameters(self, trial_id):
         trial = self._meta_store.get_trial(trial_id)
@@ -547,49 +607,58 @@ class Admin(object):
         params = self._param_store.load(trial.store_params_id)
         return params
 
-    def get_trials_of_train_job(self, user_id, app, app_version=-1, limit=1000, offset=0): ### return top 1000
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+    def get_trials_of_train_job(self,
+                                user_id,
+                                app,
+                                app_version=-1,
+                                limit=1000,
+                                offset=0):  ### return top 1000
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             raise InvalidTrainJobError()
 
-        trials = self._meta_store.get_trials_of_train_job(train_job.id, limit=limit, offset=offset)
+        trials = self._meta_store.get_trials_of_train_job(train_job.id,
+                                                          limit=limit,
+                                                          offset=offset)
         trials_models = [self._meta_store.get_model(x.model_id) for x in trials]
 
-        return [
-            {
-                'id': trial.id,
-                'no': trial.no,
-                'worker_id': trial.worker_id,
-                'proposal': trial.proposal,
-                'datetime_started': trial.datetime_started,
-                'status': trial.status,
-                'datetime_stopped': trial.datetime_stopped,
-                'model_name': model.name,
-                'score': trial.score,
-                'is_params_saved': trial.is_params_saved
-            }
-            for (trial, model) in zip(trials, trials_models)
-        ]
+        return [{
+            'id': trial.id,
+            'no': trial.no,
+            'worker_id': trial.worker_id,
+            'proposal': trial.proposal,
+            'datetime_started': trial.datetime_started,
+            'status': trial.status,
+            'datetime_stopped': trial.datetime_stopped,
+            'model_name': model.name,
+            'score': trial.score,
+            'is_params_saved': trial.is_params_saved
+        } for (trial, model) in zip(trials, trials_models)]
 
     ####################################
     # Inference Job
     ####################################
 
-    def create_inference_job_by_checkpoint(self, user_id, budget, model_name=None):
+    def create_inference_job_by_checkpoint(self,
+                                           user_id,
+                                           budget,
+                                           model_name=None):
         # if there no train job, create inference job by using pretrained model.
         if model_name is None:
             raise InvalidTrainJobError('please provide a model name')
 
-        model = self._meta_store.get_model_by_name(user_id=user_id, name=model_name)
+        model = self._meta_store.get_model_by_name(user_id=user_id,
+                                                   name=model_name)
         if model.checkpoint_id is None:
-            raise InvalidTrainJobError('Have you uploaded a checkpoint file for this {}?'.format(model_name))
+            raise InvalidTrainJobError(
+                'Have you uploaded a checkpoint file for this {}?'.format(
+                    model_name))
 
         # Create inference job in DB
-        inference_job = self._meta_store.create_inference_job(
-            user_id=user_id,
-            model_id=model.id,
-            budget=budget
-        )
+        inference_job = self._meta_store.create_inference_job(user_id=user_id,
+                                                              model_id=model.id,
+                                                              budget=budget)
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
@@ -602,29 +671,31 @@ class Admin(object):
 
     def create_inference_job(self, user_id, app, app_version, budget):
 
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
-            raise InvalidTrainJobError('Have you started a train job for this app?')
+            raise InvalidTrainJobError(
+                'Have you started a train job for this app?')
 
         if train_job.status != TrainJobStatus.STOPPED:
             raise InvalidTrainJobError('Train job must be of status `STOPPED`.')
 
         # Ensure only 1 running inference job for 1 train job
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
+        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
+            train_job.id)
         if inference_job is not None:
             raise RunningInferenceJobExistsError()
 
         # Get trials to load for inference job
-        best_trials = self._meta_store.get_best_trials_of_train_job(train_job.id, max_count=2)
+        best_trials = self._meta_store.get_best_trials_of_train_job(
+            train_job.id, max_count=2)
         if len(best_trials) == 0:
-            raise InvalidTrainJobError('Train job has no trials with saved models!')
+            raise InvalidTrainJobError(
+                'Train job has no trials with saved models!')
 
         # Create inference job in DB
         inference_job = self._meta_store.create_inference_job(
-            user_id=user_id,
-            train_job_id=train_job.id,
-            budget=budget
-        )
+            user_id=user_id, train_job_id=train_job.id, budget=budget)
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
@@ -639,19 +710,22 @@ class Admin(object):
         }
 
     def stop_inference_job(self, user_id, app, app_version=-1):
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             # TODO: REST api need to return some JSON, and not
             # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
+        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
+            train_job.id)
         if inference_job is None:
             # TODO: REST api need to return some JSON, and not
             # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
-        inference_job = self._services_manager.stop_inference_services(inference_job.id)
+        inference_job = self._services_manager.stop_inference_services(
+            inference_job.id)
 
         return {
             'id': inference_job.id,
@@ -661,13 +735,15 @@ class Admin(object):
         }
 
     def get_running_inference_job(self, user_id, app, app_version=-1):
-        train_job = self._meta_store.get_train_job_by_app_version(user_id, app, app_version=app_version)
+        train_job = self._meta_store.get_train_job_by_app_version(
+            user_id, app, app_version=app_version)
         if train_job is None:
             # TODO: REST api need to return some JSON, and not
             # just raise errors!!
             raise InvalidRunningInferenceJobError()
 
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(train_job.id)
+        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
+            train_job.id)
         if inference_job is None:
             # TODO: REST api need to return some JSON, and not
             # just raise errors!!
@@ -677,31 +753,41 @@ class Admin(object):
                             if inference_job.predictor_service_id is not None else None
 
         return {
+            'id':
+                inference_job.id,
+            'status':
+                inference_job.status,
+            'train_job_id':
+                train_job.id,
+            'app':
+                train_job.app,
+            'app_version':
+                train_job.app_version,
+            'datetime_started':
+                inference_job.datetime_started,
+            'datetime_stopped':
+                inference_job.datetime_stopped,
+            'predictor_host':
+                predictor_service.host
+                if predictor_service is not None else None
+        }
+
+    def get_inference_jobs_of_app(self, user_id, app):
+        inference_jobs = self._meta_store.get_inference_jobs_of_app(
+            user_id, app)
+        train_jobs = [
+            self._meta_store.get_train_job(x.train_job_id)
+            for x in inference_jobs
+        ]
+        return [{
             'id': inference_job.id,
             'status': inference_job.status,
             'train_job_id': train_job.id,
             'app': train_job.app,
             'app_version': train_job.app_version,
             'datetime_started': inference_job.datetime_started,
-            'datetime_stopped': inference_job.datetime_stopped,
-            'predictor_host': predictor_service.host if predictor_service is not None else None
-        }
-
-    def get_inference_jobs_of_app(self, user_id, app):
-        inference_jobs = self._meta_store.get_inference_jobs_of_app(user_id, app)
-        train_jobs = [self._meta_store.get_train_job(x.train_job_id) for x in inference_jobs]
-        return [
-            {
-                'id': inference_job.id,
-                'status': inference_job.status,
-                'train_job_id': train_job.id,
-                'app': train_job.app,
-                'app_version': train_job.app_version,
-                'datetime_started': inference_job.datetime_started,
-                'datetime_stopped': inference_job.datetime_stopped
-            }
-            for (inference_job, train_job) in zip(inference_jobs, train_jobs)
-        ]
+            'datetime_stopped': inference_job.datetime_stopped
+        } for (inference_job, train_job) in zip(inference_jobs, train_jobs)]
 
     def get_inference_jobs_by_user(self, user_id):
         inference_jobs = self._meta_store.get_inference_jobs_by_user(user_id)
@@ -710,7 +796,8 @@ class Admin(object):
         for inference_job in inference_jobs:
             if inference_job.status in ['RUNNING', 'STARTED', 'ERRORED']:
                 if inference_job.train_job_id:
-                    train_job = self._meta_store.get_train_job(inference_job.train_job_id)
+                    train_job = self._meta_store.get_train_job(
+                        inference_job.train_job_id)
                     res.append({
                         'id': inference_job.id,
                         'status': inference_job.status,
@@ -723,30 +810,30 @@ class Admin(object):
                 elif inference_job.model_id:
                     model = self._meta_store.get_model(inference_job.model_id)
                     res.append({
-                                'id': inference_job.id,
-                                'status': inference_job.status,
-                                'train_job_id': "ByCheckpoint: {}".format(model.checkpoint_id),
-                                'app': 'N/A',
-                                'app_version': 'N/A',
-                                'datetime_started': inference_job.datetime_started,
-                                'datetime_stopped': inference_job.datetime_stopped
-                            })
+                        'id':
+                            inference_job.id,
+                        'status':
+                            inference_job.status,
+                        'train_job_id':
+                            "ByCheckpoint: {}".format(model.checkpoint_id),
+                        'app':
+                            'N/A',
+                        'app_version':
+                            'N/A',
+                        'datetime_started':
+                            inference_job.datetime_started,
+                        'datetime_stopped':
+                            inference_job.datetime_stopped
+                    })
         return res
 
     def stop_all_inference_jobs(self):
         inference_jobs = self._meta_store.get_inference_jobs_by_statuses(
-            [InferenceJobStatus.STARTED, InferenceJobStatus.RUNNING]
-        )
+            [InferenceJobStatus.STARTED, InferenceJobStatus.RUNNING])
         for inference_job in inference_jobs:
             self._services_manager.stop_inference_services(inference_job.id)
 
-        return [
-            {
-                'id': inference_job.id
-            }
-            for inference_job in inference_jobs
-        ]
-
+        return [{'id': inference_job.id} for inference_job in inference_jobs]
 
     ####################################
     # Events
@@ -792,10 +879,16 @@ class Admin(object):
     # Models
     ####################################
 
-    def create_model(self, user_id, name, task, model_file_bytes,
-                    model_class, docker_image=None, dependencies=None,
-                    access_right=ModelAccessRight.PRIVATE,
-                    checkpoint_id=None):
+    def create_model(self,
+                     user_id,
+                     name,
+                     task,
+                     model_file_bytes,
+                     model_class,
+                     docker_image=None,
+                     dependencies=None,
+                     access_right=ModelAccessRight.PRIVATE,
+                     checkpoint_id=None):
         if dependencies is None:
             dependencies = {}
 
@@ -808,15 +901,10 @@ class Admin(object):
             docker_image=(docker_image or self._base_worker_image),
             dependencies=dependencies,
             access_right=access_right,
-            checkpoint_id=checkpoint_id
-        )
+            checkpoint_id=checkpoint_id)
         self._meta_store.commit()
 
-        return {
-            'id': model.id,
-            'user_id': model.user_id,
-            'name': model.name
-        }
+        return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
 
     def delete_model(self, model_id):
         model = self._meta_store.get_model(model_id)
@@ -825,11 +913,7 @@ class Admin(object):
 
         self._meta_store.delete_model(model)
 
-        return {
-            'id': model.id,
-            'user_id': model.user_id,
-            'name': model.name
-        }
+        return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
 
     def get_model_by_name(self, user_id, name):
         model = self._meta_store.get_model_by_name(user_id, name)
@@ -875,18 +959,15 @@ class Admin(object):
 
     def get_available_models(self, user_id, task=None):
         models = self._meta_store.get_available_models(user_id, task)
-        return [
-            {
-                'id': model.id,
-                'user_id': model.user_id,
-                'name': model.name,
-                'task': model.task,
-                'datetime_created': model.datetime_created,
-                'dependencies': model.dependencies,
-                'access_right': model.access_right
-            }
-            for model in models
-        ]
+        return [{
+            'id': model.id,
+            'user_id': model.user_id,
+            'name': model.name,
+            'task': model.task,
+            'datetime_created': model.datetime_created,
+            'dependencies': model.dependencies,
+            'access_right': model.access_right
+        } for model in models]
 
     def get_recommend_models(self, user_id, dataset_id):
         dataset = self._meta_store.get_dataset(dataset_id)
@@ -895,21 +976,7 @@ class Admin(object):
 
         for model in models:
             if model.name == 'resnet':
-                return [
-                    {
-                        'id': model.id,
-                        'user_id': model.user_id,
-                        'name': model.name,
-                        'task': model.task,
-                        'datetime_created': model.datetime_created,
-                        'dependencies': model.dependencies,
-                        'access_right': model.access_right
-                    }
-                ]
-        # If we can not found resnet, return the first model
-        for model in models:
-            return [
-                {
+                return [{
                     'id': model.id,
                     'user_id': model.user_id,
                     'name': model.name,
@@ -917,8 +984,18 @@ class Admin(object):
                     'datetime_created': model.datetime_created,
                     'dependencies': model.dependencies,
                     'access_right': model.access_right
-                }
-            ]
+                }]
+        # If we can not found resnet, return the first model
+        for model in models:
+            return [{
+                'id': model.id,
+                'user_id': model.user_id,
+                'name': model.name,
+                'task': model.task,
+                'datetime_created': model.datetime_created,
+                'dependencies': model.dependencies,
+                'access_right': model.access_right
+            }]
 
     ####################################
     # Private / Users
@@ -927,17 +1004,16 @@ class Admin(object):
     def _seed_superadmin(self):
         # Seed superadmin
         try:
-            self._create_user(
-                email=SUPERADMIN_EMAIL,
-                password=SUPERADMIN_PASSWORD,
-                user_type=UserType.SUPERADMIN
-            )
+            self._create_user(email=SUPERADMIN_EMAIL,
+                              password=SUPERADMIN_PASSWORD,
+                              user_type=UserType.SUPERADMIN)
             logger.info('Seeded superadmin...')
         except UserExistsError:
             logger.info('Skipping superadmin creation as it already exists...')
 
     def _hash_password(self, password):
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        password_hash = bcrypt.hashpw(password.encode('utf-8'),
+                                      bcrypt.gensalt())
         return password_hash
 
     def _if_hash_matches_password(self, password, password_hash):

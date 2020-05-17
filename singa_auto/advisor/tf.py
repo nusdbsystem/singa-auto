@@ -33,8 +33,9 @@ logger = logging.getLogger(__name__)
 ENAS_BATCH_SIZE = 10
 ENAS_NUM_EVAL_PER_CYCLE = 300
 ENAS_NUM_FINAL_EVALS = 10
-ENAS_FINAL_HOURS = 12 # Last X hours to conduct final evals & final trains
+ENAS_FINAL_HOURS = 12  # Last X hours to conduct final evals & final trains
 ENAS_NUM_FINAL_TRAINS = 1
+
 
 class EnasAdvisor(BaseAdvisor):
     '''
@@ -43,6 +44,7 @@ class EnasAdvisor(BaseAdvisor):
 
     Original paper: https://arxiv.org/abs/1802.03268
     '''
+
     @staticmethod
     def is_compatible(knob_config, budget):
         # Supports only FixedKnob, ArchKnob and PolicyKnob
@@ -60,12 +62,16 @@ class EnasAdvisor(BaseAdvisor):
         self._num_final_evals = ENAS_NUM_FINAL_EVALS
         self._num_final_trains = ENAS_NUM_FINAL_TRAINS
         self._final_hours = ENAS_FINAL_HOURS
-        self._final_evals = [] # [(score, proposal)]
+        self._final_evals = []  # [(score, proposal)]
         self._final_trains = []  # [(score, proposal)]
-        self._worker_to_num_trials = defaultdict(int) # { <worker_id>: <how many trials has worker run?> }
-        (self._fixed_knob_config, knob_config) = self.extract_knob_type(knob_config, FixedKnob)
-        (self._policy_knob_config, knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
-        self._list_knob_models = self._build_models(knob_config, self._batch_size)
+        self._worker_to_num_trials = defaultdict(
+            int)  # { <worker_id>: <how many trials has worker run?> }
+        (self._fixed_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, FixedKnob)
+        (self._policy_knob_config,
+         knob_config) = self.extract_knob_type(knob_config, PolicyKnob)
+        self._list_knob_models = self._build_models(knob_config,
+                                                    self._batch_size)
 
     def propose(self, worker_id, trial_no):
         proposal_type = self._get_proposal_type(worker_id)
@@ -76,21 +82,25 @@ class EnasAdvisor(BaseAdvisor):
 
         if proposal_type == 'TRAIN':
             knobs = self._propose_knobs(['DOWNSCALE', 'EARLY_STOP'])
-            return Proposal(trial_no, knobs,
+            return Proposal(trial_no,
+                            knobs,
                             params_type=ParamsType.LOCAL_RECENT,
                             to_eval=False,
                             to_cache_params=True,
                             to_save_params=False,
                             meta=meta)
         elif proposal_type == 'EVAL':
-            knobs = self._propose_knobs(['DOWNSCALE', 'QUICK_EVAL', 'SKIP_TRAIN'])
-            return Proposal(trial_no, knobs,
+            knobs = self._propose_knobs(
+                ['DOWNSCALE', 'QUICK_EVAL', 'SKIP_TRAIN'])
+            return Proposal(trial_no,
+                            knobs,
                             params_type=ParamsType.LOCAL_RECENT,
                             to_save_params=False,
                             meta=meta)
         elif proposal_type == 'FINAL_EVAL':
             knobs = self._propose_knobs(['DOWNSCALE', 'SKIP_TRAIN'])
-            return Proposal(trial_no, knobs,
+            return Proposal(trial_no,
+                            knobs,
                             params_type=ParamsType.LOCAL_RECENT,
                             meta=meta)
         elif proposal_type == 'FINAL_TRAIN':
@@ -133,7 +143,8 @@ class EnasAdvisor(BaseAdvisor):
         knobs = proposal.knobs
 
         # Add policy knobs
-        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config, policies or [])
+        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config,
+                                        policies or [])
 
         return knobs
 
@@ -144,7 +155,8 @@ class EnasAdvisor(BaseAdvisor):
 
         # Add fixed & policy knobs
         knobs = self.merge_fixed_knobs(knobs, self._fixed_knob_config)
-        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config, policies or [])
+        knobs = self.merge_policy_knobs(knobs, self._policy_knob_config,
+                                        policies or [])
 
         return knobs
 
@@ -164,7 +176,7 @@ class EnasAdvisor(BaseAdvisor):
         if len(self._final_trains) >= self._num_final_trains:
             return None
 
-        T = self._num_eval_per_cycle + 1 # Period
+        T = self._num_eval_per_cycle + 1  # Period
         worker_num_trials = self._worker_to_num_trials[worker_id]
         local_trial_no = worker_num_trials + 1
 
@@ -193,18 +205,20 @@ class EnasAdvisor(BaseAdvisor):
 
 
 class EnasArchAdvisor():
+
     def __init__(self, knob, batch_size):
         self._graph = tf.Graph()
         self._sess = tf.Session(graph=self._graph)
         self._knob = knob
         self._batch_size = batch_size
-        self._items_batch = [] # A running batch of items for feedback
-        self._scores_batch = [] # A running batch of corresponding scores for feedback
+        self._items_batch = []  # A running batch of items for feedback
+        self._scores_batch = [
+        ]  # A running batch of corresponding scores for feedback
 
         with self._graph.as_default():
-            (self._item_logits, self._out_item_idxs,
-                self._train_op, self._losses, self._rewards,
-                self._item_idxs_ph, self._scores_ph) = self._build_model(self._knob)
+            (self._item_logits, self._out_item_idxs, self._train_op,
+             self._losses, self._rewards, self._item_idxs_ph,
+             self._scores_ph) = self._build_model(self._knob)
             self._start_session()
 
     def propose(self):
@@ -228,25 +242,30 @@ class EnasArchAdvisor():
 
         with self._graph.as_default():
             item_idxs_real = self._sess.run(out_item_idxs)
-            items = [values[idx].value for (values, idx) in zip(knob_items, item_idxs_real)]
+            items = [
+                values[idx].value
+                for (values, idx) in zip(knob_items, item_idxs_real)
+            ]
             return items
 
     def _train_model(self, items_batch, batch_scores):
         knob_items = self._knob.items
 
         # Convert item values to indexes
-        batch_item_idxs = [[[x.value for x in values].index(value) for (values, value) in zip(knob_items, items)] for items in items_batch]
+        batch_item_idxs = [[[x.value
+                             for x in values].index(value)
+                            for (values, value) in zip(knob_items, items)]
+                           for items in items_batch]
 
         logger.info('Training controller...')
 
         with self._graph.as_default():
-            (losses, rewards, _) = self._sess.run(
-                [self._losses, self._rewards, self._train_op],
-                feed_dict={
-                    self._item_idxs_ph: batch_item_idxs,
-                    self._scores_ph: batch_scores
-                }
-            )
+            (losses, rewards,
+             _) = self._sess.run([self._losses, self._rewards, self._train_op],
+                                 feed_dict={
+                                     self._item_idxs_ph: batch_item_idxs,
+                                     self._scores_ph: batch_scores
+                                 })
 
             # print('Rewards: {}'.format(rewards))
             # print('Losses: {}'.format(losses))
@@ -258,7 +277,7 @@ class EnasArchAdvisor():
         assert isinstance(knob, ArchKnob)
 
         batch_size = self._batch_size
-        N = len(knob) # Length of list
+        N = len(knob)  # Length of list
 
         # Convert each item value to its value representation (for embeddings)
         (value_reps_by_item, K) = self._convert_values_to_reps(knob)
@@ -268,11 +287,13 @@ class EnasArchAdvisor():
         scores_ph = tf.placeholder(dtype=tf.float32, shape=(batch_size,))
 
         (item_logits, out_item_idxs) = self._forward(value_reps_by_item, K)
-        (train_op, losses, rewards) = self._make_train_op(item_logits, item_idxs_ph, scores_ph)
+        (train_op, losses,
+         rewards) = self._make_train_op(item_logits, item_idxs_ph, scores_ph)
 
         model_params_count = self._count_model_parameters()
 
-        return (item_logits, out_item_idxs, train_op, losses, rewards, item_idxs_ph, scores_ph)
+        return (item_logits, out_item_idxs, train_op, losses, rewards,
+                item_idxs_ph, scores_ph)
 
     # Convert each item value to its value representation
     def _convert_values_to_reps(self, knob):
@@ -286,7 +307,9 @@ class EnasArchAdvisor():
                 knob_value_to_rep[knob_value] = max_rep
                 max_rep += 1
 
-        value_reps_by_item = [[knob_value_to_rep[x] for x in values] for values in knob.items]
+        value_reps_by_item = [
+            [knob_value_to_rep[x] for x in values] for values in knob.items
+        ]
         return (value_reps_by_item, len(knob_value_to_rep))
 
     def _make_train_op(self, item_logits, item_idxs, scores):
@@ -298,7 +321,8 @@ class EnasArchAdvisor():
         entropy_weight = 0.0001
 
         # Compute log probs & entropy
-        sample_log_probs = self._compute_sample_log_probs(item_idxs, item_logits)
+        sample_log_probs = self._compute_sample_log_probs(
+            item_idxs, item_logits)
         sample_entropy = self._compute_sample_entropy(item_logits)
 
         # Compute rewards in a batch
@@ -307,10 +331,14 @@ class EnasArchAdvisor():
         rewards += entropy_weight * sample_entropy
 
         # Baseline reward for REINFORCE
-        reward_base = tf.Variable(0., name='reward_base', dtype=tf.float32, trainable=False)
+        reward_base = tf.Variable(0.,
+                                  name='reward_base',
+                                  dtype=tf.float32,
+                                  trainable=False)
 
         # Update baseline whenever reward updates
-        base_update = tf.assign_sub(reward_base, (1 - base_decay) * (reward_base - tf.reduce_mean(rewards)))
+        base_update = tf.assign_sub(reward_base, (1 - base_decay) *
+                                    (reward_base - tf.reduce_mean(rewards)))
         with tf.control_dependencies([base_update]):
             rewards = tf.identity(rewards)
 
@@ -321,17 +349,20 @@ class EnasArchAdvisor():
         tf_vars = self._get_all_variables()
         steps = tf.Variable(0, name='steps', dtype=tf.int32, trainable=False)
         grads = tf.gradients(losses, tf_vars)
-        grads = [x / tf.constant(batch_size, dtype=tf.float32) for x in grads] # Average all gradients
-        opt = tf.train.AdamOptimizer(learning_rate, beta1=adam_beta1, epsilon=adam_epsilon,
-                                    use_locking=True)
+        grads = [x / tf.constant(batch_size, dtype=tf.float32) for x in grads
+                ]  # Average all gradients
+        opt = tf.train.AdamOptimizer(learning_rate,
+                                     beta1=adam_beta1,
+                                     epsilon=adam_epsilon,
+                                     use_locking=True)
         train_op = opt.apply_gradients(zip(grads, tf_vars), global_step=steps)
 
         return (train_op, losses, rewards)
 
     def _forward(self, reps_by_item, K):
         # ``K`` = <no. of unique item value reps>
-        N = len(reps_by_item) # Length of list
-        H = 32 # Number of units in LSTM
+        N = len(reps_by_item)  # Length of list
+        H = 32  # Number of units in LSTM
         lstm_num_layers = 2
         temperature = 0
         tanh_constant = 1.1
@@ -353,12 +384,15 @@ class EnasArchAdvisor():
         item_embeds = [initial_embed]
 
         for i in range(N):
-            L = len(reps_by_item[i]) # No. of candidate values for item
+            L = len(reps_by_item[i])  # No. of candidate values for item
             reps = tf.stack(reps_by_item[i])
 
             with tf.variable_scope('item_{}'.format(i)):
                 # Run input through LSTM to get output
-                (X, lstm_state) = self._apply_lstm(item_embeds[-1], lstm, H, prev_state=lstm_states[-1])
+                (X, lstm_state) = self._apply_lstm(item_embeds[-1],
+                                                   lstm,
+                                                   H,
+                                                   prev_state=lstm_states[-1])
                 lstm_states.append(lstm_state)
 
                 # Add fully connected layer and transform to ``L`` channels
@@ -375,36 +409,45 @@ class EnasArchAdvisor():
                 if i < N - 1:
                     # Run item value rep through embedding lookup
                     rep = reps[item_idx]
-                    item_embed = tf.reshape(tf.nn.embedding_lookup(embeds, rep), (1, -1))
+                    item_embed = tf.reshape(tf.nn.embedding_lookup(embeds, rep),
+                                            (1, -1))
                     item_embeds.append(item_embed)
 
         return (item_logits, out_item_idxs)
 
     def _compute_sample_log_probs(self, item_idxs, item_logits):
         N = len(item_logits)
-        batch_size = tf.shape(item_idxs)[0] # item_idxs is of shape (bs, N)
+        batch_size = tf.shape(item_idxs)[0]  # item_idxs is of shape (bs, N)
 
-        item_idxs = tf.transpose(item_idxs, (1, 0)) # item_idxs is of shape (N, bs)
-        sample_log_probs = tf.zeros((batch_size,), dtype=tf.float32, name='sample_log_probs')
+        item_idxs = tf.transpose(item_idxs,
+                                 (1, 0))  # item_idxs is of shape (N, bs)
+        sample_log_probs = tf.zeros((batch_size,),
+                                    dtype=tf.float32,
+                                    name='sample_log_probs')
 
         for i in range(N):
-            idxs = item_idxs[i] # Indexes for item i in a batch
-            logits = item_logits[i] # Logits for item i
-            logits = tf.reshape(tf.tile(logits, (batch_size, 1)), (batch_size, -1))
+            idxs = item_idxs[i]  # Indexes for item i in a batch
+            logits = item_logits[i]  # Logits for item i
+            logits = tf.reshape(tf.tile(logits, (batch_size, 1)),
+                                (batch_size, -1))
             idxs = tf.reshape(idxs, (batch_size,))
-            log_probs = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=idxs)
+            log_probs = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                logits=logits, labels=idxs)
             sample_log_probs += log_probs
 
         return sample_log_probs
 
     def _compute_sample_entropy(self, item_logits):
         N = len(item_logits)
-        sample_entropy = tf.constant(0., dtype=tf.float32, name='sample_entropy')
+        sample_entropy = tf.constant(0.,
+                                     dtype=tf.float32,
+                                     name='sample_entropy')
 
         for i in range(N):
             logits = item_logits[i]
-            entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=tf.reshape(logits, (1, -1)),
-                                                            labels=tf.reshape(tf.nn.softmax(logits), (1, -1)))
+            entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
+                logits=tf.reshape(logits, (1, -1)),
+                labels=tf.reshape(tf.nn.softmax(logits), (1, -1)))
             entropy = tf.stop_gradient(entropy)
             sample_entropy += entropy[0]
 
@@ -448,7 +491,7 @@ class EnasArchAdvisor():
             W = self._make_var('W', (ch, out_ch))
             b = self._make_var('b', (1, out_ch))
             X = tf.matmul(X, W) + b
-        X = tf.reshape(X, (-1, out_ch)) # Sanity shape check
+        X = tf.reshape(X, (-1, out_ch))  # Sanity shape check
         return X
 
     def _apply_lstm(self, X, lstm, H, prev_state=None):
@@ -456,7 +499,8 @@ class EnasArchAdvisor():
         Assumes 1 time step
         '''
         N = tf.shape(X)[0]
-        prev_state = prev_state if prev_state is not None else lstm.zero_state(N, dtype=tf.float32)
+        prev_state = prev_state if prev_state is not None else lstm.zero_state(
+            N, dtype=tf.float32)
         X = tf.reshape(X, (N, 1, H))
 
         # Pass input through LSTM layers

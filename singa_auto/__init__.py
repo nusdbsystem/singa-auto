@@ -17,7 +17,6 @@
 # under the License.
 #
 
-
 import os
 import sys
 
@@ -41,5 +40,4 @@ def start_worker():
 
 
 from singa_auto.client import Client
-
 
