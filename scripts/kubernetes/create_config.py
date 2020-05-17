@@ -310,7 +310,7 @@ if __name__ == '__main__':
     else:
         container.setdefault('volumeMounts', [{'name': 'work-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, DATA_DIR_PATH)}, \
                                               {'name': 'param-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, PARAMS_DIR_PATH)}, \
-                                              {'name': 'log-path', 'mountPath': '{}/{}'.foramt(DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
+                                              {'name': 'log-path', 'mountPath': '{}/{}'.format(DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
                                               {'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'}])
         template.setdefault('spec', {'containers': [container], 'volumes': [{'name': 'work-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, DATA_DIR_PATH)}}, \
                                     {'name': 'param-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, PARAMS_DIR_PATH)}}, \
