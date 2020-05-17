@@ -265,17 +265,16 @@ class Client:
         '''
 
         model_files = {
-            'model_file_bytes': ('file_name', open(model_file_path, 'rb'),
+            'model_file_bytes': (model_file_path, open(model_file_path, 'rb'),
                                  'application/octet-stream')
         }
         pretrained_files = {}
 
         if model_pretrained_params_id is not None:
-            pretrained_files = {
-                'checkpoint_id': ('file_name',
-                                  open(model_pretrained_params_id,
-                                       'rb'), 'application/octet-stream')
-            }
+            pretrained_files = {'checkpoint_id':  (
+                                                    model_pretrained_params_id,
+                                                    open(model_pretrained_params_id, 'rb'),
+                                                    'application/octet-stream')}
 
         files = {**model_files, **pretrained_files}
 
@@ -642,6 +641,46 @@ class Client:
                               'app_version': app_version,
                               'budget': budget
                           })
+        return data
+
+    def create_inference_job_by_checkpoint(self, model_name: str, budget: InferenceBudget = None) -> Dict[str, Any]:
+        '''
+        Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
+        The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
+        Throws an error if an inference job of the same train job is already running.
+
+        In this method's response, `predictor_host` is this inference job's predictor's host.
+
+        Only admins, model developers & app developers can manage inference jobs. Model developers & app developers can only manage their own inference jobs.
+
+        :param app: Name of the app identifying the train job to use
+        :param app_version: Version of the app identifying the train job to use
+        :param budget: Budget for inference job
+        :returns: Created inference job as dictionary
+
+        ``budget`` should be a dictionary of ``{ <budget_type>: <budget_amount> }``, where
+        ``<budget_type>`` is one of :class:`singa_auto.constants.InferenceBudgetOption` and
+        ``<budget_amount>`` specifies the amount for the associated budget option.
+
+        The following describes the budget options available:
+
+        =====================       =====================
+        **Budget Option**             **Description**
+        ---------------------       ---------------------
+        ``GPU_COUNT``               No. of GPUs to allocate for inference, across all trials. Defaults to 0.
+        =====================       =====================
+        '''
+
+        # Have defaults for budget
+        budget = {
+            InferenceBudgetOption.GPU_COUNT: 0,
+            **(budget or {})
+        }
+
+        data = self._post('/inference_jobs/checkpoint', json={
+            'model_name': model_name,
+            'budget': budget
+        })
         return data
 
     def get_inference_jobs_by_user(self, user_id: str) -> List[Dict[str, Any]]:

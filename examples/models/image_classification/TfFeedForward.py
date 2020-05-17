@@ -142,7 +142,7 @@ class TfFeedForward(BaseModel):
         norm_mean = self._train_params['norm_mean']
         norm_std = self._train_params['norm_std']
 
-        images = utils.dataset.transform_images(queries,
+        images, _ = utils.dataset.transform_images(queries,
                                                 image_size=image_size,
                                                 mode='RGB')
         (images, _, _) = utils.dataset.normalize_images(images, norm_mean,
