@@ -471,7 +471,8 @@ class ServicesManager(object):
                         environment_vars={},
                         args=[],
                         container_port=None,
-                        gpus=0):
+                        gpus=0,
+                        inferenceAppName=None):
 
         # Create service in DB
         container_manager_type = type(self._container_manager).__name__
