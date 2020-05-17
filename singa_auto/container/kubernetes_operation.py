@@ -19,11 +19,9 @@
 
 import os
 import time
-import kubernetes
 from kubernetes import client
 import logging
 import traceback
-from collections import namedtuple
 from functools import wraps
 
 from .container_manager import ContainerManager, InvalidServiceRequestError, ContainerService
@@ -64,24 +62,24 @@ class KubernetesContainerManager(ContainerManager):
         # Create a ApiClient with our config
         aApiClient = client.ApiClient(aConfiguration)
 
-        self._client_deployment = kubernetes.client.AppsV1Api(aApiClient)
-        self._client_service = kubernetes.client.CoreV1Api(aApiClient)
-        self.api_instance = kubernetes.client.NetworkingV1beta1Api(aApiClient)
+        self._client_deployment = client.AppsV1Api(aApiClient)
+        self._client_service = client.CoreV1Api(aApiClient)
+        self.api_instance = client.NetworkingV1beta1Api(aApiClient)
 
     def update_ingress(self, ingress_name: str, ingress_body: dict):
         paths = self._update_ingress_paths(ingress_body)
-        body = kubernetes.client.NetworkingV1beta1Ingress(
+        body = client.NetworkingV1beta1Ingress(
             api_version="networking.k8s.io/v1beta1",
             kind="Ingress",
-            metadata=kubernetes.client.V1ObjectMeta(
+            metadata=client.V1ObjectMeta(
                                                     name=ingress_name,
                                                     annotations={
                                                         "nginx.ingress.kubernetes.io/rewrite-target": "/"
                                                         }
                                                     ),
-            spec=kubernetes.client.NetworkingV1beta1IngressSpec(
-                rules=[kubernetes.client.NetworkingV1beta1IngressRule(
-                    http=kubernetes.client.NetworkingV1beta1HTTPIngressRuleValue(
+            spec=client.NetworkingV1beta1IngressSpec(
+                rules=[client.NetworkingV1beta1IngressRule(
+                    http=client.NetworkingV1beta1HTTPIngressRuleValue(
                         paths=paths
                     )
                 )
@@ -96,9 +94,9 @@ class KubernetesContainerManager(ContainerManager):
     def _update_ingress_paths(self, ingress_body: dict) -> list:
         paths = list()
         for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
-            path_obj = kubernetes.client.NetworkingV1beta1HTTPIngressPath(
+            path_obj = client.NetworkingV1beta1HTTPIngressPath(
                             path=path_info["path"],
-                            backend=kubernetes.client.NetworkingV1beta1IngressBackend(
+                            backend=client.NetworkingV1beta1IngressBackend(
                                 service_port=path_info["backend"]["servicePort"],
                                 service_name=path_info["backend"]["serviceName"])
 
