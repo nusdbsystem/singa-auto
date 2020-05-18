@@ -58,6 +58,7 @@ export ADMIN_HOST=singa-auto-admin
 export ADMIN_PORT=3000
 export REDIS_HOST=singa-auto-redis
 export REDIS_PORT=6379
+export REDIS_PASSWORD=singa_auto
 export PREDICTOR_PORT=3003
 export WEB_ADMIN_HOST=singa-auto-admin-web
 export ZOOKEEPER_HOST=singa-auto-zookeeper
