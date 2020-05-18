@@ -645,6 +645,7 @@ class MetaStore(object):
                 # if the service is updated
                 if path_info["path"] == "/" + inferenceAppName:
                     path_info["backend"]["serviceName"] = container_service_name
+                    break
             else:
                 # if new service path is added
                 path_info = {"path": "/" + inferenceAppName,
