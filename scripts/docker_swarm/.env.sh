@@ -51,6 +51,7 @@ export ADMIN_HOST=singa_auto_admin
 export ADMIN_PORT=3000
 export REDIS_HOST=singa_auto_redis
 export REDIS_PORT=6379
+export REDIS_PASSWORD=singa_auto
 export PREDICTOR_PORT=3003
 export WEB_ADMIN_HOST=singa_auto_admin_web
 export ZOOKEEPER_HOST=singa_auto_zookeeper
@@ -81,3 +82,5 @@ export IMAGE_KAFKA=wurstmeister/kafka:2.12-2.1.1
 # Utility configuration
 export PYTHONPATH=$PWD # Ensures that `singa_auto` module can be imported at project root
 export PYTHONUNBUFFERED=1 # Ensures logs from Python appear instantly
+
+export CONTAINER_MODE=SWARM

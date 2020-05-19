@@ -56,6 +56,7 @@ title "Starting SINGA-Auto's Admin..."
   -e ADMIN_PORT=$ADMIN_PORT \
   -e REDIS_HOST=$REDIS_HOST \
   -e REDIS_PORT=$REDIS_PORT \
+  -e REDIS_PASSWORD=$REDIS_PASSWORD \
   -e KAFKA_HOST=$KAFKA_HOST \
   -e KAFKA_PORT=$KAFKA_PORT \
   -e PREDICTOR_PORT=$PREDICTOR_PORT \
@@ -70,6 +71,7 @@ title "Starting SINGA-Auto's Admin..."
   -e PARAMS_DIR_PATH=$PARAMS_DIR_PATH \
   -e LOGS_DIR_PATH=$LOGS_DIR_PATH \
   -e APP_MODE=$APP_MODE \
+  -e CONTAINER_MODE=$CONTAINER_MODE \
   -v /var/run/docker.sock:/var/run/docker.sock \
   $VOLUME_MOUNTS \
   -p $ADMIN_EXT_PORT:$ADMIN_PORT \
