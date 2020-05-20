@@ -67,7 +67,9 @@ echo "Deploy ingress-nginx"
       # customer yaml: add replica to 3, fix the port to 3005
       kubectl apply -f scripts/kubernetes/ingress_controller_deploy.yaml || exit 1
     fi
+echo "Deploy GPU plugin"
 
+kubectl create -f ./scripts/kubernetes/nvidia-device-plugin.yml
 
 echo "To use Rafiki, use Rafiki Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/docs/src/user/quickstart.html"
