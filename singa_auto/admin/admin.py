@@ -764,7 +764,6 @@ class Admin(object):
             if inference_job is None:
                 raise InvalidRunningInferenceJobError()
 
-
         predictor_service = self._meta_store.get_service(inference_job.predictor_service_id) \
                             if inference_job.predictor_service_id is not None else None
         if self.container_model == 'K8S':
@@ -776,32 +775,16 @@ class Admin(object):
         else:
             predictor_host = None
 
-            return {
-                'id': inference_job.id,
-                'status': inference_job.status,
-                'train_job_id': train_job_id,
-                'app': app,
-                'app_version': app_version,
-                'datetime_started': inference_job.datetime_started,
-                'datetime_stopped': inference_job.datetime_stopped,
-                'predictor_host': predictor_host
-            }
-
-        def get_inference_jobs_of_app(self, user_id, app):
-            inference_jobs = self._meta_store.get_inference_jobs_of_app(user_id, app)
-            train_jobs = [self._meta_store.get_train_job(x.train_job_id) for x in inference_jobs]
-            return [
-                {
-                    'id': inference_job.id,
-                    'status': inference_job.status,
-                    'train_job_id': train_job.id,
-                    'app': train_job.app,
-                    'app_version': train_job.app_version,
-                    'datetime_started': inference_job.datetime_started,
-                    'datetime_stopped': inference_job.datetime_stopped
-                }
-                for (inference_job, train_job) in zip(inference_jobs, train_jobs)
-            ]
+        return {
+            'id': inference_job.id,
+            'status': inference_job.status,
+            'train_job_id': train_job_id,
+            'app': app,
+            'app_version': app_version,
+            'datetime_started': inference_job.datetime_started,
+            'datetime_stopped': inference_job.datetime_stopped,
+            'predictor_host': predictor_host
+        }
 
     def get_inference_jobs_of_app(self, user_id, app):
         inference_jobs = self._meta_store.get_inference_jobs_of_app(user_id, app)
