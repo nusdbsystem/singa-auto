@@ -47,7 +47,7 @@ def index():
     return 'Predictor is up.'
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/', methods=['POST'])
 def predict():
 
     if request.files.getlist('img'):
