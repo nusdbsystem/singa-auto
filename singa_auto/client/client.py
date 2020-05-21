@@ -233,7 +233,8 @@ class Client:
                      model_pretrained_params_id: str = None,
                      dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
-                     docker_image: str = None) -> Dict[str, Any]:
+                     docker_image: str = None,
+                     model_description: str = None) -> Dict[str, Any]:
         '''
         Creates a model on SINGA-Auto.
 
@@ -284,7 +285,8 @@ class Client:
             'dependencies': json.dumps(dependencies),
             'docker_image': docker_image,
             'model_class': model_class,
-            'access_right': access_right
+            'access_right': access_right,
+            'model_description': model_description
         }
 
         data = self._post_stream(path='/models',

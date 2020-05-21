@@ -443,7 +443,7 @@ class MetaStore(object):
     ####################################
 
     def create_model(self, user_id, name, task, model_file_bytes, model_class,
-                     docker_image, dependencies, access_right, checkpoint_id):
+                     docker_image, dependencies, access_right, checkpoint_id, model_description):
 
         self._validate_model_access_right(access_right)
 
@@ -455,7 +455,8 @@ class MetaStore(object):
                       docker_image=docker_image,
                       dependencies=dependencies,
                       access_right=access_right,
-                      checkpoint_id=checkpoint_id)
+                      checkpoint_id=checkpoint_id,
+                      model_description=model_description)
         self._session.add(model)
         return model
 

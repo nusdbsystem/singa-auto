@@ -94,6 +94,7 @@ class Model(Base):
                           nullable=False,
                           default=ModelAccessRight.PRIVATE)
     checkpoint_id = Column(String, default=None)
+    model_description = Column(String, nullable=True)
     __table_args__ = (UniqueConstraint('name', 'user_id'),)
 
 

@@ -896,7 +896,8 @@ class Admin(object):
                      docker_image=None,
                      dependencies=None,
                      access_right=ModelAccessRight.PRIVATE,
-                     checkpoint_id=None):
+                     checkpoint_id=None,
+                     model_description=None):
         if dependencies is None:
             dependencies = {}
 
@@ -909,7 +910,8 @@ class Admin(object):
             docker_image=(docker_image or self._base_worker_image),
             dependencies=dependencies,
             access_right=access_right,
-            checkpoint_id=checkpoint_id)
+            checkpoint_id=checkpoint_id,
+            model_description=model_description)
         self._meta_store.commit()
 
         return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
@@ -939,6 +941,7 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         }
 
     def get_model(self, model_id):
@@ -955,7 +958,9 @@ class Admin(object):
             'datetime_created': model.datetime_created,
             'docker_image': model.docker_image,
             'dependencies': model.dependencies,
-            'access_right': model.access_right
+            'access_right': model.access_right,
+            'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         }
 
     def get_model_file(self, model_id):
@@ -974,7 +979,9 @@ class Admin(object):
             'task': model.task,
             'datetime_created': model.datetime_created,
             'dependencies': model.dependencies,
-            'access_right': model.access_right
+            'access_right': model.access_right,
+            'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         } for model in models]
 
     def get_recommend_models(self, user_id, dataset_id):
@@ -991,7 +998,9 @@ class Admin(object):
                     'task': model.task,
                     'datetime_created': model.datetime_created,
                     'dependencies': model.dependencies,
-                    'access_right': model.access_right
+                    'access_right': model.access_right,
+                    'checkpoint_id': model.checkpoint_id,
+                    'model_description': model.model_description
                 }]
         # If we can not found resnet, return the first model
         for model in models:
@@ -1002,7 +1011,9 @@ class Admin(object):
                 'task': model.task,
                 'datetime_created': model.datetime_created,
                 'dependencies': model.dependencies,
-                'access_right': model.access_right
+                'access_right': model.access_right,
+                'checkpoint_id': model.checkpoint_id,
+                'model_description': model.model_description
             }]
 
     ####################################
