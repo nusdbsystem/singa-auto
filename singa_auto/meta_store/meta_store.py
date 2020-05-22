@@ -284,11 +284,13 @@ class MetaStore(object):
                              user_id,
                              budget,
                              train_job_id=None,
-                             model_id=None):
+                             model_id=None,
+                             description=None):
         inference_job = InferenceJob(user_id=user_id,
                                      train_job_id=train_job_id,
                                      model_id=model_id,
-                                     budget=budget)
+                                     budget=budget,
+                                     description=description)
         self._session.add(inference_job)
         return inference_job
 

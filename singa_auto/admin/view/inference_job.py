@@ -38,12 +38,13 @@ def create_inference_job(auth, params):
         app_version = int(params['app_version'])
     else:
         app_version = -1
-
+    
     with admin:
         return jsonify(admin.create_inference_job(user_id=auth['user_id'],
                                                   app=params['app'],
                                                   app_version=app_version,
                                                   budget=budget,
+                                                  description=params.get('description', None)
                                                   ))
 
 
@@ -58,7 +59,8 @@ def create_inference_job_by_checkpoint(auth, params):
     with admin:
         return jsonify(admin.create_inference_job_by_checkpoint(user_id=auth['user_id'],
                                                                 budget=budget,
-                                                                model_name=params['model_name']
+                                                                model_name=params['model_name'],
+                                                                description=params.get('description', None)
                                                                 ))
 
 

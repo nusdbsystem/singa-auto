@@ -606,7 +606,8 @@ class Client:
     def create_inference_job(self,
                              app: str,
                              app_version: int = -1,
-                             budget: InferenceBudget = None) -> Dict[str, Any]:
+                             budget: InferenceBudget = None,
+                             description: str = None) -> Dict[str, Any]:
         '''
         Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
@@ -641,11 +642,15 @@ class Client:
                           json={
                               'app': app,
                               'app_version': app_version,
-                              'budget': budget
+                              'budget': budget,
+                              'description': description
                           })
         return data
 
-    def create_inference_job_by_checkpoint(self, model_name: str, budget: InferenceBudget = None) -> Dict[str, Any]:
+    def create_inference_job_by_checkpoint(self, 
+                                           model_name: str, 
+                                           budget: InferenceBudget = None,
+                                           description: str = None) -> Dict[str, Any]:
         '''
         Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
@@ -681,7 +686,8 @@ class Client:
 
         data = self._post('/inference_jobs/checkpoint', json={
             'model_name': model_name,
-            'budget': budget
+            'budget': budget,
+            'description': description
         })
         return data
 

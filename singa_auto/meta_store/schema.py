@@ -50,6 +50,7 @@ class InferenceJob(Base):
     user_id = Column(String, ForeignKey('user.id'), nullable=False)
     predictor_service_id = Column(String, ForeignKey('service.id'))
     datetime_stopped = Column(DateTime, default=None)
+    description = Column(String, default=None)
 
 
 class InferenceJobWorker(Base):
