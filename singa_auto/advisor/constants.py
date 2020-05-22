@@ -24,6 +24,7 @@ from singa_auto.model import Knobs
 
 
 class Jsonable:
+
     @classmethod
     def from_jsonable(cls, jsonable) -> object:
         return cls(**jsonable)
@@ -61,15 +62,19 @@ class ParamsType(Enum):
 
 
 class Proposal(Jsonable):
-    def __init__(self,
-                trial_no: int, # Trial no.
-                knobs: Knobs, # Knobs for this trial
-                params_type: ParamsType = ParamsType.NONE, # Parameters to use for this trial
-                to_eval=True, # Whether the model should be evaluated
-                to_cache_params=False, # Whether this trial's parameters should be cached
-                to_save_params=True, # Whether this trial's parameters should be persisted
-                meta: dict = None, # Extra metadata associated with proposal
-                trial_id: str = None): # ID of trial associated with proposal, to be set by worker
+
+    def __init__(
+        self,
+        trial_no: int,  # Trial no.
+        knobs: Knobs,  # Knobs for this trial
+        params_type: ParamsType = ParamsType.
+        NONE,  # Parameters to use for this trial
+        to_eval=True,  # Whether the model should be evaluated
+        to_cache_params=False,  # Whether this trial's parameters should be cached
+        to_save_params=True,  # Whether this trial's parameters should be persisted
+        meta: dict = None,  # Extra metadata associated with proposal
+        trial_id: str = None
+    ):  # ID of trial associated with proposal, to be set by worker
         self.trial_no = trial_no
         self.knobs = knobs
         self.params_type = ParamsType(params_type)
@@ -81,8 +86,11 @@ class Proposal(Jsonable):
 
 
 class TrialResult(Jsonable):
+
     def __init__(self,
-                proposal: Proposal,
-                score: Union[float, None] = None): # Score for the proposal, None if trial was not evaluated
-        self.proposal = proposal if isinstance(proposal, Proposal) else Proposal(**proposal)
+                 proposal: Proposal,
+                 score: Union[float, None] = None
+                ):  # Score for the proposal, None if trial was not evaluated
+        self.proposal = proposal if isinstance(
+            proposal, Proposal) else Proposal(**proposal)
         self.score = score

@@ -30,7 +30,14 @@ from examples.scripts.quickstart import get_predictor_host, \
 
 from examples.datasets.tabular.csv_file import load
 
-def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, target=None, queries=None):
+
+def run_tabular_regression(client,
+                           csv_file_url,
+                           gpus,
+                           hours,
+                           features=None,
+                           target=None,
+                           queries=None):
     '''
     Runs a sample full train-inference flow for the task ``TABULAR_REGRESSION``.
     '''
@@ -48,9 +55,11 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     load(csv_file_url, train_dataset_path, val_dataset_path)
 
     print('Creating & uploading datasets onto SINGA-Auto...')
-    train_dataset = client.create_dataset('{}_train'.format(app), task, train_dataset_path)
+    train_dataset = client.create_dataset('{}_train'.format(app), task,
+                                          train_dataset_path)
     pprint(train_dataset)
-    val_dataset = client.create_dataset('{}_val'.format(app), task, val_dataset_path)
+    val_dataset = client.create_dataset('{}_val'.format(app), task,
+                                        val_dataset_path)
     pprint(val_dataset)
 
     print('Adding models "{}" to SINGA-Auto...'.format(xgb_model_name))
@@ -59,12 +68,17 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     pprint(xgb_model)
 
     print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
-    budget = {
-        BudgetOption.TIME_HOURS: hours,
-        BudgetOption.GPU_COUNT: gpus
-    }
-    train_job = client.create_train_job(app, task, train_dataset['id'], val_dataset['id'],
-                                        budget, models=[xgb_model['id']], train_args={ 'features': features, 'target': target })
+    budget = {BudgetOption.TIME_HOURS: hours, BudgetOption.GPU_COUNT: gpus}
+    train_job = client.create_train_job(app,
+                                        task,
+                                        train_dataset['id'],
+                                        val_dataset['id'],
+                                        budget,
+                                        models=[xgb_model['id']],
+                                        train_args={
+                                            'features': features,
+                                            'target': target
+                                        })
     pprint(train_job)
 
     print('Waiting for train job to complete...')
@@ -78,7 +92,8 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     print('Creating inference job for app "{}" on SINGA-Auto...'.format(app))
     pprint(client.create_inference_job(app))
     predictor_host = get_predictor_host(client, app)
-    if not predictor_host: raise Exception('Inference job has errored or stopped')
+    if not predictor_host:
+        raise Exception('Inference job has errored or stopped')
     print('Inference job is running!')
 
     if queries is not None:
@@ -91,50 +106,68 @@ def run_tabular_regression(client, csv_file_url, gpus, hours, features=None, tar
     print('Stopping inference job...')
     pprint(client.stop_inference_job(app))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--email', type=str, default=SUPERADMIN_EMAIL, help='Email of user')
-    parser.add_argument('--password', type=str, default=os.environ.get('SUPERADMIN_PASSWORD'), help='Password of user')
-    parser.add_argument('--gpus', type=int, default=0, help='How many GPUs to use for training')
-    parser.add_argument('--hours', type=float, default=0.1, help='How long the train job should run for (in hours)')
-    parser.add_argument('--csv', type=str, default='https://course1.winona.edu/bdeppa/Stat%20425/Data/bodyfat.csv', help='Path to a standard CSV file to perform regression on')
-    parser.add_argument('--features', type=str, default=None, help='List of feature columns\' names as comma separated values')
-    parser.add_argument('--target', type=str, default=None, help='Target column\'s name')
+    parser.add_argument('--email',
+                        type=str,
+                        default=SUPERADMIN_EMAIL,
+                        help='Email of user')
+    parser.add_argument('--password',
+                        type=str,
+                        default=os.environ.get('SUPERADMIN_PASSWORD'),
+                        help='Password of user')
+    parser.add_argument('--gpus',
+                        type=int,
+                        default=0,
+                        help='How many GPUs to use for training')
+    parser.add_argument('--hours',
+                        type=float,
+                        default=0.1,
+                        help='How long the train job should run for (in hours)')
+    parser.add_argument(
+        '--csv',
+        type=str,
+        default='https://course1.winona.edu/bdeppa/Stat%20425/Data/bodyfat.csv',
+        help='Path to a standard CSV file to perform regression on')
+    parser.add_argument(
+        '--features',
+        type=str,
+        default=None,
+        help='List of feature columns\' names as comma separated values')
+    parser.add_argument('--target',
+                        type=str,
+                        default=None,
+                        help='Target column\'s name')
     (args, _) = parser.parse_known_args()
 
     # Initialize client
     client = Client()
     client.login(email=args.email, password=args.password)
 
-    run_tabular_regression(client, args.csv, args.gpus, args.hours,
-                            features=['density',
-                                    'age',
-                                    'weight',
-                                    'height',
-                                    'neck',
-                                    'chest',
-                                    'abdomen',
-                                    'hip',
-                                    'thigh',
-                                    'knee',
-                                    'ankle',
-                                    'biceps',
-                                    'forearm',
-                                    'wrist'],
-                            target='bodyfat',
-                            queries=[
-                                {'density': 1.0207,
-                                'age': 65,
-                                'weight': 224.5,
-                                'height': 68.25,
-                                'neck': 38.8,
-                                'chest': 119.6,
-                                'abdomen': 118.0,
-                                'hip': 114.3,
-                                'thigh': 61.3,
-                                'knee': 42.1,
-                                'ankle': 23.4,
-                                'biceps': 34.9,
-                                'forearm': 30.1,
-                                'wrist': 19.4}
-                            ])
+    run_tabular_regression(client,
+                           args.csv,
+                           args.gpus,
+                           args.hours,
+                           features=[
+                               'density', 'age', 'weight', 'height', 'neck',
+                               'chest', 'abdomen', 'hip', 'thigh', 'knee',
+                               'ankle', 'biceps', 'forearm', 'wrist'
+                           ],
+                           target='bodyfat',
+                           queries=[{
+                               'density': 1.0207,
+                               'age': 65,
+                               'weight': 224.5,
+                               'height': 68.25,
+                               'neck': 38.8,
+                               'chest': 119.6,
+                               'abdomen': 118.0,
+                               'hip': 114.3,
+                               'thigh': 61.3,
+                               'knee': 42.1,
+                               'ankle': 23.4,
+                               'biceps': 34.9,
+                               'forearm': 30.1,
+                               'wrist': 19.4
+                           }])

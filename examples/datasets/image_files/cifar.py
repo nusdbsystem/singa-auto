@@ -30,8 +30,15 @@ from PIL import Image
 
 from examples.datasets.utils import download_dataset_from_url
 
-def load(dataset_url, label_to_name, out_train_dataset_path, out_val_dataset_path, 
-        out_test_dataset_path, out_meta_csv_path, validation_split, limit=None):
+
+def load(dataset_url,
+         label_to_name,
+         out_train_dataset_path,
+         out_val_dataset_path,
+         out_test_dataset_path,
+         out_meta_csv_path,
+         validation_split,
+         limit=None):
     '''
         Loads and converts an image dataset of the CIFAR format for IMAGE_CLASSIFICATION.
         Refer to https://www.cs.toronto.edu/~kriz/cifar.html for the CIFAR dataset format.
@@ -45,7 +52,10 @@ def load(dataset_url, label_to_name, out_train_dataset_path, out_val_dataset_pat
         :param float validation_split: Proportion (0-1) to carve out validation dataset from the originl train dataset
         :param int limit: Maximum number of samples for each dataset (for purposes of development)
     '''
-    if all([os.path.exists(x) for x in [out_train_dataset_path, out_val_dataset_path, out_meta_csv_path]]):
+    if all([
+            os.path.exists(x) for x in
+        [out_train_dataset_path, out_val_dataset_path, out_meta_csv_path]
+    ]):
         print('Dataset already loaded in local filesystem - skipping...')
         return
 
@@ -53,24 +63,34 @@ def load(dataset_url, label_to_name, out_train_dataset_path, out_val_dataset_pat
     dataset_zip_file_path = download_dataset_from_url(dataset_url)
 
     print('Loading datasets into memory...')
-    (train_images, train_labels, test_images, test_labels) = _load_dataset_from_zip_file(dataset_zip_file_path)
-    (train_images, train_labels, val_images, val_labels) = _split_train_dataset(train_images, train_labels, validation_split)
+    (train_images, train_labels, test_images,
+     test_labels) = _load_dataset_from_zip_file(dataset_zip_file_path)
+    (train_images, train_labels, val_images,
+     val_labels) = _split_train_dataset(train_images, train_labels,
+                                        validation_split)
 
     print('Converting and writing datasets...')
 
-    (label_to_index) = _write_meta_csv(chain(train_labels, test_labels), label_to_name, out_meta_csv_path)
+    (label_to_index) = _write_meta_csv(chain(train_labels, test_labels),
+                                       label_to_name, out_meta_csv_path)
     print('Dataset metadata file is saved at {}'.format(out_meta_csv_path))
 
-    _write_dataset(train_images, train_labels, label_to_index, out_train_dataset_path, limit)
-    print('Train dataset file is saved at {}. This should be submitted as `train_dataset` of a train job.'
-            .format(out_train_dataset_path))
+    _write_dataset(train_images, train_labels, label_to_index,
+                   out_train_dataset_path, limit)
+    print(
+        'Train dataset file is saved at {}. This should be submitted as `train_dataset` of a train job.'
+        .format(out_train_dataset_path))
 
-    _write_dataset(val_images, val_labels, label_to_index, out_val_dataset_path, limit)
-    print('Validation dataset file is saved at {}. This should be submitted as `val_dataset` of a train job.'
-            .format(out_val_dataset_path))
+    _write_dataset(val_images, val_labels, label_to_index, out_val_dataset_path,
+                   limit)
+    print(
+        'Validation dataset file is saved at {}. This should be submitted as `val_dataset` of a train job.'
+        .format(out_val_dataset_path))
 
-    _write_dataset(test_images, test_labels, label_to_index, out_test_dataset_path, limit)
+    _write_dataset(test_images, test_labels, label_to_index,
+                   out_test_dataset_path, limit)
     print('Test dataset file is saved at {}'.format(out_test_dataset_path))
+
 
 def _split_train_dataset(train_images, train_labels, validation_split):
     val_start_idx = int(len(train_images) * (1 - validation_split))
@@ -80,6 +100,7 @@ def _split_train_dataset(train_images, train_labels, validation_split):
     train_labels = train_labels[:val_start_idx]
     return (train_images, train_labels, val_images, val_labels)
 
+
 def _write_meta_csv(labels, label_to_name, out_meta_csv_path):
     label_to_index = {}
     with open(out_meta_csv_path, mode='w') as f:
@@ -88,9 +109,10 @@ def _write_meta_csv(labels, label_to_name, out_meta_csv_path):
 
         for (i, label) in enumerate(sorted(set(labels))):
             label_to_index[label] = i
-            writer.writerow({ 'class': i, 'name': label_to_name[label] })
+            writer.writerow({'class': i, 'name': label_to_name[label]})
 
     return (label_to_index)
+
 
 def _write_dataset(images, labels, label_to_index, out_dataset_path, limit):
     if limit is not None:
@@ -107,16 +129,23 @@ def _write_dataset(images, labels, label_to_index, out_dataset_path, limit):
         with open(images_csv_path, mode='w') as f:
             writer = csv.DictWriter(f, fieldnames=['path', 'class'])
             writer.writeheader()
-            for (i, image, label) in tqdm(zip(range(n), images, labels), total=n, unit='images'):
+            for (i, image, label) in tqdm(zip(range(n), images, labels),
+                                          total=n,
+                                          unit='images'):
                 image_name = '{}-{}.png'.format(label, i)
                 image_path = os.path.join(d, image_name)
                 pil_image = Image.fromarray(image, mode='RGB')
                 pil_image.save(image_path)
-                writer.writerow({ 'path': image_name, 'class': label_to_index[label] })
+                writer.writerow({
+                    'path': image_name,
+                    'class': label_to_index[label]
+                })
 
         # Zip and export folder as dataset
         out_path = shutil.make_archive(out_dataset_path, 'zip', d)
-        os.rename(out_path, out_dataset_path) # Remove additional trailing `.zip`
+        os.rename(out_path,
+                  out_dataset_path)  # Remove additional trailing `.zip`
+
 
 def _load_dataset_from_zip_file(dataset_zip_file_path):
     with tempfile.TemporaryDirectory() as d:
@@ -127,7 +156,9 @@ def _load_dataset_from_zip_file(dataset_zip_file_path):
         # Get root of data files
         files = os.listdir(d)
         if len(files) != 1:
-            raise ValueError('Invalid format - root of archive should contain exactly 1 folder')
+            raise ValueError(
+                'Invalid format - root of archive should contain exactly 1 folder'
+            )
         root = os.path.join(d, files[0])
 
         # Extract train images & labels (merge batches)
@@ -143,7 +174,7 @@ def _load_dataset_from_zip_file(dataset_zip_file_path):
 
         train_images = np.array(train_images)
         train_labels = np.array(train_labels)
-        
+
         # Extract test images & labels
         test_file_path = os.path.join(root, 'test_batch')
         with open(test_file_path, 'rb') as fo:
@@ -152,16 +183,15 @@ def _load_dataset_from_zip_file(dataset_zip_file_path):
 
     return (train_images, train_labels, test_images, test_labels)
 
+
 def _cifar_batch_to_data(cifar_batch):
     images = _cifar_images_to_images(cifar_batch['data'.encode()])
     labels = cifar_batch['labels'.encode()]
     return (images, labels)
+
 
 def _cifar_images_to_images(cifar_images):
     images = np.reshape(cifar_images, (-1, 3, 32 * 32))
     images = np.swapaxes(images, 1, 2)
     images = np.reshape(images, (-1, 32, 32, 3))
     return images
-
-    
-    

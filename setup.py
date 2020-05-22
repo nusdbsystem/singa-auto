@@ -19,7 +19,6 @@
 
 from setuptools import setup, findall, find_packages
 
-
 setup(name='singa-auto',
       version='0.2.1',
       description='The SINGA-Auto',
@@ -29,20 +28,15 @@ setup(name='singa-auto',
       license='Apache',
       packages=["singa_auto", "scripts"],
       include_package_data=True,
-      install_requires=['docker',
-                        'requests',
-                        'numpy',
-                        'pandas',
-                        'temp',
-                        'Pillow',
-                        'requests-toolbelt',
-                        'requests'
-                        ],
+      install_requires=[
+          'docker', 'requests', 'numpy', 'pandas', 'temp', 'Pillow',
+          'requests-toolbelt', 'requests'
+      ],
       entry_points={
-            'console_scripts': [
-                  'admin=singa_auto:start_admin',
-                  'predict=singa_auto:start_predictor',
-                  'worker=singa_auto:start_worker',
-            ],
+          'console_scripts': [
+              'admin=singa_auto:start_admin',
+              'predict=singa_auto:start_predictor',
+              'worker=singa_auto:start_worker',
+          ],
       },
       zip_safe=False)

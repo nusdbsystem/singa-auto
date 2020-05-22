@@ -20,12 +20,16 @@
 import abc
 from typing import Union, List
 
-POLICIES = ['SHARE_PARAMS', 'EARLY_STOP', 'SKIP_TRAIN', 'QUICK_EVAL', 'DOWNSCALE']
+POLICIES = [
+    'SHARE_PARAMS', 'EARLY_STOP', 'SKIP_TRAIN', 'QUICK_EVAL', 'DOWNSCALE'
+]
+
 
 class KnobValue():
     '''
         Wrapper for a ``CategoricalValue``.
     '''
+
     def __init__(self, value: Union[str, int, float, bool]):
         (self._value, self._dtype) = self._parse_value(value)
 
@@ -50,12 +54,15 @@ class KnobValue():
         elif isinstance(value, str):
             value_type = str
         else:
-            raise TypeError('Only the following knob value data types are supported: `int`, `float`, `bool` or `str`')
-        
+            raise TypeError(
+                'Only the following knob value data types are supported: `int`, `float`, `bool` or `str`'
+            )
+
         return (value, value_type)
 
 
-CategoricalValue = Union[str, int, float, bool, KnobValue] 
+CategoricalValue = Union[str, int, float, bool, KnobValue]
+
 
 class BaseKnob(abc.ABC):
     '''
@@ -73,6 +80,7 @@ class CategoricalKnob(BaseKnob):
         Knob type representing a categorical value of type ``int``, ``float``, ``bool`` or ``str``.
         ``values`` is a list of candidate cateogrical values for this knob type; a realization of this knob type would be an element of ``values``.
     '''
+
     def __init__(self, values: List[CategoricalValue]):
         (self._values, self._value_type) = self._validate_values(values)
 
@@ -86,7 +94,9 @@ class CategoricalKnob(BaseKnob):
 
     @staticmethod
     def _validate_values(values):
-        values = [KnobValue(x) if not isinstance(x, KnobValue) else x for x in values]
+        values = [
+            KnobValue(x) if not isinstance(x, KnobValue) else x for x in values
+        ]
 
         if len(values) == 0:
             raise ValueError('Length of `values` should at least 1')
@@ -98,13 +108,16 @@ class CategoricalKnob(BaseKnob):
 
         return (values, value_type)
 
+
 class FixedKnob(BaseKnob):
     '''
         Knob type representing a fixed value of type ``int``, ``float``, ``bool`` or ``str``.
         Essentially, this represents a knob type that does not require tuning.
     '''
+
     def __init__(self, value: CategoricalValue):
-        self._value = KnobValue(value) if not isinstance(value, KnobValue) else value
+        self._value = KnobValue(value) if not isinstance(value,
+                                                         KnobValue) else value
         self._value_type = self._value.dtype
 
     @property
@@ -125,11 +138,12 @@ class PolicyKnob(BaseKnob):
 
     Refer to :ref:`model-policies` to understand how to use this knob type.
     '''
+
     def __init__(self, policy: str):
         if policy not in POLICIES:
             raise ValueError('Policy type must be one of {}'.format(POLICIES))
         self._policy = policy
-    
+
     @property
     def value_type(self):
         return bool
@@ -154,7 +168,7 @@ class IntegerKnob(BaseKnob):
     @property
     def value_type(self):
         return int
-    
+
     @property
     def value_min(self) -> int:
         return self._value_min
@@ -162,7 +176,7 @@ class IntegerKnob(BaseKnob):
     @property
     def value_max(self) -> int:
         return self._value_max
-    
+
     @property
     def is_exp(self) -> bool:
         return self._is_exp
@@ -171,20 +185,24 @@ class IntegerKnob(BaseKnob):
     def _validate_values(value_min, value_max):
         if not isinstance(value_min, int):
             raise ValueError('`value_min` should be an `int`')
-        
+
         if not isinstance(value_max, int):
             raise ValueError('`value_max` should be an `int`')
 
         if value_min > value_max:
             raise ValueError('`value_max` should be at least `value_min`')
-        
+
 
 class FloatKnob(BaseKnob):
     '''
         Knob type representing a ``float`` value within a specific interval [``value_min``, ``value_max``].
         ``is_exp`` specifies whether the knob value should be scaled exponentially.
     '''
-    def __init__(self, value_min: float, value_max: float, is_exp: bool = False):
+
+    def __init__(self,
+                 value_min: float,
+                 value_max: float,
+                 is_exp: bool = False):
         self._validate_values(value_min, value_max)
         self._value_min = float(value_min)
         self._value_max = float(value_max)
@@ -193,7 +211,7 @@ class FloatKnob(BaseKnob):
     @property
     def value_type(self):
         return float
-    
+
     @property
     def value_min(self) -> float:
         return self._value_min
@@ -201,7 +219,7 @@ class FloatKnob(BaseKnob):
     @property
     def value_max(self) -> float:
         return self._value_max
-    
+
     @property
     def is_exp(self) -> bool:
         return self._is_exp
@@ -210,7 +228,7 @@ class FloatKnob(BaseKnob):
     def _validate_values(value_min, value_max):
         if not isinstance(value_min, float) and not isinstance(value_min, int):
             raise ValueError('`value_min` should be a `float` or `int`')
-        
+
         if not isinstance(value_max, float) and not isinstance(value_max, int):
             raise ValueError('`value_max` should be a `float` or `int`')
 
@@ -257,7 +275,7 @@ class ArchKnob(BaseKnob):
     def value_type(self):
         return list
 
-    @property  
+    @property
     def items(self) -> List[List[CategoricalValue]]:
         return self._items
 
@@ -267,6 +285,9 @@ class ArchKnob(BaseKnob):
     @staticmethod
     def _validate_values(items):
         for (i, values) in enumerate(items):
-            items[i] = [KnobValue(x) if not isinstance(x, KnobValue) else x for x in values]
+            items[i] = [
+                KnobValue(x) if not isinstance(x, KnobValue) else x
+                for x in values
+            ]
 
         return items

@@ -228,7 +228,8 @@ def make_predictions(queries: List[Any], task: str,
     # Worker makes prediction on queries
     _print_header('Making predictions with trained model...')
     predictions = model_inst.predict([x.query for x in queries_at_worker])
-    predictions = [Prediction(x, query.id, worker_id)
+    predictions = [
+        Prediction(x, query.id, worker_id)
         for (x, query) in zip(predictions, queries_at_worker)
     ]
 
@@ -257,10 +258,11 @@ def make_predictions(queries: List[Any], task: str,
                 Exception('Each `prediction` should be JSON serializable'))
             out_prediction = ensemble_method([prediction])
             out_predictions.append(out_prediction)
-
+            
         print('Predictions: {}'.format(out_predictions))
 
         return (out_predictions, model_inst)
+
 
 
 # TODO: Fix method, more thorough testing of model API

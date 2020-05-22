@@ -19,7 +19,7 @@
 #
 
 LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_web_admin.log
-
+source ./scripts/docker_swarm/.env.sh
 source ./scripts/docker_swarm/utils.sh
 
 title "Starting SINGA-Auto's Web Admin..."

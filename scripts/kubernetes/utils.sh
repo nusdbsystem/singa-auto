@@ -18,7 +18,7 @@
 #
 
 # Echo title with border
-title() 
+title()
 {
     title="| $1 |"
     edge=$(echo "$title" | sed 's/./-/g')
@@ -57,13 +57,24 @@ is_running()
         return 1
     else
         return 0
-    fi  
+    fi
+}
+
+# Check if kubernetes ingress controllerrunning, returns 0/1
+is_running_ingress()
+{
+    if [ -z "$(kubectl get service -n ingress-nginx | grep ingress-nginx)" ] && [ -z "$(kubectl get deployment  -n ingress-nginx | grep ingress-nginx)" ]
+    then
+        return 1
+    else
+        return 0
+    fi
 }
 
 # Prompts the user with a yes/no question (defaults to yes), returns 0/1
 prompt()
 {
-    
+
     text=$1
     read -p "$text (y/n) " ok
     if [ $ok = "n" ]

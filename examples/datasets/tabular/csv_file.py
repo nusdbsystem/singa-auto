@@ -26,6 +26,7 @@ import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
+
 def load(dataset_url, out_train_dataset_path, out_val_dataset_path):
     '''
         Splits a standard CSV file into train & validation datasets, as per the DatasetType `TABULAR`.
@@ -44,6 +45,7 @@ def load(dataset_url, out_train_dataset_path, out_val_dataset_path):
 
     _write_dataset(X_test, out_val_dataset_path)
     print('Validation dataset file is saved at {}'.format(out_val_dataset_path))
+
 
 def _write_dataset(data, out_dataset_path):
     data.to_csv(out_dataset_path, index=False)

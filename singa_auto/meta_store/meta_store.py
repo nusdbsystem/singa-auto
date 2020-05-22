@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import json
 from datetime import datetime
 import os
 from sqlalchemy import create_engine, distinct, or_
@@ -27,30 +27,44 @@ from singa_auto.constants import TrainJobStatus, UserType, \
 
 from singa_auto.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWorker, \
     InferenceJob, Trial, Model, User, Service, InferenceJobWorker, \
-    TrialLog, Dataset
+    TrialLog, Dataset, IngressConfig
 
 
-class InvalidModelAccessRightError(Exception): pass
-class DuplicateModelNameError(Exception): pass
-class ModelUsedError(Exception): pass
-class InvalidUserTypeError(Exception): pass
+class InvalidModelAccessRightError(Exception):
+    pass
+
+
+class DuplicateModelNameError(Exception):
+    pass
+
+
+class ModelUsedError(Exception):
+    pass
+
+
+class InvalidUserTypeError(Exception):
+    pass
 
 
 class MetaStore(object):
-    def __init__(self, **kwargs):
-        host = kwargs.get('postgres_host', os.environ.get('POSTGRES_HOST', 'localhost'))
-        port = kwargs.get('postgres_port', os.environ.get('POSTGRES_PORT', 5432))
-        user = kwargs.get('postgres_user', os.environ.get('POSTGRES_USER', 'singa_auto'))
-        db = kwargs.get('postgres_db', os.environ.get('POSTGRES_DB', 'singa_auto'))
-        password = kwargs.get('postgres_password', os.environ.get('POSTGRES_PASSWORD', 'singa_auto'))
 
-        db_connection_url = self._make_connection_url(
-            host=host,
-            port=port,
-            db=db,
-            user=user,
-            password=password
-        )
+    def __init__(self, **kwargs):
+        host = kwargs.get('postgres_host',
+                          os.environ.get('POSTGRES_HOST', 'localhost'))
+        port = kwargs.get('postgres_port',
+                          os.environ.get('POSTGRES_PORT', 5432))
+        user = kwargs.get('postgres_user',
+                          os.environ.get('POSTGRES_USER', 'singa_auto'))
+        db = kwargs.get('postgres_db',
+                        os.environ.get('POSTGRES_DB', 'singa_auto'))
+        password = kwargs.get('postgres_password',
+                              os.environ.get('POSTGRES_PASSWORD', 'singa_auto'))
+
+        db_connection_url = self._make_connection_url(host=host,
+                                                      port=port,
+                                                      db=db,
+                                                      user=user,
+                                                      password=password)
 
         self._engine = create_engine(db_connection_url)
         self._Session = sessionmaker(bind=self._engine)
@@ -63,11 +77,9 @@ class MetaStore(object):
 
     def create_user(self, email, password_hash, user_type):
         self._validate_user_type(user_type)
-        user = User(
-            email=email,
-            password_hash=password_hash,
-            user_type=user_type
-        )
+        user = User(email=email,
+                    password_hash=password_hash,
+                    user_type=user_type)
         self._session.add(user)
         return user
 
@@ -88,14 +100,18 @@ class MetaStore(object):
         return users
 
     def _validate_user_type(self, user_type):
-        if user_type not in [UserType.SUPERADMIN, UserType.ADMIN, UserType.APP_DEVELOPER, UserType.MODEL_DEVELOPER]:
+        if user_type not in [
+                UserType.SUPERADMIN, UserType.ADMIN, UserType.APP_DEVELOPER,
+                UserType.MODEL_DEVELOPER
+        ]:
             raise InvalidUserTypeError()
 
     ####################################
     # Datasets
     ####################################
 
-    def create_dataset(self, name, task, size_bytes, store_dataset_id, owner_id, stat):
+    def create_dataset(self, name, task, size_bytes, store_dataset_id, owner_id,
+                       stat):
         dataset = Dataset(
             name=name,
             task=task,
@@ -126,18 +142,16 @@ class MetaStore(object):
     ####################################
 
     def create_train_job(self, user_id, app, app_version, task, budget,
-                        train_dataset_id, val_dataset_id, train_args):
+                         train_dataset_id, val_dataset_id, train_args):
 
-        train_job = TrainJob(
-            user_id=user_id,
-            app=app,
-            app_version=app_version,
-            task=task,
-            budget=budget,
-            train_dataset_id=train_dataset_id,
-            val_dataset_id=val_dataset_id,
-            train_args=train_args
-        )
+        train_job = TrainJob(user_id=user_id,
+                             app=app,
+                             app_version=app_version,
+                             task=task,
+                             budget=budget,
+                             train_dataset_id=train_dataset_id,
+                             val_dataset_id=val_dataset_id,
+                             train_args=train_args)
         self._session.add(train_job)
         return train_job
 
@@ -194,16 +208,13 @@ class MetaStore(object):
         train_job.datetime_stopped = datetime.utcnow()
         self._session.add(train_job)
 
-
     ####################################
     # Sub Train Jobs
     ####################################
 
     def create_sub_train_job(self, train_job_id, model_id):
-        sub_train_job = SubTrainJob(
-            train_job_id=train_job_id,
-            model_id=model_id
-        )
+        sub_train_job = SubTrainJob(train_job_id=train_job_id,
+                                    model_id=model_id)
         self._session.add(sub_train_job)
         return sub_train_job
 
@@ -249,10 +260,8 @@ class MetaStore(object):
     ####################################
 
     def create_train_job_worker(self, service_id, sub_train_job_id):
-        worker = TrainJobWorker(
-            sub_train_job_id=sub_train_job_id,
-            service_id=service_id
-        )
+        worker = TrainJobWorker(sub_train_job_id=sub_train_job_id,
+                                service_id=service_id)
         self._session.add(worker)
         return worker
 
@@ -271,13 +280,15 @@ class MetaStore(object):
     # Inference Jobs
     ####################################
 
-    def create_inference_job(self, user_id, budget, train_job_id=None, model_id=None):
-        inference_job = InferenceJob(
-            user_id=user_id,
-            train_job_id=train_job_id,
-            model_id=model_id,
-            budget=budget
-        )
+    def create_inference_job(self,
+                             user_id,
+                             budget,
+                             train_job_id=None,
+                             model_id=None):
+        inference_job = InferenceJob(user_id=user_id,
+                                     train_job_id=train_job_id,
+                                     model_id=model_id,
+                                     budget=budget)
         self._session.add(inference_job)
         return inference_job
 
@@ -293,6 +304,13 @@ class MetaStore(object):
     def get_deployed_inference_job_by_train_job(self, train_job_id):
         inference_job = self._session.query(InferenceJob) \
             .filter(InferenceJob.train_job_id == train_job_id) \
+            .filter(InferenceJob.status.in_([InferenceJobStatus.RUNNING, InferenceJobStatus.STARTED])).first()
+
+        return inference_job
+
+    def get_deployed_inference_job_by_model_id(self, model_id):
+        inference_job = self._session.query(InferenceJob) \
+            .filter(InferenceJob.model_id == model_id) \
             .filter(InferenceJob.status.in_([InferenceJobStatus.RUNNING, InferenceJobStatus.STARTED])).first()
 
         return inference_job
@@ -339,13 +357,15 @@ class MetaStore(object):
     # Inference Job Workers
     ####################################
 
-    def create_inference_job_worker(self, service_id, inference_job_id, trial_id=None, checkpoint_id=None):
-        worker = InferenceJobWorker(
-            service_id=service_id,
-            inference_job_id=inference_job_id,
-            trial_id=trial_id,
-            checkpoint_id=checkpoint_id
-        )
+    def create_inference_job_worker(self,
+                                    service_id,
+                                    inference_job_id,
+                                    trial_id=None,
+                                    checkpoint_id=None):
+        worker = InferenceJobWorker(service_id=service_id,
+                                    inference_job_id=inference_job_id,
+                                    trial_id=trial_id,
+                                    checkpoint_id=checkpoint_id)
         self._session.add(worker)
         return worker
 
@@ -364,21 +384,20 @@ class MetaStore(object):
     # Services
     ####################################
 
-    def create_service(self, service_type, container_manager_type,
-                        docker_image, replicas, gpus):
-        service = Service(
-            service_type=service_type,
-            docker_image=docker_image,
-            container_manager_type=container_manager_type,
-            replicas=replicas,
-            gpus=gpus
-        )
+    def create_service(self, service_type, container_manager_type, docker_image,
+                       replicas, gpus):
+        service = Service(service_type=service_type,
+                          docker_image=docker_image,
+                          container_manager_type=container_manager_type,
+                          replicas=replicas,
+                          gpus=gpus)
         self._session.add(service)
         return service
 
     def mark_service_as_deploying(self, service, container_service_name,
-                                container_service_id, hostname,
-                                port, ext_hostname, ext_port, container_service_info):
+                                  container_service_id, hostname, port,
+                                  ext_hostname, ext_port,
+                                  container_service_info):
         service.container_service_name = container_service_name
         service.container_service_id = container_service_id
         service.hostname = hostname
@@ -423,22 +442,20 @@ class MetaStore(object):
     # Models
     ####################################
 
-    def create_model(self, user_id, name, task, model_file_bytes,
-                     model_class, docker_image, dependencies, access_right, checkpoint_id):
+    def create_model(self, user_id, name, task, model_file_bytes, model_class,
+                     docker_image, dependencies, access_right, checkpoint_id):
 
         self._validate_model_access_right(access_right)
 
-        model = Model(
-            user_id=user_id,
-            name=name,
-            task=task,
-            model_file_bytes=model_file_bytes,
-            model_class=model_class,
-            docker_image=docker_image,
-            dependencies=dependencies,
-            access_right=access_right,
-            checkpoint_id=checkpoint_id
-        )
+        model = Model(user_id=user_id,
+                      name=name,
+                      task=task,
+                      model_file_bytes=model_file_bytes,
+                      model_class=model_class,
+                      docker_image=docker_image,
+                      dependencies=dependencies,
+                      access_right=access_right,
+                      checkpoint_id=checkpoint_id)
         self._session.add(model)
         return model
 
@@ -480,7 +497,9 @@ class MetaStore(object):
         return model
 
     def _validate_model_access_right(self, access_right):
-        if access_right not in [ModelAccessRight.PUBLIC, ModelAccessRight.PRIVATE]:
+        if access_right not in [
+                ModelAccessRight.PUBLIC, ModelAccessRight.PRIVATE
+        ]:
             raise InvalidModelAccessRightError()
 
     ####################################
@@ -488,12 +507,10 @@ class MetaStore(object):
     ####################################
 
     def create_trial(self, sub_train_job_id, no, model_id, worker_id):
-        trial = Trial(
-            no=no,
-            sub_train_job_id=sub_train_job_id,
-            model_id=model_id,
-            worker_id=worker_id
-        )
+        trial = Trial(no=no,
+                      sub_train_job_id=sub_train_job_id,
+                      model_id=model_id,
+                      worker_id=worker_id)
         self._session.add(trial)
         return trial
 
@@ -586,6 +603,65 @@ class MetaStore(object):
         return trial_log
 
     ####################################
+    # ingress update
+    ####################################
+
+    def update_ingress_config(self, ingress_name: str, inferenceAppName: str, container_service_name: str, service_port: int):
+
+        ingress_info = self._session\
+            .query(IngressConfig)\
+            .filter(IngressConfig.name == ingress_name)\
+            .with_for_update(read=False) \
+            .first()
+
+        if ingress_info is None:
+            # if there isn't ingress info in db
+            ingress_body = {"apiVersion": 'networking.k8s.io/v1beta1',
+                            "kind": 'Ingress',
+                            "metadata": {"name": ingress_name},
+                            "spec":
+                                {"rules":
+                                     [{"http":
+                                           {"paths":
+                                                [{"path": "/" + inferenceAppName,
+                                                  "backend":
+                                                      {"serviceName": container_service_name,
+                                                       "servicePort": service_port}
+                                                  }]
+                                            }
+                                       }
+                                      ]
+                                 }
+                            }
+
+            ingress_info = IngressConfig(name=ingress_name,
+                                         ingress_body=json.dumps(ingress_body))
+
+            self._session.add(ingress_info)
+
+        else:
+            ingress_body = json.loads(ingress_info.ingress_body)
+            for path_info in ingress_body["spec"]["rules"][0]["http"]["paths"]:
+                # if the service is updated
+                if path_info["path"] == "/" + inferenceAppName:
+                    path_info["backend"]["serviceName"] = container_service_name
+                    break
+            else:
+                # if new service path is added
+                path_info = {"path": "/" + inferenceAppName,
+                             "backend": {
+                                     "serviceName": container_service_name,
+                                     "servicePort": service_port
+                                 }
+                             }
+                ingress_body["spec"]["rules"][0]["http"]["paths"].append(path_info)
+
+            ingress_info.ingress_body = json.dumps(ingress_body)
+            self._session.add(ingress_info)
+
+        return ingress_info
+
+    ####################################
     # Others
     ####################################
 
@@ -609,6 +685,9 @@ class MetaStore(object):
             else:
                 raise e
 
+    def rollback(self):
+        self._session.rollback()
+
     # Ensures that future database queries load fresh data from underlying database
     def expire(self):
         self._session.expire_all()
@@ -624,9 +703,8 @@ class MetaStore(object):
             self._session.execute(table.delete())
 
     def _make_connection_url(self, host, port, db, user, password):
-        return 'postgresql://{}:{}@{}:{}/{}'.format(
-            user, password, host, port, db
-        )
+        return 'postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port,
+                                                    db)
 
     def _define_tables(self):
         Base.metadata.create_all(bind=self._engine)

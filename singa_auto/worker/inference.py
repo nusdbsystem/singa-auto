@@ -36,15 +36,24 @@ LOOP_SLEEP_SECS = 0.1
 PREDICT_BATCH_SIZE = 32
 
 
-class InvalidWorkerError(Exception): pass
-class InvalidTrialError(Exception): pass
+class InvalidWorkerError(Exception):
+    pass
+
+
+class InvalidTrialError(Exception):
+    pass
 
 
 logger = logging.getLogger(__name__)
 
 
 class InferenceWorker():
-    def __init__(self, service_id, worker_id, meta_store=None, param_store=None):
+
+    def __init__(self,
+                 service_id,
+                 worker_id,
+                 meta_store=None,
+                 param_store=None):
         self._service_id = service_id
         self._worker_id = worker_id
         self._meta_store = meta_store or MetaStore()
@@ -64,9 +73,12 @@ class InferenceWorker():
 
     def start(self):
         self._pull_job_info()
-        self._redis_cache = RedisInferenceCache(self._inference_job_id,  self._redis_host,  self._redis_port)
+        self._redis_cache = RedisInferenceCache(self._inference_job_id,
+                                                self._redis_host,
+                                                self._redis_port)
 
-        logger.info(f'Starting worker for inference job "{self._inference_job_id}"...')
+        logger.info(
+            f'Starting worker for inference job "{self._inference_job_id}"...')
 
         self._notify_start()
 
@@ -107,34 +119,44 @@ class InferenceWorker():
         with self._meta_store:
             worker = self._meta_store.get_inference_job_worker(service_id)
             if worker is None:
-                raise InvalidWorkerError('No such worker "{}"'.format(service_id))
+                raise InvalidWorkerError(
+                    'No such worker "{}"'.format(service_id))
 
-            inference_job = self._meta_store.get_inference_job(worker.inference_job_id)
+            inference_job = self._meta_store.get_inference_job(
+                worker.inference_job_id)
             if inference_job is None:
-                raise InvalidWorkerError('No such inference job with ID "{}"'.format(worker.inference_job_id))
+                raise InvalidWorkerError(
+                    'No such inference job with ID "{}"'.format(
+                        worker.inference_job_id))
             if inference_job.model_id:
                 model = self._meta_store.get_model(inference_job.model_id)
                 logger.info(f'Using checkpoint of the model "{model.name}"...')
 
-                self._proposal = Proposal.from_jsonable({"trial_no": 1, "knobs": {}})
+                self._proposal = Proposal.from_jsonable({
+                    "trial_no": 1,
+                    "knobs": {}
+                })
                 self._store_params_id = model.checkpoint_id
             else:
 
                 trial = self._meta_store.get_trial(worker.trial_id)
-                if trial is None or trial.store_params_id is None: # Must have model saved
-                    raise InvalidTrialError('No saved trial with ID "{}"'.format(worker.trial_id))
+                if trial is None or trial.store_params_id is None:  # Must have model saved
+                    raise InvalidTrialError(
+                        'No saved trial with ID "{}"'.format(worker.trial_id))
                 logger.info(f'Using trial "{trial.id}"...')
 
                 model = self._meta_store.get_model(trial.model_id)
                 if model is None:
-                    raise InvalidTrialError('No such model with ID "{}"'.format(trial.model_id))
+                    raise InvalidTrialError('No such model with ID "{}"'.format(
+                        trial.model_id))
                 logger.info(f'Using model "{model.name}"...')
 
                 self._proposal = Proposal.from_jsonable(trial.proposal)
                 self._store_params_id = trial.store_params_id
 
             self._inference_job_id = inference_job.id
-            self._py_model_class = load_model_class(model.model_file_bytes, model.model_class)
+            self._py_model_class = load_model_class(model.model_file_bytes,
+                                                    model.model_class)
 
     def _load_trial_model(self):
         logger.info('Loading saved model parameters from store...')
@@ -147,11 +169,13 @@ class InferenceWorker():
         return model_inst
 
     def _notify_start(self):
-        superadmin_client().send_event('inference_job_worker_started', inference_job_id=self._inference_job_id)
+        superadmin_client().send_event('inference_job_worker_started',
+                                       inference_job_id=self._inference_job_id)
         self._redis_cache.add_worker(self._worker_id)
 
     def _fetch_queries(self) -> List[Query]:
-        queries = self._kafka_cache.pop_queries_for_worker(self._worker_id, self._batch_size)
+        queries = self._kafka_cache.pop_queries_for_worker(
+            self._worker_id, self._batch_size)
         return queries
 
     def _predict(self, queries: List[Query]) -> List[Prediction]:
@@ -164,13 +188,18 @@ class InferenceWorker():
             predictions = [None for x in range(len(queries))]
 
         # Transform predictions, adding associated worker & query ID
-        predictions = [Prediction(x, query.id, self._worker_id) for (x, query) in zip(predictions, queries)]
+        predictions = [
+            Prediction(x, query.id, self._worker_id)
+            for (x, query) in zip(predictions, queries)
+        ]
 
         return predictions
 
     def _submit_predictions(self, predictions: List[Prediction]):
-        self._kafka_cache.add_predictions_for_worker(self._worker_id, predictions)
+        self._kafka_cache.add_predictions_for_worker(self._worker_id,
+                                                     predictions)
 
     def _notify_stop(self):
         self._redis_cache.delete_worker(self._worker_id)
-        superadmin_client().send_event('inference_job_worker_stopped', inference_job_id=self._inference_job_id)
+        superadmin_client().send_event('inference_job_worker_stopped',
+                                       inference_job_id=self._inference_job_id)

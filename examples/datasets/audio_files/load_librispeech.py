@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-# 
+#
 
 import os
 import codecs
@@ -32,17 +32,28 @@ from examples.datasets.utils import download_dataset_from_url
 
 LIBRIVOX_DIR = "LibriSpeech"
 part_to_url = {
-    'train-clean-100':  'http://www.openslr.org/resources/12/train-clean-100.tar.gz',
-    'train-clean-360':  'http://www.openslr.org/resources/12/train-clean-360.tar.gz',
-    'train-other-500':  'http://www.openslr.org/resources/12/train-other-500.tar.gz',
-    'dev-clean': 'http://www.openslr.org/resources/12/dev-clean.tar.gz',
-    'dev-other': 'http://www.openslr.org/resources/12/dev-other.tar.gz',
-    'test-clean': 'http://www.openslr.org/resources/12/test-clean.tar.gz',
-    'test-other': 'http://www.openslr.org/resources/12/test-other.tar.gz',
+    'train-clean-100':
+        'http://www.openslr.org/resources/12/train-clean-100.tar.gz',
+    'train-clean-360':
+        'http://www.openslr.org/resources/12/train-clean-360.tar.gz',
+    'train-other-500':
+        'http://www.openslr.org/resources/12/train-other-500.tar.gz',
+    'dev-clean':
+        'http://www.openslr.org/resources/12/dev-clean.tar.gz',
+    'dev-other':
+        'http://www.openslr.org/resources/12/dev-other.tar.gz',
+    'test-clean':
+        'http://www.openslr.org/resources/12/test-clean.tar.gz',
+    'test-other':
+        'http://www.openslr.org/resources/12/test-other.tar.gz',
 }
 
-def load_librispeech(data_dir, parts=['dev-clean', 'dev-other', 'test-clean',
-                                      'test-other', 'train-clean-100', 'train-clean-360', 'train-other-500']):
+
+def load_librispeech(data_dir,
+                     parts=[
+                         'dev-clean', 'dev-other', 'test-clean', 'test-other',
+                         'train-clean-100', 'train-clean-360', 'train-other-500'
+                     ]):
     '''
         Loads and converts an voice dataset called "librispeech" to the DatasetType `AUDIO_FILES`.
         Refer to http://www.openslr.org/resources/12 for more details on the dataset.
@@ -60,18 +71,20 @@ def load_librispeech(data_dir, parts=['dev-clean', 'dev-other', 'test-clean',
 
     for tar_gz_url in tar_gz_urls:
         _maybe_load_chunk(data_dir, tar_gz_url)
-        
+
 
 def _maybe_load_chunk(data_dir, tar_gz_url):
     filename = os.path.split(tar_gz_url)[1].split('.')[0]
     dataset_path = os.path.join(data_dir, f'{filename}.zip')
 
     if os.path.exists(dataset_path):
-        print(f'{dataset_path} already loaded in local filesystem - skipping...')
+        print(
+            f'{dataset_path} already loaded in local filesystem - skipping...')
         return
 
-    print("You can skip the download by putting the downloaded tar.gz files into {} directory on your own..."
-          .format(data_dir))
+    print(
+        "You can skip the download by putting the downloaded tar.gz files into {} directory on your own..."
+        .format(data_dir))
     tar_gz_path = _maybe_download(filename, data_dir, tar_gz_url)
 
     # Conditionally extract LibriSpeech data
@@ -94,15 +107,18 @@ def _maybe_load_chunk(data_dir, tar_gz_url):
     #  ...
     print("Converting FLAC to WAV and splitting transcriptions...")
     work_dir = os.path.join(data_dir, LIBRIVOX_DIR)
-    wav = _convert_audio_and_split_sentences(work_dir, filename, f'{filename}-wav')
+    wav = _convert_audio_and_split_sentences(work_dir, filename,
+                                             f'{filename}-wav')
 
     print("Writing to CSV file...")
-    wav.to_csv(os.path.join(work_dir, f'{filename}-wav', "audios.csv"), index=False)
+    wav.to_csv(os.path.join(work_dir, f'{filename}-wav', "audios.csv"),
+               index=False)
 
     print("Zipping required dataset format...")
-    _write_dataset(os.path.join(work_dir, f'{filename}-wav'), dataset_path) 
+    _write_dataset(os.path.join(work_dir, f'{filename}-wav'), dataset_path)
 
     print('Dataset file is saved at {}'.format(dataset_path))
+
 
 def _maybe_download(archive_name, target_dir, archive_url):
     # If no downloaded file is provided, download it...
@@ -156,7 +172,8 @@ def _convert_audio_and_split_sentences(extracted_dir, data_set, dest_dir):
                 for line in fin:
                     # Parse each segment line
                     first_space = line.find(" ")
-                    seqid, transcript = line[:first_space], line[first_space+1:]
+                    seqid, transcript = line[:first_space], line[first_space +
+                                                                 1:]
 
                     # We need to do the encode-decode dance here because encode
                     # returns a bytes() object on Python 3
@@ -171,12 +188,14 @@ def _convert_audio_and_split_sentences(extracted_dir, data_set, dest_dir):
                     flac_file = os.path.join(root, seqid + ".flac")
                     wav_file = os.path.join(target_dir, seqid + ".wav")
 
-                    if not os.path.exists(wav_file) and os.path.exists(flac_file):
+                    if not os.path.exists(wav_file) and os.path.exists(
+                            flac_file):
                         Transformer().build(flac_file, wav_file)
                     wav_filesize = os.path.getsize(wav_file)
                     files.append((seqid + ".wav", wav_filesize, transcript))
 
-    return pandas.DataFrame(data=files, columns=["wav_filename", "wav_filesize", "transcript"])
+    return pandas.DataFrame(
+        data=files, columns=["wav_filename", "wav_filesize", "transcript"])
 
 
 # Validate and normalize transcriptions. Returns a cleaned version of the label
@@ -197,10 +216,12 @@ def _validate_label(label):
 
     return label if label else None
 
+
 def _write_dataset(dir_path, out_dataset_path):
     # Zip and export folder as dataset
     out_path = shutil.make_archive(out_dataset_path, 'zip', dir_path)
-    os.rename(out_path, out_dataset_path) # Remove additional trailing `.zip`
+    os.rename(out_path, out_dataset_path)  # Remove additional trailing `.zip`
+
 
 if __name__ == "__main__":
     load_librispeech('data/libri')

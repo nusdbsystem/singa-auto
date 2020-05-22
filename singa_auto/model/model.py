@@ -54,6 +54,7 @@ class BaseModel(abc.ABC):
     :param knobs: Dictionary mapping knob names to knob values
     :type knobs: :obj:`singa_auto.model.Knobs`
     '''
+
     def __init__(self, **knobs: Knobs):
         pass
 
@@ -73,7 +74,10 @@ class BaseModel(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def train(self, dataset_path: str, shared_params: Optional[Params] = None, **train_args):
+    def train(self,
+              dataset_path: str,
+              shared_params: Optional[Params] = None,
+              **train_args):
         '''
         Train this model instance with the given traing dataset and initialized knob values.
         Additional keyword arguments could be passed depending on the task's specification.

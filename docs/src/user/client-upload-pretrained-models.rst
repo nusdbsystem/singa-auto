@@ -40,3 +40,27 @@ Test the prediction service
         files = {'img': open(query_path, 'rb')}
         res = requests.post('http://{}/predict'.format(predictor_host), files=files)
         print(res.text)
+
+
+
+FoodLg model upload
+--------------------------------------------------------------------
+
+    .. code-block:: python
+
+        client.create_model(
+            name='Singapore Local Food - FC5Healthy-v2',
+            task='IMAGE_CLASSIFICATION',
+            model_file_path='./examples/models/image_object_detection/food_darknet_xception1.py',
+            model_class='FoodDetection',
+            model_pretrained_params_id="model231.zip",
+            dependencies={"keras": "2.2.4", "tensorflow": "1.12.0"}
+        )
+
+Create FoodLg inference based on the model
+--------------------------------------------------------------------
+    .. code-block:: python
+
+        client.create_inference_job_by_checkpoint(model_name='Singapore Local Food - FC5Healthy-v2')
+
+

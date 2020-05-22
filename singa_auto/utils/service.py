@@ -28,15 +28,16 @@ from singa_auto.utils.log import configure_logging
 logger = logging.getLogger(__name__)
 
 
-curr_time = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
+curr_time = datetime.now().strftime("%Y-%m-%d_%I.%M.%S.%p")
+
 
 
 def run_worker(meta_store, start_worker, stop_worker):
     service_id = os.environ['SINGA_AUTO_SERVICE_ID']
     service_type = os.environ['SINGA_AUTO_SERVICE_TYPE']
     container_id = os.environ.get('HOSTNAME', 'localhost')
-    configure_logging('{}-ServiceID-{}-ContainerID-{}'
-        .format(curr_time, service_id, container_id))
+    configure_logging('{}-SvcID-{}'
+        .format(curr_time, service_id))
 
     def _sigterm_handler(_signo, _stack_frame):
         logger.warn("Terminal signal received: %s, %s" % (_signo, _stack_frame))
@@ -52,7 +53,8 @@ def run_worker(meta_store, start_worker, stop_worker):
         meta_store.mark_service_as_running(service)
 
     try:
-        logger.info('Starting worker "{}" for service of ID "{}"...'.format(container_id, service_id))
+        logger.info('Starting worker "{}" for service of ID "{}"...'.format(
+            container_id, service_id))
         start_worker(service_id, service_type, container_id)
         logger.info('Stopping worker...')
         stop_worker()
@@ -69,9 +71,4 @@ def run_worker(meta_store, start_worker, stop_worker):
         stop_worker()
 
         raise e
-
-
-
-
-
 
