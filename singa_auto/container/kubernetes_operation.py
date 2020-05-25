@@ -32,6 +32,10 @@ RETRY_TIMES = 5
 logger = logging.getLogger(__name__)
 
 
+class ServiceRequestError(Exception):
+    pass
+
+
 class KubernetesContainerManager(ContainerManager):
 
     def __init__(self, **kwargs):
@@ -87,9 +91,27 @@ class KubernetesContainerManager(ContainerManager):
             )
         )
 
-        self.api_instance.replace_namespaced_ingress_with_http_info(name=ingress_name,
-                                                                    namespace='default',
-                                                                    body=body)
+        # check the current ingress list
+        ingress_list = self.api_instance.list_namespaced_ingress_with_http_info(namespace='default')
+
+        if ingress_list[1] != 200:
+            raise ServiceRequestError("ingress response code is not 200")
+
+        # get the ingress name of each ingress
+        ingress_names = [ele.metadata.name for ele in ingress_list[0].items]
+
+        # check if the ingress_name in the list
+        if ingress_name in ingress_names:
+
+            # if the ingress is exist, update it
+            self.api_instance.replace_namespaced_ingress_with_http_info(name=ingress_name,
+                                                                        namespace='default',
+                                                                        body=body)
+        else:
+            # otherwise, create new one
+            self.api_instance.create_namespaced_ingress_with_http_info(name=ingress_name,
+                                                                       namespace='default',
+                                                                       body=body)
 
     def _update_ingress_paths(self, ingress_body: dict) -> list:
         paths = list()
