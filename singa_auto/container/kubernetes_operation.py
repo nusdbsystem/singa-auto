@@ -95,7 +95,7 @@ class KubernetesContainerManager(ContainerManager):
         ingress_list = self.api_instance.list_namespaced_ingress_with_http_info(namespace='default')
 
         if ingress_list[1] != 200:
-            raise ServiceRequestError("inress response code is not 200")
+            raise ServiceRequestError("ingress response code is not 200")
 
         # get the ingress name of each ingress
         ingress_names = [ele.metadata.name for ele in ingress_list[0].items]
