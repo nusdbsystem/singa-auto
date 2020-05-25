@@ -204,6 +204,7 @@ class TrainWorker:
 
         logger.info('Evaluating model...')
         score = model_inst.evaluate(val_dataset_path)
+        score = float(score)
         logger.info(f'Score on validation dataset: {score}')
         return TrialResult(proposal, score=score)
 
