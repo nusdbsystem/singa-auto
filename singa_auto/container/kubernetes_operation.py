@@ -109,8 +109,7 @@ class KubernetesContainerManager(ContainerManager):
                                                                         body=body)
         else:
             # otherwise, create new one
-            self.api_instance.create_namespaced_ingress_with_http_info(name=ingress_name,
-                                                                       namespace='default',
+            self.api_instance.create_namespaced_ingress_with_http_info(namespace='default',
                                                                        body=body)
 
     def _update_ingress_paths(self, ingress_body: dict) -> list:
