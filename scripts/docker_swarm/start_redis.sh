@@ -36,7 +36,7 @@ title "Starting SINGA-Auto's Redis..."
 (docker run --rm --name $REDIS_HOST \
   --network $DOCKER_NETWORK \
   -p $REDIS_EXT_PORT:$REDIS_PORT \
-  $IMAGE_REDIS \
+  $IMAGE_REDIS redis-server --appendonly yes --requirepass $REDIS_PASSWORD \
   &> $LOG_FILE_PATH) &
 
 ensure_stable "SINGA-Auto's Redis" $LOG_FILE_PATH 2

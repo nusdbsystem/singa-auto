@@ -83,6 +83,7 @@ if __name__ == '__main__':
     DB_DIR_PATH = sys.argv[51]
     INGRESS_NAME = sys.argv[52]
     INGRESS_EXT_PORT = sys.argv[53]
+    REDIS_PASSWORD = sys.argv[54]
 
     #zk service
     content = {}
@@ -275,9 +276,12 @@ if __name__ == '__main__':
     container = {}
     container.setdefault('name', REDIS_HOST)
     container.setdefault('image', IMAGE_REDIS)
-    template.setdefault('spec', {'containers': [container]})
+    container.setdefault('args', ['--appendonly','yes', "--requirepass", REDIS_PASSWORD])
+    # volumes = {}
+    # volumes.setdefault('name', 'redis-data')
+    # volumes.setdefault('nfs', {'server': RAFIKI_ADDR, 'path': HOST_WORKDIR_PATH + '/database/redis'})
+    template.setdefault('spec', {'containers': [container] })
     with open('{}/scripts/kubernetes/start_redis_deployment.json'.format(PYTHONPATH), 'w') as f:
-
         f.write(json.dumps(content, indent=4))
 
     #admin deployment
@@ -327,6 +331,7 @@ if __name__ == '__main__':
     env.append({'name': 'ADMIN_PORT', 'value': ADMIN_PORT})
     env.append({'name': 'REDIS_HOST', 'value': REDIS_HOST})
     env.append({'name': 'REDIS_PORT', 'value': REDIS_PORT})
+    env.append({'name': 'REDIS_PASSWORD', 'value': REDIS_PASSWORD})
     env.append({'name': 'KAFKA_HOST', 'value': KAFKA_HOST})
     env.append({'name': 'KAFKA_PORT', 'value': KAFKA_PORT})
     env.append({'name': 'PREDICTOR_PORT', 'value': PREDICTOR_PORT})
