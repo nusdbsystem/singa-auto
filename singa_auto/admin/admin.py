@@ -229,6 +229,22 @@ class Admin(object):
                         num_unlabeled_samples = num_samples - num_labeled_samples
                         break
             else:
+                if task == 'question_answering':
+                    stat = {}
+                    dataset = self._meta_store.create_dataset(name, task, size_bytes,
+                                                              store_dataset_id, user_id,
+                                                              stat)
+                    self._meta_store.commit()
+
+                    return {
+                        'id': dataset.id,
+                        'name': dataset.name,
+                        'task': dataset.task,
+                        'size_bytes': dataset.size_bytes,
+                        'store_dataset_id': dataset.store_dataset_id,
+                        'owner_id': dataset.owner_id,
+                        'stat': dataset.stat,
+                    }
                 # if the csv file was not provided in zip
                 with tempfile.TemporaryDirectory() as dir_path:
                     num_labeled_samples = len(dataset_zipfile.namelist())
@@ -250,21 +266,14 @@ class Admin(object):
                         img = Image.open(img_path)
                         img_size = str(img.size)
 
+            stat = {
+                'num_labeled_samples': num_labeled_samples,
+                'num_unlabeled_samples': num_unlabeled_samples,
+                'class_count': class_count.to_json(),
+                'ratio': ratio.to_json()
+            }
             if task == 'IMAGE_CLASSIFICATION':
-                stat = {
-                    'num_labeled_samples': num_labeled_samples,
-                    'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(),
-                    'ratio': ratio.to_json(),
-                    'img_size': img_size
-                }
-            else:
-                stat = {
-                    'num_labeled_samples': num_labeled_samples,
-                    'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(),
-                    'ratio': ratio.to_json()
-                }
+                stat['img_size'] = img_size
 
         print('begin saving to db')
 
