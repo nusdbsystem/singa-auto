@@ -23,6 +23,8 @@ from flask_cors import CORS
 from .predictor import Predictor
 from singa_auto.model import utils
 import traceback
+import json
+
 service_id = os.environ['SINGA_AUTO_SERVICE_ID']
 
 logger = logging.getLogger(__name__)
@@ -56,19 +58,32 @@ def predict():
             img for img in [img_store.read() for img_store in img_stores] if img
         ]
         print("img_stores", img_stores)
-        print("img_bytes", img_bytes)
         if not img_bytes:
             return jsonify({'ErrorMsg': 'No image provided'}), 400
+        print("img_bytes_first 10 bytes", img_bytes[0][:10])
+        queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
+        print("queries_sizes", len(queries))
+    elif request.get_json():
+        data = request.get_json()
+        queries = [data]
+    elif request.data:
+        data = json.loads(request.data)
+        print(data)
+        queries = [data]
     else:
-        return jsonify({'ErrorMsg': 'No image provided'}), 400
+        return jsonify({'ErrorMsg': 'data should be either at files or json payload'}), 400
     try:
         predictor = get_predictor()
-        queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
+        # this queries is type of List[Any]
         predictions = predictor.predict(queries)
-
+        print(type(predictions))
         if isinstance(predictions[0], list):
             # this is only for pandavgg demo as the frontend only accept the dictionary.
             return jsonify(predictions[0][0]), 200
+        elif isinstance(predictions, list) and isinstance(predictions[0], str):
+            # this is only match qa model,
+            print("this is only match qa model")
+            return predictions[0], 200
         else:
             return jsonify(predictions), 200
     except:

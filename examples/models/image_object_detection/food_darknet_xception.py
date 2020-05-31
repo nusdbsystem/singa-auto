@@ -93,15 +93,15 @@ class FoodDetection(BaseModel):
 
         self.class_dict = {v: k for k, v in np.load(self.npy_index)[()].items()}
 
-        h5_models_base64 = params['h5_model_base64']
+        zip_file_base64 = params['zip_file_base64']
 
         self.xception_model = self._build_model(classes=self.classes, image_size=self.image_size)
 
         with tempfile.NamedTemporaryFile() as tmp:
             # Convert back to bytes & write to temp file
-            h5_models_bytes = base64.b64decode(h5_models_base64.encode('utf-8'))
+            zip_file_base64 = base64.b64decode(zip_file_base64.encode('utf-8'))
             with open(tmp.name, 'wb') as f:
-                f.write(h5_models_bytes)
+                f.write(zip_file_base64)
             with tempfile.TemporaryDirectory() as d:
                 dataset_zipfile = zipfile.ZipFile(tmp.name, 'r')
                 dataset_zipfile.extractall(path=d)

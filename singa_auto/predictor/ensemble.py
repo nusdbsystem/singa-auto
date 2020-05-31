@@ -52,7 +52,6 @@ def ensemble_probabilities(predictions: List[Any]) -> Any:
 def ensemble(predictions: List[Any]) -> Any:
     if len(predictions) == 0:
         return None
-    print("predictions is (in ensemble)", predictions)
     # Return some worker's predictions
     index = 0
     prediction = predictions[index]

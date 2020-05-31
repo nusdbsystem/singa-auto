@@ -230,7 +230,7 @@ class Client:
                      task: str,
                      model_file_path: str,
                      model_class: str,
-                     model_pretrained_params_id: str = None,
+                     model_preload_file_path: str = None,
                      dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
                      docker_image: str = None) -> Dict[str, Any]:
@@ -245,7 +245,7 @@ class Client:
         :param model_class: The name of the model class inside the Python file. This class should implement :class:`singa_auto.model.BaseModel`
         :param dependencies: List of Python dependencies & their versions
         :param access_right: Model access right
-        :param model_pretrained_params_id: pretrained mdoel file
+        :param model_preload_file_path: pretrained mdoel file
         :param docker_image: A custom Docker image that extends ``singa_auto/singa_auto_worker``, publicly available on Docker Hub.
         :returns: Created model as dictionary
 
@@ -270,10 +270,10 @@ class Client:
         }
         pretrained_files = {}
 
-        if model_pretrained_params_id is not None:
+        if model_preload_file_path is not None:
             pretrained_files = {'checkpoint_id':  (
-                                                    model_pretrained_params_id,
-                                                    open(model_pretrained_params_id, 'rb'),
+                                                    model_preload_file_path,
+                                                    open(model_preload_file_path, 'rb'),
                                                     'application/octet-stream')}
 
         files = {**model_files, **pretrained_files}

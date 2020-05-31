@@ -31,6 +31,7 @@ title "Using docker swarm"
 
 echo "using $APP_MODE docker files"
 if [[ $APP_MODE = "DEV" ]]
+then
     title "Building SINGA-Auto Admin's image..."
     docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/admin.Dockerfile \
         --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
