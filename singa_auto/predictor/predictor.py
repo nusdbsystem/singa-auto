@@ -68,6 +68,7 @@ class Predictor:
 
     def predict(self, queries):
         worker_predictions_list = self._get_predictions_from_workers(queries)
+        print("Getting prediction list")
         predictions = self._combine_worker_predictions(worker_predictions_list)
         return predictions
 
@@ -124,8 +125,11 @@ class Predictor:
 
         # Wait for at least 1 free worker
         worker_ids = []
+
         while len(worker_ids) == 0:
+            print("Getting free worker from redis...")
             worker_ids = self._redis_cache.get_workers()
+            time.sleep(0.5)
 
         # For each worker, send queries to worker
         pending_queries = set()  # {(query_id, worker_id)}
@@ -150,7 +154,7 @@ class Predictor:
                 # Record prediction & mark as not pending
                 query_id_to_predictions[query_id].append(prediction)
                 pending_queries.remove((query_id, worker_id))
-
+            print("Getting prediction result from kafka...")
             time.sleep(PREDICT_LOOP_SLEEP_SECS)
 
         # Reorganize predictions

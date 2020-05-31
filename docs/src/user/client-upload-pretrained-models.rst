@@ -12,7 +12,7 @@ Example:
                         task='IMAGE_CLASSIFICATION',
                         model_file_path='./examples/models/image_classification/TfFeedForward.py',
                         model_class='TfFeedForward',
-                        model_pretrained_params_id="b42cde03-0bc3-4b15-a276-4d95f6c88fa8.model",
+                        model_preload_file_path="b42cde03-0bc3-4b15-a276-4d95f6c88fa8.model",
                         dependencies={ModelDependency.TENSORFLOW: '1.12.0'}
                     )
 
@@ -53,7 +53,7 @@ FoodLg model upload
             task='IMAGE_CLASSIFICATION',
             model_file_path='./examples/models/image_object_detection/food_darknet_xception1.py',
             model_class='FoodDetection',
-            model_pretrained_params_id="model231.zip",
+            model_preload_file_path="model231.zip",
             dependencies={"keras": "2.2.4", "tensorflow": "1.12.0"}
         )
 

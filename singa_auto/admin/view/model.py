@@ -61,12 +61,14 @@ def create_model(auth, params):
     if 'checkpoint_id' in params and params['checkpoint_id'] is not None:
 
         # if the checkpoint is not .model file, serialize it first
-        if params['checkpoint_id'].filename.split(".")[-1] != 'model':
-            h5_model_bytes = params['checkpoint_id'].read()
-            checkpoint_id = FileParamStore().save({'h5_model_base64': base64.b64encode(h5_model_bytes).decode('utf-8')})
+        if params['checkpoint_id'].filename.split(".")[-1] == 'zip':
+            zip_file_base64 = params['checkpoint_id'].read()
+            checkpoint_id = FileParamStore().save({'zip_file_base64': base64.b64encode(zip_file_base64).decode('utf-8')})
             feed_params['checkpoint_id'] = checkpoint_id
-        # if the model is trained with singa_auto, copy it to params files
-        else:
+
+        # if the model is trained with singa_auto (the model name is ended with 'model'), copy it to params files
+        # no need to encode it with b54 as it is already encoded in singa-auto after training
+        elif params['checkpoint_id'].filename.split(".")[-1] == 'model':
             with tempfile.NamedTemporaryFile() as f:
                 file_storage = params['checkpoint_id']
                 file_storage.save(f.name)
@@ -77,6 +79,12 @@ def create_model(auth, params):
                                               checkpoint_id)
                 shutil.copyfile(f.name, dest_file_path)
             feed_params['checkpoint_id'] = checkpoint_id
+        else:
+
+            # if the checkpoint name is not zip or model, return errormessage
+            return jsonify({'ErrorMsg': 'model preload file should be ended with "zip" or "model", '
+                                        'if it is a "*.model" file,'
+                                        'it should be the model_file saved after training by using singa-auto'}), 400
     with admin:
         return jsonify(admin.create_model(**feed_params))
 

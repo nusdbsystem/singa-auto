@@ -124,25 +124,35 @@ class InferenceWorker():
 
             inference_job = self._meta_store.get_inference_job(
                 worker.inference_job_id)
+
             if inference_job is None:
                 raise InvalidWorkerError(
                     'No such inference job with ID "{}"'.format(
                         worker.inference_job_id))
-            if inference_job.model_id:
-                model = self._meta_store.get_model(inference_job.model_id)
-                logger.info(f'Using checkpoint of the model "{model.name}"...')
 
-                self._proposal = Proposal.from_jsonable({
-                    "trial_no": 1,
-                    "knobs": {}
-                })
-                self._store_params_id = model.checkpoint_id
+            trial = self._meta_store.get_trial(worker.trial_id)
+
+            # check if there are trained model saved
+            if trial is None or trial.store_params_id is None:
+
+                # if there are no train job, then check if there is checkpoint uplaoded
+                if inference_job.model_id:
+                    model = self._meta_store.get_model(inference_job.model_id)
+                    logger.info(f'Using checkpoint of the model "{model.name}"...')
+
+                    self._proposal = Proposal.from_jsonable({
+                        "trial_no": 1,
+                        "knobs": {}
+                    })
+                    self._store_params_id = model.checkpoint_id
+                else:
+
+                    # if there is no checkpoint id and no trained model saved
+                    raise InvalidTrialError(
+                        'No saved trial with ID "{}" and no checkpoint uploaded'.format(worker.trial_id))
             else:
 
-                trial = self._meta_store.get_trial(worker.trial_id)
-                if trial is None or trial.store_params_id is None:  # Must have model saved
-                    raise InvalidTrialError(
-                        'No saved trial with ID "{}"'.format(worker.trial_id))
+                # create inference with trained parameters first
                 logger.info(f'Using trial "{trial.id}"...')
 
                 model = self._meta_store.get_model(trial.model_id)
@@ -183,6 +193,7 @@ class InferenceWorker():
         try:
             predictions = self._model_inst.predict([x.query for x in queries])
         except:
+            print('Error while making predictions:')
             logger.error('Error while making predictions:')
             logger.error(traceback.format_exc())
             predictions = [None for x in range(len(queries))]
