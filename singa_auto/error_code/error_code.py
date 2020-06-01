@@ -1,3 +1,6 @@
+import json
+import traceback
+
 class SingaAutoBaseResponse(object):
     def __init__(self, success=0, error_code=0, message='Result is Success', data=None):
         # super(SingaAutoBaseResponse, self).__init__()
