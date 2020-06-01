@@ -32,10 +32,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-class InvalidQueryFormatError(Exception):
-    pass
-
-
 def get_predictor() -> Predictor:
     # Allow multiple threads to each have their own instance of predictor
     if not hasattr(g, 'predictor'):

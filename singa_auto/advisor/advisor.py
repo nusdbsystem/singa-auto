@@ -27,17 +27,10 @@ from singa_auto.model import IntegerKnob, CategoricalKnob, FloatKnob, ArchKnob, 
                         FixedKnob, PolicyKnob, KnobConfig, BaseKnob
 
 from .constants import AdvisorType, Proposal, TrialResult
+from singa_auto.error_code import UnsupportedKnobConfigError, UnsupportedKnobError
 
 DEFAULT_TRAIN_HOURS = 0.1
 DEFAULT_MAX_TRIALS = -1
-
-
-class UnsupportedKnobConfigError(Exception):
-    pass
-
-
-class UnsupportedKnobError(Exception):
-    pass
 
 
 # Advisor to use, in descending priority

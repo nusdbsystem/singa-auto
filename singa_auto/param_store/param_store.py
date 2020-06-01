@@ -22,10 +22,7 @@ import msgpack
 import traceback
 import numpy as np
 from singa_auto.model import Params
-
-
-class InvalidParamsFormatError(Exception):
-    pass
+from singa_auto.error_code import InvalidParamsFormatError
 
 
 PARAM_DATA_TYPE_SEPARATOR = '//'

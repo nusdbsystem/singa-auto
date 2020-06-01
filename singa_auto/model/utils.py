@@ -31,10 +31,7 @@ from singa_auto.constants import ModelDependency
 from .model import BaseModel
 from .dataset import DatasetUtils
 from .log import LoggerUtils
-
-
-class InvalidModelClassError(Exception):
-    pass
+from singa_auto.error_code import InvalidModelClassError
 
 
 def load_model_class(model_file_bytes,

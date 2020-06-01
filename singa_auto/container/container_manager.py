@@ -19,10 +19,7 @@
 
 import abc
 from typing import List, Dict, Tuple, Any
-
-
-class InvalidServiceRequestError(Exception):
-    pass
+from singa_auto.error_code import InvalidServiceRequestError
 
 
 class ContainerService():

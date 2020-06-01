@@ -31,17 +31,10 @@ from singa_auto.advisor import Proposal, TrialResult, ParamsType
 from singa_auto.redis import TrainCache, ParamCache
 from singa_auto.data_store import FileDataStore
 from singa_auto.param_store import FileParamStore, ParamStore
+from singa_auto.error_code import InvalidWorkerError, InvalidDatasetError
 
 LOOP_SLEEP_SECS = 0.1
 MAX_CONSEC_TRIAL_ERRORS = 100
-
-
-class InvalidWorkerError(Exception):
-    pass
-
-
-class InvalidDatasetError(Exception):
-    pass
 
 
 logger = logging.getLogger(__name__)

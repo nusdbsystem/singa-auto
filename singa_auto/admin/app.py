@@ -18,7 +18,7 @@
 #
 import traceback
 
-from flask import Flask, g
+from flask import Flask, g, jsonify
 from flask_cors import CORS
 
 from singa_auto.admin import Admin
@@ -29,7 +29,7 @@ from singa_auto.admin.view.datasets import dataset_bp
 from singa_auto.admin.view.model import model_bp
 from singa_auto.admin.view.train_jobs import trainjob_bp
 from singa_auto.admin.view.trials import trial_bp
-
+from singa_auto.error_code import SingaAutoBaseException, SystemInternalError, ResultSuccess
 
 def create_app():
     app = Flask(__name__)
@@ -55,9 +55,24 @@ def create_app():
     def index():
         return 'SINGA-Auto Admin is up.'
 
-    @app.errorhandler(Exception)
+    @app.errorhandler(SingaAutoBaseException)
     def handle_error(error):
-        traceback.print_exc()
-        return traceback.format_exc(), 500
+        return jsonify(dict(error))
+
+    @app.errorhandler(500)
+    def handle_internal_error(error):
+        return jsonify(dict(SystemInternalError())), 500
+
+    @app.after_request
+    def after_request_handler(resp):
+        if resp.is_json:
+            data = resp.get_json()
+            if isinstance(data, dict):
+                if 'error_code' and 'message' and 'success' in data:
+                    return resp
+            result = ResultSuccess(data)
+            return jsonify(dict(result))
+        else:
+            return resp
 
     return app

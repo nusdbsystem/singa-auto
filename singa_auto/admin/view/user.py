@@ -20,8 +20,9 @@
 from datetime import datetime
 from singa_auto.constants import UserType, RequestsParameters
 from flask import Blueprint, jsonify, g
-from singa_auto.utils.auth import UnauthorizedError, generate_token, auth
+from singa_auto.utils.auth import generate_token, auth
 from singa_auto.utils.requests_params import param_check
+from singa_auto.error_code import UnauthorizedError
 
 user_bp = Blueprint('user', __name__)
 

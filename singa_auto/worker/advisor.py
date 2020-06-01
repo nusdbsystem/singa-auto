@@ -28,12 +28,9 @@ from singa_auto.meta_store import MetaStore
 from singa_auto.model import load_model_class
 from singa_auto.advisor import make_advisor, BaseAdvisor
 from singa_auto.redis import TrainCache, ParamCache
+from singa_auto.error_code import InvalidSubTrainJobError
 
 LOOP_SLEEP_SECS = 0.1
-
-
-class InvalidSubTrainJobError(Exception):
-    pass
 
 
 logger = logging.getLogger(__name__)

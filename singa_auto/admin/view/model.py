@@ -30,8 +30,9 @@ from flask import jsonify, Blueprint, make_response, g
 
 from singa_auto.meta_store.meta_store import DuplicateModelNameError
 from singa_auto.param_store import FileParamStore
-from singa_auto.utils.auth import UnauthorizedError, auth
+from singa_auto.utils.auth import auth
 from singa_auto.utils.requests_params import param_check
+from singa_auto.error_code import UnauthorizedError
 
 model_bp = Blueprint('model', __name__)
 
