@@ -716,17 +716,26 @@ class Admin(object):
     def stop_inference_job(self, user_id, app, app_version=-1):
         train_job = self._meta_store.get_train_job_by_app_version(
             user_id, app, app_version=app_version)
-        if train_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
 
-        inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
-            train_job.id)
-        if inference_job is None:
-            # TODO: REST api need to return some JSON, and not
-            # just raise errors!!
-            raise InvalidRunningInferenceJobError()
+        # if there is no train job
+        if train_job is None:
+
+            # check if the inference job is created by model checkpoint
+            model = self._meta_store.get_model_by_name(user_id=user_id, name=app)
+
+            # if the given model dont have checkpoint
+            if model.checkpoint_id is None:
+                raise InvalidRunningInferenceJobError('Have you start a train job or uploaded a checkpoint file for {}?'
+                                                      .format(app))
+            else:
+
+                inference_job = self._meta_store.get_deployed_inference_job_by_model_id(model.id)
+        else:
+            # if there is train job
+            inference_job = self._meta_store.get_deployed_inference_job_by_train_job(
+                train_job.id)
+            if inference_job is None:
+                raise InvalidRunningInferenceJobError("No inference related to this  app")
 
         inference_job = self._services_manager.stop_inference_services(
             inference_job.id)
