@@ -742,9 +742,8 @@ class Admin(object):
 
         return {
             'id': inference_job.id,
-            'train_job_id': train_job.id,
-            'app': train_job.app,
-            'app_version': train_job.app_version
+            'app': app,
+            'app_version': app_version
         }
 
     def get_running_inference_job(self, user_id, app, app_version=-1):
