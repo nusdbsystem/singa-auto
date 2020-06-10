@@ -18,6 +18,9 @@
 #
 
 import os
+import time
+import traceback
+
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
@@ -97,10 +100,21 @@ class InferenceCache(object):
                                batch_size: int) -> List[Query]:
         name = f'workers_{worker_id}_queries'
 
-        query_consumer = KafkaConsumer(name,
-                                       bootstrap_servers=self.connection_url,
-                                       auto_offset_reset='earliest',
-                                       group_id=QUERIES_QUEUE)
+        RETRY_TIMES = 4
+        while True:
+            try:
+                query_consumer = KafkaConsumer(name,
+                                               bootstrap_servers=self.connection_url,
+                                               auto_offset_reset='earliest',
+                                               group_id=QUERIES_QUEUE)
+                break
+            except Exception as e:
+                logger.error('Kafka conn Error, retry: {}'.format(RETRY_TIMES))
+                logger.error(traceback.format_exc())
+                RETRY_TIMES -= 1
+                time.sleep(1)
+                if RETRY_TIMES <= 0:
+                    raise
 
         partition = TopicPartition(name, 0)
         partitiondic = query_consumer.end_offsets([partition])
