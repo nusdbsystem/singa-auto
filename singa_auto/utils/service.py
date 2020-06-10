@@ -35,8 +35,8 @@ def run_worker(meta_store, start_worker, stop_worker):
     service_id = os.environ['SINGA_AUTO_SERVICE_ID']
     service_type = os.environ['SINGA_AUTO_SERVICE_TYPE']
     container_id = os.environ.get('HOSTNAME', 'localhost')
-    configure_logging('{}-SvcID-{}-ContainerID-{}'
-        .format(curr_time, service_id,container_id))
+    configure_logging('{}-{}'
+        .format(container_id, curr_time))
 
     def _sigterm_handler(_signo, _stack_frame):
         logger.warn("Terminal signal received: %s, %s" % (_signo, _stack_frame))

@@ -19,6 +19,7 @@
 import json
 import os
 import logging
+import re
 import traceback
 import socket
 from collections import defaultdict
@@ -62,10 +63,12 @@ class ServicesManager(object):
                  meta_store=None,
                  container_manager=None,
                  var_autoforward=None):
+
         if var_autoforward is None:
             var_autoforward = ENVIRONMENT_VARIABLES_AUTOFORWARD
         self._meta_store: MetaStore = meta_store or MetaStore()
         self._container_manager: ContainerManager = container_manager
+        self.service_app_name = None
 
         # Ensure that environment variable exists, failing fast
         for x in var_autoforward:
@@ -397,7 +400,6 @@ class ServicesManager(object):
             inferenceAppName=inferenceAppName
         )
 
-
         self._meta_store.update_inference_job(inference_job,
                                               predictor_service_id=service.id)
         self._meta_store.commit()
@@ -463,7 +465,6 @@ class ServicesManager(object):
         self._meta_store.mark_service_as_stopped(service)
         self._meta_store.commit()
 
-
     def _create_service(self,
                         service_type,
                         docker_image,
@@ -521,8 +522,13 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-            container_service_name = 'singa-auto-svc-{}-{}'.format(
-                service_type.lower(), service.id)
+
+            service_app_name = re.sub('[^a-zA-Z0-9]', '-', self.service_app_name.lower())
+            service_app_name = re.sub('-+', '-', service_app_name)
+
+            container_service_name = '{}-{}-{}'.format(
+                service_app_name, service_type.lower(), service.id.split('-')[0])
+
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
                 docker_image=docker_image,

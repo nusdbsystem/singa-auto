@@ -47,6 +47,7 @@ def create_train_job(auth, params):
         feed_params['train_args'] = params['train_args']
 
     with admin:
+        admin._services_manager.service_app_name = params['app']
         # Ensure that datasets are owned by current user
         dataset_attrs = ['train_dataset_id', 'val_dataset_id']
         for attr in dataset_attrs:
