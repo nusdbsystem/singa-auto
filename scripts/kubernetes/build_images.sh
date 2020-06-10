@@ -32,6 +32,14 @@ title "Using K8S"
 
 echo "using $APP_MODE docker files"
 
+title "Building SINGA-Auto LogStash's image..."
+docker build -t $SINGA_AUTO_IMAGE_LOGSTASH:$SINGA_AUTO_VERSION -f ./dockerfiles/logstash.Dockerfile \
+      --build-arg LOGSTASH_DOCKER_WORKDIR_PATH=$LOGSTASH_DOCKER_WORKDIR_PATH $PWD
+
+title "Building SINGA-Auto SparkApp's image..."
+docker build -t $SINGA_AUTO_IMAGE_SPARKAPP:$SINGA_AUTO_VERSION -f ./dockerfiles/spark.Dockerfile \
+      --build-arg SPAEK_DOCKER_JARS_PATH=$SPAEK_DOCKER_JARS_PATH $PWD
+
 if [[ $APP_MODE = "DEV" ]]
 then
   title "Building SINGA-Auto Admin's image..."

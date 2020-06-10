@@ -56,4 +56,13 @@ docker rm -f $ADMIN_HOST || echo "Failed to stop SINGA-Auto's Admin"
 title "Stopping SINGA-Auto's Web Admin..."
 docker rm -f $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin"
 
+title "Stopping SINGA-Auto's Kibana..."
+docker rm -f $KIBANA_HOST
+
+title "Stopping SINGA-Auto's logstash..."
+docker rm -f $LOGSTASH_HOST
+
+title "Stopping SINGA-Auto's es..."
+docker rm -f $ES_HOST
+
 echo "You'll need to destroy your machine's Docker swarm manually"

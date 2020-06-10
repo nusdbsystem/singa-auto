@@ -63,4 +63,8 @@ title "Building SINGA-Auto Web Admin's image..."
 docker build -t $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/web_admin.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH $PWD || exit 1
 
+title "Building SINGA-Auto LogStash's image..."
+docker build -t $SINGA_AUTO_IMAGE_LOGSTASH:$SINGA_AUTO_VERSION -f ./dockerfiles/logstash.Dockerfile \
+      --build-arg LOGSTASH_DOCKER_WORKDIR_PATH=$LOGSTASH_DOCKER_WORKDIR_PATH $PWD
+
 echo "Finished building all SINGA-Auto's images successfully!"

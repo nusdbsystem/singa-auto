@@ -44,4 +44,18 @@ then
     kubectl replace --force -f scripts/kubernetes/start_web_admin_service.json
 fi
 
+
+if [[ $1 = "monitor" ]]
+then
+    kubectl replace --force -f scripts/kubernetes/start_logstash_deployment.json
+    kubectl replace --force -f scripts/kubernetes/start_logstash_service.json
+
+    kubectl replace --force -f scripts/kubernetes/start_es_deployment.json
+    kubectl replace --force -f scripts/kubernetes/start_es_service.json
+
+    kubectl replace --force -f scripts/kubernetes/start_kibana_deployment.json
+    kubectl replace --force -f scripts/kubernetes/start_kibana_service.json
+
+    kubectl replace --force -f scripts/kubernetes/spark-app.json
+fi
 bash ./scripts/kubernetes/remove_config.sh
