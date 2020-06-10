@@ -101,8 +101,9 @@ class Admin(object):
         self._base_worker_image = '{}:{}'.format(
             os.environ['SINGA_AUTO_IMAGE_WORKER'],
             os.environ['SINGA_AUTO_VERSION'])
-        self._services_manager = ServicesManager(self._meta_store,
-                                                 container_manager)
+        self._services_manager = ServicesManager(meta_store=self._meta_store,
+                                                 container_manager=container_manager,
+                                                 )
 
     def __enter__(self):
         self._meta_store.connect()
@@ -777,7 +778,8 @@ class Admin(object):
         if self.container_model == 'K8S':
             _ingress_port = os.environ["INGRESS_EXT_PORT"]
             ingress_host = f'{predictor_service.ext_hostname}:{_ingress_port}/{app}'
-            predictor_host = ",".join([predictor_service.host, ingress_host]) if predictor_service is not None else None
+            # predictor_host = ",".join([predictor_service.host, ingress_host]) if predictor_service is not None else None
+            predictor_host = ingress_host if predictor_service is not None else None
         elif self.container_model == 'SWARM':
             predictor_host = predictor_service.host if predictor_service is not None else None
         else:

@@ -158,7 +158,7 @@ class RunPrediction extends React.Component {
     try {
       const res = await axios.post(
         `http://${this.state.predictorHost}/predict`,
-        formData, 
+        formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -184,8 +184,8 @@ class RunPrediction extends React.Component {
         formState: "idle",
         message: "Upload and prediction done",
         predictionDone: true,
-        gradcamImg: res.data.explaination.gradcam_img,
-        limeImg: res.data.explaination.lime_img,
+        gradcamImg: res.data.explanations.gradcam_img,
+        limeImg: res.data.explanations.lime_img,
         mcDropout: res.data.mc_dropout,
       }))
     } catch (err) {

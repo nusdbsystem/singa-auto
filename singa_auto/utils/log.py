@@ -40,5 +40,5 @@ def configure_logging(process_name):
         level=logging.INFO,
         format='%(asctime)s %(name)s %(levelname)s %(message)s',
         datefmt='%d-%b-%y %H:%M:%S',
-        filename='{}/process_name_{}.log'.format(logs_folder_path,
-                                                 process_name))
+        filename='{}/{}.log'.format(logs_folder_path,
+                                    process_name))

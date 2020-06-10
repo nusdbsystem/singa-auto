@@ -115,6 +115,7 @@ class RedisSession(object):
 
     def list_set(self, name):
         key = self._get_redis_name(name)
+        logger.info('Getting the redis key: {}'.format(key))
         values = self._redis.smembers(key)
         return [self._decode_value(x) for x in values]
 

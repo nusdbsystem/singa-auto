@@ -85,6 +85,22 @@ if __name__ == '__main__':
     INGRESS_EXT_PORT = sys.argv[53]
     REDIS_PASSWORD = sys.argv[54]
 
+    LOGSTASH_HOST = sys.argv[55]
+    LOGSTASH_PORT = sys.argv[56]
+    ES_HOST = sys.argv[57]
+    ES_PORT = sys.argv[58]
+    ES_NODE_PORT = sys.argv[59]
+    KIBANA_HOST = sys.argv[60]
+    KIBANA_PORT = sys.argv[61]
+    LOGSTASH_DOCKER_WORKDIR_PATH = sys.argv[62]
+    KIBANA_DOCKER_WORKDIR_PATH = sys.argv[63]
+    SINGA_AUTO_IMAGE_LOGSTASH = sys.argv[64]
+    IMAGE_KIBANA = sys.argv[65]
+    IMAGE_ES = sys.argv[66]
+    KIBANA_EXT_PORT = sys.argv[67]
+    SINGA_AUTO_IMAGE_SPARKAPP = sys.argv[68]
+    SPAEK_DOCKER_JARS_PATH = sys.argv[69]
+
     #zk service
     content = {}
     content.setdefault('apiVersion', 'v1')
@@ -424,4 +440,189 @@ if __name__ == '__main__':
     env.append({'name': 'ADMIN_EXT_PORT', 'value': ADMIN_EXT_PORT})
     container.setdefault('env', env)
     with open('{}/scripts/kubernetes/start_web_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # LogStash deployment
+    content = {}
+    content.setdefault('apiVersion', 'apps/v1')
+    content.setdefault('kind', 'Deployment')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', LOGSTASH_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', LOGSTASH_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('replicas', 1)
+    spec.setdefault('selector', {'matchLabels': {'name': LOGSTASH_HOST}})
+    template = spec.setdefault('template', {})
+    template.setdefault('metadata', {'labels': {'name': LOGSTASH_HOST}})
+    container = {}
+    container.setdefault('name', LOGSTASH_HOST)
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_LOGSTASH, SINGA_AUTO_VERSION))
+
+    template.setdefault('spec', {'containers': [container]})
+    env = []
+    env.append({'name': 'LOGSTASH_DOCKER_WORKDIR_PATH', 'value': LOGSTASH_DOCKER_WORKDIR_PATH})
+    env.append({'name': 'KAFKA_HOST', 'value': KAFKA_HOST})
+    env.append({'name': 'KAFKA_PORT', 'value': KAFKA_PORT})
+    container.setdefault('env', env)
+
+    container.setdefault('volumeMounts',
+                         [{'name': 'conf-path', 'mountPath': '{}/logstash.conf'.format(LOGSTASH_DOCKER_WORKDIR_PATH)}, \
+                          {'name': 'log-path', 'mountPath': '{}/{}'.format(LOGSTASH_DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
+                          {'name': 'docker-path', 'mountPath': '/var/run/docker.sock'}])
+    template['spec']['volumes'] = [
+        {'name': 'conf-path', 'hostPath': {'path': '{}/scripts/config/logstash.conf'.format(HOST_WORKDIR_PATH)}}, \
+        {'name': 'log-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, LOGS_DIR_PATH)}}, \
+        {'name': 'docker-path', 'hostPath': {'path': '/var/run/docker.sock'}}]
+
+    with open('{}/scripts/kubernetes/start_logstash_deployment.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # LogStash service
+    content = {}
+    content.setdefault('apiVersion', 'v1')
+    content.setdefault('kind', 'Service')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', LOGSTASH_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', LOGSTASH_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('type', 'NodePort')
+    ports = spec.setdefault('ports', [])
+    ports.append({
+        'port': int(LOGSTASH_PORT),
+        'targetPort': int(LOGSTASH_PORT)
+    })
+    spec.setdefault('selector', {'name': LOGSTASH_HOST})
+    with open('{}/scripts/kubernetes/start_logstash_service.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # kibana deployment
+    content = {}
+    content.setdefault('apiVersion', 'apps/v1')
+    content.setdefault('kind', 'Deployment')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', KIBANA_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', KIBANA_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('replicas', 1)
+    spec.setdefault('selector', {'matchLabels': {'name': KIBANA_HOST}})
+    template = spec.setdefault('template', {})
+    template.setdefault('metadata', {'labels': {'name': KIBANA_HOST}})
+    container = {}
+    container.setdefault('name', KIBANA_HOST)
+    container.setdefault('image', '{}'.format(IMAGE_KIBANA))
+
+    template.setdefault('spec', {'containers': [container]})
+
+    with open('{}/scripts/kubernetes/start_kibana_deployment.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # kibana service
+    content = {}
+    content.setdefault('apiVersion', 'v1')
+    content.setdefault('kind', 'Service')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', KIBANA_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', KIBANA_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('type', 'NodePort')
+    ports = spec.setdefault('ports', [])
+    ports.append({
+        'port': int(KIBANA_PORT),
+        'targetPort': int(KIBANA_PORT),
+        'nodePort': int(KIBANA_EXT_PORT)
+    })
+    spec.setdefault('selector', {'name': KIBANA_HOST})
+    with open('{}/scripts/kubernetes/start_kibana_service.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # es deployment
+    content = {}
+    content.setdefault('apiVersion', 'apps/v1')
+    content.setdefault('kind', 'Deployment')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', ES_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', ES_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('replicas', 1)
+    spec.setdefault('selector', {'matchLabels': {'name': ES_HOST}})
+    template = spec.setdefault('template', {})
+    template.setdefault('metadata', {'labels': {'name': ES_HOST}})
+    container = {}
+    container.setdefault('name', ES_HOST)
+    container.setdefault('image', '{}'.format(IMAGE_ES))
+
+    template.setdefault('spec', {'containers': [container]})
+    env = []
+    env.append({'name': 'discovery.type', 'value': 'single-node'})
+    container.setdefault('env', env)
+
+    with open('{}/scripts/kubernetes/start_es_deployment.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # es service
+    content = {}
+    content.setdefault('apiVersion', 'v1')
+    content.setdefault('kind', 'Service')
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', ES_HOST)
+    labels = metadata.setdefault('labels', {})
+    labels.setdefault('name', ES_HOST)
+    spec = content.setdefault('spec', {})
+    spec.setdefault('type', 'NodePort')
+    ports = spec.setdefault('ports', [])
+    ports.append({
+        'port': int(ES_PORT),
+        'targetPort': int(ES_PORT),
+        'name': "{}".format(ES_PORT)
+    })
+    ports.append({
+        'port': int(ES_NODE_PORT),
+        'targetPort': int(ES_NODE_PORT),
+        'name': "{}".format(ES_NODE_PORT)
+    })
+
+    spec.setdefault('selector', {'name': ES_HOST})
+    with open('{}/scripts/kubernetes/start_es_service.json'.format(PYTHONPATH), 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    # spark configure
+    content = {}
+    content.setdefault('apiVersion', "sparkoperator.k8s.io/v1beta2")
+    content.setdefault('kind', 'SparkApplication')
+
+    metadata = content.setdefault('metadata', {})
+    metadata.setdefault('name', "singa-auto-monitor")
+    metadata.setdefault('namespace', "default")
+
+    spec = content.setdefault('spec', {})
+    spec.setdefault('type', 'Scala')
+    spec.setdefault('mode', 'cluster')
+    spec.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_SPARKAPP, SINGA_AUTO_VERSION))
+    spec.setdefault('imagePullPolicy', 'IfNotPresent')
+    spec.setdefault('mainClass', "com.singa.auto.monitor.stream.LogStreamProcess")
+    spec.setdefault('mainApplicationFile', "local://{}/log_minitor-jar-with-dependencies.jar".format(SPAEK_DOCKER_JARS_PATH))
+    spec.setdefault('sparkVersion', "2.4.5")
+
+    restartPolicy = spec.setdefault('restartPolicy', {})
+    restartPolicy.setdefault('type', "Always")
+
+    driver = spec.setdefault('driver', {})
+    driver.setdefault('cores', 1)
+    driver.setdefault('coreLimit', "1000m")
+    driver.setdefault('memory', "512m")
+    driver.setdefault('labels', {"version": "2.4.5"})
+    driver.setdefault('serviceAccount', "spark")
+
+    executor = spec.setdefault('executor', {})
+    executor.setdefault('cores', 1)
+    executor.setdefault('instances', 2)
+    executor.setdefault('memory', "512m")
+    executor.setdefault('labels', {"version": "2.4.5"})
+
+    with open('{}/scripts/kubernetes/spark-app.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))

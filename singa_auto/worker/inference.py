@@ -193,7 +193,6 @@ class InferenceWorker():
         try:
             predictions = self._model_inst.predict([x.query for x in queries])
         except:
-            print('Error while making predictions:')
             logger.error('Error while making predictions:')
             logger.error(traceback.format_exc())
             predictions = [None for x in range(len(queries))]

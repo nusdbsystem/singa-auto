@@ -55,6 +55,9 @@ fi
 bash ./scripts/kubernetes/start_admin.sh || exit 1
 bash ./scripts/kubernetes/start_web_admin.sh || exit 1
 
+echo "Deploy monitor plugin"
+bash ./scripts/kubernetes/start_monitor.sh
+
 bash ./scripts/kubernetes/remove_config.sh || exit 1
 
 echo "Deploy ingress-nginx"

@@ -40,6 +40,7 @@ def create_inference_job(auth, params):
         app_version = -1
 
     with admin:
+        admin._services_manager.service_app_name = params['app']
         return jsonify(admin.create_inference_job(user_id=auth['user_id'],
                                                   app=params['app'],
                                                   app_version=app_version,
@@ -56,6 +57,7 @@ def create_inference_job_by_checkpoint(auth, params):
     budget = params['budget'] if 'budget' in params else {}
     budget = {InferenceBudgetOption.GPU_COUNT: 0, **budget}
     with admin:
+        admin._services_manager.service_app_name = params['model_name']
         return jsonify(admin.create_inference_job_by_checkpoint(user_id=auth['user_id'],
                                                                 budget=budget,
                                                                 model_name=params['model_name']
