@@ -25,14 +25,12 @@ QUESTION_ANSWERING
 Dataset Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:ref:`dataset-type:IMAGE_FILES`
+:ref:`dataset-type:QUESTION_ANSWERING`
 
 
 Dataset can be used to finetune the SQuAD pre-trained Bert model. 
 
-- The dataset zips folders containing JSON files. JSON files under different folders will be automaticly read all together. 
-
-The dataset structure, JSON schema and metadata csv examples are given below.
+- The dataset zips folders containing JSON files. JSON files under different level folders will be automaticly read all together. 
 
 An example of the dataset structure:
 
@@ -40,164 +38,40 @@ An example of the dataset structure:
 
     /DATASET_NAME.zip
     │
-    ├──arxiv
-    │  └──arxiv
-    │      └──pdf_json
-    │           ├── 003d2e515e1aaf06f0052769953e861ed8e56608.json(97.51 KB)
-    │           ├── 00a407540a8bdd6d7425bd8a561eb21d69682511.json(48.45 KB)
-    │           ...(788 files)
+    ├──FOLDER_NAME_1                                              # first level folder
+    │  └──FOLDER_NAME_2                                           # second level folder, not necessarily to be included
+    │      └──FOLDER_NAME_3                                       # third level folder, not necessarily to be included
+    │           ├── 003d2e515e1aaf06f0052769953e8.json            # JSON file name is a random combination of either alphabets/numbers or both
+    │           ├── 00a407540a8bdd.json
+    │           ...
     │
-    ├──biorxiv_medrxiv
-    │  └──biorxiv_medrxiv
-    │      └──pdf_json
-    │           ├── 0015023cc06b5362d332b3baf348d11567ca2fbb.json(71.27 KB)
-    │           ├── 001b4a31684c8fc6e2cfbb70304354978317c429.json(126.12 KB)
-    │           ...(2670 files)
+    ├──FOLDER_NAME_4                                              # first level folder
+    │  ├── 0015023cc06b5362d332b3.json
+    │  ├── 001b4a31684c8fc6e2cfbb70304354978317c429.json
+    │  ...
+    ...
     │
-    ├──comm_use_subset
-    │  └──comm_use_subset
-    │      ├──pdf_json
-    │      │    ├── 000b7d1517ceebb34e1e3e817695b6de03e2fa78.json(12.06 KB)
-    │      │    ...(9918 files)
-    │      │    
-    │      └──pmc_json
-    │           ├── PMC1054884.xml.json(97.67 KB)
-    │           ...(9540 files)
-    │
-    ├──custom_license
-    │  └──custom_license
-    │      ├──pdf_json
-    │      │    ├── 0001418189999fea7f7cbe3e82703d71c85a6fe5.json(48.76 KB)
-    │      │    ...(32.5k files)
-    │      │    
-    │      └──pmc_json
-    │           ├── PMC1065028.xml.json(16.53 KB)
-    │           ...(11.0k files)
-    │
-    ├──noncomm_use_subset
-    │  └──noncomm_use_subset
-    │      ├──pdf_json
-    │      │    ├── 0036b28fddf7e93da0970303672934ea2f9944e7.json(708.8 KB)
-    │      │    ...(2584 files)
-    │      │    
-    │      └──pmc_json
-    │           ├── PMC1616946.xml.json
-    │           ...(2311 files)
-    │
-    └──metadata.csv
+    └──metadata.csv                                          # if additional information is provided for above JSON files, user can add a metadata.csv
 
-- JSON file includes ``abstract`` and ``body_text``, providing, providing list of paragraphs in the abstract, and list of paragraphs in full body which can be used for question answering. And JSON file also includs ``paper_id``, 40-character sha1 of the PDF.
+- JSON file includes ``body_text``, providing list of paragraphs in full body which can be used for question answering. ``body_text`` can contain different entries, only the "text" field of each entry will be read.
 
-An example of JSON schema with full text documents:
+The essential structure of JSON file is:
 
 .. code-block:: text
 
     {
-    "paper_id": <str>,                      # 40-character sha1 of the PDF
-    "metadata": {
-        "title": <str>,
-        "authors": [                        # list of author dicts, in order
-            {
-                "first": <str>,
-                "middle": <list of str>,
-                "last": <str>,
-                "suffix": <str>,
-                "affiliation": <dict>,
-                "email": <str>
-            },
-            ...
-        ],
-        "abstract": [                       # list of paragraphs in the abstract
-            {
-                "text": <str>,
-                "cite_spans": [             # list of character indices of inline citations
-                                            # e.g. citation "[7]" occurs at positions 151-154 in "text"
-                                            #      linked to bibliography entry BIBREF3
-                    {
-                        "start": 151,
-                        "end": 154,
-                        "text": "[7]",
-                        "ref_id": "BIBREF3"
-                    },
-                    ...
-                ],
-                "ref_spans": <list of dicts similar to cite_spans>,     # e.g. inline reference to "Table 1"
-                "section": "Abstract"
-            },
-            ...
-        ],
         "body_text": [                      # list of paragraphs in full body
-                                            # paragraph dicts look the same as above
-            {
-                "text": <str>,
-                "cite_spans": [],
-                "ref_spans": [],
-                "eq_spans": [],
-                "section": "Introduction"
+            {                               
+                "text": <str>,              # text body for first entry, this is must-have 
             },
-            ...
-            {
-                ...,
-                "section": "Conclusion"
-            }
+            ...                             # other entries, paragraph dicts look the same as above
         ],
-        "bib_entries": {
-            "BIBREF0": {
-                "ref_id": <str>,
-                "title": <str>,
-                "authors": <list of dict>       # same structure as earlier,
-                                                # but without `affiliation` or `email`
-                "year": <int>,
-                "venue": <str>,
-                "volume": <str>,
-                "issn": <str>,
-                "pages": <str>,
-                "other_ids": {
-                    "DOI": [
-                        <str>
-                    ]
-                }
-            },
-            "BIBREF1": {},
-            ...
-            "BIBREF25": {}
-        },
-        "ref_entries":
-            "FIGREF0": {
-                "text": <str>,                  # figure caption text
-                "type": "figure"
-            },
-            ...
-            "TABREF13": {
-                "text": <str>,                  # table caption text
-                "type": "table"
-            }
-        },
-        "back_matter": <list of dict>           # same structure as body_text
-    }
     }
 
 
-- ``metadata.csv`` gives additional information, i.e. authors, title, journal and publish_time, mapping to JSON files by sha values. ``cord_uid`` serves unique values serve as the entry identity. Do note that in certain condition, a PDF/sha correponding to the main article, and possibly additional PDF/shas corresponding to supporting materials for the article. 
+- ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to JSON files by sha values. ``cord_uid`` serves unique values serve as the entry identity. Time related entry, like ``publish_time``, is suggested to be in Date format, otherwise, General format is recommended.
 
-.. note::
-
-     (1) Metadata for papers from these sources are combined: CZI, PMC, BioRxiv/MedRxiv. (total records 29500)
-	    - CZI 1236 records
-	    - PMC 27337
-		   - bioRxiv 566
-		   - medRxiv 361
-	    (2) 17K of the paper records have PDFs and the hash of the PDFs are in 'sha'
-	    (3) For PMC sourced papers, one paper's metadata can be associated with one or more PDFs/shas under that paper - a PDF/sha correponding to the main article, and possibly additional PDF/shas corresponding to supporting materials for the article.
-	    (4)	13K of the PDFs were processed with fulltext ('has_full_text'=True)
-	    (5) Various 'keys' are populated with the metadata:
-		    - 'pmcid': populated for all PMC paper records (27337 non null)
-		    - 'doi': populated for all BioRxiv/MedRxiv paper records and most of the other records (26357 non null)
-		    - 'WHO #Covidence': populated for all CZI records and none of the other records (1236 non null)
-		    - 'pubmed_id': populated for some of the records
-		    - 'Microsoft Academic Paper ID': populated for some of the records
-      
-An example of ``meta.csv``(85.15 MB) entry: 
+An example of ``metadata.csv`` entry: 
     =====================       =====================
     Column Names                Column Values 
     ---------------------       --------------------- 
@@ -210,8 +84,9 @@ An example of ``meta.csv``(85.15 MB) entry:
     pubmed_id                   11742998                
     license                     unk                   
     abstract                    Nidovirus subgenomic mRNAs contain a leader sequence derived ...
-    publish_time                2001-12-17               
+    publish_time                2001-12-17             
     =====================       =====================
+    
 
 Query Format 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -221,7 +96,7 @@ Query Format
     - The pretrained model should be fine-tuned with a dataset first to adapt to particular question domains when necessary. 
     - Otherwise, following the question, input should contain relevant information (context paragraph or candidate answers, or both), whether or not addresses the question. 
 
-Query is in JSON format. While the relevant information is provided in query, the question always comes first, followed by additional information. We use “\n” separators between different parts of the input.
+Query is in JSON format. It could be a <str list> of a single question in ``questions`` field. While the relevant information is provided in query, the question always comes first, followed by additional information. We use “\n” separators between different parts of the input. Model will only read the ``questions`` field. 
 
 .. code-block:: text
 
@@ -231,12 +106,6 @@ Query is in JSON format. While the relevant information is provided in query, th
                   'The author tells us that to succeed in a project you are in charge of, you should   _  . \n  (A) make everyone work for you (B) get everyone willing to help you (C) let people know you have the final say (D) keep sending out orders to them \n If you're in charge of  a project, the key to success is getting everyone to want to help you. ...  You and your team can discover the answers to problems together. ',
                   'is the isle of man a part of great britain? \n (Isle of Man) In 1266, the island became part of Scotland under the Treaty of Perth, after being ruled by Norway.'
                               ]
-
-    'target_answers':['16,000 rpm',
-                      'very good',
-                      'get everyone willing to help you',
-                      'no'
-                    ]
     }
 
 Prediction Format 
