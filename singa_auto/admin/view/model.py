@@ -172,8 +172,8 @@ def get_recommend_models(auth, params):
                                                       dataset_id=params['dataset_id']))
 
 
-@model_bp.errorhandler(Exception)
-def handle_error(error):
-    traceback.print_exc()
-    if type(error) == DuplicateModelNameError:
-        return jsonify({'ErrorMsg': 'DuplicateModelNameError'}), 400
+# @model_bp.errorhandler(Exception)
+# def handle_error(error):
+#     traceback.print_exc()
+#     if type(error) == DuplicateModelNameError:
+#         return jsonify({'ErrorMsg': 'DuplicateModelNameError'}), 400
