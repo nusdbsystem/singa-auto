@@ -51,25 +51,46 @@ An example of the dataset structure:
     │  ...
     ...
     │
-    └──metadata.csv                                          # if additional information is provided for above JSON files, user can add a metadata.csv
+    └──metadata.csv                                               # if additional information is provided for above JSON files, user can add a metadata.csv
 
-- JSON file includes ``body_text``, providing list of paragraphs in full body which can be used for question answering. ``body_text`` can contain different entries, only the "text" field of each entry will be read.
+- JSON file includes ``body_text``, providing list of paragraphs in full body which can be used for question answering. ``body_text`` can contain different entries, only the "text" field of each entry will be read. 
 
-The essential structure of JSON file is:
+1. When it comes to JSON files extracted from papers, it comes that one JSON file is for one paper. And if additional information is given in metadata.csv for papers, JSOP ``sha`` fields and metadata.csv entries are linked via ``sha`` values.
+
+2. For dataset having their additional information paragraph, the ``body_text``>``text`` entry is in ``<question> + <\n> + <information paragraph>`` format. In this circumstance, there is no ``sha`` value nor metadata.csv file needed.
+
+The structure of JSON file:
 
 .. code-block:: text
 
+    # JSON file 1                           # for example, a JSON file extracted from one paper
     {
-        "body_text": [                      # list of paragraphs in full body
+        "sha": <str>,                       # 40-character sha1 of the PDF, this field is only required for JSON extracted from papers
+        
+        "body_text": [                      # list of paragraphs in full body, this is must-have
             {                               
-                "text": <str>,              # text body for first entry, this is must-have 
+                "text": <str>,              # text body for first entry, which is for one paragraph. this is must-have 
             },
             ...                             # other entries, paragraph dicts look the same as above
         ],
     }
+    
+    # ---------------------------------------------------------------------------------------------------------------------- #
+    
+    # JSON file 2                           # for example, a JSON file extraced from SQuAD2.0
+    {        
+        "body_text": [                      # list of paragraphs in full body, this is must-have
+            {                               
+                "text": 'What are the treatments for Age-related Macular Degeneration ?\n If You Have Advanced AMD Once dry AMD reaches the advanced stage, no form of treatment can prevent vision loss...',              
+                                            # text body for first entry, this is must-have 
+                                            
+            },
+            ...                             # other entries, paragraph dicts look the same as above
+        ],
+    }
+    
 
-
-- ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to JSON files by sha values. ``cord_uid`` serves unique values serve as the entry identity. Time related entry, like ``publish_time``, is suggested to be in Date format, otherwise, General format is recommended.
+- ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to each JSON files by every sha value. ``cord_uid`` serves unique values serve as the entry identity. Time sensitive entry, is advised to have ``publish_time`` value in Date format. Other values, General format is recommended.
 
 An example of ``metadata.csv`` entry: 
     =====================       =====================
@@ -96,7 +117,7 @@ Query Format
     - The pretrained model should be fine-tuned with a dataset first to adapt to particular question domains when necessary. 
     - Otherwise, following the question, input should contain relevant information (context paragraph or candidate answers, or both), whether or not addresses the question. 
 
-Query is in JSON format. It could be a <str list> of a single question in ``questions`` field. While the relevant information is provided in query, the question always comes first, followed by additional information. We use “\n” separators between different parts of the input. Model will only read the ``questions`` field. 
+Query is in JSON format. It could be a <str list> of a single question in ``questions`` field. While the relevant information as additional paragraph are provided in query, the question always comes first, followed by additional paragraph. We use “\n” separators between the question and its paragraph of the input. Model will only read the ``questions`` field. 
 
 .. code-block:: text
 
@@ -105,7 +126,12 @@ Query is in JSON format. It could be a <str list> of a single question in ``ques
                   'What does Paul McCartney think about his music? \n LAS VEGAS, Nevada (CNN) -- Former Beatles Paul McCartney and Ringo Starr clowned around and marveled at their band's amazing impact in an interview Tuesday on CNN's "Larry King Live."   ... McCartney said the early Beatles knew they were a good band and were pretty sure of themselves, but Starr said, "We thought we'd be really big in Liverpool."  ',
                   'The author tells us that to succeed in a project you are in charge of, you should   _  . \n  (A) make everyone work for you (B) get everyone willing to help you (C) let people know you have the final say (D) keep sending out orders to them \n If you're in charge of  a project, the key to success is getting everyone to want to help you. ...  You and your team can discover the answers to problems together. ',
                   'is the isle of man a part of great britain? \n (Isle of Man) In 1266, the island became part of Scotland under the Treaty of Perth, after being ruled by Norway.'
-                              ]
+                              ],
+      'answers':['16,000 rpm',
+                      'very good',
+                      'get everyone willing to help you',
+                      'no'
+                    ]
     }
 
 Prediction Format 
