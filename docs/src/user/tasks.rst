@@ -57,7 +57,7 @@ An example of the dataset structure:
 
 1. When it comes to JSON files extracted from papers, it comes that one JSON file is for one paper. And if additional information is given in metadata.csv for papers, JSOP ``sha`` fields and metadata.csv entries are linked via ``sha`` values.
 
-2. For dataset having their additional information paragraph, the ``body_text``>``text`` entry is in ``<question> + <\n> + <information paragraph>`` format. In this circumstance, there is no ``sha`` value nor metadata.csv file needed.
+2. For dataset having their additional information paragraph, the ``body_text``> ``text`` entry is in ``<question> + <\n> + <information paragraph>`` string format. In this circumstance, there is no ``sha`` value nor metadata.csv file needed.
 
 The structure of JSON file:
 
