@@ -99,6 +99,10 @@ class InferenceJobDetails extends React.Component {
     this.props.push(url)
   }
 
+  handleCopy = () => {
+    navigator.clipboard.writeText(this.state.selectedInferenceJob.predictor_host)
+  }
+
   render() {
     const { classes } = this.props
 
@@ -162,6 +166,15 @@ class InferenceJobDetails extends React.Component {
             {this.state.selectedInferenceJob.datetime_started &&
               (
                 <>
+                <Grid item >
+                    <Button
+                      onClick={this.handleCopy}
+                      color="secondary"
+                      variant="contained"
+                    >
+                      Copy Link
+                    </Button>
+                  </Grid>
                   <Grid item >
                     <Button
                       onClick={this.handleClickRunPrediction}
