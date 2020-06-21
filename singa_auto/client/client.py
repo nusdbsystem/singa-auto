@@ -233,7 +233,8 @@ class Client:
                      model_preload_file_path: str = None,
                      dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
-                     docker_image: str = None) -> Dict[str, Any]:
+                     docker_image: str = None,
+                     model_description: str = None) -> Dict[str, Any]:
         '''
         Creates a model on SINGA-Auto.
 
@@ -284,7 +285,8 @@ class Client:
             'dependencies': json.dumps(dependencies),
             'docker_image': docker_image,
             'model_class': model_class,
-            'access_right': access_right
+            'access_right': access_right,
+            'model_description': model_description
         }
 
         data = self._post_stream(path='/models',
@@ -604,7 +606,8 @@ class Client:
     def create_inference_job(self,
                              app: str,
                              app_version: int = -1,
-                             budget: InferenceBudget = None) -> Dict[str, Any]:
+                             budget: InferenceBudget = None,
+                             description: str = None) -> Dict[str, Any]:
         '''
         Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
@@ -639,11 +642,15 @@ class Client:
                           json={
                               'app': app,
                               'app_version': app_version,
-                              'budget': budget
+                              'budget': budget,
+                              'description': description
                           })
         return data
 
-    def create_inference_job_by_checkpoint(self, model_name: str, budget: InferenceBudget = None) -> Dict[str, Any]:
+    def create_inference_job_by_checkpoint(self, 
+                                           model_name: str, 
+                                           budget: InferenceBudget = None,
+                                           description: str = None) -> Dict[str, Any]:
         '''
         Creates and starts a inference job on SINGA-Auto with the best-scoring trials of the associated train job.
         The train job must have the status of ``STOPPED``.The inference job would be tagged with the train job's app and app version.
@@ -679,7 +686,8 @@ class Client:
 
         data = self._post('/inference_jobs/checkpoint', json={
             'model_name': model_name,
-            'budget': budget
+            'budget': budget,
+            'description': description
         })
         return data
 

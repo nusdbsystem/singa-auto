@@ -49,6 +49,9 @@ def create_model(auth, params):
     feed_params['model_file_bytes'] = params['model_file_bytes'].read()
     feed_params['model_class'] = params['model_class']
 
+    if 'model_description' in params and isinstance(params['model_description'], str):
+        feed_params['model_description'] = params['model_description']
+
     if 'dependencies' in params and isinstance(params['dependencies'], str):
         feed_params['dependencies'] = json.loads(params['dependencies'])
 

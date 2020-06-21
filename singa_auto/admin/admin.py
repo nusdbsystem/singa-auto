@@ -644,7 +644,8 @@ class Admin(object):
     def create_inference_job_by_checkpoint(self,
                                            user_id,
                                            budget,
-                                           model_name=None):
+                                           model_name=None,
+                                           description=None):
         # if there no train job, create inference job by using pretrained model.
         if model_name is None:
             raise InvalidTrainJobError('please provide a model name')
@@ -659,7 +660,8 @@ class Admin(object):
         # Create inference job in DB
         inference_job = self._meta_store.create_inference_job(user_id=user_id,
                                                               model_id=model.id,
-                                                              budget=budget)
+                                                              budget=budget,
+                                                              description=description)
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
@@ -672,7 +674,7 @@ class Admin(object):
             'predictor_host': predictor_service.host
         }
 
-    def create_inference_job(self, user_id, app, app_version, budget):
+    def create_inference_job(self, user_id, app, app_version, budget, description=None):
 
         train_job = self._meta_store.get_train_job_by_app_version(
             user_id, app, app_version=app_version)
@@ -698,7 +700,8 @@ class Admin(object):
 
         # Create inference job in DB
         inference_job = self._meta_store.create_inference_job(
-            user_id=user_id, train_job_id=train_job.id, budget=budget)
+            user_id=user_id, train_job_id=train_job.id, budget=budget,
+            description=description)
         self._meta_store.commit()
 
         (inference_job, predictor_service) = \
@@ -793,7 +796,8 @@ class Admin(object):
             'app_version': app_version,
             'datetime_started': inference_job.datetime_started,
             'datetime_stopped': inference_job.datetime_stopped,
-            'predictor_host': predictor_host
+            'predictor_host': predictor_host,
+            'description': inference_job.description
         }
 
     def get_inference_jobs_of_app(self, user_id, app):
@@ -807,7 +811,8 @@ class Admin(object):
                 'app': train_job.app,
                 'app_version': train_job.app_version,
                 'datetime_started': inference_job.datetime_started,
-                'datetime_stopped': inference_job.datetime_stopped
+                'datetime_stopped': inference_job.datetime_stopped,
+                'description': inference_job.description
             }
             for (inference_job, train_job) in zip(inference_jobs, train_jobs)
         ]
@@ -829,7 +834,8 @@ class Admin(object):
                         'app': train_job.app,
                         'app_version': train_job.app_version,
                         'datetime_started': inference_job.datetime_started,
-                        'datetime_stopped': inference_job.datetime_stopped
+                        'datetime_stopped': inference_job.datetime_stopped,
+                        'description': inference_job.description
                     })
                 elif inference_job.model_id:
                     model = self._meta_store.get_model(inference_job.model_id)
@@ -840,7 +846,8 @@ class Admin(object):
                                 'app': model.name,
                                 'app_version': 1,
                                 'datetime_started': inference_job.datetime_started,
-                                'datetime_stopped': inference_job.datetime_stopped
+                                'datetime_stopped': inference_job.datetime_stopped,
+                                'description': inference_job.description
                             })
 
         return res
@@ -906,7 +913,8 @@ class Admin(object):
                      docker_image=None,
                      dependencies=None,
                      access_right=ModelAccessRight.PRIVATE,
-                     checkpoint_id=None):
+                     checkpoint_id=None,
+                     model_description=None):
         if dependencies is None:
             dependencies = {}
 
@@ -919,7 +927,8 @@ class Admin(object):
             docker_image=(docker_image or self._base_worker_image),
             dependencies=dependencies,
             access_right=access_right,
-            checkpoint_id=checkpoint_id)
+            checkpoint_id=checkpoint_id,
+            model_description=model_description)
         self._meta_store.commit()
 
         return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
@@ -949,6 +958,7 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         }
 
     def get_model(self, model_id):
@@ -965,7 +975,9 @@ class Admin(object):
             'datetime_created': model.datetime_created,
             'docker_image': model.docker_image,
             'dependencies': model.dependencies,
-            'access_right': model.access_right
+            'access_right': model.access_right,
+            'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         }
 
     def get_model_file(self, model_id):
@@ -984,7 +996,9 @@ class Admin(object):
             'task': model.task,
             'datetime_created': model.datetime_created,
             'dependencies': model.dependencies,
-            'access_right': model.access_right
+            'access_right': model.access_right,
+            'checkpoint_id': model.checkpoint_id,
+            'model_description': model.model_description
         } for model in models]
 
     def get_recommend_models(self, user_id, dataset_id):
@@ -1001,7 +1015,9 @@ class Admin(object):
                     'task': model.task,
                     'datetime_created': model.datetime_created,
                     'dependencies': model.dependencies,
-                    'access_right': model.access_right
+                    'access_right': model.access_right,
+                    'checkpoint_id': model.checkpoint_id,
+                    'model_description': model.model_description
                 }]
         # If we can not found resnet, return the first model
         for model in models:
@@ -1012,7 +1028,9 @@ class Admin(object):
                 'task': model.task,
                 'datetime_created': model.datetime_created,
                 'dependencies': model.dependencies,
-                'access_right': model.access_right
+                'access_right': model.access_right,
+                'checkpoint_id': model.checkpoint_id,
+                'model_description': model.model_description
             }]
 
     ####################################
