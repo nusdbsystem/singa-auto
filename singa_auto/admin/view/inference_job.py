@@ -19,8 +19,9 @@
 
 from singa_auto.constants import UserType, RequestsParameters, InferenceBudgetOption
 from flask import jsonify, Blueprint, g
-from singa_auto.utils.auth import UnauthorizedError, auth
+from singa_auto.utils.auth import auth
 from singa_auto.utils.requests_params import param_check
+from singa_auto.error_code import UnauthorizedError
 
 inference_bp = Blueprint('inference', __name__)
 

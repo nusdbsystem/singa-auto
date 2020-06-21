@@ -27,6 +27,7 @@ from typing import Type, Dict, List, Any
 from singa_auto.constants import ModelAccessRight, ModelDependencies, Budget, BudgetOption, \
                             InferenceBudget, InferenceBudgetOption, UserType
 from singa_auto.model import Params, BaseModel
+from singa_auto.error_code import generate_error
 
 
 class SingaAutoConnectionError(ConnectionError):
@@ -35,6 +36,14 @@ class SingaAutoConnectionError(ConnectionError):
 
 DOCS_URL = 'https://nginyc.github.io/rafiki/docs/latest/docs/src/python/rafiki.client.Client.html'
 
+def rafiki_response_handler(resp):
+    if isinstance(resp, dict):
+        if resp.get('success', 0) == 0:
+            return resp['data']
+        else:
+            raise generate_error(resp.get('error_code', 500))
+    else:
+        return resp
 
 # Returns a decorator that warns user about the method being deprecated
 def _deprecated(msg=None):
@@ -829,7 +838,8 @@ class Client:
 
         content_type = res.headers.get('content-type')
         if content_type == 'application/json':
-            return res.json()
+            res = rafiki_response_handler(res.json())
+            return res
         elif content_type == 'application/octet-stream':
             return res.content
         else:

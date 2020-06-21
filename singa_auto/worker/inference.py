@@ -31,17 +31,10 @@ from singa_auto.param_store import FileParamStore
 from singa_auto.predictor import Query, Prediction
 from singa_auto.redis import InferenceCache as RedisInferenceCache
 from singa_auto.kafka import InferenceCache as KafkaInferenceCache
+from singa_auto.error_code import InvalidWorkerError, InvalidTrialError
 
 LOOP_SLEEP_SECS = 0.1
 PREDICT_BATCH_SIZE = 32
-
-
-class InvalidWorkerError(Exception):
-    pass
-
-
-class InvalidTrialError(Exception):
-    pass
 
 
 logger = logging.getLogger(__name__)

@@ -34,53 +34,12 @@ from singa_auto.container import KubernetesContainerManager
 from singa_auto.data_store import FileDataStore, DataStore
 from singa_auto.param_store import FileParamStore, ParamStore
 from .services_manager import ServicesManager
+from singa_auto.error_code import InvalidUserError, InvalidPasswordError, UserAlreadyBannedError, \
+                              InvalidDatasetError, InvalidTrainJobError, NoModelsForTrainJobError, \
+                              InvalidModelError, InvalidTrialError, RunningInferenceJobExistsError, \
+                              InvalidRunningInferenceJobError, UserExistsError, UnauthorizedError
 
 logger = logging.getLogger(__name__)
-
-
-class UserExistsError(Exception):
-    pass
-
-
-class UserAlreadyBannedError(Exception):
-    pass
-
-
-class InvalidUserError(Exception):
-    pass
-
-
-class InvalidPasswordError(Exception):
-    pass
-
-
-class InvalidRunningInferenceJobError(Exception):
-    pass
-
-
-class InvalidModelError(Exception):
-    pass
-
-
-class InvalidTrainJobError(Exception):
-    pass
-
-
-class InvalidTrialError(Exception):
-    pass
-
-
-class RunningInferenceJobExistsError(Exception):
-    pass
-
-
-class NoModelsForTrainJobError(Exception):
-    pass
-
-
-class InvalidDatasetError(Exception):
-    pass
-
 
 class Admin(object):
 

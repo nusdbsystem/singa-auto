@@ -29,21 +29,8 @@ from singa_auto.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWo
     InferenceJob, Trial, Model, User, Service, InferenceJobWorker, \
     TrialLog, Dataset, IngressConfig
 
-
-class InvalidModelAccessRightError(Exception):
-    pass
-
-
-class DuplicateModelNameError(Exception):
-    pass
-
-
-class ModelUsedError(Exception):
-    pass
-
-
-class InvalidUserTypeError(Exception):
-    pass
+from singa_auto.error_code import InvalidModelAccessRightError, DuplicateModelNameError, \
+    ModelUsedError, InvalidUserTypeError
 
 
 class MetaStore(object):

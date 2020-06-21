@@ -18,10 +18,7 @@
 #
 
 from copy import deepcopy
-
-
-class InvalidDAGException(Exception):
-    pass
+from singa_auto.error_code import InvalidDAGException
 
 
 def build_dag(sub_train_jobs, ensemble):

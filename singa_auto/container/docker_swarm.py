@@ -25,7 +25,8 @@ import traceback
 from collections import namedtuple
 from functools import wraps
 
-from .container_manager import ContainerManager, InvalidServiceRequestError, ContainerService
+from .container_manager import ContainerManager, ContainerService
+from singa_auto.error_code import InvalidServiceRequestError
 
 LABEL_AVAILBLE_GPUS = 'available_gpus'
 LABEL_NUM_SERVICES = 'num_services'

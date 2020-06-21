@@ -19,8 +19,9 @@
 
 from singa_auto.constants import UserType, RequestsParameters, BudgetOption
 from flask import jsonify, Blueprint, g
-from singa_auto.utils.auth import UnauthorizedError, auth
+from singa_auto.utils.auth import auth
 from singa_auto.utils.requests_params import param_check
+from singa_auto.error_code import UnauthorizedError
 
 trainjob_bp = Blueprint('trainjob', __name__)
 

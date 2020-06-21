@@ -31,16 +31,9 @@ from singa_auto.model import Params
 from singa_auto.advisor import ParamsType
 from singa_auto.utils.local_cache import LocalCache
 from .redis import RedisSession
+from singa_auto.error_code import InvalidParamsError, InvalidParamsFormatError
 
 logger = logging.getLogger(__name__)
-
-
-class InvalidParamsError(Exception):
-    pass
-
-
-class InvalidParamsFormatError(Exception):
-    pass
 
 
 REDIS_NAMESPACE = 'PARAMS'

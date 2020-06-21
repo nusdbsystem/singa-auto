@@ -24,16 +24,13 @@ import logging
 import traceback
 from functools import wraps
 
-from .container_manager import ContainerManager, InvalidServiceRequestError, ContainerService
+from .container_manager import ContainerManager, ContainerService
+from singa_auto.error_code import InvalidServiceRequestError, ServiceRequestError
 
 RETRY_WAIT_SECS = 1
 RETRY_TIMES = 5
 
 logger = logging.getLogger(__name__)
-
-
-class ServiceRequestError(Exception):
-    pass
 
 
 class KubernetesContainerManager(ContainerManager):

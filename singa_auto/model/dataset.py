@@ -31,12 +31,9 @@ import csv
 import pandas
 import tempfile
 import pandas as pd
+from singa_auto.error_code import InvalidDatasetFormatException
 
 logger = logging.getLogger(__name__)
-
-
-class InvalidDatasetFormatException(Exception):
-    pass
 
 
 class DatasetUtils():

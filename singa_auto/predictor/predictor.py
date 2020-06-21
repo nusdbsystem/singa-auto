@@ -32,11 +32,9 @@ from singa_auto.kafka import InferenceCache as KafkaInferenceCache
 from .constants import Prediction, Query
 from .ensemble import get_ensemble_method
 
+from singa_auto.error_code import InvalidInferenceJobError
+
 PREDICT_LOOP_SLEEP_SECS = 0.1
-
-
-class InvalidInferenceJobError(Exception):
-    pass
 
 
 logger = logging.getLogger(__name__)

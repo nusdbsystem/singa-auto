@@ -25,17 +25,10 @@ from datetime import datetime, timedelta
 from singa_auto.constants import UserType
 from singa_auto.config import APP_SECRET, SUPERADMIN_EMAIL
 from singa_auto.meta_store import MetaStore
+from singa_auto.error_code import UnauthorizedError, InvalidAuthorizationHeaderError
 
 # extend JWT expiration to 1 day!
 TOKEN_EXPIRATION_HOURS = 24
-
-
-class UnauthorizedError(Exception):
-    pass
-
-
-class InvalidAuthorizationHeaderError(Exception):
-    pass
 
 
 def generate_token(user):
