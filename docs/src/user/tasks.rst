@@ -93,6 +93,7 @@ Sample of JSON file:
 - ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to each JSON files by every sha value. ``cord_uid`` serves unique values serve as the entry identity. Time sensitive entry, is advised to have ``publish_time`` value in Date format. Other values, General format is recommended.
 
 Sample of ``metadata.csv`` entry: 
+
     =====================       =====================
     Column Names                Column Values 
     ---------------------       --------------------- 
