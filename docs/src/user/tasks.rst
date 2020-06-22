@@ -32,7 +32,7 @@ Dataset can be used to finetune the SQuAD pre-trained Bert model.
 
 - The dataset zips folders containing JSON files. JSON files under different level folders will be automaticly read all together. 
 
-An example of the dataset structure:
+Dataset structure example #1:
 
 .. code-block:: text
 
@@ -59,7 +59,7 @@ An example of the dataset structure:
 
 2. For dataset having their additional information paragraph, the ``body_text``> ``text`` entry is in ``<question> + <\n> + <information paragraph>`` string format. In this circumstance, there is no ``sha`` value nor metadata.csv file needed.
 
-The structure of JSON file:
+Sample of JSON file:
 
 .. code-block:: text
 
@@ -92,7 +92,7 @@ The structure of JSON file:
 
 - ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to each JSON files by every sha value. ``cord_uid`` serves unique values serve as the entry identity. Time sensitive entry, is advised to have ``publish_time`` value in Date format. Other values, General format is recommended.
 
-An example of ``metadata.csv`` entry: 
+Sample of ``metadata.csv`` entry: 
     =====================       =====================
     Column Names                Column Values 
     ---------------------       --------------------- 
@@ -108,6 +108,51 @@ An example of ``metadata.csv`` entry:
     publish_time                2001-12-17             
     =====================       =====================
     
+    
+    
+Dataset structure example #2:
+
+.. code-block:: text
+
+    /MedQuAD.zip
+    │
+    ├──FOLDER_NAME_1                                              # first level folder
+    │  └──FOLDER_NAME_2                                           # second level folder, not necessarily to be included
+    │      └──FOLDER_NAME_3                                       # third level folder, not necessarily to be included
+    │           ├── 003d2e515e1aaf0052769953e8.xml             # xml file name is a random combination of either alphabets/numbers or both
+    │           ├── 00a40758bdd.xml
+    │           ...
+    │
+    ├──FOLDER_NAME_4                                              # first level folder
+    │  ├── 0015023cc06b5332b3.xml
+    │  ├── 001b4a31684c8fc6e2cfbb70304c429.xml
+    │  ...
+    ...
+
+
+.. note::
+
+    - For following `.xml` sample, model would only take `Question` and `Answer` fields into the question answering processing.
+    - Each xml file contains multiple <QAPair>. Each <QAPair> contains one question and its answer. 
+    
+Sample `.xml` file:
+
+.. code-block:: text
+
+     <?xml version="1.0" encoding="UTF-8"?>
+     <Document id="000001" source="A_source_here" url="An_url_here">
+     ...
+     <QAPairs>
+      <QAPair pid="1">                                                           # pair #1
+        <Question qid="000001-1" qtype=" "> A question here ... </Question>      # question #1
+        <Answer> An answer here ... </Answer>                                    # answer of question #1
+      </QAPair>
+      ...                                                                        # multiple subsequent pairs
+     </QAPairs>
+     </Document>
+
+
+
 
 Query Format 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
