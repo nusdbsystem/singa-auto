@@ -282,8 +282,10 @@ class _SubTrainJobMonitor:
              self.val_dataset_path) = self._load_datasets(train_job)
             self.train_args = train_job.train_args
             self.sub_train_job_id = sub_train_job.id
-            self.model_class = load_model_class(model.model_file_bytes,
-                                                model.model_class)
+            self.model_class = load_model_class(model.model_file_bytes, 
+                                                model.model_class, None, 
+                                                model.model_type, 
+                                                model.model_file_name)
 
     def mark_trial_as_errored(self, trial_id):
         logger.info('Marking trial as errored in store...')

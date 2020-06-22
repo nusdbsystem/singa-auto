@@ -158,8 +158,10 @@ class InferenceWorker():
                 self._store_params_id = trial.store_params_id
 
             self._inference_job_id = inference_job.id
-            self._py_model_class = load_model_class(model.model_file_bytes,
-                                                    model.model_class)
+            self._py_model_class = load_model_class(model.model_file_bytes, 
+                                                    model.model_class, None, 
+                                                    model.model_type, 
+                                                    model.model_file_name)
 
     def _load_trial_model(self):
         logger.info('Loading saved model parameters from store...')

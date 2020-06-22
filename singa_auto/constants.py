@@ -194,3 +194,7 @@ class RequestsParameters:
     }
 
     INFERENCE_GETBY_USER = {'params': {'user_id': True}}
+
+class ModelType:
+    PYTHON_FILE = 'py'
+    ZIP_FILE = 'zip'

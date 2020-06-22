@@ -75,7 +75,7 @@ export KIBANA_HOST=singa-auto-kibana
 export KIBANA_PORT=5601
 
 export DOCKER_WORKDIR_PATH=/root
-export DB_DIR_PATH=db/data
+export DB_DIR_PATH=/home/luqin/singa_auto_data
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir
