@@ -17,7 +17,7 @@
 # under the License.
 #
 
-FROM node:13.5.0-alpine3.11
+FROM node:14.4.0-alpine3.11
 
 ARG DOCKER_WORKDIR_PATH
 RUN mkdir -p $DOCKER_WORKDIR_PATH
