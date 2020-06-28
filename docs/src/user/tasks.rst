@@ -22,7 +22,7 @@ QUESTION_ANSWERING
 --------------------------------------------------------------------
 
 
-Dataset Format
+COVID19 Task Dataset Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :ref:`dataset-type:QUESTION_ANSWERING`
@@ -32,7 +32,7 @@ Dataset can be used to finetune the SQuAD pre-trained Bert model.
 
 - The dataset zips folders containing JSON files. JSON files under different level folders will be automaticly read all together. 
 
-Dataset structure example #1:
+Dataset structure example:
 
 .. code-block:: text
 
@@ -65,13 +65,13 @@ Sample of JSON file:
 
     # JSON file 1                           # for example, a JSON file extracted from one paper
     {
-        "sha": <str>,                       # 40-character sha1 of the PDF, this field is only required for JSON extracted from papers
+        "sha": <str>,                       # 40-character sha1 of the PDF, this field is only required for JSON extracted from papers. it will be read into model in forms of string
         
         "body_text": [                      # list of paragraphs in full body, this is must-have
             {                               
-                "text": <str>,              # text body for first entry, which is for one paragraph. this is must-have 
-            },
-            ...                             # other entries, paragraph dicts look the same as above
+                "text": <str>,              # text body for first entry, which is for one paragraph of this paper. this is must-have. it will be read as string into model
+            }
+            ...                             # other 'text' blocks, i.e. paragraphs blocks the same as above, then all string ‘text’ will be handled and processed into panda datafame
         ],
     }
     
@@ -85,7 +85,7 @@ Sample of JSON file:
                                             # text body for first entry, this is must-have 
                                             
             },
-            ...                             # other entries, paragraph dicts look the same as above
+            ...                             # other 'text' blocks, i.e. paragraphs blocks look the same as above
         ],
     }
     
@@ -110,8 +110,14 @@ Sample of ``metadata.csv`` entry:
     =====================       =====================
     
     
-    
-Dataset structure example #2:
+
+MedQuAD Task Dataset Forma
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+:ref:`dataset-type:QUESTION_ANSWERING`
+
+Dataset structure example:
 
 .. code-block:: text
 
@@ -120,7 +126,7 @@ Dataset structure example #2:
     ├──FOLDER_NAME_1                                              # first level folder
     │  └──FOLDER_NAME_2                                           # second level folder, not necessarily to be included
     │      └──FOLDER_NAME_3                                       # third level folder, not necessarily to be included
-    │           ├── 003d2e515e1aaf0052769953e8.xml             # xml file name is a random combination of either alphabets/numbers or both
+    │           ├── 003d2e515e1aaf0052769953e8.xml                # xml file name is a random combination of either alphabets/numbers or both
     │           ├── 00a40758bdd.xml
     │           ...
     │
@@ -141,14 +147,14 @@ Sample `.xml` file:
 .. code-block:: text
 
      <?xml version="1.0" encoding="UTF-8"?>
-     <Document id="000001" source="A_source_here" url="An_url_here">
+     <Document>
      ...
      <QAPairs>
       <QAPair pid="1">                                                           # pair #1
-        <Question qid="000001-1" qtype=" "> A question here ... </Question>      # question #1
-        <Answer> An answer here ... </Answer>                                    # answer of question #1
+        <Question qid="000001-1"> A question here ... </Question>                # question #1, will be read as string by model
+        <Answer> An answer here ... </Answer>                                    # answer of question #1, will be read as string by model
       </QAPair>
-      ...                                                                        # multiple subsequent pairs
+      ...                                                                        # multiple subsequent <QAPair> blocks, Question and its Answer pair will be combined into one string by model, and strings of QAPair are then processed into panda dataframe
      </QAPairs>
      </Document>
 
@@ -172,12 +178,9 @@ Query is in JSON format. It could be a <str list> of a single question in ``ques
                   'What does Paul McCartney think about his music? \n LAS VEGAS, Nevada (CNN) -- Former Beatles Paul McCartney and Ringo Starr clowned around and marveled at their band's amazing impact in an interview Tuesday on CNN's "Larry King Live."   ... McCartney said the early Beatles knew they were a good band and were pretty sure of themselves, but Starr said, "We thought we'd be really big in Liverpool."  ',
                   'The author tells us that to succeed in a project you are in charge of, you should   _  . \n  (A) make everyone work for you (B) get everyone willing to help you (C) let people know you have the final say (D) keep sending out orders to them \n If you're in charge of  a project, the key to success is getting everyone to want to help you. ...  You and your team can discover the answers to problems together. ',
                   'is the isle of man a part of great britain? \n (Isle of Man) In 1266, the island became part of Scotland under the Treaty of Perth, after being ruled by Norway.'
-                              ],
-      'answers':['16,000 rpm',
-                      'very good',
-                      'get everyone willing to help you',
-                      'no'
-                    ]
+                              ],     # will be read as a list of string by model
+                              
+     ...                             # other fileds. fields, other than 'questions', won't be read into the model
     }
 
 Prediction Format 
@@ -187,7 +190,7 @@ The output is in JSON format.
 
 .. code-block:: text
 
-         {'answers':['16,000 rpm',
+         {'answers':['16,000 rpm',         # output 'answers' field is a list of string
                      'very good',
                      'get everyone willing to help you',
                      'no'
