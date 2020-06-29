@@ -6,6 +6,7 @@ import tempfile
 import zipfile
 from typing import List
 
+import PIL
 import numpy as np
 from PIL import Image
 
@@ -60,7 +61,7 @@ class FoodDetectionBase(BaseModel):
     def get_knob_config(self):
         pass
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         pass
 
     def destroy(self):
@@ -69,7 +70,7 @@ class FoodDetectionBase(BaseModel):
     def dump_parameters(self):
         pass
 
-    def predict(self, queries):
+    def predict(self, queries: List[PIL.Image.Image]) -> List[dict]:
         print("Get queries")
 
         res = []
@@ -214,7 +215,7 @@ class FoodDetectionBase(BaseModel):
         return y
 
     @staticmethod
-    def image_to_byte_array(query: List[str]):
+    def image_to_byte_array(query: PIL.Image.Image):
         query = np.asarray(query).astype(np.uint8)
         image = Image.fromarray(query)
         imgByteArr = io.BytesIO()

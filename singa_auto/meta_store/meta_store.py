@@ -129,7 +129,7 @@ class MetaStore(object):
     ####################################
 
     def create_train_job(self, user_id, app, app_version, task, budget,
-                         train_dataset_id, val_dataset_id, train_args):
+                         train_dataset_id, val_dataset_id, annotation_dataset_id, train_args):
 
         train_job = TrainJob(user_id=user_id,
                              app=app,
@@ -138,6 +138,7 @@ class MetaStore(object):
                              budget=budget,
                              train_dataset_id=train_dataset_id,
                              val_dataset_id=val_dataset_id,
+                             annotation_dataset_id=annotation_dataset_id,
                              train_args=train_args)
         self._session.add(train_job)
         return train_job
@@ -432,24 +433,26 @@ class MetaStore(object):
     ####################################
 
     def create_model(self, user_id, name, task, model_file_bytes, model_class,
-                     docker_image, dependencies, access_right, checkpoint_id, 
-                     model_description, model_type, model_file_name):
+                     docker_image, dependencies, access_right, checkpoint_id,
+                     model_type, model_file_name, model_description):
 
         self._validate_model_access_right(access_right)
 
-        model = Model(user_id=user_id,
-                      name=name,
-                      task=task,
-                      model_file_bytes=model_file_bytes,
-                      model_class=model_class,
-                      docker_image=docker_image,
-                      dependencies=dependencies,
-                      access_right=access_right,
-                      checkpoint_id=checkpoint_id,
-                      model_description=model_description,
-                      model_type=model_type,
-                      model_file_name=model_file_name
-            )
+        model = Model(
+            user_id=user_id,
+            name=name,
+            task=task,
+            model_file_bytes=model_file_bytes,
+            model_class=model_class,
+            docker_image=docker_image,
+            dependencies=dependencies,
+            access_right=access_right,
+            checkpoint_id=checkpoint_id,
+            model_type=model_type,
+            model_file_name=model_file_name,
+            model_description=model_description
+        )
+
         self._session.add(model)
         return model
 

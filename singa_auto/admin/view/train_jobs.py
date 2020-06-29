@@ -42,6 +42,9 @@ def create_train_job(auth, params):
     feed_params['train_dataset_id'] = params['train_dataset_id']
     feed_params['val_dataset_id'] = params['val_dataset_id']
     feed_params['budget'] = budget
+
+    if "annotation_dataset_id" in params:
+        feed_params['annotation_dataset_id'] = params['annotation_dataset_id']
     if 'model_ids' in params:
         feed_params['model_ids'] = params['model_ids']
     if 'train_args' in params:

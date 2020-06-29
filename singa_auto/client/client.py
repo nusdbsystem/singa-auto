@@ -243,9 +243,9 @@ class Client:
                      dependencies: ModelDependencies = None,
                      access_right: ModelAccessRight = ModelAccessRight.PRIVATE,
                      docker_image: str = None,
-                     model_description: str = None,
                      model_type: str = ModelType.PYTHON_FILE,
-                     model_file_name: str = None) -> Dict[str, Any]:
+                     model_file_name: str = None,
+                     model_description: str = None) -> Dict[str, Any]:
         '''
         Creates a model on SINGA-Auto.
 
@@ -297,9 +297,9 @@ class Client:
             'docker_image': docker_image,
             'model_class': model_class,
             'access_right': access_right,
-            'model_description': model_description,
             'model_type': model_type,
-            'model_file_name': model_file_name
+            'model_file_name': model_file_name,
+            'model_description': model_description
         }
 
         data = self._post_stream(path='/models',
@@ -400,6 +400,7 @@ class Client:
                          train_dataset_id: str,
                          val_dataset_id: str,
                          budget: Budget,
+                         annotation_dataset_id: str = None,
                          models: List[str] = None,
                          train_args: Dict[str, any] = None) -> Dict[str, Any]:
         '''
@@ -443,31 +444,26 @@ class Client:
         if 'ENABLE_GPU' in budget:
             _warn('The `ENABLE_GPU` option has been changed to `GPU_COUNT`')
 
-        # Default to all available models
-        if models is None:
-            avail_models = self.get_available_models(task)
-            models = [x['id'] for x in avail_models]
-
-        # Have defaults for budget
+         # Have defaults for budget
         budget = {
             BudgetOption.TIME_HOURS: 0.1,
             BudgetOption.GPU_COUNT: 0,
             **budget
         }
 
-        # TODO: figure out why requests.post(json) preserves the TYPE!?
-        # client use json=json, and somehow this passes the TYPE of the values
-        # but restAPI should be just using JSON as strings!
-        # Solution Feb2020: change the type handling and conversion at admin.py
         postJSON = {
             'app': app,
             'task': task,
             'train_dataset_id': train_dataset_id,
             'val_dataset_id': val_dataset_id,
             'budget': budget,
-            'model_ids': models,
-            'train_args': train_args
         }
+        if train_args:
+            postJSON['train_args'] = train_args
+        if models:
+            postJSON['model_ids'] = models
+        if annotation_dataset_id:
+            postJSON['annotation_dataset_id'] = annotation_dataset_id
 
         print("postJSON: ", postJSON)
         # print will show up in docker exec terminal
@@ -660,8 +656,8 @@ class Client:
                           })
         return data
 
-    def create_inference_job_by_checkpoint(self, 
-                                           model_name: str, 
+    def create_inference_job_by_checkpoint(self,
+                                           model_name: str,
                                            budget: InferenceBudget = None,
                                            description: str = None) -> Dict[str, Any]:
         '''

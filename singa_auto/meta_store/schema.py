@@ -95,9 +95,9 @@ class Model(Base):
                           nullable=False,
                           default=ModelAccessRight.PRIVATE)
     checkpoint_id = Column(String, default=None)
-    model_description = Column(String, nullable=True)
     model_type = Column(String, default='py')
     model_file_name = Column(String, default=None)
+    model_description = Column(String, nullable=True)
     __table_args__ = (UniqueConstraint('name', 'user_id'),)
 
 
@@ -144,6 +144,7 @@ class TrainJob(Base):
     budget = Column(JSON, nullable=False)
     train_dataset_id = Column(String, ForeignKey('dataset.id'), nullable=False)
     val_dataset_id = Column(String, ForeignKey('dataset.id'), nullable=False)
+    annotation_dataset_id = Column(String, ForeignKey('dataset.id'), nullable=True)
     train_args = Column(JSON, default=None)
     user_id = Column(String, ForeignKey('user.id'), nullable=False)
     status = Column(String, nullable=False, default=TrainJobStatus.STARTED)

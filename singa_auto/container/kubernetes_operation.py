@@ -141,12 +141,11 @@ class KubernetesContainerManager(ContainerManager):
             service_config = self._create_service_config(service_name, docker_image, replicas,
                             args, environment_vars, mounts, publish_port,
                             gpus)
-            service_obj = _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
+            _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
         deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
                         args, environment_vars, mounts, publish_port,
                         gpus)
-        deployment_obj = _retry(self._client_deployment.create_namespaced_deployment)(namespace='default',
-                                                                                      body=deployment_config)
+        _retry(self._client_deployment.create_namespaced_deployment)(namespace='default', body=deployment_config)
 
         info = {
             'node_id': 'default',

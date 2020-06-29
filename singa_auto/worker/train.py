@@ -66,6 +66,7 @@ class TrainWorker:
         self._notify_start()
 
         while True:
+            logger.info('Fetching proposal....')
             proposal = self._fetch_proposal()
             if proposal is not None:
                 result = self._perform_trial(proposal)
@@ -182,21 +183,27 @@ class TrainWorker:
     def _train_model(self, model_inst: BaseModel, proposal: Proposal,
                      shared_params: Union[dict, None]):
         train_dataset_path = self._monitor.train_dataset_path
+        annotation_dataset_path = self._monitor.annotation_dataset_path
         train_args = self._monitor.train_args
 
         logger.info('Training model...')
         model_inst.train(train_dataset_path,
+                         annotation_dataset_path=annotation_dataset_path,
                          shared_params=shared_params,
                          **(train_args or {}))
 
     def _evaluate_model(self, model_inst: BaseModel,
                         proposal: Proposal) -> TrialResult:
         val_dataset_path = self._monitor.val_dataset_path
+        annotation_dataset_path = self._monitor.annotation_dataset_path
         if not proposal.to_eval:
             return TrialResult(proposal)
 
         logger.info('Evaluating model...')
-        score = model_inst.evaluate(val_dataset_path)
+        if annotation_dataset_path:
+            score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+        else:
+            score = model_inst.evaluate(val_dataset_path)
         score = float(score)
         logger.info(f'Score on validation dataset: {score}')
         return TrialResult(proposal, score=score)
@@ -213,7 +220,8 @@ class TrainWorker:
             self._param_cache.store_params(params,
                                            score=result.score,
                                            time=datetime.now())
-
+        py_model_class = self._monitor.model_class
+        self._param_store.model_class = py_model_class.__name__
         store_params_id = None
         if proposal.to_save_params:
             logger.info('Saving shared params...')
@@ -243,6 +251,7 @@ class _SubTrainJobMonitor:
         self.model_class = None
         self.train_dataset_path = None
         self.val_dataset_path = None
+        self.annotation_dataset_path = None
         self.train_args = None
         self._meta_store = meta_store or MetaStore()
         self._service_id = service_id
@@ -278,14 +287,16 @@ class _SubTrainJobMonitor:
                     sub_train_job.model_id))
             logger.info(f'Using model "{model.name}"...')
 
-            (self.train_dataset_path,
-             self.val_dataset_path) = self._load_datasets(train_job)
+            (self.train_dataset_path, self.val_dataset_path, self.annotation_dataset_path) = self._load_datasets(train_job)
+            logger.info('Dataset_loaded')
             self.train_args = train_job.train_args
             self.sub_train_job_id = sub_train_job.id
-            self.model_class = load_model_class(model.model_file_bytes, 
-                                                model.model_class, None, 
-                                                model.model_type, 
+            logger.info('Loading model class for model...')
+            self.model_class = load_model_class(model.model_file_bytes,
+                                                model.model_class, None,
+                                                model.model_type,
                                                 model.model_file_name)
+            logger.info('Model Loaded')
 
     def mark_trial_as_errored(self, trial_id):
         logger.info('Marking trial as errored in store...')
@@ -314,20 +325,30 @@ class _SubTrainJobMonitor:
 
     def _load_datasets(self, train_job):
         try:
-            train_dataset = self._meta_store.get_dataset(
-                train_job.train_dataset_id)
+
+            train_dataset = self._meta_store.get_dataset(train_job.train_dataset_id)
             assert train_dataset is not None
             val_dataset = self._meta_store.get_dataset(train_job.val_dataset_id)
             assert val_dataset is not None
-            train_dataset_path = self._data_store.load(
-                train_dataset.store_dataset_id)
-            val_dataset_path = self._data_store.load(
-                val_dataset.store_dataset_id)
+
+            # if there is annotation_dataset_id uploaded
+            if train_job.annotation_dataset_id is not None:
+
+                annotation_dataset = self._meta_store.get_dataset(train_job.annotation_dataset_id)
+                annotation_dataset_path = self._data_store.load(annotation_dataset.store_dataset_id)
+                assert annotation_dataset_path is not None
+
+            else:
+                annotation_dataset_path = None
+
+            train_dataset_path = self._data_store.load(train_dataset.store_dataset_id)
+            val_dataset_path = self._data_store.load(val_dataset.store_dataset_id)
+
             assert train_dataset_path is not None and val_dataset_path is not None
         except Exception as e:
             raise InvalidDatasetError(e)
 
-        return (train_dataset_path, val_dataset_path)
+        return (train_dataset_path, val_dataset_path, annotation_dataset_path)
 
 
 class LoggerUtilsHandler(logging.Handler):

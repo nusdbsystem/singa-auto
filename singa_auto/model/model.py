@@ -46,7 +46,6 @@ class BaseModel(abc.ABC):
     ::
 
         def __init__(self, **knobs):
-            super().__init__(**knobs)
             self.__dict__.update(knobs)
             ...
             self._build_model(self.knob1, self.knob2)
@@ -55,10 +54,8 @@ class BaseModel(abc.ABC):
     :type knobs: :obj:`singa_auto.model.Knobs`
     '''
 
-    def __init__(self, **knobs: Knobs):
-        pass
-
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def get_knob_config() -> KnobConfig:
         '''
         Return a dictionary that defines the search space for this model template's knobs
@@ -93,7 +90,7 @@ class BaseModel(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def evaluate(self, dataset_path: str) -> float:
+    def evaluate(self, dataset_path: str, **kargs) -> float:
         '''
         Evaluate this model instance with the given validation dataset after training.
 

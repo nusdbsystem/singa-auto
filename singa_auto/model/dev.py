@@ -39,6 +39,7 @@ def tune_model(
         py_model_class: Type[BaseModel],
         train_dataset_path: str,
         val_dataset_path: str,
+        annotation_dataset_path: str,
         test_dataset_path: str = None,
         budget: Budget = None,
         train_args: Dict[str, any] = None) -> (Dict[str, Any], float, Params):
@@ -120,11 +121,12 @@ def tune_model(
         # Worker trains model
         print('Training model...')
         model_inst.train(train_dataset_path,
+                         annotation_dataset_path=annotation_dataset_path,
                          shared_params=shared_params,
                          **(train_args or {}))
 
         # Worker evaluates model
-        result = _evaluate_model(model_inst, proposal, val_dataset_path)
+        result = _evaluate_model(model_inst, proposal, val_dataset_path, annotation_dataset_path)
 
         # Worker caches/saves model parameters
         store_params_id = _save_model(model_inst, proposal, result, param_cache,
@@ -143,7 +145,8 @@ def tune_model(
             # Test best model, if test dataset provided
             if test_dataset_path is not None:
                 print('Evaluating new best model on test dataset...')
-                best_model_test_score = model_inst.evaluate(test_dataset_path)
+                best_model_test_score = model_inst.evaluate(test_dataset_path,
+                                                            annotation_dataset_path=annotation_dataset_path)
                 inform_user(
                     'Score on test dataset: {}'.format(best_model_test_score))
 
@@ -263,6 +266,7 @@ def test_model_class(model_file_path: str,
                      dependencies: Dict[str, str],
                      train_dataset_path: str,
                      val_dataset_path: str,
+                     annotation_dataset_path:str = None,
                      test_dataset_path: str = None,
                      budget: Budget = None,
                      train_args: Dict[str, any] = None,
@@ -305,6 +309,7 @@ def test_model_class(model_file_path: str,
      best_params) = tune_model(py_model_class,
                                train_dataset_path,
                                val_dataset_path,
+                               annotation_dataset_path,
                                test_dataset_path=test_dataset_path,
                                budget=budget,
                                train_args=train_args)
@@ -342,12 +347,12 @@ def _pull_shared_params(proposal: Proposal, param_cache: ParamCache):
 
 
 def _evaluate_model(model_inst: BaseModel, proposal: Proposal,
-                    val_dataset_path: str) -> TrialResult:
+                    val_dataset_path: str, annotation_dataset_path) -> TrialResult:
     if not proposal.to_eval:
         return TrialResult(proposal)
 
     print('Evaluating model...')
-    score = model_inst.evaluate(val_dataset_path)
+    score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
 
     if not isinstance(score, float):
         raise Exception('`evaluate()` should return a float!')
