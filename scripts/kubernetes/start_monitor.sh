@@ -64,11 +64,10 @@ ensure_stable "SINGA-Auto's kibana Service" KIBANA_LOG_FILE_PATH 1
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm install incubator/sparkoperator --namespace default --set operatorVersion=v1beta2-1.1.2-2.4.5 --generate-name
 
+title "Starting SINGA-Auto's spark streamming..."
 SPARK_LOG_FILE_PATH=$PWD/logs/start_spark.log
 (kubectl apply -f scripts/kubernetes/spark-rbac.yaml \
 &> $SPARK_LOG_FILE_PATH) &
-
-ensure_stable "SINGA-Auto's sparkoperator" KIBANA_LOG_FILE_PATH 20
-
 (kubectl apply -f scripts/kubernetes/spark-app.json \
 &> $SPARK_LOG_FILE_PATH) &
+ensure_stable "SINGA-Auto's sparkoperator" KIBANA_LOG_FILE_PATH 20

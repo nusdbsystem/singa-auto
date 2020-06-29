@@ -43,6 +43,8 @@ then
 
 else
 
+#      kubectl delete -f ./scripts/kubernetes/nvidia-device-plugin.yml
+
       title "Stopping any existing jobs..."
       python ./scripts/stop_all_jobs.py
 
@@ -61,6 +63,16 @@ else
       title "Stopping SINGA-Auto's Zookeeper Deployment..."
       kubectl delete deployment $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Deployment"
 
+      title "Stopping SINGA-Auto's LogStash Deployment..."
+      kubectl delete deployment $LOGSTASH_HOST || echo "Failed to stop SINGA-Auto's LogStash deployment"
+
+      title "Stopping SINGA-Auto's Kibana Deployment..."
+      kubectl delete deployment $KIBANA_HOST || echo "Failed to stop SINGA-Auto's Kibana deployment"
+
+      title "Stopping SINGA-Auto's ES Deployment..."
+      kubectl delete deployment $ES_HOST || echo "Failed to stop SINGA-Auto's ES deployment"
+
+
       title "Stopping SINGA-Auto's Web Admin Service..."
       kubectl delete service $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Service"
 
@@ -75,6 +87,20 @@ else
 
       title "Stopping SINGA-Auto's Zookeeper Service..."
       kubectl delete service $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper Service"
+
+      title "Stopping SINGA-Auto's LogStash Service..."
+      kubectl delete service $LOGSTASH_HOST || echo "Failed to stop SINGA-Auto's LogStash Service"
+
+      title "Stopping SINGA-Auto's Kibana Service..."
+      kubectl delete service $KIBANA_HOST || echo "Failed to stop SINGA-Auto's Kibana Service"
+
+      title "Stopping SINGA-Auto's ES Service..."
+      kubectl delete service $ES_HOST || echo "Failed to stop SINGA-Auto's ES Service"
+
+      bash ./scripts/kubernetes/generate_config.sh || exit 1
+      title "Stopping SINGA-Auto's ES Service..."
+      kubectl delete -f scripts/kubernetes/spark-app.json
+      bash ./scripts/kubernetes/remove_config.sh
 
       if [ "$CLUSTER_MODE" = "SINGLE" ]; then
           bash scripts/kubernetes/stop_db.sh || exit 1
