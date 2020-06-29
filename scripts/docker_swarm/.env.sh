@@ -75,6 +75,8 @@ export CONDA_ENVIORNMENT=singa_auto
 export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs are run natively
 export LOGSTASH_DOCKER_WORKDIR_PATH=/usr/share/logstash
 export KIBANA_DOCKER_WORKDIR_PATH=/usr/share/kibana
+export ES_DOCKER_WORKDIR_PATH=/usr/share/elasticsearch
+
 
 # Docker images for SINGA-Auto's custom components
 export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
@@ -82,6 +84,8 @@ export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
 export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker
 export SINGA_AUTO_IMAGE_PREDICTOR=singa_auto/singa_auto_predictor
 export SINGA_AUTO_IMAGE_LOGSTASH=singa_auto/singa_auto_logstash
+export SINGA_AUTO_IMAGE_ES=singa_auto/singa_auto_es
+
 
 # Docker images for dependent services
 export IMAGE_POSTGRES=postgres:10.5-alpine

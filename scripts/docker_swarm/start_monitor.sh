@@ -44,10 +44,11 @@ title "Starting SINGA-Auto's Monitor..."
 # start es
 (docker run --rm --name $ES_HOST  \
    --network $DOCKER_NETWORK \
+   -e ES_DOCKER_WORKDIR_PATH=$ES_DOCKER_WORKDIR_PATH \
    -p $ES_PORT:$ES_PORT \
    -p $ES_NODE_PORT:$ES_NODE_PORT  \
    -e "discovery.type=single-node" \
-   -d  $IMAGE_ES\
+   -d  $SINGA_AUTO_IMAGE_ES:$SINGA_AUTO_VERSION \
    &> ES_LOG_FILE_PATH) &
 
 # start
