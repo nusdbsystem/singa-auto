@@ -16,25 +16,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.7.0
 
-FROM node:13.7.0-alpine3.11
+MAINTAINER NailiXing <xingnaili14@gmail.com>
 
-ARG DOCKER_WORKDIR_PATH
-RUN mkdir -p $DOCKER_WORKDIR_PATH
-WORKDIR $DOCKER_WORKDIR_PATH
 
-# Inject the following commands on docker run
-# ENV SINGA_AUTO_ADDR=ncrs.d2.comp.nus.edu.sg
-# ENV ADMIN_EXT_PORT=7500
-# ENV WEB_ADMIN_EXT_PORT=7501
+EXPOSE 9200 9300
 
-COPY web/package.json web/package.json
-COPY web/yarn.lock web/yarn.lock
+ARG ES_DOCKER_WORKDIR_PATH
 
-RUN cd web/ && yarn install --production
+WORKDIR $ES_DOCKER_WORKDIR_PATH
 
-COPY web/ web/
+COPY scripts/config/elasticsearch.yml $ES_DOCKER_WORKDIR_PATH/config/elasticsearch.yml
 
-EXPOSE 3001
-
-CMD cd web/ && yarn build && node serveBuilt.js
