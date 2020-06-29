@@ -57,7 +57,7 @@ def predict():
         if not img_bytes:
             return jsonify({'ErrorMsg': 'No image provided'}), 400
         print("img_bytes_first 10 bytes", img_bytes[0][:10])
-        queries = utils.dataset.load_images_from_bytes(img_bytes).tolist()
+        queries = utils.dataset.load_images(img_bytes)
         print("queries_sizes", len(queries))
     elif request.get_json():
         data = request.get_json()
@@ -76,6 +76,8 @@ def predict():
         if isinstance(predictions[0], list):
             # this is only for pandavgg demo as the frontend only accept the dictionary.
             return jsonify(predictions[0][0]), 200
+        elif isinstance(predictions[0], dict):
+            return jsonify(predictions[0]), 200
         elif isinstance(predictions, list) and isinstance(predictions[0], str):
             # this is only match qa model,
             print("this is only match qa model")

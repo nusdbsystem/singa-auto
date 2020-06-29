@@ -64,7 +64,7 @@ class Predictor:
     def start(self):
         self._notify_start()
 
-    def predict(self, queries):
+    def predict(self, queries: List[Any]):
         worker_predictions_list = self._get_predictions_from_workers(queries)
         logger.info("Getting prediction list")
         predictions = self._combine_worker_predictions(worker_predictions_list)
