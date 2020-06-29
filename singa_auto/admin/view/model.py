@@ -22,13 +22,11 @@ import json
 import os
 import shutil
 import tempfile
-import traceback
 import uuid
 
 from singa_auto.constants import UserType, RequestsParameters
 from flask import jsonify, Blueprint, make_response, g
 
-from singa_auto.meta_store.meta_store import DuplicateModelNameError
 from singa_auto.param_store import FileParamStore
 from singa_auto.utils.auth import auth
 from singa_auto.utils.requests_params import param_check
@@ -61,13 +59,13 @@ def create_model(auth, params):
 
     if 'access_right' in params:
         feed_params['access_right'] = params['access_right']
-    
+
     if 'model_file_name' in params:
         feed_params['model_file_name'] = params['model_file_name']
 
     if 'model_type' in params:
         feed_params['model_type'] = params['model_type']
-        
+
     if 'checkpoint_id' in params and params['checkpoint_id'] is not None:
 
         # if the checkpoint is not .model file, serialize it first
@@ -90,11 +88,15 @@ def create_model(auth, params):
                 shutil.copyfile(f.name, dest_file_path)
             feed_params['checkpoint_id'] = checkpoint_id
         else:
+            weight_base64 = params['checkpoint_id'].read()
+            checkpoint_id = FileParamStore().save(
+                {'weight_base64': base64.b64encode(weight_base64).decode('utf-8')})
+            feed_params['checkpoint_id'] = checkpoint_id
 
             # if the checkpoint name is not zip or model, return errormessage
-            return jsonify({'ErrorMsg': 'model preload file should be ended with "zip" or "model", '
-                                        'if it is a "*.model" file,'
-                                        'it should be the model_file saved after training by using singa-auto'}), 400
+            # return jsonify({'ErrorMsg': 'model preload file should be ended with "zip" or "model", '
+            #                             'if it is a "*.model" file,'
+            #                             'it should be the model_file saved after training by using singa-auto'}), 400
     with admin:
         return jsonify(admin.create_model(**feed_params))
 
