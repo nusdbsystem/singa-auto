@@ -244,7 +244,7 @@ if __name__ == '__main__':
         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
     print(args.query_path.split(','))
-    queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
+    queries = utils.dataset.load_images(args.query_path.split(','))
     test_model_class(model_file_path=__file__,
                      model_class='TfFeedForward',
                      task='IMAGE_CLASSIFICATION',
