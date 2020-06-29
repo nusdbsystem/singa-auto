@@ -31,7 +31,7 @@ from singa_auto.meta_store import MetaStore
 from singa_auto.model import LoggerUtils
 from singa_auto.container import DockerSwarmContainerManager
 from singa_auto.container import KubernetesContainerManager
-from singa_auto.data_store import FileDataStore, DataStore
+from singa_auto.data_store import FileDataStore, DataStore, Dataset
 from singa_auto.param_store import FileParamStore, ParamStore
 from .services_manager import ServicesManager
 from singa_auto.error_code import InvalidUserError, InvalidPasswordError, UserAlreadyBannedError, \
@@ -40,6 +40,7 @@ from singa_auto.error_code import InvalidUserError, InvalidPasswordError, UserAl
                               InvalidRunningInferenceJobError, UserExistsError, UnauthorizedError
 
 logger = logging.getLogger(__name__)
+
 
 class Admin(object):
 
@@ -140,97 +141,17 @@ class Admin(object):
     ####################################
 
     def create_dataset(self, user_id, name, task, data_file_path):
-        # Store dataset in data folder
-        print('begin saving to local path')
-        store_dataset = self._data_store.save(data_file_path)
-        # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
-        store_dataset_id = store_dataset.id
-        size_bytes = store_dataset.size_bytes
-        stat = dict()
-        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(
-                data_file_path)[1] == '.zip':
-            dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
-            if 'images.csv' in dataset_zipfile.namelist():
 
-                for fileName in dataset_zipfile.namelist():
-                    if fileName.endswith('.csv'):
-                        num_samples = len(dataset_zipfile.namelist()) - 1
-                        # create tempdir to store unziped csv and a sample image
-                        with tempfile.TemporaryDirectory() as dir_path:
-                            # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
-                            # obtain csv file
-                            # Extract a single file from zip
-                            csv_path = dataset_zipfile.extract(fileName,
-                                                               path=dir_path)
-                            # obtain a sample
-                            sample_name = pd.read_csv(csv_path,
-                                                      nrows=1).iloc[0][0]
-                            if task == 'IMAGE_CLASSIFICATION':
-                                img_path = dataset_zipfile.extract(
-                                    sample_name, path=dir_path)
-                                img = Image.open(img_path)
-                                img_size = str(img.size)
-                            # close dataset zipfile
-                            dataset_zipfile.close()
-                            csv = pd.read_csv(csv_path)
+        logger.info('begin saving to local path')
+        store_dataset: Dataset = self._data_store.save(data_file_path)
 
-                            # num_classes = len(labels)
-                            if len(csv.columns) == 2:
-                                class_count = csv[csv.columns[1]].value_counts()
-                            else:
-                                labels = pd.read_csv(
-                                    csv_path, nrows=0).columns[1::].to_list()
-                                class_count = (
-                                    csv[csv.columns[1::]] == 1).astype(int).sum(
-                                        axis=0)
-
-                        num_labeled_samples = len(csv[csv.columns[0]].unique())
-                        ratio = class_count / num_labeled_samples
-                        num_unlabeled_samples = num_samples - num_labeled_samples
-                        break
-            else:
-                # if the csv file was not provided in zip
-                with tempfile.TemporaryDirectory() as dir_path:
-                    num_labeled_samples = len(dataset_zipfile.namelist())
-                    num_unlabeled_samples = 0
-
-                    d_list = [
-                        x for x in dataset_zipfile.namelist()
-                        if x.endswith('/') == False
-                    ]
-                    labels = [os.path.dirname(x) for x in d_list]
-                    class_count = pd.DataFrame(list(Counter(labels).values()),
-                                               list(Counter(labels).keys()))
-
-                    ratio = class_count / num_labeled_samples
-                    sample_name = d_list[0]
-                    if task == 'IMAGE_CLASSIFICATION':
-                        img_path = dataset_zipfile.extract(sample_name,
-                                                           path=dir_path)
-                        img = Image.open(img_path)
-                        img_size = str(img.size)
-
-            if task == 'IMAGE_CLASSIFICATION':
-                stat = {
-                    'num_labeled_samples': num_labeled_samples,
-                    'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(),
-                    'ratio': ratio.to_json(),
-                    'img_size': img_size
-                }
-            else:
-                stat = {
-                    'num_labeled_samples': num_labeled_samples,
-                    'num_unlabeled_samples': num_unlabeled_samples,
-                    'class_count': class_count.to_json(),
-                    'ratio': ratio.to_json()
-                }
-
-        print('begin saving to db')
-
-        dataset = self._meta_store.create_dataset(name, task, size_bytes,
-                                                  store_dataset_id, user_id,
-                                                  stat)
+        logger.info('begin saving to db')
+        dataset = self._meta_store.create_dataset(name=name,
+                                                  task=task,
+                                                  size_bytes=store_dataset.size_bytes,
+                                                  store_dataset_id=store_dataset.id,
+                                                  owner_id=user_id,
+                                                  stat=dict())
         self._meta_store.commit()
 
         return {
@@ -287,6 +208,7 @@ class Admin(object):
                          train_dataset_id,
                          val_dataset_id,
                          budget,
+                         annotation_dataset_id=None,
                          model_ids=None,
                          train_args=None):
         """
@@ -366,6 +288,12 @@ class Admin(object):
 
         # Ensure that datasets are valid and of the correct task
         try:
+            # if there is annotation_dataset uploaded
+            if annotation_dataset_id is not None:
+                annotation_dataset = self._meta_store.get_dataset(annotation_dataset_id)
+                assert annotation_dataset is not None
+                assert annotation_dataset.task == task
+
             train_dataset = self._meta_store.get_dataset(train_dataset_id)
             assert train_dataset is not None
             assert train_dataset.task == task
@@ -384,6 +312,7 @@ class Admin(object):
             budget=budget,
             train_dataset_id=train_dataset_id,
             val_dataset_id=val_dataset_id,
+            annotation_dataset_id=annotation_dataset_id,
             train_args=train_args)
         self._meta_store.commit()
 
@@ -594,7 +523,7 @@ class Admin(object):
             'model_name': model.name,
             'score': trial.score,
             'is_params_saved': trial.is_params_saved
-        } for (trial, model) in zip(trials, trials_models)]
+        } for (trial, model) in zip(trials, trials_models) if trial.status != "PENDING"]
 
     ####################################
     # Inference Job
@@ -873,9 +802,9 @@ class Admin(object):
                      dependencies=None,
                      access_right=ModelAccessRight.PRIVATE,
                      checkpoint_id=None,
-                     model_description=None,
                      model_type=ModelType.PYTHON_FILE,
-                     model_file_name=None):
+                     model_file_name=None,
+                     model_description=None):
         if dependencies is None:
             dependencies = {}
 
@@ -889,10 +818,9 @@ class Admin(object):
             dependencies=dependencies,
             access_right=access_right,
             checkpoint_id=checkpoint_id,
-            model_description=model_description,
             model_type=model_type,
-            model_file_name=model_file_name
-        )
+            model_file_name=model_file_name,
+            model_description=model_description)
         self._meta_store.commit()
 
         return {'id': model.id, 'user_id': model.user_id, 'name': model.name}
@@ -922,9 +850,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description,
             'model_type': model.model_type,
-            'model_file_name': model.model_file_name
+            'model_file_name': model.model_file_name,
+            'model_description': model.model_description
         }
 
     def get_model(self, model_id):
@@ -943,9 +871,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description,
             'model_type': model.model_type,
-            'model_file_name': model.model_file_name
+            'model_file_name': model.model_file_name,
+            'model_description': model.model_description
         }
 
     def get_model_file(self, model_id):
@@ -966,9 +894,9 @@ class Admin(object):
             'dependencies': model.dependencies,
             'access_right': model.access_right,
             'checkpoint_id': model.checkpoint_id,
-            'model_description': model.model_description,
             'model_type': model.model_type,
-            'model_file_name': model.model_file_name
+            'model_file_name': model.model_file_name,
+            'model_description': model.model_description
         } for model in models]
 
     def get_recommend_models(self, user_id, dataset_id):
@@ -987,9 +915,9 @@ class Admin(object):
                     'dependencies': model.dependencies,
                     'access_right': model.access_right,
                     'checkpoint_id': model.checkpoint_id,
-                    'model_description': model.model_description,
                     'model_type': model.model_type,
-                    'model_file_name': model.model_file_name
+                    'model_file_name': model.model_file_name,
+                    'model_description': model.model_description
                 }]
         # If we can not found resnet, return the first model
         for model in models:
@@ -1002,9 +930,9 @@ class Admin(object):
                 'dependencies': model.dependencies,
                 'access_right': model.access_right,
                 'checkpoint_id': model.checkpoint_id,
-                'model_description': model.model_description,
                 'model_type': model.model_type,
-                'model_file_name': model.model_file_name
+                'model_file_name': model.model_file_name,
+                'model_description': model.model_description
             }]
 
     ####################################
