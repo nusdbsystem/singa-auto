@@ -111,7 +111,7 @@ class DatasetUtils:
         elif dataset_name.lower() == "pennfudan":
             return PennFudanDataset(dataset_path, is_train=is_train)
         else:
-            raise
+            return None
 
     def load_dataset_of_audio_files(self, dataset_path, dataset_dir):
         '''
@@ -224,7 +224,7 @@ class CorpusDataset(ModelDataset):
         super().__init__(dataset_path)
         self.tags = tags
         (self.size, self.tag_num_classes, self.max_token_len, self.max_sent_len, self._sents) = \
-            self._load(self.path, self.tags, split_by)
+            self._load(dataset_path, self.tags, split_by)
 
     def __getitem__(self, index):
         return self._sents[index]
@@ -293,7 +293,7 @@ class AudioFilesDataset(ModelDataset):
     def __init__(self, dataset_path, dataset_dir):
         super().__init__(dataset_path)
         self._dataset_dir = dataset_dir
-        self.df = self._load(self.path)
+        self.df = self._load(dataset_path)
 
     def _load(self, dataset_path):
         '''
