@@ -100,7 +100,16 @@ class InferenceJobDetails extends React.Component {
   }
 
   handleCopy = () => {
+    
     navigator.clipboard.writeText(this.state.selectedInferenceJob.predictor_host)
+    .then(() => {
+      console.log('Host link copied to clipboard: ', this.state.selectedInferenceJob.predictor_host);
+      alert('Host link copied to clipboard');
+    })
+    .catch(err => {
+      console.error('Could not copy text: ', err);
+      alert('Could not copy text');
+    })
   }
 
   render() {
