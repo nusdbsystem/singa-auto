@@ -31,6 +31,8 @@ import * as moment from "moment"
 import MainContent from "components/ConsoleContents/MainContent"
 import ContentBar from "components/ConsoleContents/ContentBar"
 
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+
 const styles = theme => ({
   contentWrapper: {
     margin: "40px 16px 0px 16px",
@@ -43,6 +45,8 @@ class InferenceJobDetails extends React.Component {
   state = {
     selectedInferenceJob: {},
     message: "N.A.",
+    value: '',
+    copied: false,
   }
 
   async componentDidMount() {
@@ -97,10 +101,6 @@ class InferenceJobDetails extends React.Component {
 
     console.log("redirect url: ", url)
     this.props.push(url)
-  }
-
-  handleCopy = () => {
-    navigator.clipboard.writeText(this.state.selectedInferenceJob.predictor_host)
   }
 
   render() {
@@ -167,13 +167,18 @@ class InferenceJobDetails extends React.Component {
               (
                 <>
                 <Grid item >
-                    <Button
-                      onClick={this.handleCopy}
+                    <CopyToClipboard text = {this.state.selectedInferenceJob.predictor_host}
+                    onCopy={()=>this.setState({copied: true})}>
+                      <Button 
                       color="secondary"
                       variant="contained"
                     >
                       Copy Link
                     </Button>
+                    
+
+                    </CopyToClipboard>
+                    {this.state.copied ? alert('Host link copied to clipboard'):null}
                   </Grid>
                   <Grid item >
                     <Button

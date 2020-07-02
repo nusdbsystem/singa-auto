@@ -19,6 +19,7 @@
     "moment": "^2.24.0",
     "query-string": "^6.11.1",
     "react": "^16.13.0",
+    "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.0",
     "react-dropzone": "^10.2.1",
     "react-final-form": "^6.3.0",
