@@ -31,9 +31,9 @@ export APP_SECRET=singa_auto
 
 # Core external configuration for SINGA-auto
 export KUBERNETES_NETWORK=singa_auto
-export KUBERNETES_ADVERTISE_ADDR=127.0.0.1
-export SINGA_AUTO_VERSION=0.2.0
-export SINGA_AUTO_ADDR=127.0.0.1
+export KUBERNETES_ADVERTISE_ADDR=ncrs.d2.comp.nus.edu.sg
+export SINGA_AUTO_VERSION=dev_1.1
+export SINGA_AUTO_ADDR=ncrs.d2.comp.nus.edu.sg
 export ADMIN_EXT_PORT=3000
 export WEB_ADMIN_EXT_PORT=3001
 export POSTGRES_EXT_PORT=5433
@@ -75,7 +75,7 @@ export KIBANA_HOST=singa-auto-kibana
 export KIBANA_PORT=5601
 
 export DOCKER_WORKDIR_PATH=/root
-export DB_DIR_PATH=/home/luqin/singa_auto_data
+export DB_DIR_PATH=db/data
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir
@@ -84,6 +84,7 @@ export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs a
 export LOGSTASH_DOCKER_WORKDIR_PATH=/usr/share/logstash
 export KIBANA_DOCKER_WORKDIR_PATH=/usr/share/kibana
 export SPAEK_DOCKER_JARS_PATH=/opt/spark/examples
+export ES_DOCKER_WORKDIR_PATH=/usr/share/elasticsearch
 
 # Docker images for SINGA-Auto's custom components
 export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
@@ -93,6 +94,7 @@ export SINGA_AUTO_IMAGE_PREDICTOR=singa_auto/singa_auto_predictor
 export SINGA_AUTO_IMAGE_STOLON=sorintlab/stolon:master-pg10
 export SINGA_AUTO_IMAGE_TEST=singa_auto/singa_auto_test
 export SINGA_AUTO_IMAGE_LOGSTASH=singa_auto/singa_auto_logstash
+export SINGA_AUTO_IMAGE_ES=singa_auto/singa_auto_es
 export SINGA_AUTO_IMAGE_SPARKAPP=singa_auto/singa_auto_sparkapp
 
 # Docker images for dependent services

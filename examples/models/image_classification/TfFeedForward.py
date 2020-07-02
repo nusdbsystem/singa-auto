@@ -55,7 +55,6 @@ class TfFeedForward(BaseModel):
         }
 
     def __init__(self, **knobs):
-        super().__init__(**knobs)
         self._knobs = knobs
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -79,8 +78,7 @@ class TfFeedForward(BaseModel):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path, max_image_size=max_image_size, mode='RGB')
         num_classes = dataset.classes
-        (images, classes) = zip(*[(image, image_class)
-                                  for (image, image_class) in dataset])
+        (images, classes) = zip(*[(image, image_class) for (image, image_class) in dataset])
         (images, norm_mean, norm_std) = utils.dataset.normalize_images(images)
 
         # Setup callbacks, adding early stopping if quick train
@@ -116,7 +114,7 @@ class TfFeedForward(BaseModel):
             'norm_std': norm_std
         }
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         max_image_size = self._knobs['max_image_size']
         norm_mean = self._train_params['norm_mean']
         norm_std = self._train_params['norm_std']
@@ -228,7 +226,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path',
                         type=str,
-                        default='data/fashion_mnist_train.zip',
+                        default='data/fashion_mnist_val.zip',
                         help='Path to train dataset')
     parser.add_argument('--val_path',
                         type=str,
@@ -236,16 +234,17 @@ if __name__ == '__main__':
                         help='Path to validation dataset')
     parser.add_argument('--test_path',
                         type=str,
-                        default='data/fashion_mnist_test.zip',
+                        default='data/fashion_mnist_val.zip',
                         help='Path to test dataset')
+
     parser.add_argument(
         '--query_path',
         type=str,
-        default='examples/data/image_classification/fashion_mnist_test_1.png',
+        default='examples/data/image_classification/0-3100.png',
         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
-
-    queries = utils.dataset.load_images(args.query_path.split(',')).tolist()
+    print(args.query_path.split(','))
+    queries = utils.dataset.load_images(args.query_path.split(','))
     test_model_class(model_file_path=__file__,
                      model_class='TfFeedForward',
                      task='IMAGE_CLASSIFICATION',

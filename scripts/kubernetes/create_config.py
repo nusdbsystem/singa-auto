@@ -96,10 +96,11 @@ if __name__ == '__main__':
     KIBANA_DOCKER_WORKDIR_PATH = sys.argv[63]
     SINGA_AUTO_IMAGE_LOGSTASH = sys.argv[64]
     IMAGE_KIBANA = sys.argv[65]
-    IMAGE_ES = sys.argv[66]
+    SINGA_AUTO_IMAGE_ES = sys.argv[66]
     KIBANA_EXT_PORT = sys.argv[67]
     SINGA_AUTO_IMAGE_SPARKAPP = sys.argv[68]
     SPAEK_DOCKER_JARS_PATH = sys.argv[69]
+    ES_DOCKER_WORKDIR_PATH = sys.argv[70]
 
     #zk service
     content = {}
@@ -554,12 +555,20 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': ES_HOST}})
     container = {}
     container.setdefault('name', ES_HOST)
-    container.setdefault('image', '{}'.format(IMAGE_ES))
+    container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_ES, SINGA_AUTO_VERSION))
 
     template.setdefault('spec', {'containers': [container]})
     env = []
     env.append({'name': 'discovery.type', 'value': 'single-node'})
+    env.append({'name': 'ES_DOCKER_WORKDIR_PATH', 'value': ES_DOCKER_WORKDIR_PATH})
     container.setdefault('env', env)
+
+    container.setdefault('volumeMounts',
+                         [{'name': 'conf-path', 'mountPath': '{}/config/elasticsearch.yml'.format(LOGSTASH_DOCKER_WORKDIR_PATH)},\
+                          {'name': 'docker-path', 'mountPath': '/var/run/docker.sock'}])
+    template['spec']['volumes'] = [
+        {'name': 'conf-path', 'hostPath': {'path': '{}/scripts/config/elasticsearch.yml'.format(HOST_WORKDIR_PATH)}}, \
+        {'name': 'docker-path', 'hostPath': {'path': '/var/run/docker.sock'}}]
 
     with open('{}/scripts/kubernetes/start_es_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))

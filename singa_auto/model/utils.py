@@ -26,13 +26,16 @@ from importlib import import_module
 from pkg_resources import parse_version
 import pickle
 import zipfile
-
+import io
 from singa_auto.constants import ModelDependency, ModelType
 
 from .model import BaseModel
-from .dataset import DatasetUtils
+from ..datasets import DatasetUtils
+
+
 from .log import LoggerUtils
 from singa_auto.error_code import InvalidModelClassError
+
 
 def un_zip(file_name, folder_name):
     # unzip zip file
@@ -45,12 +48,13 @@ def un_zip(file_name, folder_name):
         zip_file.extract(names, folder_name+'/')
     zip_file.close()
 
-def load_model_class(model_file_bytes, 
-                     model_class, 
-                     temp_mod_name=None, 
-                     model_type=ModelType.PYTHON_FILE, 
+
+def load_model_class(model_file_bytes,
+                     model_class,
+                     temp_mod_name=None,
+                     model_type=ModelType.PYTHON_FILE,
                      model_file_name=None) -> Type[BaseModel]:
-    
+
     temp_mod_name = temp_mod_name or '{}-{}'.format(model_class, str(uuid.uuid4()))
     temp_model_file_name ='{}.{}'.format(temp_mod_name, model_type)
 
@@ -76,7 +80,7 @@ def load_model_class(model_file_bytes,
         os.remove(temp_model_file_name)
 
     return clazz
-    
+
 def parse_model_install_command(dependencies, enable_gpu=False):
     conda_env = os.environ.get('CONDA_ENVIORNMENT')
     commands = []

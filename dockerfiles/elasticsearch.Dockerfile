@@ -16,10 +16,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.7.0
 
-from .model import BaseModel, Params, KnobConfig, Knobs
-from .log import LoggerUtils
-from .utils import utils, logger, dataset, load_model_class, parse_model_install_command, \
-                    serialize_knob_config, deserialize_knob_config
-from .knob import BaseKnob, CategoricalKnob, IntegerKnob, FloatKnob, FixedKnob, ArchKnob, \
-                    KnobValue, CategoricalValue, PolicyKnob
+MAINTAINER NailiXing <xingnaili14@gmail.com>
+
+
+EXPOSE 9200 9300
+
+ARG ES_DOCKER_WORKDIR_PATH
+
+WORKDIR $ES_DOCKER_WORKDIR_PATH
+
+COPY scripts/config/elasticsearch.yml $ES_DOCKER_WORKDIR_PATH/config/elasticsearch.yml
+

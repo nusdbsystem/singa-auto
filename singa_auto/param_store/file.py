@@ -28,13 +28,14 @@ class FileParamStore(ParamStore):
        Stores parameters in the local filesystem.
     '''
 
-    def __init__(self, params_dir=None):
+    def __init__(self, params_dir=None, model_class=''):
         self._params_dir = params_dir or os.path.join(
             os.environ['WORKDIR_PATH'], os.environ['PARAMS_DIR_PATH'])
+        self.model_class = model_class
 
     def save(self, params: Params):
         # Serialize params and save bytes to params dir
-        file_name = '{}.model'.format(uuid.uuid4())
+        file_name = '{}_{}.model'.format(self.model_class, uuid.uuid4())
         dest_file_path = os.path.join(self._params_dir, file_name)
         params_bytes = self._serialize_params(params)
         with open(dest_file_path, 'wb') as f:

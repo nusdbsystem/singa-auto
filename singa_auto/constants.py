@@ -50,6 +50,14 @@ class InferenceJobStatus:
     STOPPED = 'STOPPED'
 
 
+class Tasks:
+    IMAGE_DETECTION = 'IMAGE_DETECTION'
+    IMAGE_SEGMENTATION = 'IMAGE_SEGMENTATION'
+    IMAGE_CLASSIFICATION = 'IMAGE_CLASSIFICATION'
+    QUESTION_ANSWERING = 'QUESTION_ANSWERING'
+    TEXT_CLASSIFICATION = 'TEXT_CLASSIFICATION'
+
+
 class TrainJobStatus:
     STARTED = 'STARTED'
     RUNNING = 'RUNNING'
@@ -194,6 +202,7 @@ class RequestsParameters:
     }
 
     INFERENCE_GETBY_USER = {'params': {'user_id': True}}
+
 
 class ModelType:
     PYTHON_FILE = 'py'

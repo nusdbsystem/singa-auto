@@ -130,7 +130,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours,
 
     print('Making predictions for query images:')
     print(query_paths)
-    queries = utils.dataset.load_images(query_paths).tolist()
+    queries = utils.dataset.load_images(query_paths)
     predictions = make_predictions(client, predictor_host, queries)
     print('Predictions are:')
     print(predictions)

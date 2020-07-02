@@ -32,6 +32,7 @@ LOG_FILE_PATH=$PWD/logs/start_db_deployment.log
 ensure_stable "SINGA-Auto's DB Deployment" $LOG_FILE_PATH 10
 
 echo "Creating SINGA-Auto's PostgreSQL database & user..."
+ensure_stable "SINGA-Auto's DB" $LOG_FILE_PATH 20
 DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
 DB_PODNAME=${DB_PODNAME:0:30}
 
