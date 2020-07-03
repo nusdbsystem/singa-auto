@@ -53,7 +53,10 @@ class BaseModel(abc.ABC):
     :param knobs: Dictionary mapping knob names to knob values
     :type knobs: :obj:`singa_auto.model.Knobs`
     '''
-
+    
+    def __init__(self, **knobs):
+        pass
+    
     @staticmethod
     @abc.abstractmethod
     def get_knob_config() -> KnobConfig:
