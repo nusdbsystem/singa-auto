@@ -63,7 +63,7 @@ function AppFooter(props) {
                   <Public />
                 </a>
                 <a
-                  href="https://github.com/nginyc/rafiki"
+                  href="https://github.com/nusdbsystem/singa-auto"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={classes.icon}

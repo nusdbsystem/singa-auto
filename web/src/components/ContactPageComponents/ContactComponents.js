@@ -54,7 +54,7 @@ function ContactComponents(props) {
               <b>Repository: </b>
               <br />
               <a
-                href="https://github.com/nginyc/rafiki"
+                href="https://github.com/nusdbsystem/singa-auto"
                 target="_blank"
                 rel="noopener noreferrer"
               >
