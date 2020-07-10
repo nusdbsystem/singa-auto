@@ -59,7 +59,7 @@ class ListAvailableModels extends React.Component {
     const { classes, AvailableModels } = this.props
 
     const headCells = [
-      { id: 'ModelID', numeric: false, disablePadding: true, label: 'Model-ID' },
+      { id: 'ModelID', numeric: false, disablePadding: false, label: 'Model-ID' },
       { id: 'Name', numeric: false, disablePadding: false, label: 'Name' },
       { id: 'Task', numeric: false, disablePadding: false, label: 'Task' },
       { id: 'Dependencies', numeric: true, disablePadding: false, label: 'Dependencies' },

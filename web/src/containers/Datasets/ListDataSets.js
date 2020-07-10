@@ -51,7 +51,7 @@ class ListDataSets extends React.Component {
     const { classes, DatasetList } = this.props
 
     const headCells = [
-      { id: 'DatasetID', numeric: false, disablePadding: true, label: 'Dataset-ID' },
+      { id: 'DatasetID', numeric: false, disablePadding: false, label: 'Dataset-ID' },
       { id: 'Name', numeric: false, disablePadding: false, label: 'Name' },
       { id: 'Task', numeric: false, disablePadding: false, label: 'Task' },
       { id: 'Size', numeric: true, disablePadding: false, label: 'Size (bytes)' },
