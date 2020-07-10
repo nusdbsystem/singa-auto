@@ -58,7 +58,7 @@ function ContactComponents(props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://github.com/nginyc/singa_auto
+                https://github.com/nusdbsystem/singa-auto
               </a>
             </p>
           </div>
