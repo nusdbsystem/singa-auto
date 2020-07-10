@@ -142,7 +142,7 @@ class LandingNavBar extends React.Component {
       },
       {
         // TODO change the docs link?
-        url: "https://nginyc.github.io/rafiki/docs/latest/src/user/index.html",
+        url: "https://singa-auto.readthedocs.io/en/latest/src/user/quickstart.html",
         label: "Docs",
       },
     ]
@@ -174,7 +174,7 @@ class LandingNavBar extends React.Component {
                 <img alt="logo" src={Logo} className={classes.logo} />
               </Link>
               <Link to="/" className={classes.title}>
-                {"Panda"}
+                {"SINGA-auto"}
               </Link>
               <Hidden smDown>
                 {navLinks.map((link, index) =>

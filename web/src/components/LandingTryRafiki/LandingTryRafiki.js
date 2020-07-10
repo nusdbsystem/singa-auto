@@ -56,7 +56,7 @@ class LandingTryRafiki extends React.Component {
             <div className={classes.card}>
               <div className={classes.cardContent}>
                 <Typography variant="h2" component="h2" gutterBottom>
-                  Try panda
+                  Try SINGA-auto
                 </Typography>
                 <Typography variant="h5">
                   a distributed system that trains machine learning (ML) models

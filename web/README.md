@@ -1,4 +1,4 @@
-# Rafiki/Panda-dev Dashboard
+# Rafiki/SINGA-auto Dashboard
 
 > Ensure you are in the `REPO_ROOT/web/` directory
 

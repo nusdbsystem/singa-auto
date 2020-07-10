@@ -33,11 +33,11 @@ const LocalGateways = {
   // NOTE: must append '/' at the end!
   local: "http://localhost:3000/",
   rafiki: "http://ncrs.d2.comp.nus.edu.sg:3000/",
-  panda: "http://ncrs.d2.comp.nus.edu.sg:3000/",
+  singa_auto: "http://ncrs.d2.comp.nus.edu.sg:3000/",
 }
 if (process.env.NODE_ENV === "development") {
   // set the gateway for local development here:
-  HTTPconfig.gateway = LocalGateways.panda
+  HTTPconfig.gateway = LocalGateways.singa_auto
   // set the Host and Port for TrialDetails.js
   HTTPconfig.adminHost = `ncrs.d2.comp.nus.edu.sg`
   HTTPconfig.adminPort = `3000`
