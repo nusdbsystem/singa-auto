@@ -1,4 +1,4 @@
-# Rafiki/Panda-dev Dashboard
+# SINGA-auto Dashboard
 
 > Ensure you are in the `REPO_ROOT/web/` directory
 
@@ -50,12 +50,12 @@ yarn eject
 ### Push local changes
 - update change to be reflect in the docker image:
 ```sh
-rafiki_panda_dev$ bash scripts/build_images.sh
+singa-auto$ bash scripts/build_images.sh
 #(this will create a new ubuntu-based docker image)
 ```
 - list docker containers
 ```sh
-rafiki_panda_dev$ docker container ls
+singa-auto$ docker container ls
 ```
 
 ===
@@ -63,11 +63,11 @@ rafiki_panda_dev$ docker container ls
 ## How to setup Api End Point (environment parameters)
 
 ```sh
-rafiki_panda_dev/web$ source ../.env.sh
+singa-auto/web$ source ../.env.sh
 ```
 
 ```
-rafiki/web $ vim .env
+singa-auto/web $ vim .env
 ```
 
 ```
@@ -132,8 +132,8 @@ header: content_type = 'application/json'
 #### request
 ``` json
 {
-	"email": "superadmin@rafiki",
-	"password": "rafiki"
+	"email": "superadmin@singaauto",
+	"password": "singa_auto"
 }
 ```
 

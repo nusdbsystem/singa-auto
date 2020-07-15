@@ -93,19 +93,19 @@ function EnhancedTable(props) {
       case "ListDatasets":
         return (
           <>
-            <TableCell align="right">{row.name}</TableCell>
-            <TableCell align="right">{row.task}</TableCell>
-            <TableCell align="right">{row.size_bytes}</TableCell>
-            <TableCell align="right">{moment(row.datetime_created).calendar()}</TableCell>
+            <TableCell align="left">{row.name}</TableCell>
+            <TableCell align="left">{row.task}</TableCell>
+            <TableCell align="left">{row.size_bytes}</TableCell>
+            <TableCell align="left">{moment(row.datetime_created).calendar()}</TableCell>
           </>
         )
       case "ListModels":
         return (
           <>
-            <TableCell align="right">{row.name}</TableCell>
-            <TableCell align="right">{row.task}</TableCell>
-            <TableCell align="right">{JSON.stringify(row.dependencies)}</TableCell>
-            <TableCell align="right">{moment(row.datetime_created).calendar()}</TableCell>
+            <TableCell align="left">{row.name}</TableCell>
+            <TableCell align="left">{row.task}</TableCell>
+            <TableCell align="left">{JSON.stringify(row.dependencies)}</TableCell>
+            <TableCell align="left">{moment(row.datetime_created).calendar()}</TableCell>
           </>
         )
       default:
