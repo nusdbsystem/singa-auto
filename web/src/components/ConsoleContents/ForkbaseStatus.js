@@ -10,7 +10,10 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 
 const styles = () => ({
   subPaper: {
-    minHeight: 150
+    minHeight: 150,
+    width: 250,
+    marginLeft: "auto",
+    marginRight: "auto"
   },
   forkbaseStatus: {
     padding: 20,
