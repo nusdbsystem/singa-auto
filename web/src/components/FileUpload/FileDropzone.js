@@ -24,6 +24,11 @@ const useStyles = makeStyles({
     maxWidth: 360,
     backgroundColor: "#fff",
     marginLeft: 15
+  },
+  aside:{
+    width: '250px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   }
 })
 
@@ -41,7 +46,10 @@ const baseStyle = {
   backgroundColor: '#fafafa',
   color: '#263238',
   outline: 'none',
-  transition: 'border .24s ease-in-out'
+  transition: 'border .24s ease-in-out',
+  width: '250px',
+  marginLeft: 'auto',
+  marginRight: 'auto'
 };
 const activeStyle = {
   borderStyle: 'solid',
@@ -165,7 +173,7 @@ function FileDropzone(props) {
         </Typography>
       </div>
       {isDragReject && <b>Unsupported file type...</b>}
-      <aside>
+      <aside className={classes.aside}>
         {FileList}
       </aside>
     </>
