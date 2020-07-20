@@ -41,7 +41,7 @@ copyright = '2020, nginyc, cadmusthefounder, nudles'
 author = 'nginyc, cadmusthefounder, nudles'
 
 # The short X.Y version
-version = '0.3.0'  # os.environ['RAFIKI_VERSION']
+version = '0.3.0'  # os.environ['SINGA_AUTO_VERSION']
 # The full version, including alpha/beta/rc tags
 release = ''
 
@@ -143,7 +143,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 #latex_documents = [
-#    (master_doc, 'Rafiki.tex', 'Rafiki Documentation',
+#    (master_doc, 'singauto.tex', 'SINGA-Auto Documentation',
 #     'nginyc, cadmusthefounder, nudles', 'manual'),
 #]
 
@@ -161,7 +161,7 @@ man_pages = [(master_doc, 'singa auto', 'SINGA Auto Documentation', [author], 1)
 #  dir menu entry, description, category)
 #texinfo_documents = [
 #    (master_doc, 'singa auto', 'SINGA Auto Documentation',
-#     author, 'Rafiki', 'One line description of project.',
+#     author, 'singauto', 'One line description of project.',
 #     'Miscellaneous'),
 #]
 

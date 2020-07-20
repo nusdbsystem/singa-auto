@@ -1,18 +1,18 @@
-rafiki.constants
+singa_auto.constants
 ====================================================================
 
-.. autoclass:: rafiki.constants.TrainJobStatus
+.. autoclass:: singa_auto.constants.TrainJobStatus
 
-.. autoclass:: rafiki.constants.InferenceJobStatus
+.. autoclass:: singa_auto.constants.InferenceJobStatus
 
-.. autoclass:: rafiki.constants.TrialStatus
+.. autoclass:: singa_auto.constants.TrialStatus
 
-.. autoclass:: rafiki.constants.BudgetOption
+.. autoclass:: singa_auto.constants.BudgetOption
 
-.. autoclass:: rafiki.constants.InferenceBudgetOption
+.. autoclass:: singa_auto.constants.InferenceBudgetOption
 
-.. autoclass:: rafiki.constants.UserType
+.. autoclass:: singa_auto.constants.UserType
 
-.. autoclass:: rafiki.constants.ModelDependency
+.. autoclass:: singa_auto.constants.ModelDependency
 
-.. autoclass:: rafiki.constants.ModelAccessRight
+.. autoclass:: singa_auto.constants.ModelAccessRight

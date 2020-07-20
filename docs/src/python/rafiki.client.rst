@@ -1,5 +1,5 @@
-rafiki.client
+singa_auto.client
 ====================================================================
 
-.. autoclass:: rafiki.client.Client
+.. autoclass:: singa_auto.client.Client
     :members:
