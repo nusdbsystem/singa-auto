@@ -4,7 +4,7 @@
 Installing Kubernetes
 ====================================================================
 
-Usage of Rafiki in Kubernetes mode requires Kubernetes 1.15+. 
+Usage of SINGA-Auto in Kubernetes mode requires Kubernetes 1.15+. 
 
 To achieve this, we recommend the instructions below:
 
