@@ -24,6 +24,7 @@ RUN apt-get update && apt-get -y upgrade
 # `tensorflow-gpu` dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+      libsm6 libxext6 libxrender-dev \
       build-essential \
       cuda-command-line-tools-9-0 \
       cuda-cublas-9-0 \
