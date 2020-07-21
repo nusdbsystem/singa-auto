@@ -54,6 +54,9 @@ class BaseModel(abc.ABC):
     :type knobs: :obj:`singa_auto.model.Knobs`
     '''
 
+    def __init__(self, **knobs: Knobs):
+        pass
+
     @staticmethod
     @abc.abstractmethod
     def get_knob_config() -> KnobConfig:
