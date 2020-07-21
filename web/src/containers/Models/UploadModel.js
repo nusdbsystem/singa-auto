@@ -90,6 +90,7 @@ class UploadModel extends React.Component {
       "TABULAR_CLASSIFICATION",
       "TABULAR_REGRESSION",
       "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
     ],
     modelClass: [
       "PyPandaVgg",

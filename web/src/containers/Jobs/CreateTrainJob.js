@@ -60,6 +60,7 @@ class CreateTrainJob extends React.Component {
       "TABULAR_CLASSIFICATION",
       "TABULAR_REGRESSION",
       "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
     ],
     task: "IMAGE_CLASSIFICATION",
     selectedTrainingDS: "",
