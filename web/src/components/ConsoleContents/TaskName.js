@@ -25,6 +25,7 @@ class TaskName extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
     title: PropTypes.string,
+    availableTask: PropTypes.array,
     task: PropTypes.string,
     onHandleChange: PropTypes.func,
   }
@@ -33,6 +34,7 @@ class TaskName extends React.Component {
     const {
       classes,
       title,
+      availableTask,
       task,
       onHandleChange,
     } = this.props;
@@ -64,9 +66,11 @@ class TaskName extends React.Component {
               helperText="Please select a task"
               margin="normal"
             >
-              <MenuItem value={task}>
-                {task}
-              </MenuItem>
+              {availableTask.map((item, i) => (
+                <MenuItem value={item} key={item+i}>
+                  {item}
+                </MenuItem>
+              ))}
             </TextField>              
           </Grid>
         </Grid>

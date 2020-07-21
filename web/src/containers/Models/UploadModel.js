@@ -84,6 +84,13 @@ class UploadModel extends React.Component {
     task: "IMAGE_CLASSIFICATION",
     // model_class, for Feb 2020, use two sample model files
     // their model-classes are:
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+    ],
     modelClass: [
       "PyPandaVgg",
       "PyPandaDenseNet",
@@ -354,6 +361,7 @@ class UploadModel extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />
