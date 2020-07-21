@@ -32,7 +32,7 @@ export APP_SECRET=singa_auto
 # Core external configuration for SINGA-auto
 export KUBERNETES_NETWORK=singa_auto
 export KUBERNETES_ADVERTISE_ADDR=ncrs.d2.comp.nus.edu.sg
-export SINGA_AUTO_VERSION=dev_1.1
+export SINGA_AUTO_VERSION=dev
 export SINGA_AUTO_ADDR=ncrs.d2.comp.nus.edu.sg
 export ADMIN_EXT_PORT=3000
 export WEB_ADMIN_EXT_PORT=3001
@@ -87,15 +87,15 @@ export SPAEK_DOCKER_JARS_PATH=/opt/spark/examples
 export ES_DOCKER_WORKDIR_PATH=/usr/share/elasticsearch
 
 # Docker images for SINGA-Auto's custom components
-export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
-export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
-export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker
-export SINGA_AUTO_IMAGE_PREDICTOR=singa_auto/singa_auto_predictor
+export SINGA_AUTO_IMAGE_ADMIN=singaauto/singa_auto_admin
+export SINGA_AUTO_IMAGE_WEB_ADMIN=singaauto/singa_auto_admin_web
+export SINGA_AUTO_IMAGE_WORKER=singaauto/singa_auto_worker
+export SINGA_AUTO_IMAGE_PREDICTOR=singaauto/singa_auto_predictor
 export SINGA_AUTO_IMAGE_STOLON=sorintlab/stolon:master-pg10
-export SINGA_AUTO_IMAGE_TEST=singa_auto/singa_auto_test
-export SINGA_AUTO_IMAGE_LOGSTASH=singa_auto/singa_auto_logstash
-export SINGA_AUTO_IMAGE_ES=singa_auto/singa_auto_es
-export SINGA_AUTO_IMAGE_SPARKAPP=singa_auto/singa_auto_sparkapp
+export SINGA_AUTO_IMAGE_TEST=singaauto/singa_auto_test
+export SINGA_AUTO_IMAGE_LOGSTASH=singaauto/singa_auto_logstash
+export SINGA_AUTO_IMAGE_ES=singaauto/singa_auto_es
+export SINGA_AUTO_IMAGE_SPARKAPP=singaauto/singa_auto_sparkapp
 
 # Docker images for dependent services
 export IMAGE_POSTGRES=postgres:10.5-alpine
