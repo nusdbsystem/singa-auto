@@ -54,6 +54,14 @@ class CreateTrainJob extends React.Component {
     formState: "init",
     // formState => init | loading | idle
     message: "",
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
+    ],
     task: "IMAGE_CLASSIFICATION",
     selectedTrainingDS: "",
     selectedValidationDS: "",
@@ -189,6 +197,7 @@ class CreateTrainJob extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />

@@ -57,6 +57,14 @@ class UploadDataSet extends React.Component {
     selectedFiles: [],
     message: "",
     uploadPercentage: 0,
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
+    ],
     task: "IMAGE_CLASSIFICATION",
   }
 
@@ -220,6 +228,7 @@ class UploadDataSet extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />
