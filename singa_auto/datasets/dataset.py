@@ -221,7 +221,6 @@ class CorpusDataset(ModelDataset):
     '''
 
     def __init__(self, dataset_path, tags, split_by):
-        super().__init__(dataset_path)
         self.tags = tags
         (self.size, self.tag_num_classes, self.max_token_len, self.max_sent_len, self._sents) = \
             self._load(dataset_path, self.tags, split_by)
@@ -291,7 +290,6 @@ class AudioFilesDataset(ModelDataset):
     '''
 
     def __init__(self, dataset_path, dataset_dir):
-        super().__init__(dataset_path)
         self._dataset_dir = dataset_dir
         self.df = self._load(dataset_path)
 

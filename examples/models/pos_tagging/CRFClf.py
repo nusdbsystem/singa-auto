@@ -73,7 +73,7 @@ class CRFClf(BaseModel):
                                          labels=self._clf.classes_)
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         with open(dataset_path, "rb") as fp:
             data = pickle.load(fp)
 
