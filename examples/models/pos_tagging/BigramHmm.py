@@ -49,7 +49,7 @@ class BigramHmm(BaseModel):
                                                   sents_tags)
         utils.logger.log('No. of tags: {}'.format(self._num_tags))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         (sents_tokens, sents_tags) = zip(*[zip(*sent) for sent in dataset])
         (sents_pred_tags) = self._tag_sents(self._num_tags, sents_tokens,
