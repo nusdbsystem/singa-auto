@@ -377,7 +377,6 @@ def _evaluate_model(model_inst: BaseModel, proposal: Proposal,
         return TrialResult(proposal)
 
     print('Evaluating model...')
-
     if annotation_dataset_path:
         score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
     else:
