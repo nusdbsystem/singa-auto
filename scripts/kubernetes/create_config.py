@@ -230,7 +230,7 @@ if __name__ == '__main__':
         container = {}
         container.setdefault('name', POSTGRES_HOST)
         container.setdefault('image', IMAGE_POSTGRES)
-
+        container.setdefault('args', ["-c", "max_connections=500"])
         container.setdefault('volumeMounts', [
             {
                 'name': 'db-path',

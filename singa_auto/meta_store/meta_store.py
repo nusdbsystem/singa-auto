@@ -31,6 +31,7 @@ from singa_auto.meta_store.schema import Base, TrainJob, SubTrainJob, TrainJobWo
 
 from singa_auto.error_code import InvalidModelAccessRightError, DuplicateModelNameError, \
     ModelUsedError, InvalidUserTypeError
+from sqlalchemy.pool import NullPool
 
 
 class MetaStore(object):
@@ -53,7 +54,11 @@ class MetaStore(object):
                                                       user=user,
                                                       password=password)
 
-        self._engine = create_engine(db_connection_url)
+        # by default, create_engine will create a connection pool, and the connection will not be close after using
+        # session.close(), which may cause connection leak--too many idle connection, and max_connection reaches.
+        # new connection will report error.
+        # By setting poolcalss to NulLpoll, session.close() will close the connection.
+        self._engine = create_engine(db_connection_url, poolclass=NullPool)
         self._Session = sessionmaker(bind=self._engine)
         self._session = None
         self._define_tables()
