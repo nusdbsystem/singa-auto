@@ -17,7 +17,7 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 source ./scripts/kubernetes/.env.sh
 title "Starting SINGA-Auto's DB..."
 

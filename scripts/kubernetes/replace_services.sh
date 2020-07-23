@@ -17,7 +17,7 @@
 # under the License.
 #
 source ./scripts/kubernetes/.env.sh
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 title "replce SINGA-Auto's services, this scipt is used to update the service with only code change, while yaml file stay same"
 

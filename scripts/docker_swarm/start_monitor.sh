@@ -20,7 +20,7 @@
 
 
 source ./scripts/docker_swarm/.env.sh
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 ES_LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/es_monitor.log
 KIBANA_LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/kibana_monitor.log

@@ -18,8 +18,7 @@
 #
 
 source ./scripts/kubernetes/.env.sh
-
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 echo "Stop option: $1"
 

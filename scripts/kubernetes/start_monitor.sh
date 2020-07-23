@@ -19,7 +19,7 @@
 #
 
 source ./scripts/kubernetes/.env.sh
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 title "Starting SINGA-Auto's Monitor..."
 
@@ -66,7 +66,7 @@ helm install incubator/sparkoperator --namespace default --set operatorVersion=v
 
 title "Starting SINGA-Auto's spark streamming..."
 SPARK_LOG_FILE_PATH=$PWD/logs/start_spark.log
-(kubectl apply -f scripts/kubernetes/spark-rbac.yaml \
+(kubectl apply -f scripts/kubernetes/yaml/spark-rbac.yaml \
 &> $SPARK_LOG_FILE_PATH) &
 (kubectl apply -f scripts/kubernetes/spark-app.json \
 &> $SPARK_LOG_FILE_PATH) &

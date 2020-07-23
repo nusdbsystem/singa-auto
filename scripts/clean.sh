@@ -18,10 +18,10 @@
 # under the License.
 #
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 # Read from shell configuration file
-source ./scripts/docker_swarm/.env.sh
+source ./scripts/.base_env.sh
 
 # Clean all files within data, logs and params folder
 delete_path "$PWD/$DATA_DIR_PATH/*"

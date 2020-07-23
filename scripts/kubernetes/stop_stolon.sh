@@ -17,7 +17,7 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 DB_CLUSTER_RUNNING_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-RUNNING
 

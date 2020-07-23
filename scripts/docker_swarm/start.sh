@@ -29,7 +29,7 @@ while (! docker stats --no-stream ); do
 done
 fi
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 # Read from shell configuration file
 source ./scripts/docker_swarm/.env.sh
@@ -46,7 +46,7 @@ bash ./scripts/docker_swarm/start_zookeeper.sh || exit 1
 bash ./scripts/docker_swarm/start_kafka.sh || exit 1
 bash ./scripts/docker_swarm/start_redis.sh || exit 1
 # Skip starting & loading DB if DB is already running
-if is_running $POSTGRES_HOST
+if is_docker_running $POSTGRES_HOST
 then
   echo "Detected that SINGA-Auto's DB is already running!"
 else

@@ -5,8 +5,8 @@ if [ $# -lt 5 ]; then
     exit 1
 fi
 
-TMP_NFS_PVC_YAML=scripts/kubernetes/tmp-nfs-pvc.yaml
-cp scripts/kubernetes/nfs-pvc.yaml.template $TMP_NFS_PVC_YAML
+TMP_NFS_PVC_YAML=scripts/kubernetes/yaml/tmp-nfs-pvc.yaml
+cp scripts/kubernetes/yaml/nfs-pvc.yaml.template $TMP_NFS_PVC_YAML
 sed -ri "s/PVC_NAME/$1/g" $TMP_NFS_PVC_YAML
 sed -ri "s/PV_STORAGE/$2/g" $TMP_NFS_PVC_YAML
 sed -ri "s/PV_ACCESS_MODES/$3/g" $TMP_NFS_PVC_YAML

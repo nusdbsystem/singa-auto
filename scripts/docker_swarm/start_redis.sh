@@ -20,7 +20,8 @@
 
 LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_redis.log
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/docker_swarm/.env.sh
+source ./scripts/base_utils.sh
 
 title "Starting SINGA-Auto's Redis..."
 
