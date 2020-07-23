@@ -17,6 +17,9 @@
 # under the License.
 #
 
+
+echo ---import common utility functions---
+
 # Echo title with border
 title()
 {
@@ -27,7 +30,6 @@ title()
     echo "$edge"
 }
 
-# Ensure kubernetes service or deployment is stable
 ensure_stable()
 {
     log_file_path=$2
@@ -48,11 +50,10 @@ ensure_stable()
     fi
 }
 
-# Check if kubernetes service and deployment is running, returns 0/1
-is_running()
+is_docker_running()
 {
     name=$1
-    if [ -z "$(kubectl get service | grep $name)" ] && [ -z "$(kubectl get deployment | grep $name)" ]
+    if [ -z "$(docker ps | grep $name)" ]
     then
         return 1
     else
@@ -60,10 +61,10 @@ is_running()
     fi
 }
 
-# Check if kubernetes ingress controllerrunning, returns 0/1
-is_running_ingress()
+is_k8s_running()
 {
-    if [ -z "$(kubectl get service -n ingress-nginx | grep ingress-nginx)" ] && [ -z "$(kubectl get deployment  -n ingress-nginx | grep ingress-nginx)" ]
+    name=$1
+    if [ -z "$(kubectl get service | grep $name)" ] && [ -z "$(kubectl get deployment | grep $name)" ]
     then
         return 1
     else
@@ -85,5 +86,26 @@ prompt()
     fi
 }
 
+# Delete a folder or file with confirmation
+delete_path()
+{
+    path=$1
+    read -p "Confirm remove $path? (y/n) " ok
+    if [ $ok = "y" ]
+    then
+        echo "Removing $path..."
+        rm -rf $path
+    fi
+}
 
+# Check if kubernetes ingress controllerrunning, returns 0/1
+is_running_ingress()
+{
+    if [ -z "$(kubectl get service -n ingress-nginx | grep ingress-nginx)" ] && [ -z "$(kubectl get deployment  -n ingress-nginx | grep ingress-nginx)" ]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
 

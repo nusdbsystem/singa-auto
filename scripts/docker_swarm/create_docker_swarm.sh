@@ -18,7 +18,7 @@
 # under the License.
 #
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 source ./scripts/docker_swarm/.env.sh
 
 title "Creating Docker swarm for SINGA-Auto..."

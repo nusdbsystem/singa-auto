@@ -50,7 +50,7 @@ class METADATA(Structure):
 
 import os
 print(os.getcwd())
-lib = CDLL("./singa_auto/darknet/libdarknet_docker_cpu.so", RTLD_GLOBAL)
+lib = CDLL(".libdarknet_docker_cpu.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]

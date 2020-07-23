@@ -20,7 +20,7 @@
 
 LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 # Read from shell configuration file
 source ./scripts/docker_swarm/.env.sh

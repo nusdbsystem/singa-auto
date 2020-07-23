@@ -20,7 +20,7 @@
 source ./scripts/docker_swarm/.env.sh
 LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_db.log
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 
 title "Starting SINGA-Auto's DB..."

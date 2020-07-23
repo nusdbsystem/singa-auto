@@ -31,7 +31,7 @@ else
   VOLUME_MOUNTS="-v $PROD_MOUNT_DATA -v $PROD_MOUNT_PARAMS -v $PROD_MOUNT_LOGS"
 fi
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 title "Starting SINGA-Auto's Admin..."
 

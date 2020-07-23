@@ -21,61 +21,13 @@
 # Read from shell configuration file
 
 source ./scripts/kubernetes/.env.sh
-
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 title "Using K8S"
-# Build SINGA-Auto's images
 
-# Docker build -t <label-of-docker-image>
-# Docker build -f <path-to-dockerfile>
+bash ./scripts/base_build_image.sh
 
-echo "using $APP_MODE docker files"
-
-title "Building SINGA-Auto LogStash's image..."
-docker build -t $SINGA_AUTO_IMAGE_LOGSTASH:$SINGA_AUTO_VERSION -f ./dockerfiles/logstash.Dockerfile \
-      --build-arg LOGSTASH_DOCKER_WORKDIR_PATH=$LOGSTASH_DOCKER_WORKDIR_PATH $PWD
-
-title "Building SINGA-Auto ES's image..."
-docker build -t $SINGA_AUTO_IMAGE_ES:$SINGA_AUTO_VERSION -f ./dockerfiles/elasticsearch.Dockerfile \
-      --build-arg ES_DOCKER_WORKDIR_PATH=$ES_DOCKER_WORKDIR_PATH $PWD
-
+# Spark app requires a spark cluster, k8s can provide that,
 title "Building SINGA-Auto SparkApp's image..."
 docker build -t $SINGA_AUTO_IMAGE_SPARKAPP:$SINGA_AUTO_VERSION -f ./dockerfiles/spark.Dockerfile \
       --build-arg SPAEK_DOCKER_JARS_PATH=$SPAEK_DOCKER_JARS_PATH $PWD
-
-if [[ $APP_MODE = "DEV" ]]
-then
-  title "Building SINGA-Auto Admin's image..."
-  docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/admin.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-  title "Building SINGA-Auto Worker's image..."
-  docker build -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/worker.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-  title "Building SINGA-Auto Predictor's image..."
-  docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/dev_dockerfiles/predictor.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-
-else
-  title "Building SINGA-Auto Admin's image..."
-  docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/admin.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-  title "Building SINGA-Auto Worker's image..."
-  docker build -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/worker.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-  title "Building SINGA-Auto Predictor's image..."
-  docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/predictor.Dockerfile \
-      --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
-      --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
-fi
-
-title "Building SINGA-Auto Web Admin's image..."
-docker build -t $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/web_admin.Dockerfile \
-    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH $PWD || exit 1
-
-echo "Finished building all SINGA-Auto's images successfully!"

@@ -1,5 +1,5 @@
 from keras.applications.inception_resnet_v2 import InceptionResNetV2
-from singa_auto.darknet.food_objection_base_model import FoodDetectionBase
+from examples.models.image_object_detection.food_detection.food_objection_base_model import FoodDetectionBase
 
 
 class FoodDetection55(FoodDetectionBase):

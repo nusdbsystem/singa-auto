@@ -17,7 +17,7 @@
 # under the License.
 #
 source ./scripts/kubernetes/.env.sh
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 title "updating SINGA-Auto's services"
 

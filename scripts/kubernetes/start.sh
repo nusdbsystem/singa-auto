@@ -17,7 +17,7 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 # Read from shell configuration file
 source ./scripts/kubernetes/.env.sh
@@ -41,7 +41,7 @@ bash ./scripts/kubernetes/start_redis.sh || exit 1
 
 # Skip starting & loading DB if DB is already running
 if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-    if is_running $POSTGRES_HOST
+    if is_k8s_running $POSTGRES_HOST
     then
       echo "Detected that Rafiki's DB is already running!"
     else
@@ -68,11 +68,11 @@ echo "Deploy ingress-nginx"
       # this is the source yaml
       # kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/baremetal/deploy.yaml
       # customer yaml: add replica to 3, fix the port to 3005
-      kubectl apply -f scripts/kubernetes/ingress_controller_deploy.yaml || exit 1
+      kubectl apply -f scripts/kubernetes/yaml/ingress_controller_deploy.yaml || exit 1
     fi
 echo "Deploy GPU plugin"
 
-kubectl create -f ./scripts/kubernetes/nvidia-device-plugin.yml
+kubectl create -f ./scripts/kubernetes/yaml/nvidia-device-plugin.yml
 
 echo "To use Rafiki, use Rafiki Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/docs/src/user/quickstart.html"

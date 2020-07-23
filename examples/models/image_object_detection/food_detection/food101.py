@@ -1,14 +1,15 @@
+from examples.models.image_object_detection.food_detection.food_objection_base_model import FoodDetectionBase
 from keras.applications.xception import Xception
-from singa_auto.darknet.food_objection_base_model import FoodDetectionBase
 
 
-class FoodDetection172(FoodDetectionBase):
+class FoodDetection101(FoodDetectionBase):
 
     def __init__(self, **knobs):
+
         super().__init__(clf_model_class_name=Xception, **knobs)
 
         # pre config
-        self.classes = 172
+        self.classes = 101
         self.image_size = 299
 
         # preload files
@@ -22,6 +23,6 @@ class FoodDetection172(FoodDetectionBase):
         self.preload_clf_model_weights_name = None
 
         # this is the trained model
-        self.trained_clf_model_weights_name = "xception-800_F172-0.86.h5"
+        self.trained_clf_model_weights_name = "xception-F101-0.85.h5"
 
-        self._npy_index_name = "food172.npy"
+        self._npy_index_name = "food101.npy"

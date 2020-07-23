@@ -19,7 +19,7 @@
 
 source ./scripts/kubernetes/.env.sh
 
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 

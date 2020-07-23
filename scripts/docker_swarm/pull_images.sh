@@ -18,7 +18,7 @@
 # under the License.
 #
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 pull_image()
 {

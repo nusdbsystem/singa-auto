@@ -19,7 +19,7 @@
 
 LOG_FILEPATH=$PWD/logs/stop.log
 
-source ./scripts/kubernetes/utils.sh
+source ./scripts/base_utils.sh
 
 title "Dumping database..."
 bash ./scripts/kubernetes/save_db.sh

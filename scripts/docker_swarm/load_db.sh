@@ -21,7 +21,7 @@
 
 DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
-source ./scripts/docker_swarm/utils.sh
+source ./scripts/base_utils.sh
 
 title "Maybe loading from database dump..."
 
