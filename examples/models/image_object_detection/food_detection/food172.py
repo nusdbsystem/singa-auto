@@ -1,5 +1,5 @@
 from keras.applications.xception import Xception
-from .food_objection_base_model import FoodDetectionBase
+from examples.models.image_object_detection.food_detection.food_objection_base_model import FoodDetectionBase
 
 
 class FoodDetection172(FoodDetectionBase):

@@ -14,7 +14,7 @@ from keras.models import Model
 from keras.layers import Dense
 from keras.preprocessing.image import img_to_array
 
-from singa_auto.darknet import darknet
+from examples.models.image_object_detection.food_detection import darknet
 from singa_auto.model import BaseModel
 
 
