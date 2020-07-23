@@ -1,5 +1,5 @@
 from keras.applications.xception import Xception
-from singa_auto.darknet.food_objection_base_model import FoodDetectionBase
+from .food_objection_base_model import FoodDetectionBase
 
 
 class FoodDetection172(FoodDetectionBase):

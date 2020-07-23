@@ -1,4 +1,4 @@
-from singa_auto.darknet.food_objection_base_model import FoodDetectionBase
+from .food_objection_base_model import FoodDetectionBase
 from keras.applications.xception import Xception
 
 
