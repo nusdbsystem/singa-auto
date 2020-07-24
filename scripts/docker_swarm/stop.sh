@@ -18,6 +18,44 @@
 # under the License.
 #
 
+stop_db()
+{
+      LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
+
+      title "Dumping database..."
+
+      #-------------------------------------------
+      #| saving db |
+      #-------------------------------------------
+
+      DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
+
+      # Check if dump file exists
+      if [ -f $DUMP_FILE ]
+      then
+          if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
+          then
+              echo "Not dumping database!"
+              exit 0
+          fi
+      fi
+
+      echo "Dumping database to $DUMP_FILE..."
+      docker exec $POSTGRES_HOST pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE
+
+      # If database dump previously failed, prompt whether to continue script
+      #if [ $? -ne 0 ]
+      #then
+      #    if ! prompt "Failed to dump database. Continue?"
+      #    then
+      #        exit 1
+      #    fi
+      #fi
+
+      title "Stopping SINGA-Auto's DB..."
+      docker rm -f $POSTGRES_HOST || echo "Failed to stop SINGA-Auto's DB"
+}
+
 LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
 
 source ./scripts/base_utils.sh
@@ -31,15 +69,7 @@ pyv="$(python3 -V 2>&1)"
 echo $pyv
 python3 ./scripts/stop_all_jobs.py
 
-bash scripts/docker_swarm/stop_db.sh || exit 1
-
-# Prompt if should stop DB
-#if prompt "Should stop SINGA-Auto's DB?"
-#then
-#    bash scripts/docker_swarm/stop_db.sh || exit 1
-#else
-#    echo "Not stopping SINGA-Auto's DB!"
-#fi
+stop_db || exit 1
 
 title "Stopping SINGA-Auto's Zookeeper..."
 docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper"

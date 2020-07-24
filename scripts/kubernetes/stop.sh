@@ -20,6 +20,41 @@
 source ./scripts/kubernetes/.env.sh
 source ./scripts/base_utils.sh
 
+stop_db()
+{
+      LOG_FILEPATH=$PWD/logs/stop.log
+
+      title "Dumping database..."
+      DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
+      # Check if dump file exists
+      if [ -f $DUMP_FILE ]
+      then
+          if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
+          then
+              echo "Not dumping database!"
+              exit 0
+          fi
+      fi
+      echo "Dumping database to $DUMP_FILE..."
+      DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
+      DB_PODNAME=${DB_PODNAME:0:30}
+      kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE
+
+      # If database dump previously failed, prompt whether to continue script
+      #if [ $? -ne 0 ]
+      #then
+      #    if ! prompt "Failed to dump database. Continue?"
+      #    then
+      #        exit 1
+      #    fi
+      #fi
+
+      title "Stopping SINGA-Auto's DB..."
+      kubectl delete deployment $POSTGRES_HOST
+      kubectl delete service $POSTGRES_HOST
+
+}
+
 echo "Stop option: $1"
 
 if [[ $1 = "allsvc" ]]
@@ -102,11 +137,10 @@ else
       bash ./scripts/kubernetes/remove_config.sh
 
       if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-          bash scripts/kubernetes/stop_db.sh || exit 1
+          stop_db || exit 1
       else
           bash scripts/kubernetes/stop_stolon.sh || exit 1
       fi
-
 fi
 
 # Prompt if should stop DB
