@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,24 +18,28 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/.env.sh
-
 source ./scripts/base_utils.sh
 
-DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
-
-# Check if dump file exists
-if [ -f $DUMP_FILE ]
-then
-    if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
+pull_image()
+{
+    # -q == --quiet, Only display numeric IDs
+    if [[ ! -z $(docker images -q $1) ]]
     then
-        echo "Not dumping database!"
-        exit 0
+        echo "$1 already exists locally, thus will not pull. Using local version of $1"
+    else
+        docker pull $1 || exit 1
     fi
-fi
+}
 
-echo "Dumping database to $DUMP_FILE..."
-DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
-DB_PODNAME=${DB_PODNAME:0:30}
-kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE
+title "Pulling images..."
+echo "Pulling images required by Sinag-Auto from Docker Hub..."
+pull_image $IMAGE_POSTGRES
+pull_image $IMAGE_REDIS
+pull_image $IMAGE_KAFKA
+pull_image $IMAGE_ZOOKEEPER
 
+pull_image $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_WEB_ADMIN:$SINGA_AUTO_VERSION
+pull_image $SINGA_AUTO_IMAGE_STOLON

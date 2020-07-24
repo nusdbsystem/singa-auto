@@ -18,7 +18,10 @@
 # under the License.
 #
 
-source scripts/.base_env.sh || exit 1
+
+# those need to be changed when do the deployments
+IP_ADRESS=127.0.0.1
+SINGA_AUTO_VERSION=dev
 
 #ingress default configurations
 export INGRESS_NAME=ingress-predictor
@@ -26,7 +29,7 @@ export INGRESS_EXT_PORT=3005
 
 # Core external configuration for SINGA-auto
 export KUBERNETES_NETWORK=singa_auto
-export KUBERNETES_ADVERTISE_ADDR=127.0.0.1
+export KUBERNETES_ADVERTISE_ADDR=$IP_ADRESS
 
 export POSTGRES_STOLON_PASSWD=cmFmaWtpCg==  # The Passwd for stolon, base64 encode
 
@@ -42,6 +45,9 @@ export CLUSTER_MODE=SINGLE # CLUSTER or SINGLE
 
 if [ "$CLUSTER_MODE" = "CLUSTER" ]; then
     export POSTGRES_HOST=stolon-proxy-service
-    export NFS_HOST_IP=127.0.0.1       # NFS Host IP - if used nfs as pv for database storage
+    export NFS_HOST_IP=$IP_ADRESS      # NFS Host IP - if used nfs as pv for database storage
     export RUN_DIR_PATH=run            # Shares a folder with containers that stores components' running info, relative to workdir
 fi
+
+source scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
+

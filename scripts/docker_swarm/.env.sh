@@ -18,10 +18,13 @@
 # under the License.
 #
 
-source scripts/.base_env.sh || exit 1
+# those need to be changed when do the deployments
+IP_ADRESS=127.0.0.1
+SINGA_AUTO_VERSION=dev
 
 # Core external configuration for SINGA-auto
 export DOCKER_NETWORK=singa_auto
-export DOCKER_SWARM_ADVERTISE_ADDR=127.0.0.1
-
+export DOCKER_SWARM_ADVERTISE_ADDR=$IP_ADRESS
 export CONTAINER_MODE=SWARM
+
+source scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1

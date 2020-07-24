@@ -24,8 +24,10 @@ export SUPERADMIN_PASSWORD=singa_auto
 export APP_SECRET=singa_auto
 
 # Core external configuration for SINGA-auto
-export SINGA_AUTO_VERSION=dev
-export SINGA_AUTO_ADDR=ncrs.d2.comp.nus.edu.sg
+# SINGA_AUTO_ADDR need to be changed when do the deployments,
+# this is provided by using dockerswarm env or k8s env
+export SINGA_AUTO_VERSION=$2
+export SINGA_AUTO_ADDR=$1
 
 export ADMIN_EXT_PORT=3000
 export WEB_ADMIN_EXT_PORT=3001
