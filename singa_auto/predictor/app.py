@@ -18,12 +18,12 @@
 #
 import os
 import logging
+from typing import Any, List
 from flask import Flask, jsonify, g, request
 from flask_cors import CORS
 from .predictor import Predictor
 from singa_auto.model import utils
 import traceback
-import json
 
 service_id = os.environ['SINGA_AUTO_SERVICE_ID']
 
@@ -47,45 +47,28 @@ def index():
 
 @app.route('/', methods=['POST'])
 def predict():
-
-    if request.files.getlist('img'):
-        img_stores = request.files.getlist('img')
-        img_bytes = [
-            img for img in [img_store.read() for img_store in img_stores] if img
-        ]
-        print("img_stores", img_stores)
-        if not img_bytes:
-            return jsonify({'ErrorMsg': 'No image provided'}), 400
-        print("img_bytes_first 10 bytes", img_bytes[0][:10])
-        queries = utils.dataset.load_images(img_bytes)
-        print("queries_sizes", len(queries))
-    elif request.get_json():
-        data = request.get_json()
-        queries = [data]
-    elif request.data:
-        data = json.loads(request.data)
-        print(data)
-        queries = [data]
-    else:
-        return jsonify({'ErrorMsg': 'data should be either at files or json payload'}), 400
     try:
-        predictor = get_predictor()
-        # this queries is type of List[Any]
-        predictions = predictor.predict(queries)
-        print(type(predictions))
-        if isinstance(predictions[0], list):
-            # this is only for pandavgg demo as the frontend only accept the dictionary.
-            return jsonify(predictions[0][0]), 200
-        elif isinstance(predictions[0], dict):
-            return jsonify(predictions[0]), 200
-        elif isinstance(predictions, list) and isinstance(predictions[0], str):
-            # this is only match qa model,
-            print("this is only match qa model")
-            return predictions[0], 200
+        if request.files.getlist('img'):
+            img_stores = request.files.getlist('img')
+            img_bytes = [
+                img for img in [img_store.read() for img_store in img_stores] if img
+            ]
+            if not img_bytes:
+                return jsonify({'ErrorMsg': 'No image provided'}), 400
+            queries = utils.dataset.load_images(img_bytes)
+            print("img_bytes_first 10 bytes", img_bytes[0][:10])
+            print("queries_sizes", len(queries))
+        elif request.get_json():
+            data = request.get_json()
+            queries = [data]
         else:
-            return jsonify(predictions), 200
+            return jsonify({'ErrorMsg': 'data should be either at files (set "img" as key) or json payload'}), 400
+        predictor = get_predictor()
+        predictions: List[Any] = predictor.predict(queries)
+        return jsonify(predictions), 200
     except:
         # for debug,print the error
         traceback.print_exc()
         logging.error(traceback.format_exc())
-        return jsonify({'ErrorMsg': 'Server Error'}), 500
+        return jsonify({'ErrorMsg': 'Server Error:{}'.format(traceback.format_exc())}
+                       ), 500
