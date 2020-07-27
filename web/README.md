@@ -121,9 +121,9 @@ react-testing-library has moved to @testing-library/react. Please uninstall reac
 
 ## Backend API Endpoints
 
-When we develop the web UI, we usually use [Axios](https://github.com/axios/axios) to send request to the backend API endpoint, or use [Curl](https://github.com/curl/curl) to test.
+When we develop the SINGA-Auto Web UI, we usually use [Axios](https://github.com/axios/axios) to send request to the SINGA-Auto Admin API endpoint, or use [Curl](https://github.com/curl/curl) to test.
 
-### Tips for using Axois
+### Tips for using Axios
 
 - https://kapeli.com/cheat_sheets/Axios.docset/Contents/Resources/Documents/index
 - https://simplecheatsheet.com/tag/axios-cheat-sheet 
@@ -133,10 +133,6 @@ When we develop the web UI, we usually use [Axios](https://github.com/axios/axio
 - https://gist.github.com/subfuzion/08c5d85437d5d4f00e58
 - https://gist.github.com/joyrexus/85bf6b02979d8a7b0308
 
-### SINGA-Auto Backend Restful API
+### SINGA-Auto Admin Restful API
 
 - https://github.com/nusdbsystem/singa-auto/wiki/SinaAuto-Api-Documents
-
-### SINGA-Auto Predictor Restful API
-
-- https://github.com/nusdbsystem/singa-auto/wiki/SingaAuto-Predictor-API
