@@ -17,11 +17,11 @@
     under the License.
 -->
 
-# SINGA-AUTO
+# SINGA-Auto
 
-*SINGA-AUTO* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind. To do so, it leverages on automated machine learning (AutoML).
+*SINGA-Auto* is a distributed system that trains machine learning (ML) models and deploys trained models, built with ease-of-use in mind. To do so, it leverages on automated machine learning (AutoML).
 
-Read  SINGA-AUTO's full documentation at https://nginyc.github.io/rafiki/docs/latest
+Read SINGA-Auto's full documentation at https://singa-auto.readthedocs.io/en/latest
 
 ## Quick Setup
 
@@ -33,7 +33,7 @@ Prerequisites: MacOS or Linux environment
 
 3. Clone this project (e.g. with [Git](https://git-scm.com/downloads>))
 
-4. Setup  SINGA-AUTO's complete stack with the setup script:
+4. Setup  SINGA-Auto's complete stack with the setup script:
 
    if use docker swarm mode, use this script: 
 
@@ -47,7 +47,7 @@ Prerequisites: MacOS or Linux environment
     bash scripts/kubernetes/start.sh
     ```
 
-  To completely destroy  SINGA-AUTO's stack:
+  To completely destroy  SINGA-Auto's stack:
 
    if use docker swarm mode, use this script:
    
@@ -61,12 +61,12 @@ Prerequisites: MacOS or Linux environment
     bash scripts/kubernetes/stop.sh
     ```
 
-More instructions are available in [Rafiki's Developer Guide](https://nginyc.github.io/rafiki/docs/latest/src/dev).
+More instructions are available in [SINGA-Auto's Developer Guide](https://singa-auto.readthedocs.io/en/latest).
 
 
 ## Issues
 
-Report any issues at [Apache SINGA's JIRA](https://issues.apache.org/jira/browse/SINGA) or [Rafiki's Github Issues](https://github.com/nginyc/rafiki/issues)
+Report any issues at [SINGA-Auto's Github Issues](https://github.com/nusdbsystem/singa-auto/issues)
 
 
 ## Acknowledgements
