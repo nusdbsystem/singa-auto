@@ -63,7 +63,7 @@ class PyBiLstm(BaseModel):
 
         utils.logger.log('Train accuracy: {}'.format(acc))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         sents_tags = self._predict(dataset)
         acc = self._compute_accuracy(dataset, sents_tags)

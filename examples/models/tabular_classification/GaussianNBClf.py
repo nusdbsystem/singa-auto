@@ -59,7 +59,7 @@ class GaussianClf(BaseModel):
         score = self._clf.score(X_train, y_train)
         logger.log('Train accuracy: {}'.format(score))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
 

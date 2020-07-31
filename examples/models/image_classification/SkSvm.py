@@ -64,7 +64,7 @@ class SkSvm(BaseModel):
         y = classes
         self._clf.fit(X, y)
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path,
             max_image_size=self._knobs.get("max_image_size"),

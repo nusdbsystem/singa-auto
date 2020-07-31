@@ -73,7 +73,7 @@ class PyDenseNetBc(BaseModel):
             'early_stop_patience_epochs': FixedKnob(5)
         }
 
-    def train(self, dataset_path, shared_params=None):
+    def train(self, dataset_path, shared_params=None,  **kwargs):
         (train_dataset, train_val_dataset,
          self._train_params) = self._load_train_dataset(dataset_path)
         self._model = self._build_model()
@@ -84,7 +84,7 @@ class PyDenseNetBc(BaseModel):
         self._model = self._train_model(self._model, train_dataset,
                                         train_val_dataset)
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         dataset = self._load_val_dataset(dataset_path, self._train_params)
         (_, acc) = self._predict(dataset)
         return acc

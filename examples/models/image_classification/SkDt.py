@@ -66,7 +66,7 @@ class SkDt(BaseModel):
         accuracy = sum(y == preds) / len(y)
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path,
             max_image_size=self._knobs.get("max_image_size"),

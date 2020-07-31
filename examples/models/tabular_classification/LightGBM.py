@@ -128,7 +128,7 @@ class LightGBM(BaseModel):
                 epoch=flag)
             flag += 1
 
-    def evaluate(self, dataset_url):
+    def evaluate(self, dataset_url, **kwargs):
         df = pd.read_csv(dataset_url, index_col=0)
 
         # Optional: Remove 4 applications with XNA CODE_GENDER (train set)

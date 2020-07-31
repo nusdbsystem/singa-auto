@@ -172,7 +172,7 @@ class TfEnas(BaseModel):
                                   dataset_path=dataset_path,
                                   **knobs)
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         (images, classes,
          _) = self._maybe_load_dataset(dataset_path,
                                        train_params=self._train_params,

@@ -349,7 +349,7 @@ class DNNTorch(BaseModel):
                              roc_auc_score=valid_scores[-1],
                              epoch=i)
 
-    def evaluate(self, dataset_url):
+    def evaluate(self, dataset_url, **kwargs):
         # Load CSV file as pandas dataframe
         df = pd.read_csv(dataset_url, index_col=0)
 
