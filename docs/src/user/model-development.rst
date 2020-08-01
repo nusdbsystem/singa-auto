@@ -120,7 +120,7 @@ Your model will be run in Python 3.6 with the following Python libraries pre-ins
 
         requests==2.20.0
         numpy==1.14.5
-        Pillow==5.3.0
+        Pillow==7.1.0
 
 Additionally, you'll specify a list of Python dependencies to be installed for your model, 
 prior to model training and inference. This is configurable with the ``dependencies`` option 
