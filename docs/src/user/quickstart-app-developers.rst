@@ -30,7 +30,7 @@ Example:
 
         from singa_auto.client import Client
         client = Client(admin_host='localhost', admin_port=3000)
-        client.login(email='app_developer@singaauto', password='singa_auto')
+        client.login(email='superadmin@singaauto', password='singa_auto')
         
 .. seealso:: :meth:`singa_auto.client.Client.login`
 
