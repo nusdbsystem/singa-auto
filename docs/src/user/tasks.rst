@@ -102,74 +102,210 @@ Prediction Format
 
 A array of integers representing the list of predicted tag for each token, in sequence, for the sentence.
 
-TABULAR_CLASSIFICATION
+
+
+QUESTION_ANSWERING
 --------------------------------------------------------------------
 
-Dataset Type
+COVID19 Task Dataset Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:ref:`dataset-type:TABULAR`
-
-The following optional train arguments are supported:
-
-    =====================       =====================
-    **Train Argument**          **Description**
-    ---------------------       ---------------------        
-    ``features``                List of feature columns' names as a list of strings (defaults to first ``N-1`` columns in the CSV file)
-    ``target``                  Target column name as a string (defaults to the *last* column in the CSV file)
-    =====================       =====================
-
-The train & validation datasets should have the same columns. 
-
-Query Format 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-An size-``N-1`` dictionary representing feature-value pairs.
-
-Prediction Format 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A size-``k`` list of floats, representing the probabilities of each class from ``0`` to ``k-1`` for the target column.
+:ref:`dataset-type:QUESTION_ANSWERING_COVID19`
 
 
-TABULAR_REGRESSION
---------------------------------------------------------------------
+Dataset can be used to finetune the SQuAD pre-trained Bert model. 
 
-Dataset Type
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- The dataset zips folders containing JSON files. JSON files under different level folders will be automaticly read all together. 
 
-:ref:`dataset-type:TABULAR`
-
-The following optional train arguments are supported:
-
-    =====================       =====================
-    **Train Argument**          **Description**
-    ---------------------       ---------------------        
-    ``features``                List of feature columns' names as a list of strings (defaults to first ``N-1`` columns in the CSV file)
-    ``target``                  Target column name as a string (defaults to the *last* column in the CSV file)
-    =====================       =====================
-    
-The train & validation datasets should have the same columns. 
-
-An example of the dataset follows:
+Dataset structure example:
 
 .. code-block:: text
 
-    density,bodyfat,age,weight,height,neck,chest,abdomen,hip,thigh,knee,ankle,biceps,forearm,wrist
-    1.0708,12.3,23,154.25,67.75,36.2,93.1,85.2,94.5,59,37.3,21.9,32,27.4,17.1
-    1.0853,6.1,22,173.25,72.25,38.5,93.6,83,98.7,58.7,37.3,23.4,30.5,28.9,18.2
-    1.0414,25.3,22,154,66.25,34,95.8,87.9,99.2,59.6,38.9,24,28.8,25.2,16.6
+    /DATASET_NAME.zip
+    │
+    ├──FOLDER_NAME_1                                              # first level folder
+    │  └──FOLDER_NAME_2                                           # second level folder, not necessarily to be included
+    │      └──FOLDER_NAME_3                                       # third level folder, not necessarily to be included
+    │           ├── 003d2e515e1aaf06f0052769953e8.json            # JSON file name is a random combination of either alphabets/numbers or both
+    │           ├── 00a407540a8bdd.json
+    │           ...
+    │
+    ├──FOLDER_NAME_4                                              # first level folder
+    │  ├── 0015023cc06b5362d332b3.json
+    │  ├── 001b4a31684c8fc6e2cfbb70304354978317c429.json
+    │  ...
     ...
+    │
+    └──metadata.csv                                               # if additional information is provided for above JSON files, user can add a metadata.csv
 
+- JSON file includes ``body_text``, providing list of paragraphs in full body which can be used for question answering. ``body_text`` can contain different entries, only the "text" field of each entry will be read. 
+
+1. For JSON files extracted from papers, it comes that one JSON file for one paper. And if additional information is given in metadata.csv for papers, each JSON file and each metadata.csv entries are linked via ``sha`` values of both.
+
+2. For dataset having their additional information paragraph, the ``body_text``> ``text`` entry is in ``<question> + <\n> + <information paragraph>`` string format. In this circumstance, there is no ``sha`` value nor metadata.csv file needed.
+
+Sample of JSON file:
+
+.. code-block:: text
+
+    # JSON file 1                           # for example, a JSON file extracted from one paper
+    {
+        "sha": <str>,                       # 40-character sha1 of the PDF, this field is only required for JSON extracted from papers. it will be read into model in forms of string
+        
+        "body_text": [                      # list of paragraphs in full body, this is must-have
+            {                               
+                "text": <str>,              # text body for first entry, which is for one paragraph of this paper. this is must-have. it will be read as string into model
+            }
+            ...                             # other 'text' blocks, i.e. paragraphs blocks the same as above, then all string ‘text’ will be handled and processed into panda datafame
+        ],
+    }
+    
+    # ---------------------------------------------------------------------------------------------------------------------- #
+    
+    # JSON file 2                           # for example, a JSON file extraced from SQuAD2.0
+    {        
+        "body_text": [                      # list of paragraphs in full body, this is must-have
+            {                               
+                "text": 'What are the treatments for Age-related Macular Degeneration ?\n If You Have Advanced AMD Once dry AMD reaches the advanced stage, no form of treatment can prevent vision loss...',              
+                                            # text body for first entry, this is must-have 
+                                            
+            },
+            ...                             # other 'text' blocks, i.e. paragraphs blocks look the same as above
+        ],
+    }
+    
+
+- ``metadata.csv`` is not strictly required. User can provide additional information with it, i.e. authors, title, journal and publish_time, mapping to each JSON files by every sha value. ``cord_uid`` serves unique values serve as the entry identity. Time sensitive entry, is advised to have ``publish_time`` value in Date format. Other values, General format is recommended.
+
+Sample of ``metadata.csv`` entry: 
+
+    =====================       =====================
+    Column Names                Column Values 
+    ---------------------       --------------------- 
+    cord_uid                    zjufx4fo                
+    sha                         b2897e1277f56641193a6db73825f707eed3e4c9  
+    source_x                    PMC                   
+    title                       Sequence requirements for RNA strand transfer during nidovirus ... 
+    doi                         10.1093/emboj/20.24.7220         
+    pmcid                       PMC125340                
+    pubmed_id                   11742998                
+    license                     unk                   
+    abstract                    Nidovirus subgenomic mRNAs contain a leader sequence derived ...
+    publish_time                2001-12-17             
+    =====================       =====================
+    
 Query Format 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An size-``N-1`` dictionary representing feature-value pairs.
+.. note::
+
+    - The pretrained model should be fine-tuned with a dataset first to adapt to particular question domains when necessary. 
+    - Otherwise, following the question, input should contain relevant information (context paragraph or candidate answers, or both), whether or not addresses the question. 
+    - Optionally, while the relevant information as additional paragraph are provided in query, the question always comes first, followed by additional paragraph. We use “\n” separators between the question and its paragraph of the input. 
+    
+Query is in JSON format. It could be a <str list> of a single question in ``questions`` field. Model will only read the ``questions`` field. 
+
+.. code-block:: text
+
+    {
+     'questions': ['Is individual's age considered a potential risk factor of COVID19? \n  People of all ages can be infected by the new coronavirus (2019-nCoV). Older people, and people with pre-existing medical conditions (such as asthma, diabetes, heart disease) appear to be more vulnerable to becoming severely ill with the virus. WHO advises people of all ages to take steps to protect themselves from the virus, for example by following good hand hygiene and good respiratory hygiene.',
+                   # query string can include optional context which follows the question with `\n` syntax
+                   'Is COVID-19 associated with cardiomyopathy and cardiac arrest?'],     # will be read as a list of string by model, and each question will be extracted as string to process the question answering stage recursively
+                   ...                                                                    # questions in string format
+     ...                                                                                  # other fileds. fields, other than 'questions', won't be read into the model
+    }
 
 Prediction Format 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A float, representing the value of the target column.
+The output is in JSON format.
+
+.. code-block:: text
+
+         ['Given a higher mortality rate for older cases, in one study, li et al showed that more than 50% of early patients with covid-19 in wuhan were more than 60 years old',    
+          'cardiac involvement has been reported in patients with covid-19, which may be reflected by ecg changes.'
+          ...             
+          ]   # output field is a list of string
+
+
+MedQuAD Task Dataset Format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:ref:`dataset-type:QUESTION_ANSWERING_MEDQUAD`
+
+Dataset structure example:
+
+.. code-block:: text
+
+    /MedQuAD.zip
+    │
+    ├──FOLDER_NAME_1                                              # first level folder
+    │  └──FOLDER_NAME_2                                           # second level folder, not necessarily to be included
+    │      └──FOLDER_NAME_3                                       # third level folder, not necessarily to be included
+    │           ├── 003d2e515e1aaf0052769953e8.xml                # xml file name is a random combination of either alphabets/numbers or both
+    │           ├── 00a40758bdd.xml
+    │           ...
+    │
+    ├──FOLDER_NAME_4                                              # first level folder
+    │  ├── 0015023cc06b5332b3.xml
+    │  ├── 001b4a31684c8fc6e2cfbb70304c429.xml
+    │  ...
+    ...
+
+
+.. note::
+
+    - For following `.xml` sample, model would only take `Question` and `Answer` fields into the question answering processing.
+    - Each xml file contains multiple <QAPair>. Each <QAPair> contains one question and its answer. 
+    
+Sample `.xml` file:
+
+.. code-block:: text
+
+     <?xml version="1.0" encoding="UTF-8"?>
+     <Document>
+     ...
+     <QAPairs>
+      <QAPair pid="1">                                                           # pair #1
+        <Question qid="000001-1"> A question here ... </Question>                # question #1, will be read as string by model
+        <Answer> An answer here ... </Answer>                                    # answer of question #1, will be read as string by model
+      </QAPair>
+      ...                                                                        # multiple subsequent <QAPair> blocks, Question and its Answer pair will be combined into one string by model, and strings of QAPair are then processed into panda dataframe
+     </QAPairs>
+     </Document>
+
+
+Query Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+    - The pretrained model should be fine-tuned with a dataset first to adapt to particular question domains when necessary. 
+    - Otherwise, following the question, input should contain relevant information (context paragraph or candidate answers, or both), whether or not addresses the question. 
+    - Optionally, while the relevant information as additional paragraph are provided in query, the question always comes first, followed by additional paragraph. We use “\n” separators between the question and its paragraph of the input. 
+    
+Query is in JSON format. It could be a <str list> of a single question in ``questions`` field. Model will only read the ``questions`` field. 
+
+.. code-block:: text
+
+    {
+     'questions': ['Who is at risk for Adult Acute Lymphoblastic Leukemia?',
+                  'What are the treatments for Adult Acute Lymphoblastic Leukemia ?'],     # will be read as a list of string by model, and each question will be extracted as string to process the question answering stage recursively
+                  ...                                                                      # questions in format of string
+     ...                                                                                   # other fileds. fields, other than 'questions', won't be read into the model
+    }
+
+Prediction Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The output is in JSON format.
+
+.. code-block:: text
+
+         {'answers':['Past treatment with chemotherapy or radiation therapy. Having certain genetic disorders.',    # output 'answers' field is a list of string
+                     'Chemotherapy. Radiation therapy. Chemotherapy with stem cell transplant. Targeted therapy.'
+                     ...
+                     ]}
 
 
 SPEECH_RECOGNITION
@@ -249,3 +385,74 @@ Prediction Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A string, representing the predicted transcript for the audio.
+
+
+
+TABULAR_CLASSIFICATION
+--------------------------------------------------------------------
+
+Dataset Type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:ref:`dataset-type:TABULAR`
+
+The following optional train arguments are supported:
+
+    =====================       =====================
+    **Train Argument**          **Description**
+    ---------------------       ---------------------        
+    ``features``                List of feature columns' names as a list of strings (defaults to first ``N-1`` columns in the CSV file)
+    ``target``                  Target column name as a string (defaults to the *last* column in the CSV file)
+    =====================       =====================
+
+The train & validation datasets should have the same columns. 
+
+Query Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An size-``N-1`` dictionary representing feature-value pairs.
+
+Prediction Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A size-``k`` list of floats, representing the probabilities of each class from ``0`` to ``k-1`` for the target column.
+
+
+TABULAR_REGRESSION
+--------------------------------------------------------------------
+
+Dataset Type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:ref:`dataset-type:TABULAR`
+
+The following optional train arguments are supported:
+
+    =====================       =====================
+    **Train Argument**          **Description**
+    ---------------------       ---------------------        
+    ``features``                List of feature columns' names as a list of strings (defaults to first ``N-1`` columns in the CSV file)
+    ``target``                  Target column name as a string (defaults to the *last* column in the CSV file)
+    =====================       =====================
+    
+The train & validation datasets should have the same columns. 
+
+An example of the dataset follows:
+
+.. code-block:: text
+
+    density,bodyfat,age,weight,height,neck,chest,abdomen,hip,thigh,knee,ankle,biceps,forearm,wrist
+    1.0708,12.3,23,154.25,67.75,36.2,93.1,85.2,94.5,59,37.3,21.9,32,27.4,17.1
+    1.0853,6.1,22,173.25,72.25,38.5,93.6,83,98.7,58.7,37.3,23.4,30.5,28.9,18.2
+    1.0414,25.3,22,154,66.25,34,95.8,87.9,99.2,59.6,38.9,24,28.8,25.2,16.6
+    ...
+
+Query Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An size-``N-1`` dictionary representing feature-value pairs.
+
+Prediction Format 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A float, representing the value of the target column.
