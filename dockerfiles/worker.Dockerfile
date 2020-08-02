@@ -24,7 +24,6 @@ RUN apt-get update && apt-get -y upgrade
 # `tensorflow-gpu` dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libsm6 libxext6 libxrender-dev \
       build-essential \
       cuda-command-line-tools-9-0 \
       cuda-cublas-9-0 \
@@ -84,7 +83,8 @@ RUN pip install -r singa_auto/kafka/requirements.txt
 COPY singa_auto/advisor/requirements.txt singa_auto/advisor/requirements.txt
 RUN pip install -r singa_auto/advisor/requirements.txt
 
-RUN pip install singa-auto==0.2.1
+COPY singa_auto/ singa_auto/
+COPY scripts/ scripts/
+RUN mkdir data/
 
-CMD ["worker"]
-
+CMD ["python", "scripts/start_worker.py"]

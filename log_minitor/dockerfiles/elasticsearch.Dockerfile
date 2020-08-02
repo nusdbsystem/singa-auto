@@ -16,24 +16,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-FROM logstash:7.7.0
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.7.0
 
-MAINTAINER NailiXing <xingnaili14@gmail.com>
-
-
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-input-http_poller
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-input-exec
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-filter-json_encode
+MAINTAINER Naili <xingnaili14@gmail.com>
 
 
-EXPOSE 9600 5044
+EXPOSE 9200 9300
 
-ARG LOGSTASH_DOCKER_WORKDIR_PATH
+ARG ES_DOCKER_WORKDIR_PATH
 
-WORKDIR $LOGSTASH_DOCKER_WORKDIR_PATH
+WORKDIR $ES_DOCKER_WORKDIR_PATH
 
-COPY scripts/config/logstash.conf $LOGSTASH_DOCKER_WORKDIR_PATH/logstash.conf
+COPY log_minitor/config/elasticsearch.yml $ES_DOCKER_WORKDIR_PATH/config/elasticsearch.yml
 
-COPY ./logs $LOGSTASH_DOCKER_WORKDIR_PATH/logs
-
-CMD bin/logstash -f logstash.conf
