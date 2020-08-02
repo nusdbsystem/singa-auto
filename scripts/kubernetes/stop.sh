@@ -17,8 +17,14 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/.env.sh
-source ./scripts/base_utils.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 stop_db()
 {
@@ -77,10 +83,10 @@ then
 
 else
 
-#      kubectl delete -f ./scripts/kubernetes/nvidia-device-plugin.yml
+#      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/nvidia-device-plugin.yml
 
       title "Stopping any existing jobs..."
-      python ./scripts/stop_all_jobs.py
+      python $HOST_WORKDIR_PATH/scripts/stop_all_jobs.py
 
       title "Stopping SINGA-Auto's Web Admin Deployment..."
       kubectl delete deployment $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Deployment"
@@ -131,15 +137,15 @@ else
       title "Stopping SINGA-Auto's ES Service..."
       kubectl delete service $ES_HOST || echo "Failed to stop SINGA-Auto's ES Service"
 
-      bash ./scripts/kubernetes/generate_config.sh || exit 1
+      bash $HOST_WORKDIR_PATH/scripts/kubernetes/generate_config.sh || exit 1
       title "Stopping SINGA-Auto's ES Service..."
-      kubectl delete -f scripts/kubernetes/spark-app.json
-      bash ./scripts/kubernetes/remove_config.sh
+      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/spark-app.json
+      bash $HOST_WORKDIR_PATH/scripts/kubernetes/remove_config.sh
 
       if [ "$CLUSTER_MODE" = "SINGLE" ]; then
           stop_db || exit 1
       else
-          bash scripts/kubernetes/stop_stolon.sh || exit 1
+          bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_stolon.sh || exit 1
       fi
 fi
 
@@ -147,9 +153,9 @@ fi
 #if prompt "Should stop SINGA-Auto's DB?"
 #then
 #    if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-#        bash scripts/kubernetes/stop_db.sh || exit 1
+#        bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_db.sh || exit 1
 #    else
-#        bash scripts/kubernetes/stop_stolon.sh || exit 1
+#        bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_stolon.sh || exit 1
 #    fi
 #else
 #    echo "Not stopping SINGA-Auto's DB!"

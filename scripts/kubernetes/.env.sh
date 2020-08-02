@@ -19,6 +19,12 @@
 #
 
 
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
 # those need to be changed when do the deployments
 IP_ADRESS=127.0.0.1
 SINGA_AUTO_VERSION=dev
@@ -49,5 +55,5 @@ if [ "$CLUSTER_MODE" = "CLUSTER" ]; then
     export RUN_DIR_PATH=run            # Shares a folder with containers that stores components' running info, relative to workdir
 fi
 
-source scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
+source $HOST_WORKDIR_PATH/scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
 

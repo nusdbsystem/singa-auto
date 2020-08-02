@@ -20,11 +20,17 @@
 
 # Read from shell configuration file
 
-source ./scripts/docker_swarm/.env.sh
-source ./scripts/base_utils.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH/scripts/docker_swarm/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "Using docker swarm"
 
-bash ./scripts/base_build_image.sh
+bash $HOST_WORKDIR_PATH/scripts/base_build_image.sh
 
 

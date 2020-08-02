@@ -36,9 +36,12 @@ export REDIS_EXT_PORT=6380
 export ZOOKEEPER_EXT_PORT=2181
 export KAFKA_EXT_PORT=9092
 
+if [ $APP_MODE ];then
+	echo "APP_MODE is exist, and echo to = $APP_MODE"
+else
+	export APP_MODE=DEV # DEV or PROD
+fi
 
-export HOST_WORKDIR_PATH=$PWD
-export APP_MODE=DEV # DEV or PROD
 export POSTGRES_DUMP_FILE_PATH=$PWD/db_dump.sql # PostgreSQL database dump file
 export DOCKER_NODE_LABEL_AVAILABLE_GPUS=available_gpus # Docker node label for no. of services currently running on the node
 export DOCKER_NODE_LABEL_NUM_SERVICES=num_services # Docker node label for no. of services currently running on the node
@@ -72,6 +75,7 @@ export KIBANA_EXT_PORT=31009
 
 
 export DOCKER_WORKDIR_PATH=/root
+export DB_DIR_ROOT=db
 export DB_DIR_PATH=db/data
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir

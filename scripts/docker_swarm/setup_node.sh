@@ -18,7 +18,14 @@
 # under the License.
 #
 # Read from shell configuration file
-source ./scripts/docker_swarm/.env.sh
+
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH/scripts/docker_swarm/.env.sh
 
 echo "Listing nodes in Docker Swarm..."
 docker node ls

@@ -17,10 +17,10 @@
 # under the License.
 #
 
-from setuptools import setup, findall, find_packages
+from setuptools import setup
 
 setup(name='singa-auto',
-      version='0.2.1',
+      version='0.3.2',
       description='The SINGA-Auto',
       url='https://github.com/nusdbsystem/singa-auto.git',
       author='Naili',
@@ -34,6 +34,9 @@ setup(name='singa-auto',
       ],
       entry_points={
           'console_scripts': [
+              'sago=singa_auto:start_all',
+              'sastop=singa_auto:stop_all',
+              'saclean=singa_auto:clean',
               'admin=singa_auto:start_admin',
               'predict=singa_auto:start_predictor',
               'worker=singa_auto:start_worker',

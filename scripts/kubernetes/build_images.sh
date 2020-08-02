@@ -20,14 +20,21 @@
 
 # Read from shell configuration file
 
-source ./scripts/kubernetes/.env.sh
-source ./scripts/base_utils.sh
+
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "Using K8S"
 
-bash ./scripts/base_build_image.sh
+bash $HOST_WORKDIR_PATH/scripts/base_build_image.sh
 
 # Spark app requires a spark cluster, k8s can provide that,
 title "Building SINGA-Auto SparkApp's image..."
-docker build -t $SINGA_AUTO_IMAGE_SPARKAPP:$SINGA_AUTO_VERSION -f ./dockerfiles/spark.Dockerfile \
+docker build -t $SINGA_AUTO_IMAGE_SPARKAPP:$SINGA_AUTO_VERSION -f ./log_minitor/dockerfiles/spark.Dockerfile \
       --build-arg SPAEK_DOCKER_JARS_PATH=$SPAEK_DOCKER_JARS_PATH $PWD

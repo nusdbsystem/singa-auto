@@ -16,29 +16,29 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-source ./scripts/kubernetes/.env.sh
-source ./scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "updating SINGA-Auto's services"
 
-bash ./scripts/kubernetes/generate_config.sh
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/generate_config.sh
 
-kubectl apply -f scripts/kubernetes/start_admin_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_admin_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_service.json --record
 
-kubectl apply -f scripts/kubernetes/start_db_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_db_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_service.json --record
 
-kubectl apply -f scripts/kubernetes/start_kafka_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_kafka_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_service.json --record
 
-kubectl apply -f scripts/kubernetes/start_redis_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_redis_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_service.json --record
 
-kubectl apply -f scripts/kubernetes/start_web_admin_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_web_admin_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_service.json --record
 
-kubectl apply -f scripts/kubernetes/start_zookeeper_deployment.json --record
-kubectl apply -f scripts/kubernetes/start_zookeeper_service.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_deployment.json --record
+kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_service.json --record
 
-bash ./scripts/kubernetes/remove_config.sh
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/remove_config.sh

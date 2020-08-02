@@ -21,7 +21,7 @@
 
 DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
-source ./scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "Maybe loading from database dump..."
 
