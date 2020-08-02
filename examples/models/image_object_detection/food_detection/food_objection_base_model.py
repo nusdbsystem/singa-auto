@@ -15,10 +15,10 @@ from keras.layers import Dense
 from keras.preprocessing.image import img_to_array
 
 from examples.models.image_object_detection.food_detection import darknet
-from singa_auto.model import BaseModel
+from singa_auto.model import ObjtDetModel
 
 
-class FoodDetectionBase(BaseModel):
+class FoodDetectionBase(ObjtDetModel):
 
     def __init__(self, clf_model_class_name, **knobs):
         super().__init__(**knobs)

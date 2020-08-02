@@ -24,12 +24,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.model import PosTagModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class PyBiLstm(BaseModel):
+class PyBiLstm(PosTagModel):
     '''
     Implements a Bidrectional LSTM model in Pytorch for POS tagging
     '''

@@ -34,13 +34,13 @@ from collections import OrderedDict
 import argparse
 
 from singa_auto.constants import ModelDependency
-from singa_auto.model import BaseModel, utils, FixedKnob, FloatKnob, CategoricalKnob, PolicyKnob
+from singa_auto.model import ImageClfBase, utils, FixedKnob, FloatKnob, CategoricalKnob, PolicyKnob
 from singa_auto.model.dev import test_model_class
 
 _Model = namedtuple('_Model', ['net', 'step'])
 
 
-class PyDenseNetBc(BaseModel):
+class PyDenseNetBc(ImageClfBase):
     '''
         Implements DenseNet-BC of "Densely Connected Convolutional Networks" for IMAGE_CLASSIFICATION,
         configured for *hyperparameter tuning with distributed parameter sharing* on SINGA-auto.

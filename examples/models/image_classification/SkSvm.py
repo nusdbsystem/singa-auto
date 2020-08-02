@@ -23,12 +23,12 @@ import base64
 import numpy as np
 import argparse
 
-from singa_auto.model import BaseModel, CategoricalKnob, FloatKnob, FixedKnob, utils
+from singa_auto.model import ImageClfBase, CategoricalKnob, FloatKnob, FixedKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class SkSvm(BaseModel):
+class SkSvm(ImageClfBase):
     '''
     Implements a SVM on Scikit-Learn for IMAGE_CLASSIFICATION
     '''

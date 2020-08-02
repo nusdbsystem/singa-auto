@@ -26,12 +26,12 @@ import json
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import PassiveAggressiveClassifier
 
-from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class PassiveAClf(BaseModel):
+class PassiveAClf(TabularClfModel):
     '''
     Implements a Passive Aggressive Classifier for classification task using Pima Indian Diabetes dataset.
     '''

@@ -24,12 +24,12 @@ import base64
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 
-from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class GaussianClf(BaseModel):
+class GaussianClf(TabularClfModel):
     '''
     Implements Gaussian Naive Bayes Classifier for tabular data classification task
     '''

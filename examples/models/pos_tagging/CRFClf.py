@@ -31,11 +31,11 @@ from sklearn_crfsuite import metrics
 from sklearn_crfsuite import scorers
 from collections import Counter
 
-from singa_auto.model import BaseModel, utils, FixedKnob, FloatKnob
+from singa_auto.model import PosTagModel, utils, FixedKnob, FloatKnob
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
-class CRFClf(BaseModel):
+class CRFClf(PosTagModel):
     '''
     Implements Conditional Random Field classifier for POS tagging, using treebank dataset & universal tagset.
     code credit to 'https://github.com/AiswaryaSrinivas/DataScienceWithPython/blob/master/CRF%20POS%20Tagging.ipynb'

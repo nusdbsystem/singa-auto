@@ -5,12 +5,12 @@ import pandas as pd
 import numpy as np
 import json
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class RandomForestClf(BaseModel):
+class RandomForestClf(TabularClfModel):
     '''
     Implements Random Forest Classifier for tabular data classification task
     '''

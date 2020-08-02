@@ -34,13 +34,13 @@ from typing import List
 from singa_auto.datasets.coco_eval import CocoEvaluator
 from singa_auto.datasets.coco_utils import get_coco_api_from_dataset
 from singa_auto.datasets.torch_utils import get_transform
-from singa_auto.model import BaseModel, utils
+from singa_auto.model import ObjtDetModel, utils
 
 
 logger = logging.getLogger(__name__)
 
 
-class SaMaskRcnn(BaseModel):
+class SaMaskRcnn(ObjtDetModel):
     '''
     Implements a maskrcnn
     '''

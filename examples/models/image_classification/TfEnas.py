@@ -30,7 +30,7 @@ import numpy as np
 import argparse
 
 from singa_auto.constants import ModelDependency
-from singa_auto.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, \
+from singa_auto.model import utils, ImageClfBase, IntegerKnob, CategoricalKnob, FloatKnob, \
                             FixedKnob, ArchKnob, KnobValue, PolicyKnob
 from singa_auto.model.dev import test_model_class
 
@@ -53,7 +53,7 @@ CELL_NUM_BLOCKS = 5  # No. of blocks in a cell
 TF_COLLECTION_MONITORED = 'MONITORED'
 
 
-class TfEnas(BaseModel):
+class TfEnas(ImageClfBase):
     '''
         Implements the child model of cell-based "Efficient Neural Architecture Search via Parameter Sharing" (ENAS)
         for IMAGE_CLASSIFICATION, configured for *architecture tuning with ENAS* .

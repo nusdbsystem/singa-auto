@@ -8,12 +8,12 @@ warnings.filterwarnings("ignore")
 from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class LogisticRegClf(BaseModel):
+class LogisticRegClf(TabularClfModel):
     '''
     Implements a Logistic Regression Classifier for classification task using Pima Indian Diabetes dataset.
     '''

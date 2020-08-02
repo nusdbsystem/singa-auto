@@ -36,12 +36,12 @@ from keras.utils import np_utils
 from keras.utils.np_utils import to_categorical
 from keras.optimizers import SGD
 
-from singa_auto.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.model import ImageClfBase, FixedKnob, FloatKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class SqueezeNet(BaseModel):
+class SqueezeNet(ImageClfBase):
     '''
     Implements SqueezeNet architecture using keras for simple image classification on mnist dataset
     '''

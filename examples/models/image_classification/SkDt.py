@@ -23,12 +23,12 @@ import base64
 import numpy as np
 import argparse
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, utils
+from singa_auto.model import ImageClfBase, IntegerKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class SkDt(BaseModel):
+class SkDt(ImageClfBase):
     '''
     Implements a decision tree classifier on Scikit-Learn for IMAGE_CLASSIFICATION
     '''

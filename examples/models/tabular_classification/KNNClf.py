@@ -24,12 +24,12 @@ import base64
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class KNNClf(BaseModel):
+class KNNClf(TabularClfModel):
     '''
     Implements K-Nearest Neighbors Classifier for tabular data classification task
     '''

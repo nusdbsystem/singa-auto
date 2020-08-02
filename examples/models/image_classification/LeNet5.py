@@ -34,12 +34,12 @@ from keras.utils.np_utils import to_categorical
 from keras.callbacks import TensorBoard
 from sklearn.model_selection import train_test_split
 
-from singa_auto.model import BaseModel, FixedKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.model import ImageClfBase, FixedKnob, FloatKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class LeNet5(BaseModel):
+class LeNet5(ImageClfBase):
     '''
     Implements LeNet5 network to train image classification model on mnist dataset
     '''

@@ -17,7 +17,7 @@
 # under the License.
 #
 
-from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, IntegerKnob, utils
+from singa_auto.model import TabularClfModel, FloatKnob, CategoricalKnob, FixedKnob, IntegerKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -44,7 +44,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 '''
 
 
-class LightGBM(BaseModel):
+class LightGBM(TabularClfModel):
 
     @staticmethod
     def get_knob_config():

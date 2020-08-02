@@ -25,12 +25,12 @@ import numpy as np
 import base64
 import argparse
 
-from singa_auto.model import utils, BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, PolicyKnob
+from singa_auto.model import utils, ImageClfBase, IntegerKnob, CategoricalKnob, FloatKnob, FixedKnob, PolicyKnob
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class TfFeedForward(BaseModel):
+class TfFeedForward(ImageClfBase):
     '''
     Implements a fully-connected feed-forward neural network with variable hidden layers on Tensorflow for IMAGE_CLASSIFICATION
     '''
