@@ -43,3 +43,5 @@ Example:
 
             {'prediction': [0.9364003576825639, 1.016065009906697e-08, 0.0027604885399341583, 0.00014587241457775235, 6.018594376655528e-06, 1.042887332047826e-09, 0.060679372351310566, 2.024707311532037e-11, 7.901770004536957e-06, 1.5299328026685544e-08], 
             'predictions': []}
+
+If the SINGA-Auto instance is deployed with Kubernetes, all the inference job are at the default Ingress port 3005 with the format of <host>:3005/<app>, where <host> is the host name of the SINGA-Auto instance, and <app> is the name of the application prodvided when we submit train jobs.
