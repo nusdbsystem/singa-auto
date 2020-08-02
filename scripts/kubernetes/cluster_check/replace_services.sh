@@ -16,46 +16,46 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-source ./scripts/kubernetes/.env.sh
-source ./scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "replce SINGA-Auto's services, this scipt is used to update the service with only code change, while yaml file stay same"
 
-bash ./scripts/kubernetes/generate_config.sh
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/generate_config.sh
 
 echo "repalcing $1 "
 
 if [[ $1 = "admin" ]]
 then
 
-    kubectl replace --force -f scripts/kubernetes/start_admin_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_admin_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_service.json
 fi
 
 if [[ $1 = "db" ]]
 then
-    kubectl replace --force -f scripts/kubernetes/start_db_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_db_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_service.json
 fi
 
 if [[ $1 = "web" ]]
 then
-    kubectl replace --force -f scripts/kubernetes/start_web_admin_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_web_admin_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_service.json
 fi
 
 
 if [[ $1 = "monitor" ]]
 then
-    kubectl replace --force -f scripts/kubernetes/start_logstash_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_logstash_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_logstash_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_logstash_service.json
 
-    kubectl replace --force -f scripts/kubernetes/start_es_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_es_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_es_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_es_service.json
 
-    kubectl replace --force -f scripts/kubernetes/start_kibana_deployment.json
-    kubectl replace --force -f scripts/kubernetes/start_kibana_service.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kibana_deployment.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kibana_service.json
 
-    kubectl replace --force -f scripts/kubernetes/spark-app.json
+    kubectl replace --force -f $HOST_WORKDIR_PATH/scripts/kubernetes/spark-app.json
 fi
-bash ./scripts/kubernetes/remove_config.sh
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/remove_config.sh

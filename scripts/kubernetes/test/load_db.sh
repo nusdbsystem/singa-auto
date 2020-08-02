@@ -17,10 +17,10 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
 DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
 
-source ./scripts/kubernetes/utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/utils.sh
 
 title "Maybe loading from database dump..."
 

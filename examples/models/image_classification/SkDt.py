@@ -23,12 +23,12 @@ import base64
 import numpy as np
 import argparse
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, utils
+from singa_auto.model import ImageClfBase, IntegerKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class SkDt(BaseModel):
+class SkDt(ImageClfBase):
     '''
     Implements a decision tree classifier on Scikit-Learn for IMAGE_CLASSIFICATION
     '''
@@ -66,7 +66,7 @@ class SkDt(BaseModel):
         accuracy = sum(y == preds) / len(y)
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         dataset = utils.dataset.load_dataset_of_image_files(
             dataset_path,
             max_image_size=self._knobs.get("max_image_size"),

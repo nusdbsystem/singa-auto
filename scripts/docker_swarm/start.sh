@@ -52,14 +52,16 @@ create_docker_swarm()
       docker network create $DOCKER_NETWORK -d overlay --attachable --scope=swarm \
           || >&2 echo  "Failed to create Docker network for swarm - continuing..."
 }
+
+
 start_admin()
 {
       title "Starting SINGA-Auto's Admin..."
 
       LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_admin.log
-      PROD_MOUNT_DATA=$HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
-      PROD_MOUNT_PARAMS=$HOST_WORKDIR_PATH/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
-      PROD_MOUNT_LOGS=$HOST_WORKDIR_PATH/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH
+      PROD_MOUNT_DATA=$PWD/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
+      PROD_MOUNT_PARAMS=$PWD/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
+      PROD_MOUNT_LOGS=$PWD/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH
 
       # Mount whole project folder with code for dev for shorter iterations
       if [ $APP_MODE = "DEV" ]; then
@@ -108,10 +110,10 @@ start_db()
 {
         title "Starting SINGA-Auto's DB..."
         LOG_FILE_PATH=$PWD/$LOGS_DIR_PATH/start_db.log
-        PROD_MOUNT_DATA=$HOST_WORKDIR_PATH/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
-        PROD_MOUNT_PARAMS=$HOST_WORKDIR_PATH/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
-        PROD_MOUNT_LOGS=$HOST_WORKDIR_PATH/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH
-        PROD_MOUNT_DB="$HOST_WORKDIR_PATH/$DB_DIR_PATH:/var/lib/postgresql/data"
+        PROD_MOUNT_DATA=$PWD/$DATA_DIR_PATH:$DOCKER_WORKDIR_PATH/$DATA_DIR_PATH
+        PROD_MOUNT_PARAMS=$PWD/$PARAMS_DIR_PATH:$DOCKER_WORKDIR_PATH/$PARAMS_DIR_PATH
+        PROD_MOUNT_LOGS=$PWD/$LOGS_DIR_PATH:$DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH
+        PROD_MOUNT_DB="$PWD/$DB_DIR_PATH:/var/lib/postgresql/data"
 
         VOLUME_MOUNTS="-v $PROD_MOUNT_DB"
 
@@ -125,12 +127,31 @@ start_db()
           $IMAGE_POSTGRES \
           &> $LOG_FILE_PATH) &
 
-        ensure_stable "SINGA-Auto's DB" $LOG_FILE_PATH 20
         echo "Creating SINGA-Auto's PostgreSQL database & user..."
-        docker exec $POSTGRES_HOST psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
-        ensure_stable "SINGA-Auto's DB create database" $LOG_FILE_PATH 5
-        docker exec $POSTGRES_HOST psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
-        ensure_stable "SINGA-Auto's DB create user" $LOG_FILE_PATH 2
+        # try 6 times
+        for val in {1..6}
+        do
+            docker exec $POSTGRES_HOST psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
+            if [ $? -eq 0 ]; then
+                echo "SINGA-Auto's DB create database successful"
+                break
+            else
+                echo "retry creating database $val"
+                sleep 5
+            fi
+        done
+
+        for val in {1..6}
+        do
+            docker exec $POSTGRES_HOST psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
+            if [ $? -eq 0 ]; then
+                echo "SINGA-Auto's DB create user successful"
+                break
+            else
+                echo "retry creating user $val"
+                sleep 5
+            fi
+        done
 }
 
 start_kafka()
@@ -201,15 +222,23 @@ while (! docker stats --no-stream ); do
 done
 fi
 
+# set $HOST_WORKDIR_PATH
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
 # Read from shell configuration file
-source ./scripts/docker_swarm/.env.sh
-source ./scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/docker_swarm/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 title "Guidence"
 help
+create_folders
 
 # Pull images from Docker Hub
-bash ./scripts/pull_images.sh || exit 1
+bash $HOST_WORKDIR_PATH/scripts/pull_images.sh || exit 1
 
 if [ ! -n "$1" ] ;then
      title "Launch Model: Init cluster and start all services"

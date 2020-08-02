@@ -26,12 +26,12 @@ import json
 import base64
 import argparse
 
-from singa_auto.model import BaseModel, FloatKnob, CategoricalKnob, FixedKnob, utils
+from singa_auto.model import ImageClfBase, FloatKnob, CategoricalKnob, FixedKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class TfVgg16(BaseModel):
+class TfVgg16(ImageClfBase):
     '''
     Implements VGG16 on Tensorflow for IMAGE_CLASSIFICATION
     '''

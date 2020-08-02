@@ -10,6 +10,27 @@ Quick Setup
 
 We assume development or deployment in a MacOS or Linux environment.
 
+As for User:
+
+1. Install Docker 18 (`Ubuntu <https://docs.docker.com/install/linux/docker-ce/ubuntu/>`__, `MacOS <https://docs.docker.com/docker-for-mac/install/>`__)
+   and, if required, add your user to ``docker`` group (`Linux <https://docs.docker.com/install/linux/linux-postinstall/>`__).
+
+.. note::
+
+    If you're not a user in the ``docker`` group, you'll instead need ``sudo`` access and prefix every bash command with ``sudo -E``.
+
+2. Install Kubernetes 1.15+ (see :ref:`installing-kubernetes`) if using Kubernetes.
+
+3. Install Python 3.6 such that the ``python`` and ``pip`` commands point to the correct installation of Python 3.6 (see :ref:`installing-python`).
+
+4. pip install singa-auto==0.3.2
+
+5. start the service using : sago
+   stop the service using : sastop
+   clean the service using : saclean
+
+As for Developer
+
 1. Install Docker 18 (`Ubuntu <https://docs.docker.com/install/linux/docker-ce/ubuntu/>`__, `MacOS <https://docs.docker.com/docker-for-mac/install/>`__)
    and, if required, add your user to ``docker`` group (`Linux <https://docs.docker.com/install/linux/linux-postinstall/>`__).
 

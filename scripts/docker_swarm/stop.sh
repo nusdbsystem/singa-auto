@@ -58,16 +58,23 @@ stop_db()
 
 LOG_FILEPATH=$PWD/$LOGS_DIR_PATH/stop.log
 
-source ./scripts/base_utils.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH/scripts/docker_swarm/.env.sh
+
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 # Read from shell configuration file
-source ./scripts/docker_swarm/.env.sh
 
 title "Stopping any existing jobs..."
 echo $(which python3)
 pyv="$(python3 -V 2>&1)"
 echo $pyv
-python3 ./scripts/stop_all_jobs.py
+python3 $HOST_WORKDIR_PATH/scripts/stop_all_jobs.py
 
 stop_db || exit 1
 

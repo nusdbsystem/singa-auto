@@ -22,9 +22,15 @@
 IP_ADRESS=127.0.0.1
 SINGA_AUTO_VERSION=dev
 
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
 # Core external configuration for SINGA-auto
 export DOCKER_NETWORK=singa_auto
 export DOCKER_SWARM_ADVERTISE_ADDR=$IP_ADRESS
 export CONTAINER_MODE=SWARM
 
-source scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
+source $HOST_WORKDIR_PATH/scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION

@@ -17,7 +17,11 @@
 # under the License.
 #
 
+from .image_classification import ImageClfBase
 from .model import BaseModel, Params, KnobConfig, Knobs
+from .object_detection import ObjtDetModel
+from .post_tagging import PosTagModel
+from .tabular_classification import TabularClfModel
 from .log import LoggerUtils
 from .utils import utils, logger, dataset, load_model_class, parse_model_install_command, \
                     serialize_knob_config, deserialize_knob_config

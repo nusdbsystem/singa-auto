@@ -51,8 +51,8 @@ RUN pip install -r singa_auto/container/requirements.txt
 COPY singa_auto/admin/requirements.txt singa_auto/admin/requirements.txt
 RUN pip install -r singa_auto/admin/requirements.txt
 
-RUN pip install singa-auto==0.2.1
+COPY singa_auto/ singa_auto/
+COPY scripts/ scripts/
 
 EXPOSE 3000
-
-CMD ["admin"]
+CMD ["python", "scripts/start_admin.py"]

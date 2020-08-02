@@ -17,23 +17,29 @@
 # under the License.
 #
 
-rm -f ./scripts/kubernetes/start_admin_deployment.json
-rm -f ./scripts/kubernetes/start_redis_deployment.json
-rm -f ./scripts/kubernetes/start_web_admin_deployment.json
-rm -f ./scripts/kubernetes/start_db_deployment.json
-rm -f ./scripts/kubernetes/start_zookeeper_deployment.json
-rm -f ./scripts/kubernetes/start_kafka_deployment.json
-rm -f ./scripts/kubernetes/start_kibana_deployment.json
-rm -f ./scripts/kubernetes/start_logstash_deployment.json
-rm -f ./scripts/kubernetes/start_es_deployment.json
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
 
-rm -f ./scripts/kubernetes/start_admin_service.json
-rm -f ./scripts/kubernetes/start_redis_service.json
-rm -f ./scripts/kubernetes/start_web_admin_service.json
-rm -f ./scripts/kubernetes/start_db_service.json
-rm -f ./scripts/kubernetes/start_zookeeper_service.json
-rm -f ./scripts/kubernetes/start_kafka_service.json
-rm -f ./scripts/kubernetes/start_kibana_service.json
-rm -f ./scripts/kubernetes/start_logstash_service.json
-rm -f ./scripts/kubernetes/start_es_service.json
-rm -f ./scripts/kubernetes/spark-app.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kibana_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_logstash_deployment.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_es_deployment.json
+
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kibana_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_logstash_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_es_service.json
+rm -f $HOST_WORKDIR_PATH/scripts/kubernetes/spark-app.json

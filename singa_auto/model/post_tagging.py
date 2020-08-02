@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,22 +17,9 @@
 # under the License.
 #
 
-if [ $HOST_WORKDIR_PATH ];then
-	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
-else
-	export HOST_WORKDIR_PATH=$PWD
-fi
+from .model import BaseModel
 
-source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
-# Read from shell configuration file
-source $HOST_WORKDIR_PATH/scripts/.base_env.sh
-
-# Clean all files within data, logs and params folder
-delete_path "$PWD/$DATA_DIR_PATH"
-delete_path "$PWD/$PARAMS_DIR_PATH"
-delete_path "$PWD/$LOGS_DIR_PATH"
-delete_path "$PWD/$DB_DIR_PATH"
-delete_path "$PWD/$DB_DIR_ROOT"
-# Delete database dump
-#delete_path "$POSTGRES_DUMP_FILE_PATH"
+class PosTagModel(BaseModel):
+    # TODO Find some thing in common for this task, and  and abstract them to here
+    pass

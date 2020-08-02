@@ -28,12 +28,12 @@ warnings.filterwarnings("ignore")
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class SVCClf(BaseModel):
+class SVCClf(TabularClfModel):
     '''
     Implements a C-Support Vector Classifier for classification task using Pima Indian Diabetes dataset.
     '''
@@ -82,7 +82,7 @@ class SVCClf(BaseModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)

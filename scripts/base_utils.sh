@@ -109,3 +109,13 @@ is_running_ingress()
     fi
 }
 
+create_folders()
+{
+      title "Creating folders"
+      mkdir $PWD/$DB_DIR_ROOT
+      mkdir $PWD/$LOGS_DIR_PATH
+      mkdir $PWD/$DATA_DIR_PATH
+      mkdir $PWD/$DB_DIR_PATH
+      mkdir $PWD/$PARAMS_DIR_PATH
+}
+

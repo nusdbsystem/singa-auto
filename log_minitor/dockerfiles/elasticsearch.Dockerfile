@@ -18,7 +18,7 @@
 #
 FROM docker.elastic.co/elasticsearch/elasticsearch:7.7.0
 
-MAINTAINER NailiXing <xingnaili14@gmail.com>
+MAINTAINER Naili <xingnaili14@gmail.com>
 
 
 EXPOSE 9200 9300
@@ -27,5 +27,5 @@ ARG ES_DOCKER_WORKDIR_PATH
 
 WORKDIR $ES_DOCKER_WORKDIR_PATH
 
-COPY scripts/config/elasticsearch.yml $ES_DOCKER_WORKDIR_PATH/config/elasticsearch.yml
+COPY log_minitor/config/elasticsearch.yml $ES_DOCKER_WORKDIR_PATH/config/elasticsearch.yml
 

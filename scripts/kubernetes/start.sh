@@ -37,12 +37,12 @@ start_zookeeper()
       title "Starting SINGA-Auto's Zookeeper..."
 
       LOG_FILE_PATH=$PWD/logs/start_zookeeper_service.log
-      (kubectl create -f scripts/kubernetes/start_zookeeper_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_service.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Zookeeper Service" $LOG_FILE_PATH 5
 
       LOG_FILE_PATH=$PWD/logs/start_zookeeper_deployment.log
-      (kubectl create -f scripts/kubernetes/start_zookeeper_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_zookeeper_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Zookeeper Deployment" $LOG_FILE_PATH 5
 }
@@ -51,12 +51,12 @@ start_kafka()
 {
       title "Starting SINGA-Auto's Kafka..."
       LOG_FILE_PATH=$PWD/logs/start_kafka_service.log
-      (kubectl create -f scripts/kubernetes/start_kafka_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_service.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Kafka Service" $LOG_FILE_PATH 2
 
       LOG_FILE_PATH=$PWD/logs/start_kafka_deployment.log
-      (kubectl create -f scripts/kubernetes/start_kafka_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_kafka_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Kafka Deployment" $LOG_FILE_PATH 2
 }
@@ -65,11 +65,11 @@ start_redis()
 {
       title "Starting SINGA-Auto's Redis..."
       LOG_FILE_PATH=$PWD/logs/start_redis_service.log
-      (kubectl create -f scripts/kubernetes/start_redis_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_service.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Redis Service" $LOG_FILE_PATH 2
       LOG_FILE_PATH=$PWD/logs/start_redis_deployment.log
-      (kubectl create -f scripts/kubernetes/start_redis_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_redis_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Redis Deployment" $LOG_FILE_PATH 2
 }
@@ -79,22 +79,46 @@ start_db()
 
       title "Starting SINGA-Auto's DB..."
       LOG_FILE_PATH=$PWD/logs/start_db_service.log
-      (kubectl create -f scripts/kubernetes/start_db_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_service.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's DB Service" $LOG_FILE_PATH 10
 
       LOG_FILE_PATH=$PWD/logs/start_db_deployment.log
-      (kubectl create -f scripts/kubernetes/start_db_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_db_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's DB Deployment" $LOG_FILE_PATH 10
 
       echo "Creating SINGA-Auto's PostgreSQL database & user..."
       ensure_stable "SINGA-Auto's DB" $LOG_FILE_PATH 20
-      DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
-      DB_PODNAME=${DB_PODNAME:0:30}
 
-      kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE DATABASE $POSTGRES_DB" || true
-      kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'" || true
+      # retry 6 times
+      for val in {1..6}
+      do
+          DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
+          DB_PODNAME=${DB_PODNAME:0:30}
+          kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE DATABASE $POSTGRES_DB"
+          if [ $? -eq 0 ]; then
+              echo "SINGA-Auto's DB create database successful"
+              break
+          else
+              echo "retry creating database $val"
+              sleep 5
+          fi
+      done
+
+      for val in {1..6}
+      do
+          DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
+          DB_PODNAME=${DB_PODNAME:0:30}
+          kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD'"
+          if [ $? -eq 0 ]; then
+              echo "SINGA-Auto's DB create user successful"
+              break
+          else
+              echo "retry creating user $val"
+              sleep 5
+          fi
+      done
 
 }
 
@@ -104,12 +128,12 @@ start_admin()
       title "Starting SINGA-Auto's Admin..."
 
       LOG_FILE_PATH=$PWD/logs/start_admin_service.log
-      (kubectl create -f scripts/kubernetes/start_admin_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_service.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Admin Service" $LOG_FILE_PATH 5
 
       LOG_FILE_PATH=$PWD/logs/start_admin_deployment.log
-      (kubectl create -f scripts/kubernetes/start_admin_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_admin_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Admin Deployment" $LOG_FILE_PATH 5
 
@@ -120,23 +144,31 @@ start_web_admin()
       title "Starting SINGA-Auto's Web Admin..."
 
       LOG_FILE_PATH=$PWD/logs/start_web_admin_service.log
-      (kubectl create -f ./scripts/kubernetes/start_web_admin_service.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_service.json \
         &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Web Admin Service" $LOG_FILE_PATH 5
 
       LOG_FILE_PATH=$PWD/logs/start_web_admin_deployment.log
-      (kubectl create -f scripts/kubernetes/start_web_admin_deployment.json \
+      (kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/start_web_admin_deployment.json \
       &> $LOG_FILE_PATH) &
       ensure_stable "SINGA-Auto's Web Admin Deployment" $LOG_FILE_PATH 5
 }
 
 
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
 # Read from shell configuration file
-source ./scripts/base_utils.sh
-source ./scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
 
 title "Guidence"
 help
+create_folders
+
 
 title "Creating the cluster role binding"
 # ensure python api in pod has auth to control kubernetes
@@ -144,11 +176,11 @@ kubectl create clusterrolebinding add-on-cluster-admin \
     --clusterrole=cluster-admin --serviceaccount=default:default
 
 # Pull images from Docker Hub
-bash ./scripts/pull_images.sh || exit 1
+bash $HOST_WORKDIR_PATH/scripts/pull_images.sh || exit 1
 
 # Generate config files
 echo "Generate config files"
-bash ./scripts/kubernetes/generate_config.sh || exit 1
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/generate_config.sh || exit 1
 
 if [ ! -n "$1" ] ;then
 
@@ -166,14 +198,14 @@ if [ ! -n "$1" ] ;then
         fi
      else
         # Whether stolon has started inside the script
-        bash ./scripts/kubernetes/start_stolon.sh || exit 1
+        bash $HOST_WORKDIR_PATH/scripts/kubernetes/start_stolon.sh || exit 1
      fi
 
      start_admin || exit 1
      start_web_admin || exit 1
 
      echo "Deploy monitor plugin"
-     bash ./scripts/kubernetes/start_monitor.sh
+     bash $HOST_WORKDIR_PATH/scripts/kubernetes/start_monitor.sh
 
      echo "Deploy ingress-nginx"
      if is_running_ingress
@@ -183,11 +215,11 @@ if [ ! -n "$1" ] ;then
           # this is the source yaml
           # kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/baremetal/deploy.yaml
           # customer yaml: add replica to 3, fix the port to 3005
-          kubectl apply -f scripts/kubernetes/yaml/ingress_controller_deploy.yaml || exit 1
+          kubectl apply -f $HOST_WORKDIR_PATH/scripts/kubernetes/yaml/ingress_controller_deploy.yaml || exit 1
         fi
 
      echo "Deploy GPU plugin"
-     kubectl create -f ./scripts/kubernetes/yaml/nvidia-device-plugin.yml
+     kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/yaml/nvidia-device-plugin.yml
 
 
 elif [[ $1 = "redis" ]];then
@@ -214,7 +246,7 @@ else
     title "Unsupport arguments, please see the help doc"
 fi
 
-bash ./scripts/kubernetes/remove_config.sh || exit 1
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/remove_config.sh || exit 1
 
 echo "To use SINGA-Auto, use SINGA-Auto Client in the Python CLI"
 echo "A quickstart is available at https://nginyc.github.io/rafiki/docs/latest/src/user/quickstart.html"

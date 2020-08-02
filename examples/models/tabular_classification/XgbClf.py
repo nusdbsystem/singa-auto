@@ -24,12 +24,12 @@ import pandas as pd
 import numpy as np
 import json
 
-from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class XgbClf(BaseModel):
+class XgbClf(TabularClfModel):
     '''
     Implements a XGBoost Classifier for tabular data classification task
     '''
@@ -80,7 +80,7 @@ class XgbClf(BaseModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path,  **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
