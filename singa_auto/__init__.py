@@ -21,21 +21,66 @@ import os
 import sys
 
 
+def ptitle(s):
+    screen_width = 100
+    txt_width = len(s) + 6
+    box_width = 3
+    left_margin = (screen_width - txt_width) // 2
+
+    print()
+    print(' ' * left_margin + '+' + '-' * (txt_width) + '+')
+    print(' ' * left_margin + '|' + ' ' * (txt_width) + '|')
+    print(' ' * left_margin + '|' + ' ' * (box_width) + s + ' ' * (box_width) + '|')
+    print(' ' * left_margin + '|' + ' ' * (txt_width) + '|')
+    print(' ' * left_margin + '+' + '-' * (txt_width) + '+')
+    print()
+
+
+def start_all():
+    model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
+    sys.path.append(model_path)
+    ptitle("Start Services")
+    os.environ['HOST_WORKDIR_PATH'] = model_path
+    os.environ['APP_MODE'] = "PROD"
+    os.system("bash {}".format(model_path + "/scripts/docker_swarm/start.sh"))
+
+
+def stop_all():
+    model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
+    sys.path.append(model_path)
+    ptitle("Stop Services")
+    os.environ['HOST_WORKDIR_PATH'] = model_path
+    os.environ['APP_MODE'] = "PROD"
+    os.system("bash {}".format(model_path + "/scripts/docker_swarm/stop.sh"))
+
+
+def clean():
+    model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
+    sys.path.append(model_path)
+    ptitle("Clean Files")
+    os.environ['HOST_WORKDIR_PATH'] = model_path
+    os.environ['APP_MODE'] = "PROD"
+    os.system("bash {}".format(model_path + "/scripts/clean.sh"))
+
+
 def start_admin():
     model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
     sys.path.append(model_path)
+    os.environ['APP_MODE'] = "PROD"
     os.system("python {}".format(model_path + "/scripts/start_admin.py"))
 
 
 def start_predictor():
     model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
     sys.path.append(model_path)
+    os.environ['APP_MODE'] = "PROD"
     os.system("python {}".format(model_path + "/scripts/start_predictor.py"))
 
 
 def start_worker():
     model_path = os.path.dirname(__file__).rsplit("/", 1)[0]
     sys.path.append(model_path)
+    os.environ['APP_MODE'] = "PROD"
     os.system("python {}".format(model_path + "/scripts/start_worker.py"))
 
 
