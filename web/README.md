@@ -1,4 +1,4 @@
-# SINGA-auto Dashboard
+# SINGA-Auto Dashboard
 
 > Ensure you are in the `REPO_ROOT/web/` directory
 
