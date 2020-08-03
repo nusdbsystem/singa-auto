@@ -488,7 +488,7 @@ class Client:
         :param app: Name of the app
         :returns: Train jobs as list of dictionaries
         '''
-        data = self._get('/train_jobs/{}'.format(app))
+        data = self._get('/train_jobs/app', params={'app': app})
         return data
 
     def get_train_job(self, app: str, app_version: int = -1) -> Dict[str, Any]:
@@ -500,7 +500,7 @@ class Client:
         :param app_version: Version of the app (-1 for latest version)
         :returns: Train job as dictionary
         '''
-        data = self._get('/train_jobs/{}/{}'.format(app, app_version))
+        data = self._get('/train_jobs/app/app_version', params={'app': app, 'app_version': app_version})
         return data
 
     def stop_train_job(self, app: str, app_version: int = -1) -> Dict[str, Any]:
@@ -512,7 +512,7 @@ class Client:
         :param app_version: Version of the app (-1 for latest version)
         :returns: Stopped train job as dictionary
         '''
-        data = self._post('/train_jobs/{}/{}/stop'.format(app, app_version))
+        data = self._post('/train_jobs/app/app_version/stop', json={'app': app, 'app_version': app_version})
         return data
 
     ####################################
@@ -561,7 +561,7 @@ class Client:
         :param app_version: Version of the app (-1 for latest version)
         :returns: Trials as list of dictionaries
         '''
-        data = self._get('/train_jobs/{}/{}/trials'.format(app, app_version))
+        data = self._get('/train_jobs/app/app_version/trials', params={'app': app, 'app_version': app_version})
         return data
 
     def get_trial_logs(self, trial_id: str) -> Dict[str, Any]:
@@ -717,7 +717,7 @@ class Client:
         :param app: Name of the app
         :returns: Inference jobs as list of dictionaries
         '''
-        data = self._get('/inference_jobs/{}'.format(app))
+        data = self._get('/inference_jobs/app', params={'app': app})
         return data
 
     def get_running_inference_job(self,
@@ -731,7 +731,7 @@ class Client:
         :param app_version: Version of the app (-1 for latest version)
         :returns: Inference job as dictionary
         '''
-        data = self._get('/inference_jobs/{}/{}'.format(app, app_version))
+        data = self._get('/inference_jobs/app/app_version', params={'app': app, 'app_version': app_version})
         return data
 
     def stop_inference_job(self,
@@ -744,7 +744,7 @@ class Client:
         :param app_version: Version of the app (-1 for latest version)
         :returns: Stopped inference job as dictionary
         '''
-        data = self._post('/inference_jobs/{}/{}/stop'.format(app, app_version))
+        data = self._post('/inference_jobs/app/app_version/stop', json={'app': app, 'app_version': app_version})
         return data
 
     # TODO: Add predict method?

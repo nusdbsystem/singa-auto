@@ -76,3 +76,23 @@ def get_trials_of_train_job(auth, app, app_version, params):
         else:
             return jsonify(admin.get_trials_of_train_job(user_id=auth['user_id'], app=app, app_version=int(app_version),
                                                          ))
+
+
+@trial_bp.route('/train_jobs/app/app_version/trials', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check(required_parameters=RequestsParameters.TRIAL_GET_BEST)
+def get_trials_of_train_job_safe(auth, params):
+
+    admin = g.admin
+
+    # max_count = int(params['max_count']) if 'max_count' in params else 2
+
+    with admin:
+        if "type" in params and params.get('type') == 'best':
+            # Return best trials by train job
+            return jsonify(
+                admin.get_best_trials_of_train_job(user_id=auth['user_id'], app=params['app'], app_version=int(params['app_version']),
+                                                   ))
+        else:
+            return jsonify(admin.get_trials_of_train_job(user_id=auth['user_id'], app=params['app'], app_version=int(params['app_version']),
+                                                         ))

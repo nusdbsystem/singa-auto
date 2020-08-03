@@ -109,3 +109,33 @@ def stop_inference_job(auth, app, app_version=-1):
 
     with admin:
         return jsonify(admin.stop_inference_job(auth['user_id'], app, app_version=int(app_version)))
+
+
+@inference_bp.route('/app', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def get_inference_jobs_of_app_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.get_inference_jobs_of_app(user_id=auth['user_id'], app=params['app']))
+
+
+@inference_bp.route('/app/app_version', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def get_running_inference_job_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.get_running_inference_job(auth['user_id'], params['app'], app_version=int(params['app_version'])))
+
+
+@inference_bp.route('/app/app_version/stop', methods=['POST'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def stop_inference_job_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.stop_inference_job(auth['user_id'], params['app'], app_version=int(params.get('app_version', -1))))

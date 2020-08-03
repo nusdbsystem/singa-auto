@@ -10,3 +10,4 @@ tqdm==4.28.1
 msgpack==0.6.1
 pandas==0.24.2
 opencv-contrib-python-headless
+xpinyin==0.5.7

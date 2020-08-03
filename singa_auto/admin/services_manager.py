@@ -24,6 +24,7 @@ import traceback
 import socket
 from collections import defaultdict
 from contextlib import closing
+from xpinyin import Pinyin
 
 from singa_auto.constants import ServiceStatus, ServiceType, BudgetOption, InferenceBudgetOption, TrainJobStatus, InferenceJobStatus
 from singa_auto.meta_store import MetaStore
@@ -522,8 +523,9 @@ class ServicesManager(object):
             publish_port = (ext_port, container_port)
 
         try:
-
-            service_app_name = re.sub('[^a-zA-Z0-9]', '-', self.service_app_name.lower())
+            pinyin_op = Pinyin()
+            service_app_name = pinyin_op.get_pinyin(self.service_app_name.lower(), '')
+            service_app_name = re.sub('[^a-zA-Z0-9]', '-', service_app_name)
             service_app_name = re.sub('-+', '-', service_app_name)
 
             container_service_name = '{}-{}-{}'.format(

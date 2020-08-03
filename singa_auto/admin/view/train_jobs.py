@@ -107,3 +107,33 @@ def stop_train_job(auth, app, app_version):
 
     with admin:
         return jsonify(admin.stop_train_job(auth['user_id'], app, app_version=int(app_version)))
+
+
+@trainjob_bp.route('/app', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def get_train_jobs_by_app_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.get_train_jobs_by_app(auth['user_id'], params['app']))
+
+
+@trainjob_bp.route('/app/app_version', methods=['GET'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def get_train_job_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.get_train_job(auth['user_id'], params['app'], app_version=int(params['app_version'])))
+
+
+@trainjob_bp.route('/app/app_version/stop', methods=['POST'])
+@auth([UserType.ADMIN, UserType.MODEL_DEVELOPER, UserType.APP_DEVELOPER])
+@param_check()
+def stop_train_job_safe(auth, params):
+    admin = g.admin
+
+    with admin:
+        return jsonify(admin.stop_train_job(auth['user_id'], params['app'], app_version=int(params['app_version'])))
