@@ -20,11 +20,11 @@
 import math
 import json
 
-from singa_auto.model import BaseModel, utils, FixedKnob
+from singa_auto.model import utils, FixedKnob, PosTagModel
 from singa_auto.model.dev import test_model_class
 
 
-class BigramHmm(BaseModel):
+class BigramHmm(PosTagModel):
     '''
     Implements Bigram Hidden Markov Model (HMM) for POS tagging
     '''
@@ -49,7 +49,7 @@ class BigramHmm(BaseModel):
                                                   sents_tags)
         utils.logger.log('No. of tags: {}'.format(self._num_tags))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         (sents_tokens, sents_tags) = zip(*[zip(*sent) for sent in dataset])
         (sents_pred_tags) = self._tag_sents(self._num_tags, sents_tokens,
@@ -212,8 +212,8 @@ if __name__ == '__main__':
                      model_class='BigramHmm',
                      task='POS_TAGGING',
                      dependencies={},
-                     train_dataset_path='data/ptb_train.zip',
-                     val_dataset_path='data/ptb_val.zip',
+                     train_dataset_path='/Users/nailixing/Downloads/data/ptb_train.zip',
+                     val_dataset_path='/Users/nailixing/Downloads/data/ptb_val.zip',
                      queries=[['Ms.', 'Haag', 'plays', 'Elianti', '18', '.'],
                               [
                                   'The', 'luxury', 'auto', 'maker', 'last',

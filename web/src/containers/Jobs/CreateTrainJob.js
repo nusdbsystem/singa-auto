@@ -31,6 +31,14 @@ import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 import { validDsAndBranch } from "regexp-rules";
 
 const styles = theme => ({
+  paper: {
+    maxWidth: 700,
+    margin: "auto",
+    overflow: "hidden",
+    marginBottom: 20,
+    position: "relative",
+    paddingBottom: 80,
+  },
   contentWrapper: {
     margin: "40px 16px",
     //position: "relative",
@@ -46,6 +54,14 @@ class CreateTrainJob extends React.Component {
     formState: "init",
     // formState => init | loading | idle
     message: "",
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
+    ],
     task: "IMAGE_CLASSIFICATION",
     selectedTrainingDS: "",
     selectedValidationDS: "",
@@ -164,14 +180,14 @@ class CreateTrainJob extends React.Component {
     console.log(">>>>>>CreateTrainJob State: ", this.state)
 
     return (
-      <MainContent>
+      <MainContent classes={{paper:classes.paper}}>
         <ContentBar
           needToList={false}
           barTitle="Create Train Job"
         />
         <div className={classes.contentWrapper}>
           <Grid container spacing={6}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <AppName
                 title="1. Application Name"
                 newAppName={this.state.newAppName}
@@ -181,6 +197,7 @@ class CreateTrainJob extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />
@@ -220,7 +237,7 @@ class CreateTrainJob extends React.Component {
               <Grid
                 container
                 direction="row"
-                justify="flex-end"
+                justify="center"
                 alignItems="center"
               >
                 <Button
@@ -235,7 +252,7 @@ class CreateTrainJob extends React.Component {
                 </Button>
               </Grid>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <ForkbaseStatus
                 formState={this.state.formState}
               >

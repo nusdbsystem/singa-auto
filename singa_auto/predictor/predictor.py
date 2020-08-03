@@ -137,8 +137,7 @@ class Predictor:
             pending_queries.update([(x.id, worker_id) for x in queries])
 
         # Wait for all predictions to be made
-        query_id_to_predictions = defaultdict(
-            list)  # { <query_id>: [prediction] }
+        query_id_to_predictions = defaultdict(list)  # { <query_id>: [prediction] }
         while len(pending_queries) > 0:
             # For every pending query to worker
             for (query_id, worker_id) in list(pending_queries):
@@ -158,13 +157,12 @@ class Predictor:
         # Reorganize predictions
         worker_predictions_list = []
         for query in queries:
-            worker_predictions = query_id_to_predictions[query.id]
+            worker_predictions: list = query_id_to_predictions[query.id]
             worker_predictions_list.append(worker_predictions)
 
         return worker_predictions_list
 
-    def _combine_worker_predictions(
-            self, worker_predictions_list: List[List[Prediction]]) -> List[Any]:
+    def _combine_worker_predictions(self, worker_predictions_list: List[List[Prediction]]) -> List[Any]:
         # Ensemble predictions for each query
         predictions = []
         for worker_predictions in worker_predictions_list:

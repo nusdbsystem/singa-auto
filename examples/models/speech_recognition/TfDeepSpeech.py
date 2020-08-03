@@ -988,7 +988,7 @@ class TfDeepSpeech(BaseModel):
         logger.log('FINISHED optimization in {}'.format(datetime.utcnow() -
                                                         train_start_time))
 
-    def evaluate(self, dataset_uri):
+    def evaluate(self, dataset_uri,  **kwargs):
         Config = self.c
         tf.reset_default_graph()
 

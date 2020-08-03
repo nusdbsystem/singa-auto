@@ -25,12 +25,21 @@ import ForkbaseStatus from "components/ConsoleContents/ForkbaseStatus"
 import { validDsAndBranch } from "regexp-rules";
 
 const styles = theme => ({
+  paper: {
+    maxWidth: 700,
+    margin: "auto",
+    overflow: "hidden",
+    marginBottom: 20,
+    position: "relative",
+    paddingBottom: 80,
+  },
   contentWrapper: {
     // position: "relative",
     // display: "flex",
     // alignItems: "center",
     // justifyContent: "center"
     margin: "40px 16px",
+    width: 700,
     //position: "relative",
     minHeight: 200,
   },
@@ -48,6 +57,14 @@ class UploadDataSet extends React.Component {
     selectedFiles: [],
     message: "",
     uploadPercentage: 0,
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
+    ],
     task: "IMAGE_CLASSIFICATION",
   }
 
@@ -194,14 +211,14 @@ class UploadDataSet extends React.Component {
     const { classes } = this.props
 
     return (
-      <MainContent>
+      <MainContent classes={{paper:classes.paper}}>
         <ContentBar
           needToList={false}
           barTitle="Upload Dataset"
         />
         <div className={classes.contentWrapper}>
           <Grid container spacing={6}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <DatasetName
                 title="1. Dataset Name"
                 newDataset={this.state.newDataset}
@@ -211,6 +228,7 @@ class UploadDataSet extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />
@@ -237,7 +255,7 @@ class UploadDataSet extends React.Component {
               <Grid
                 container
                 direction="row"
-                justify="flex-end"
+                justify="center"
                 alignItems="center"
               >
                 <Button
@@ -252,7 +270,7 @@ class UploadDataSet extends React.Component {
                 </Button>
               </Grid>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <ForkbaseStatus
                 formState={this.state.formState}
               >

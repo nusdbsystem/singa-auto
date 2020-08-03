@@ -1,4 +1,4 @@
-STOLON_PATH=scripts/kubernetes/stolon
+STOLON_PATH=$HOST_WORKDIR_PATH/scripts/kubernetes/stolon
 cp -f $STOLON_PATH/secret.yaml.template $STOLON_PATH/secret.yaml
 sed -ri "s/STOLON_PASSWD/$POSTGRES_STOLON_PASSWD/g" $STOLON_PATH/secret.yaml
 

@@ -8,9 +8,9 @@ function Copyright() {
       {"Copyright © "}
       <Link
         color="inherit"
-        href="https://github.com/easyfan327/rafiki_panda_dev/"
+        href="https://github.com/nusdbsystem/singa-auto/"
       >
-        Panda-dev
+        SINGA-Auto
       </Link>{" "}
       {new Date().getFullYear()}
     </Typography>

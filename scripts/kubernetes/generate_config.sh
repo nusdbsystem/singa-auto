@@ -17,9 +17,15 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/.env.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
 
-python3 ./scripts/kubernetes/create_config.py \
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+
+python3 $HOST_WORKDIR_PATH/scripts/kubernetes/create_config.py \
 $POSTGRES_PASSWORD \
 $SUPERADMIN_PASSWORD \
 $APP_SECRET \

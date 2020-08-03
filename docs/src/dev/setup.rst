@@ -10,6 +10,8 @@ Quick Setup
 
 We assume development or deployment in a MacOS or Linux environment.
 
+As for User:
+
 1. Install Docker 18 (`Ubuntu <https://docs.docker.com/install/linux/docker-ce/ubuntu/>`__, `MacOS <https://docs.docker.com/docker-for-mac/install/>`__)
    and, if required, add your user to ``docker`` group (`Linux <https://docs.docker.com/install/linux/linux-postinstall/>`__).
 
@@ -21,7 +23,26 @@ We assume development or deployment in a MacOS or Linux environment.
 
 3. Install Python 3.6 such that the ``python`` and ``pip`` commands point to the correct installation of Python 3.6 (see :ref:`installing-python`).
 
-4. Clone the project at https://github.com/nginyc/rafiki (e.g. with `Git <https://git-scm.com/downloads>`__)
+4. pip install singa-auto==0.3.2
+
+5. start the service using : sago
+   stop the service using : sastop
+   clean the service using : saclean
+
+As for Developer
+
+1. Install Docker 18 (`Ubuntu <https://docs.docker.com/install/linux/docker-ce/ubuntu/>`__, `MacOS <https://docs.docker.com/docker-for-mac/install/>`__)
+   and, if required, add your user to ``docker`` group (`Linux <https://docs.docker.com/install/linux/linux-postinstall/>`__).
+
+.. note::
+
+    If you're not a user in the ``docker`` group, you'll instead need ``sudo`` access and prefix every bash command with ``sudo -E``.
+
+2. Install Kubernetes 1.15+ (see :ref:`installing-kubernetes`) if using Kubernetes.
+
+3. Install Python 3.6 such that the ``python`` and ``pip`` commands point to the correct installation of Python 3.6 (see :ref:`installing-python`).
+
+4. Clone the project at https://github.com/nusdbsystem/singa-auto (e.g. with `Git <https://git-scm.com/downloads>`__)
 
 5. If using docker, Setup SINGA-Auto's complete stack with the setup script:
 
@@ -125,16 +146,16 @@ Exposing SINGA-Auto Publicly
 --------------------------------------------------------------------
 
 SINGA-Auto Admin and SINGA-Auto Web Admin runs on the master node.
-If using docker swarm, change ``RAFIKI_ADDR`` in ``.env.sh`` to the IP address of the master node
+If using docker swarm, change ``SINGA_AUTO_ADDR`` in ``.env.sh`` to the IP address of the master node
 in the network you intend to expose SINGA-Auto in.
-If using kubernetes, change ``RAFIKI_ADDR`` in ``scripts/kubernetes/.env.sh`` to the IP address of the master node
+If using kubernetes, change ``SINGA_AUTO_ADDR`` in ``scripts/kubernetes/.env.sh`` to the IP address of the master node
 in the network you intend to expose SINGA-Auto in.
 
 Example:
 
 ::
 
-    export RAFIKI_ADDR=172.28.176.35
+    export SINGA_AUTO_ADDR=172.28.176.35
 
 Re-deploy SINGA-Auto. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
 over ports 3000 and 3001 (by default), assuming incoming connections to these ports are allowed.

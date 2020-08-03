@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 RUNNING_INFERENCE_WORKERS = 'INFERENCE_WORKERS'
 QUERIES_QUEUE = 'QUERIES'
 PREDICTIONS_QUEUE = 'PREDICTIONS'
+API_VERSION = (0, 10, 1)
 
 
 class InferenceCache(object):
@@ -51,7 +52,8 @@ class InferenceCache(object):
         self.connection_url = [
             f'{host}:{port}' for host, port in zip(hostlist, portlist)
         ]
-        self.producer = KafkaProducer(bootstrap_servers=self.connection_url,
+        self.producer = KafkaProducer(api_version=API_VERSION,
+                                      bootstrap_servers=self.connection_url,
                                       max_request_size=134217728,
                                       buffer_memory=134217728)
 
@@ -72,6 +74,7 @@ class InferenceCache(object):
 
         prediction_consumer = KafkaConsumer(
             name,
+            api_version=API_VERSION,
             bootstrap_servers=self.connection_url,
             auto_offset_reset='earliest',
             group_id=PREDICTIONS_QUEUE)
@@ -104,6 +107,7 @@ class InferenceCache(object):
         while True:
             try:
                 query_consumer = KafkaConsumer(name,
+                                               api_version=API_VERSION,
                                                bootstrap_servers=self.connection_url,
                                                auto_offset_reset='earliest',
                                                group_id=QUERIES_QUEUE)

@@ -24,12 +24,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
+from singa_auto.model import PosTagModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 
 
-class PyBiLstm(BaseModel):
+class PyBiLstm(PosTagModel):
     '''
     Implements a Bidrectional LSTM model in Pytorch for POS tagging
     '''
@@ -63,7 +63,7 @@ class PyBiLstm(BaseModel):
 
         utils.logger.log('Train accuracy: {}'.format(acc))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         dataset = utils.dataset.load_dataset_of_corpus(dataset_path)
         sents_tags = self._predict(dataset)
         acc = self._compute_accuracy(dataset, sents_tags)

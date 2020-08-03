@@ -17,7 +17,13 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/utils.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
+
+source $HOST_WORKDIR_PATH//scripts/base_utils.sh
 
 DB_CLUSTER_RUNNING_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-RUNNING
 

@@ -1,7 +1,7 @@
 {
-  "name": "rafiki_web_admin_panda_dev",
+  "name": "singa_auto_web_admin",
   "version": "0.3.0",
-  "description": "Web Admin Portal for Rafiki Panda",
+  "description": "Web Admin Portal for SINGA-Auto",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.5",

@@ -1,0 +1,19 @@
+
+
+
+# if run on ubuntu, must build at ubuntu
+
+# build sanodemonitor
+go build -o=sanodemonitor ./cmd/nodemonitor
+
+docker build --no-cache -t singaauto/singa_auto_nodegpumonitor:dev -f dockerfiles/sagpumonitor.Dockerfile .
+
+docker push singaauto/singa_auto_nodegpumonitor:dev
+
+# build sascheduler
+
+go build -o=sascheduler ./cmd/scheduler
+
+docker build --no-cache -t singaauto/singa_auto_scheduler:dev -f dockerfiles/sascheduler.Dockerfile .
+
+docker push singaauto/singa_auto_scheduler:dev

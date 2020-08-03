@@ -17,9 +17,49 @@
 # under the License.
 #
 
-source ./scripts/kubernetes/.env.sh
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
 
-source ./scripts/kubernetes/utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
+
+stop_db()
+{
+      LOG_FILEPATH=$PWD/logs/stop.log
+
+      title "Dumping database..."
+      DUMP_FILE=$POSTGRES_DUMP_FILE_PATH
+      # Check if dump file exists
+      if [ -f $DUMP_FILE ]
+      then
+          if ! prompt "Database dump file exists at $DUMP_FILE. Override it?"
+          then
+              echo "Not dumping database!"
+              exit 0
+          fi
+      fi
+      echo "Dumping database to $DUMP_FILE..."
+      DB_PODNAME=$(kubectl get pod | grep $POSTGRES_HOST)
+      DB_PODNAME=${DB_PODNAME:0:30}
+      kubectl exec $DB_PODNAME -c $POSTGRES_HOST -- pg_dump -U postgres --if-exists --clean $POSTGRES_DB > $DUMP_FILE
+
+      # If database dump previously failed, prompt whether to continue script
+      #if [ $? -ne 0 ]
+      #then
+      #    if ! prompt "Failed to dump database. Continue?"
+      #    then
+      #        exit 1
+      #    fi
+      #fi
+
+      title "Stopping SINGA-Auto's DB..."
+      kubectl delete deployment $POSTGRES_HOST
+      kubectl delete service $POSTGRES_HOST
+
+}
 
 echo "Stop option: $1"
 
@@ -43,10 +83,10 @@ then
 
 else
 
-#      kubectl delete -f ./scripts/kubernetes/nvidia-device-plugin.yml
+#      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/nvidia-device-plugin.yml
 
       title "Stopping any existing jobs..."
-      python ./scripts/stop_all_jobs.py
+      python $HOST_WORKDIR_PATH/scripts/stop_all_jobs.py
 
       title "Stopping SINGA-Auto's Web Admin Deployment..."
       kubectl delete deployment $WEB_ADMIN_HOST || echo "Failed to stop SINGA-Auto's Web Admin Deployment"
@@ -97,26 +137,25 @@ else
       title "Stopping SINGA-Auto's ES Service..."
       kubectl delete service $ES_HOST || echo "Failed to stop SINGA-Auto's ES Service"
 
-      bash ./scripts/kubernetes/generate_config.sh || exit 1
+      bash $HOST_WORKDIR_PATH/scripts/kubernetes/generate_config.sh || exit 1
       title "Stopping SINGA-Auto's ES Service..."
-      kubectl delete -f scripts/kubernetes/spark-app.json
-      bash ./scripts/kubernetes/remove_config.sh
+      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/spark-app.json
+      bash $HOST_WORKDIR_PATH/scripts/kubernetes/remove_config.sh
 
       if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-          bash scripts/kubernetes/stop_db.sh || exit 1
+          stop_db || exit 1
       else
-          bash scripts/kubernetes/stop_stolon.sh || exit 1
+          bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_stolon.sh || exit 1
       fi
-
 fi
 
 # Prompt if should stop DB
 #if prompt "Should stop SINGA-Auto's DB?"
 #then
 #    if [ "$CLUSTER_MODE" = "SINGLE" ]; then
-#        bash scripts/kubernetes/stop_db.sh || exit 1
+#        bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_db.sh || exit 1
 #    else
-#        bash scripts/kubernetes/stop_stolon.sh || exit 1
+#        bash $HOST_WORKDIR_PATH/scripts/kubernetes/stop_stolon.sh || exit 1
 #    fi
 #else
 #    echo "Not stopping SINGA-Auto's DB!"

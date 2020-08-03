@@ -34,6 +34,14 @@ import ModelClassSelect from "components/ConsoleContents/ModelClassSelect"
 import { validDsAndBranch } from "regexp-rules";
 
 const styles = theme => ({
+  paper: {
+    maxWidth: 700,
+    margin: "auto",
+    overflow: "hidden",
+    marginBottom: 20,
+    position: "relative",
+    paddingBottom: 80,
+  },
   contentWrapper: {
     // position: "relative",
     // display: "flex",
@@ -76,6 +84,14 @@ class UploadModel extends React.Component {
     task: "IMAGE_CLASSIFICATION",
     // model_class, for Feb 2020, use two sample model files
     // their model-classes are:
+    availableTask: [
+      "IMAGE_CLASSIFICATION",
+      "POS_TAGGING",
+      "TABULAR_CLASSIFICATION",
+      "TABULAR_REGRESSION",
+      "SPEECH_RECOGNITION",
+      "IMAGE_DETECTION",
+    ],
     modelClass: [
       "PyPandaVgg",
       "PyPandaDenseNet",
@@ -329,14 +345,14 @@ class UploadModel extends React.Component {
     ].filter(v => v).length === 0;
 
     return (
-      <MainContent>
+      <MainContent classes={{paper:classes.paper}}>
         <ContentBar
           needToList={false}
           barTitle="Upload Model"
         />
         <div className={classes.contentWrapper}>
           <Grid container spacing={6}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <ModelName
                 title="1. Model Name"
                 newModel={this.state.newModel}
@@ -346,6 +362,7 @@ class UploadModel extends React.Component {
               <br />
               <TaskName
                 title="2. Task Name"
+                availableTask={this.state.availableTask}
                 task={this.state.task}
                 onHandleChange={this.handleChange}
               />
@@ -429,7 +446,7 @@ class UploadModel extends React.Component {
               <Grid
                 container
                 direction="row"
-                justify="flex-end"
+                justify="center"
                 alignItems="center"
               >
                 <Button
@@ -444,7 +461,7 @@ class UploadModel extends React.Component {
                 </Button>
               </Grid>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <ForkbaseStatus
                 formState={this.state.formState}
               >

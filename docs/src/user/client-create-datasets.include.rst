@@ -1,14 +1,14 @@
 
 You'll first need to convert your dataset into a format specified by one of the tasks (see :ref:`tasks`), 
 and split them into two files: one for training & one for validation.
-After doing so, you'll create 2 corresponding datasets on Rafiki by uploading them from your filesystem.
+After doing so, you'll create 2 corresponding datasets on SINGA-Auto by uploading them from your filesystem.
 
 Example (pre-processing step):
 
   .. code-block:: shell
 
         # Run this in shell
-        python examples/datasets/image_files/load_mnist_format.py
+        python examples/datasets/image_files/load_fashion_mnist.py
 
 
 Example:
@@ -41,9 +41,9 @@ Example:
         'size_bytes': 6116386, 
         'task': 'IMAGE_CLASSIFICATION'}
 
-.. seealso:: :meth:`rafiki.client.Client.create_dataset`
+.. seealso:: :meth:`singa_auto.client.Client.create_dataset`
 
 .. note::
 
-    The code that preprocesses the original Fashion MNIST dataset is available at `./examples/datasets/image_files/load_mnist_format.py <https://github.com/nginyc/rafiki/tree/master/examples/datasets/image_files/load_mnist_format.py>`_.
+    The code that preprocesses the original Fashion MNIST dataset is available at `./examples/datasets/image_files/load_mnist_format.py <https://github.com/nusdbsystem/singa-auto/tree/master/examples/datasets/image_files/load_mnist_format.py>`_.
     

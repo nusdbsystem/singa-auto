@@ -1,3 +1,4 @@
+
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -39,7 +40,8 @@ def tune_model(
         py_model_class: Type[BaseModel],
         train_dataset_path: str,
         val_dataset_path: str,
-        annotation_dataset_path: str,
+        annotation_dataset_path: str = None,
+        task: str = None,
         test_dataset_path: str = None,
         budget: Budget = None,
         train_args: Dict[str, any] = None) -> (Dict[str, Any], float, Params):
@@ -120,13 +122,24 @@ def tune_model(
 
         # Worker trains model
         print('Training model...')
-        model_inst.train(train_dataset_path,
+
+        if annotation_dataset_path:
+            model_inst.train(train_dataset_path,
                          annotation_dataset_path=annotation_dataset_path,
                          shared_params=shared_params,
                          **(train_args or {}))
+        else:
+            model_inst.train(train_dataset_path,
+                         shared_params=shared_params,
+                         **(train_args or {}))
+
 
         # Worker evaluates model
-        result = _evaluate_model(model_inst, proposal, val_dataset_path, annotation_dataset_path)
+        if annotation_dataset_path:
+            result = _evaluate_model(model_inst, proposal, val_dataset_path, annotation_dataset_path)
+        else:
+            result = _evaluate_model(model_inst, proposal, val_dataset_path)
+
 
         # Worker caches/saves model parameters
         store_params_id = _save_model(model_inst, proposal, result, param_cache,
@@ -145,8 +158,10 @@ def tune_model(
             # Test best model, if test dataset provided
             if test_dataset_path is not None:
                 print('Evaluating new best model on test dataset...')
-                best_model_test_score = model_inst.evaluate(test_dataset_path,
-                                                            annotation_dataset_path=annotation_dataset_path)
+                if annotation_dataset_path:
+                    best_model_test_score = model_inst.evaluate(test_dataset_path , annotation_dataset_path=annotation_dataset_path)
+                else:
+                    best_model_test_score = model_inst.evaluate(test_dataset_path)
                 inform_user(
                     'Score on test dataset: {}'.format(best_model_test_score))
 
@@ -163,6 +178,9 @@ def tune_model(
 
         # Destroy model
         model_inst.destroy()
+
+        if task == 'question_answering_covid19':
+            break
 
     # Train worker tells advisor that it is no longer free
     train_cache.delete_worker(worker_id)
@@ -192,7 +210,7 @@ def tune_model(
 
 
 def make_predictions(queries: List[Any], task: str,
-                     py_model_class: Type[BaseModel], proposal: Proposal,
+                     py_model_class: Type[BaseModel], proposal: Proposal, fine_tune_dataset_path,
                      params: Params) -> List[Any]:
     inference_cache: InferenceCache = InferenceCache()
     worker_id = 'local'
@@ -203,7 +221,11 @@ def make_predictions(queries: List[Any], task: str,
     model_inst = None
     _print_header('Loading trained model...')
     model_inst = py_model_class(**proposal.knobs)
-    model_inst.load_parameters(params)
+
+    if task == 'question_answering_covid19' and fine_tune_dataset_path is not None:
+        model_inst.load_parameters(fine_tune_dataset_path)
+    elif task != 'question_answering_covid19':
+        model_inst.load_parameters(params)
 
     # Inference worker tells predictor that it is free
     inference_cache.add_worker(worker_id)
@@ -226,8 +248,9 @@ def make_predictions(queries: List[Any], task: str,
     # Worker makes prediction on queries
     _print_header('Making predictions with trained model...')
     predictions = model_inst.predict([x.query for x in queries_at_worker])
-    predictions = [
-        Prediction(x, query.id, worker_id)
+
+
+    predictions = [Prediction(x, query.id, worker_id)
         for (x, query) in zip(predictions, queries_at_worker)
     ]
 
@@ -242,7 +265,6 @@ def make_predictions(queries: List[Any], task: str,
         assert prediction is not None
         predictions_at_predictor.append(prediction)
 
-    # Predictor ensembles predictions
     ensemble_method = get_ensemble_method(task)
     print(f'Ensemble method: {ensemble_method}')
     out_predictions = []
@@ -258,18 +280,18 @@ def make_predictions(queries: List[Any], task: str,
 
     return (out_predictions, model_inst)
 
-
 # TODO: Fix method, more thorough testing of model API
 def test_model_class(model_file_path: str,
                      model_class: str,
-                     task: str,
                      dependencies: Dict[str, str],
                      train_dataset_path: str,
                      val_dataset_path: str,
                      annotation_dataset_path:str = None,
+                     task: str = None,
                      test_dataset_path: str = None,
                      budget: Budget = None,
                      train_args: Dict[str, any] = None,
+                     fine_tune_dataset_path: str = None,
                      queries: List[Any] = None) -> (List[Any], BaseModel):
     '''
     Tests whether a model class is *more likely* to be correctly defined by *locally* simulating a full train-inference flow on your model
@@ -310,6 +332,7 @@ def test_model_class(model_file_path: str,
                                train_dataset_path,
                                val_dataset_path,
                                annotation_dataset_path,
+                               task,
                                test_dataset_path=test_dataset_path,
                                budget=budget,
                                train_args=train_args)
@@ -320,7 +343,7 @@ def test_model_class(model_file_path: str,
     if best_proposal is not None and best_params is not None and queries is not None:
         (predictions, model_inst) = make_predictions(queries, task,
                                                      py_model_class,
-                                                     best_proposal, best_params)
+                                                     best_proposal, fine_tune_dataset_path, best_params)
 
     py_model_class.teardown()
 
@@ -347,12 +370,17 @@ def _pull_shared_params(proposal: Proposal, param_cache: ParamCache):
 
 
 def _evaluate_model(model_inst: BaseModel, proposal: Proposal,
-                    val_dataset_path: str, annotation_dataset_path) -> TrialResult:
+                    val_dataset_path: str, annotation_dataset_path = None) -> TrialResult:
+                    # val_dataset_path: str) -> TrialResult:
+
     if not proposal.to_eval:
         return TrialResult(proposal)
 
     print('Evaluating model...')
-    score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+    if annotation_dataset_path:
+        score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+    else:
+        score = model_inst.evaluate(val_dataset_path)
 
     if not isinstance(score, float):
         raise Exception('`evaluate()` should return a float!')

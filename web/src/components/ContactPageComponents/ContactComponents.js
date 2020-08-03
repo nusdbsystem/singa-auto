@@ -54,11 +54,11 @@ function ContactComponents(props) {
               <b>Repository: </b>
               <br />
               <a
-                href="https://github.com/nginyc/rafiki"
+                href="https://github.com/nusdbsystem/singa-auto"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://github.com/nginyc/singa_auto
+                https://github.com/nusdbsystem/singa-auto
               </a>
             </p>
           </div>

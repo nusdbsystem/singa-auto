@@ -16,8 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-source ./scripts/kubernetes/.env.sh
-source ./scripts/kubernetes/utils.sh
+source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 DB_CLUSTER_RUNNING_FILE=$HOST_WORKDIR_PATH/$RUN_DIR_PATH/DB-CLUSTER-RUNNING
 mkdir -p $HOST_WORKDIR_PATH/$RUN_DIR_PATH/
@@ -31,33 +31,33 @@ fi
 echo "Create PV..."
 # With stolon, we use some default parameters to make nfs as pv, if your have another choice or want to change the default parameters,
 # your should modify this script
-bash scripts/kubernetes/create_nfs_pv.sh database-pv-0 $NFS_HOST_IP /home/singa_auto/database/db0 100Gi ReadWriteOnce Retain pv database-pv-0
-bash scripts/kubernetes/create_nfs_pv.sh database-pv-1 $NFS_HOST_IP /home/singa_auto/database/db1 100Gi ReadWriteOnce Retain pv database-pv-1
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-0 $NFS_HOST_IP /home/singa_auto/database/db0 100Gi ReadWriteOnce Retain pv database-pv-0
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-1 $NFS_HOST_IP /home/singa_auto/database/db1 100Gi ReadWriteOnce Retain pv database-pv-1
 echo "Create PVC..."
 # PVC Name is Fixed
-bash scripts/kubernetes/create_nfs_pvc.sh database-stolon-keeper-0 100Gi ReadWriteOnce pv database-pv-0
-bash scripts/kubernetes/create_nfs_pvc.sh database-stolon-keeper-1 100Gi ReadWriteOnce pv database-pv-1
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pvc.sh database-stolon-keeper-0 100Gi ReadWriteOnce pv database-pv-0
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pvc.sh database-stolon-keeper-1 100Gi ReadWriteOnce pv database-pv-1
 
-bash scripts/kubernetes/stolon/generate_stolon_yaml.sh
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/generate_stolon_yaml.sh
 LOG_FILE_PATH=$PWD/logs/start_stolon_sentinel.log
-(kubectl create -f scripts/kubernetes/stolon/stolon-sentinel.yaml \
+(kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/stolon-sentinel.yaml \
 &> $LOG_FILE_PATH) &
 ensure_stable "SINGA-Auto's Stolon Sentinel" $LOG_FILE_PATH 20
 
-kubectl create -f scripts/kubernetes/stolon/secret.yaml
+kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/secret.yaml
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_keeper.log
-(kubectl create -f scripts/kubernetes/stolon/stolon-keeper.yaml \
+(kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/stolon-keeper.yaml \
 &> $LOG_FILE_PATH) &
 ensure_stable "SINGA-Auto's Stolon Keeper" $LOG_FILE_PATH 20
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_proxy.log
-(kubectl create -f scripts/kubernetes/stolon/stolon-proxy.yaml \
+(kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/stolon-proxy.yaml \
 &> $LOG_FILE_PATH) &
 ensure_stable "SINGA-Auto's Stolon Proxy" $LOG_FILE_PATH 20
 
 LOG_FILE_PATH=$PWD/logs/start_stolon_proxy_service.log
-(kubectl create -f scripts/kubernetes/stolon/stolon-proxy-service.yaml \
+(kubectl create -f $HOST_WORKDIR_PATH/scripts/kubernetes/stolon/stolon-proxy-service.yaml \
 &> $LOG_FILE_PATH) &
 ensure_stable "SINGA-Auto's Stolon Proxy Service" $LOG_FILE_PATH 10
 

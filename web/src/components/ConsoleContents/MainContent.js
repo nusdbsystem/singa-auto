@@ -41,7 +41,6 @@ class MainContent extends React.Component {
 
   render() {
     const { classes, children, location } = this.props
-
     const customizeZoomIcon = pathname => {
       switch (pathname) {
         case "/console/datasets/list-datasets":

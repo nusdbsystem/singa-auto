@@ -33,7 +33,7 @@ from torch.nn import functional as F
 from torch.nn.init import kaiming_normal_
 from torch.utils.data import Dataset, DataLoader
 
-from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
+from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
@@ -223,7 +223,7 @@ class MixedInputModel(nn.Module):
         return x
 
 
-class DNNTorch(BaseModel):
+class DNNTorch(TabularClfModel):
     '''
     Implements a Multi-input neural network for tabular data classification task
     '''
@@ -349,7 +349,7 @@ class DNNTorch(BaseModel):
                              roc_auc_score=valid_scores[-1],
                              epoch=i)
 
-    def evaluate(self, dataset_url):
+    def evaluate(self, dataset_url, **kwargs):
         # Load CSV file as pandas dataframe
         df = pd.read_csv(dataset_url, index_col=0)
 

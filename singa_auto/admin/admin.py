@@ -141,17 +141,125 @@ class Admin(object):
     ####################################
 
     def create_dataset(self, user_id, name, task, data_file_path):
+        """ This function is to return statistics to frontend during dataset uploading process only, which is different from the dataset-reading methods during model training """
+        # Store dataset in data folder
+        print('begin saving to local path')
+        store_dataset = self._data_store.save(data_file_path)
+        # Get metadata for dataset. 'store_dataset' is a dictionary contains the following info only
+        store_dataset_id = store_dataset.id
+        size_bytes = store_dataset.size_bytes
+        stat = dict()
+        # ensure the uploaded dataset extension is .zip format, otherwise the below code hunk won't unzip it
+        # and ensure the zip file is correctly named, nor hidden zip file
+        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(
+                data_file_path)[1] == '.zip':
+            dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
+            # when .zip file is a image dataset and contains images.csv as label file
+            # images.csv includes pairs of the image names and their labels
+            # if the dataset is not an "image dataset with images.csv", will skip to 'else'
+            # "image dataset without images.csv label file" won't be handled, and will skip to 'else'
+            if 'images.csv' in dataset_zipfile.namelist():
 
-        logger.info('begin saving to local path')
-        store_dataset: Dataset = self._data_store.save(data_file_path)
+                for fileName in dataset_zipfile.namelist():
+                    if fileName.endswith('.csv'):
+                        num_samples = len(dataset_zipfile.namelist()) - 1
+                        # create tempdir to store unziped csv and a sample image
+                        with tempfile.TemporaryDirectory() as dir_path:
+                            # read dataset zipfile  # data_file_path=os.path.join(os.getcwd(),name+'.zip')
+                            # obtain csv file
+                            # Extract a single file from zip
+                            csv_path = dataset_zipfile.extract(fileName,
+                                                               path=dir_path)
+                            # obtain a sample
+                            sample_name = pd.read_csv(csv_path,
+                                                      nrows=1).iloc[0][0]
+                            if task == 'IMAGE_CLASSIFICATION':
+                                img_path = dataset_zipfile.extract(
+                                    sample_name, path=dir_path)
+                                img = Image.open(img_path)
+                                img_size = str(img.size)
+                            # close dataset zipfile
+                            dataset_zipfile.close()
+                            csv = pd.read_csv(csv_path)
 
-        logger.info('begin saving to db')
-        dataset = self._meta_store.create_dataset(name=name,
-                                                  task=task,
-                                                  size_bytes=store_dataset.size_bytes,
-                                                  store_dataset_id=store_dataset.id,
-                                                  owner_id=user_id,
-                                                  stat=dict())
+                            # num_classes = len(labels)
+                            if len(csv.columns) == 2:
+                                class_count = csv[csv.columns[1]].value_counts()
+                            else:
+                                labels = pd.read_csv(
+                                    csv_path, nrows=0).columns[1::].to_list()
+                                class_count = (
+                                    csv[csv.columns[1::]] == 1).astype(int).sum(
+                                        axis=0)
+
+                        num_labeled_samples = len(csv[csv.columns[0]].unique())
+                        ratio = class_count / num_labeled_samples
+                        num_unlabeled_samples = num_samples - num_labeled_samples
+                        break
+            else:
+                # this is for question_answering_covid19 dataset, which does not have images.csv nor any labels
+                if task == 'question_answering_covid19':
+                    stat = {}
+                    dataset = self._meta_store.create_dataset(name, task, size_bytes,
+                                                              store_dataset_id, user_id,
+                                                              stat)
+                    self._meta_store.commit()
+
+                    return {
+                        'id': dataset.id,
+                        'name': dataset.name,
+                        'task': dataset.task,
+                        'size_bytes': dataset.size_bytes,
+                        'store_dataset_id': dataset.store_dataset_id,
+                        'owner_id': dataset.owner_id,
+                        'stat': dataset.stat,
+                    }
+                # if the dataset is not question_answering_covid19 dataset
+                # or if it is zipped "image dataset without images.csv label file"
+                # or other datasets whose labels are provided as folder names
+                with tempfile.TemporaryDirectory() as dir_path:
+                    num_labeled_samples = len(dataset_zipfile.namelist())
+                    num_unlabeled_samples = 0
+
+                    d_list = [
+                        x for x in dataset_zipfile.namelist()
+                        if x.endswith('/') == False
+                    ]
+                    # this is to count the labels
+                    # labels are provided as folder names
+                    labels = [os.path.dirname(x) for x in d_list]
+                    class_count = pd.DataFrame(list(Counter(labels).values()),
+                                               list(Counter(labels).keys()))
+
+                    ratio = class_count / num_labeled_samples
+                    sample_name = d_list[0]
+                    # if it is image dataset, this is to provide sample image size
+                    if task == 'IMAGE_CLASSIFICATION':
+                        img_path = dataset_zipfile.extract(sample_name,
+                                                           path=dir_path)
+                        img = Image.open(img_path)
+                        img_size = str(img.size)
+
+            stat = {
+                'num_labeled_samples': num_labeled_samples,
+                'num_unlabeled_samples': num_unlabeled_samples,
+                'class_count': class_count.to_json(),
+                'ratio': ratio.to_json()
+            }
+            # if it is image dataset, this is to add sample image size to stat, 
+            # later, stat would be return to front-end during the dataset uploading process
+            if task == 'IMAGE_CLASSIFICATION':
+                stat['img_size'] = img_size
+
+        # if the uploaded dataset is not in .zip format
+        else:
+            raise InvalidDatasetError()
+        print('begin saving to db')
+
+        dataset = self._meta_store.create_dataset(name, task, size_bytes,
+                                                  store_dataset_id, user_id,
+                                                  stat)
+
         self._meta_store.commit()
 
         return {

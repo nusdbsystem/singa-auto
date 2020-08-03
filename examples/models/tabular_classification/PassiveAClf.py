@@ -26,12 +26,12 @@ import json
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import PassiveAggressiveClassifier
 
-from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class PassiveAClf(BaseModel):
+class PassiveAClf(TabularClfModel):
     '''
     Implements a Passive Aggressive Classifier for classification task using Pima Indian Diabetes dataset.
     '''
@@ -80,7 +80,7 @@ class PassiveAClf(BaseModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-    def evaluate(self, dataset_path):
+    def evaluate(self, dataset_path, **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
