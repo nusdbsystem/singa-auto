@@ -57,7 +57,7 @@ build-image-job:
   script:
     # Add Base URL of Python Package Index for accelerate download  python package
     - sed -ri "s#pip install#pip install -i $CI_PIP_INDEX_URL --trusted-host $CI_PIP_TRUSTED_HOST#g" dockerfiles/*.Dockerfile
-    - source $ENV_K8S_CONF && bash scripts/build_images.sh
+    - source $ENV_K8S_CONF && bash scripts/kubernetes/build_images.sh
 
 unit-test-job:
   stage: unit-test
