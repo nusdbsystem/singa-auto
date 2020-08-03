@@ -78,7 +78,7 @@ class ImageDataset4Clf(ClfModelDataset):
         with tempfile.TemporaryDirectory() as d:
             extracted_item_path = self.dataset_zipfile.extract(item_path,
                                                                path=d)
-            pil_image = _load_pil_image([extracted_item_path], mode=self.mode)
+            pil_image = _load_pil_image(extracted_item_path, mode=self.mode)
 
         return pil_image
 

@@ -105,6 +105,7 @@ class ModelDependency:
     DS_CTCDECODER = 'ds-ctcdecoder'
     NLTK = 'nltk'
     SKLEARN_CRFSUITE = 'sklearn-crfsuite'
+    ONNX = 'onnx'
 
 
 class RequestsParameters:
