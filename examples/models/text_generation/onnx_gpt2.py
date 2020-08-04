@@ -152,7 +152,9 @@ if __name__ == '__main__':
 
     (predictions, model_inst) = make_predictions(queries, task,
                                                  py_model_class,
-                                                 proposal, params={})
+                                                 proposal,
+                                                 fine_tune_dataset_path=None,
+                                                 params={})
 
     py_model_class.teardown()
 
