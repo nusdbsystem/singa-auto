@@ -10,7 +10,7 @@ for local development, no need to source the env.sh or .env.
 
 // const adminHost = process.env.REACT_APP_API_POINT_HOST
 // const adminPort = process.env.REACT_APP_API_POINT_PORT
-const adminHost = 'http://ncrs.d2.comp.nus.edu.sg'
+const adminHost = 'ncrs.d2.comp.nus.edu.sg'
 const adminPort = '3000'
 
 const HTTPconfig = {
