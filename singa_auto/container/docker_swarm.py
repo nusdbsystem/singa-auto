@@ -60,10 +60,13 @@ class DockerSwarmContainerManager(ContainerManager):
                        replicas,
                        args,
                        environment_vars,
-                       mounts={},
+                       mounts=None,
                        publish_port=None,
-                       gpus=0) -> ContainerService:
+                       gpus=0,
+                       dist_workers=0) -> ContainerService:
 
+        if mounts is None:
+            mounts = {}
         deployment = self._get_deployment(gpus)
         (service_id, hostname, port) \
             = self._create_service(deployment, service_name, docker_image, replicas,

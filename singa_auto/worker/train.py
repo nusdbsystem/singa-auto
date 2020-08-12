@@ -65,31 +65,52 @@ class TrainWorker:
         )
         self._notify_start()
 
-        while True:
-            logger.info('Fetching proposal....')
-            proposal = self._fetch_proposal()
-            if proposal is not None:
-                result = self._perform_trial(proposal)
-                self._submit_result(result)
-            time.sleep(LOOP_SLEEP_SECS)
+        # if it's distributed training, skip the adviser
+        if "DIST_TRAIN_MODEL" in os.environ and os.environ["DIST_TRAIN_MODEL"] == "DIST":
+            print("Start dist training")
+            logger.info("Start dist training")
+
+            pro = Proposal(trial_no=1, knobs={})
+            model_inst = self._load_model(pro)
+            self._train_model(model_inst, pro, None)
+            result = self._evaluate_model(model_inst, pro)
+
+            # in master process's container
+            # it's master_addr is "localhost"
+            # only master run the save model
+            if os.environ["MASTER_ADDR"] == "localhost":
+                self._save_model(model_inst, pro, result)
+        else:
+            # training as usual
+            while True:
+                logger.info('Fetching proposal....')
+                proposal = self._fetch_proposal()
+                if proposal is not None:
+                    result = self._perform_trial(proposal)
+                    self._submit_result(result)
+                time.sleep(LOOP_SLEEP_SECS)
 
     def stop(self):
-        self._notify_stop()
+        if "DIST_TRAIN_MODEL" in os.environ and os.environ["DIST_TRAIN_MODEL"] == "DIST":
+            print("Dist training, no need to use adviser")
+            logger.info("Dist training, no need to use adviser")
+        else:
+            self._notify_stop()
 
-        # If worker is currently running a trial, mark it has errored
-        try:
-            if self._trial_id is not None:
-                self._monitor.mark_trial_as_errored(self._trial_id)
-        except:
-            logger.error('Error marking trial as errored:')
-            logger.error(traceback.format_exc())
+            # If worker is currently running a trial, mark it has errored
+            try:
+                if self._trial_id is not None:
+                    self._monitor.mark_trial_as_errored(self._trial_id)
+            except:
+                logger.error('Error marking trial as errored:')
+                logger.error(traceback.format_exc())
 
-        # Run model class teardown
-        try:
-            self._monitor.model_class.teardown()
-        except:
-            logger.error('Error tearing down model class:')
-            logger.error(traceback.format_exc())
+            # Run model class teardown
+            try:
+                self._monitor.model_class.teardown()
+            except:
+                logger.error('Error tearing down model class:')
+                logger.error(traceback.format_exc())
 
     def _notify_start(self):
         superadmin_client().send_event(
