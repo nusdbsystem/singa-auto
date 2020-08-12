@@ -1,6 +1,7 @@
 # PIP
 .cache/pip/
-
+.idea
+log_minitor/target/
 # Python virtualenv environments
 env/
 envs/

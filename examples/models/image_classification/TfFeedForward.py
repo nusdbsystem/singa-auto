@@ -55,6 +55,7 @@ class TfFeedForward(ImageClfBase):
         }
 
     def __init__(self, **knobs):
+        super().__init__()
         self._knobs = knobs
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True

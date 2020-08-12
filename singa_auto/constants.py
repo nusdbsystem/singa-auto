@@ -24,6 +24,7 @@ class BudgetOption:
     GPU_COUNT = 'GPU_COUNT'
     TIME_HOURS = 'TIME_HOURS'
     MODEL_TRIAL_COUNT = 'MODEL_TRIAL_COUNT'
+    DIST_WORKERS = 'DIST_WORKERS'
 
 
 Budget = Dict[BudgetOption, Any]
@@ -106,6 +107,16 @@ class ModelDependency:
     NLTK = 'nltk'
     SKLEARN_CRFSUITE = 'sklearn-crfsuite'
     ONNX = 'onnx'
+
+
+class NodeLabes:
+    NodeName = "kubernetes.io/hostname"
+    FreeMemorySum = 'samonitor/FreeMemorySum'
+    Gpu = 'samonitor/Gpu'
+    GpuSummary = 'samonitor/GpuSummary'
+    Health = 'samonitor/Health'
+    MaxFreeMemory = 'samonitor/MaxFreeMemory'
+    Number = 'samonitor/Number'
 
 
 class RequestsParameters:

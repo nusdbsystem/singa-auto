@@ -44,6 +44,7 @@ func matchGpu2Pod(
 
 				// find the max gpu device number and it's corresponding node
 				if freeMemory > maxFreeMemory {
+				    maxFreeMemory = freeMemory
 					selectNodeName = nodeName
 					selectGpu = gpu
 				}

@@ -51,6 +51,7 @@ ENVIRONMENT_VARIABLES_AUTOFORWARD = [
 ]
 
 DEFAULT_TRAIN_GPU_COUNT = 0
+DEFAULT_DIST_WORKERS = 0
 DEFAULT_INFERENCE_GPU_COUNT = 0
 SERVICE_STATUS_WAIT_SECS = 1
 
@@ -193,6 +194,9 @@ class ServicesManager(object):
         (jobs_gpus, jobs_cpus) = self._get_deployment_for_train_job(
             total_gpus, sub_train_jobs)
 
+        # number of worker used in distributed training (data parallelism)
+        dist_workers = train_job.budget.get(BudgetOption.DIST_WORKERS, DEFAULT_DIST_WORKERS)
+
         # Try to create advisors & workers for each sub train job
         try:
             for (sub_train_job, gpus, cpus) in zip(sub_train_jobs, jobs_gpus,
@@ -202,11 +206,11 @@ class ServicesManager(object):
 
                 # 1 GPU per worker
                 for _ in range(gpus):
-                    self._create_train_job_worker(sub_train_job)
+                    self._create_train_job_worker(sub_train_job, dist_workers=dist_workers)
 
                 # CPU workers
                 for _ in range(cpus):
-                    self._create_train_job_worker(sub_train_job, gpus=0)
+                    self._create_train_job_worker(sub_train_job, dist_workers=dist_workers, gpus=0)
 
             return train_job
 
@@ -407,7 +411,7 @@ class ServicesManager(object):
 
         return service
 
-    def _create_train_job_worker(self, sub_train_job, gpus=1):
+    def _create_train_job_worker(self, sub_train_job, dist_workers=0, gpus=1):
         model = self._meta_store.get_model(sub_train_job.model_id)
         service_type = ServiceType.TRAIN
         install_command = parse_model_install_command(model.dependencies,
@@ -419,7 +423,8 @@ class ServicesManager(object):
         service = self._create_service(service_type=service_type,
                                        docker_image=model.docker_image,
                                        environment_vars=environment_vars,
-                                       gpus=gpus)
+                                       gpus=gpus,
+                                       dist_workers=dist_workers)
 
         self._meta_store.create_train_job_worker(
             service_id=service.id, sub_train_job_id=sub_train_job.id)
@@ -470,13 +475,18 @@ class ServicesManager(object):
                         service_type,
                         docker_image,
                         replicas=1,
-                        environment_vars={},
-                        args=[],
+                        environment_vars=None,
+                        args=None,
                         container_port=None,
                         gpus=0,
-                        inferenceAppName=None):
+                        inferenceAppName=None,
+                        dist_workers=0):
 
         # Create service in DB
+        if environment_vars is None:
+            environment_vars = {}
+        if args is None:
+            args = []
         container_manager_type = type(self._container_manager).__name__
         service = self._meta_store.create_service(
             service_type=service_type,
@@ -539,7 +549,8 @@ class ServicesManager(object):
                 environment_vars=environment_vars,
                 mounts=mounts,
                 publish_port=publish_port,
-                gpus=gpus)
+                gpus=gpus,
+                dist_workers=dist_workers)
 
             self._meta_store.mark_service_as_deploying(
                 service,

@@ -19,13 +19,15 @@
 
 import os
 import time
+from typing import Tuple, List
 from kubernetes import client
 import logging
 import traceback
 from functools import wraps
 
 from .container_manager import ContainerManager, ContainerService
-from singa_auto.error_code import InvalidServiceRequestError, ServiceRequestError
+from singa_auto.error_code import ServiceRequestError
+from singa_auto.constants import NodeLabes
 
 RETRY_WAIT_SECS = 1
 RETRY_TIMES = 5
@@ -37,8 +39,7 @@ class KubernetesContainerManager(ContainerManager):
 
     def __init__(self, **kwargs):
         aToken = None
-        with open('/var/run/secrets/kubernetes.io/serviceaccount/token',
-                  'r') as fToken:
+        with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as fToken:
             aToken = fToken.read()
 
         # Create a configuration object
@@ -73,11 +74,11 @@ class KubernetesContainerManager(ContainerManager):
             api_version="networking.k8s.io/v1beta1",
             kind="Ingress",
             metadata=client.V1ObjectMeta(
-                                                    name=ingress_name,
-                                                    annotations={
-                                                        "nginx.ingress.kubernetes.io/rewrite-target": "/"
-                                                        }
-                                                    ),
+                                        name=ingress_name,
+                                        annotations={
+                                            "nginx.ingress.kubernetes.io/rewrite-target": "/"
+                                            }
+                                        ),
             spec=client.NetworkingV1beta1IngressSpec(
                 rules=[client.NetworkingV1beta1IngressRule(
                     http=client.NetworkingV1beta1HTTPIngressRuleValue(
@@ -133,19 +134,88 @@ class KubernetesContainerManager(ContainerManager):
                        replicas,
                        args,
                        environment_vars,
-                       mounts={},
+                       mounts=None,
                        publish_port=None,
-                       gpus=0) -> ContainerService:
+                       gpus=0,
+                       dist_workers=0) -> ContainerService:
+        if mounts is None:
+            mounts = {}
         hostname = service_name
         if publish_port is not None:
             service_config = self._create_service_config(service_name, docker_image, replicas,
                             args, environment_vars, mounts, publish_port,
                             gpus)
             _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
-        deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
-                        args, environment_vars, mounts, publish_port,
-                        gpus)
-        _retry(self._client_deployment.create_namespaced_deployment)(namespace='default', body=deployment_config)
+
+        # if use disributed training, create muti-pod without using deployments
+        if dist_workers > 0:
+            print('Using distributed training (data parallelism)')
+
+            # those variables is the same for all processes
+            # master process's port
+            environment_vars["DIST_TRAIN_MODEL"] = "DIST"
+            environment_vars["MASTER_PORT"] = "23456"
+            # num of processes
+            environment_vars["WORLD_SIZE"] = str(dist_workers)
+            environment_vars["PYTHONUNBUFFERED"] = "0"
+
+            master_name = service_name + "-master-0"
+
+            # get the scheduler result
+            node_gpuid = []
+            select_gpu, select_node_name = "", ""
+
+            if gpus > 0:
+                # run the scheduler algorithm, choose the gpu and node for few pods.
+                node_gpuid = self._get_top_gpus(dist_workers)
+
+            for index in range(dist_workers):
+                environment_vars["RANK"] = str(index)
+
+                # if scheduler is successful, get node and gpu info
+                if node_gpuid:
+                    select_node_name, select_gpu = node_gpuid[index]["nodeName"], node_gpuid[index]["GPUID"]
+
+                if index == 0:
+                    # create master, by default, first process is the master process
+                    # for master process, master name should be localhost
+                    environment_vars["MASTER_ADDR"] = "localhost"
+
+                    pod_config = self._create_pod_config(master_name, docker_image,
+                                                         environment_vars, mounts, select_gpu, select_node_name)
+                    print("pod_config", pod_config)
+                    _retry(self._client_service.create_namespaced_pod)(namespace='default', body=pod_config)
+
+                    # create a service for the master pod, which is used to provide communication between worker's pod
+                    # and master's pod, (assign master's service name and port to worker's pod envs)
+                    # above is only one option
+                    # another option is to assign the master pod's ip address to worker pods' env.
+                    # will do it after pod is built.
+                    # currently we choose the first option. create a service for master's pod
+
+                    service_config = self._create_clusterip_service_config(service_name=master_name,
+                                                                           publish_port=environment_vars["MASTER_PORT"]
+                                                                           )
+                    print("SVC config", service_config)
+                    _retry(self._client_service.create_namespaced_service)(namespace='default', body=service_config)
+
+                else:
+                    # create worker, by default
+                    # for worker process, worker name should be master's pod name
+                    environment_vars["MASTER_ADDR"] = master_name
+
+                    worker_name = service_name + "-worker-{}".format(index-1)
+                    pod_config = self._create_pod_config(worker_name, docker_image,
+                                                         environment_vars, mounts, select_gpu, select_node_name)
+                    print("pod_config", pod_config)
+                    _retry(self._client_service.create_namespaced_pod)(namespace='default', body=pod_config)
+
+        else:
+            deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
+                                                               environment_vars, mounts, gpus
+                                                               )
+
+            _retry(self._client_deployment.create_namespaced_deployment)(namespace='default', body=deployment_config)
 
         info = {
             'node_id': 'default',
@@ -159,15 +229,81 @@ class KubernetesContainerManager(ContainerManager):
             publish_port[0] if publish_port is not None else None, info)
         return service
 
+    def _create_pod_config(self,
+                           service_name: str,
+                           docker_image: str,
+                           environment_vars: dict,
+                           mounts: dict,
+                           gpu_id: str,
+                           select_node_name: str):
+
+        volumeMounts = list()
+        volumes = list()
+        mounts_count = 0
+        for (k, v) in mounts.items():
+            volumeMounts.append({
+                'name': 'v' + str(mounts_count),
+                'mountPath': v
+            })
+            volumes.append({
+                'name': 'v' + str(mounts_count),
+                'hostPath': {
+                    'path': k
+                }
+            })
+            mounts_count += 1
+
+        env = [{'name': k, 'value': v} for (k, v) in environment_vars.items()]
+
+        if gpu_id and select_node_name:
+            nodeSelector = {NodeLabes.NodeName: select_node_name}
+
+            # NVIDIA_VISIBLE_DEVICES is used to expose a specific gpu to this pod
+            env.append({"name": "NVIDIA_VISIBLE_DEVICES", "value": gpu_id})
+
+            content = \
+                {'apiVersion': 'v1',
+                 'kind': 'Pod',
+                 'metadata': {'labels': {'name': service_name},
+                              'name': service_name},
+                 'spec': {'containers': [{'env': env,
+                                          'image': docker_image,
+                                          'imagePullPolicy': 'Always',
+                                          'name': service_name,
+                                          'resources': {'limits': {'nvidia.com/gpu': "1"}},
+                                          'volumeMounts': volumeMounts}],
+                          'nodeSelector': nodeSelector,
+                          'volumes': volumes,
+                          "restartPolicy": "Never"
+                          }
+                 }
+        else:
+            # this configuration is for cpu
+            content = \
+                {'apiVersion': 'v1',
+                 'kind': 'Pod',
+                 'metadata': {'labels': {'name': service_name},
+                              'name': service_name},
+                 'spec': {'containers': [{'env': env,
+                                          'image': docker_image,
+                                          'imagePullPolicy': 'Always',
+                                          'name': service_name,
+                                          'volumeMounts': volumeMounts}],
+                          'volumes': volumes,
+                          "restartPolicy": "Never"
+
+                          }
+                 }
+        return content
+
     def _create_deployment_config(self,
                                   service_name,
                                   docker_image,
                                   replicas,
-                                  args,
                                   environment_vars,
-                                  mounts={},
-                                  publish_port=None,
-                                  gpus=0):
+                                  mounts,
+                                  gpus=0
+                                  ):
         content = {}
         content.setdefault('apiVersion', 'apps/v1')
         content.setdefault('kind', 'Deployment')
@@ -203,12 +339,152 @@ class KubernetesContainerManager(ContainerManager):
             'volumes': volumes
         })
         env = [{'name': k, 'value': v} for (k, v) in environment_vars.items()]
-        container.setdefault('env', env)
+
         if gpus > 0:
+            node_gpuid = self._get_top_gpus(1)
+            if node_gpuid and node_gpuid[0]:
+                select_node_name, select_gpu = node_gpuid[0]["nodeName"], node_gpuid[0]["GPUID"]
+                # nodeSelector can be used to bind a pod to a node
+                nodeSelector = {NodeLabes.NodeName: select_node_name}
+                template["spec"]["nodeSelector"] = nodeSelector
+
+                # NVIDIA_VISIBLE_DEVICES is used to expose a specific gpu to this pod
+                env.append({"name": "NVIDIA_VISIBLE_DEVICES", "value": select_gpu})
+
             container.setdefault('resources',
                                  {'limits': {
                                      'nvidia.com/gpu': gpus
                                  }})
+        container.setdefault('env', env)
+        return content
+
+    def _get_top_gpus(self, n) -> List[dict]:
+
+
+        """
+        This method is used to find the top n gpus, the one with most free memory
+        nodeInfo is format of following:
+
+        {'api_version': 'v1',
+         'items': [
+           {'api_version': None,
+            'kind': None,
+            'metadata': {'annotations': {'flannel.alpha.coreos.com/backend-data': '{"VtepMAC":"52:6c:01:9c:4b:27"}',
+                                         'flannel.alpha.coreos.com/backend-type': 'vxlan',
+                                         'flannel.alpha.coreos.com/kube-subnet-manager': 'true',
+                                         'flannel.alpha.coreos.com/public-ip': '10.0.0.121',
+                                         'kubeadm.alpha.kubernetes.io/cri-socket': '/var/run/dockershim.sock',
+                                         'node.alpha.kubernetes.io/ttl': '0',
+                                         'volumes.kubernetes.io/controller-managed-attach-detach': 'true'},
+                         'cluster_name': None,
+                         'creation_timestamp': datetime.datetime(2020, 6, 29, 10, 41, 21, tzinfo=tzutc()),
+                         'deletion_grace_period_seconds': None,
+                         'deletion_timestamp': None,
+                         'finalizers': None,
+                         'generate_name': None,
+                         'generation': None,
+                         'initializers': None,
+                         'labels': {},
+                         'managed_fields': None,
+                         'name': 'panda1',
+                         'namespace': None,
+                         'owner_references': None,
+                         'resource_version': '16021798',
+                         'self_link': '/api/v1/nodes/panda1',
+                         'uid': '97ec8d34-afd2-412c-8cf6-24f7a6f6bec0'},
+            'spec': {'config_source': None,
+                     'external_id': None,
+                     'pod_cidr': '10.244.2.0/24',
+                     'provider_id': None,
+                     'taints': None,
+                     'unschedulable': None},
+            'status': {'addresses': [{'address': '10.0.0.121',
+                                      'type': 'InternalIP'},
+                                     {'address': 'panda1', 'type': 'Hostname'}],
+                       'allocatable': {'cpu': '12',
+                                       'ephemeral-storage': '225807475134',
+                                       'hugepages-1Gi': '0',
+                                       'hugepages-2Mi': '0',
+                                       'memory': '65784940Ki',
+                                       'nvidia.com/gpu': '3',
+                                       'pods': '110'},
+                       'capacity': {'cpu': '12',
+                                    'ephemeral-storage': '245016792Ki',
+                                    'hugepages-1Gi': '0',
+                                    'hugepages-2Mi': '0',
+                                    'memory': '65887340Ki',
+                                    'nvidia.com/gpu': '3',
+                                    'pods': '110'},
+                       'conditions': [{'last_heartbeat_time': datetime.datetime(2020, 7, 1, 9, 47, 52, tzinfo=tzutc()),
+                                       'last_transition_time': datetime.datetime(2020, 7, 1, 9, 47, 52, tzinfo=tzutc()),
+                                       'message': 'Flannel is running on this '
+                                                  'node',
+                                       'reason': 'FlannelIsUp',
+                                       'status': 'False',
+                                       'type': 'NetworkUnavailable'}
+                                       ],
+                       'config': None,
+                       'daemon_endpoints': {'kubelet_endpoint': {'port': 10250}},
+                       'images': [{'names': ['singa_auto/singa_auto_worker:dev_1.1'],
+                                   'size_bytes': 3239415641}
+                                   ],
+                       'node_info': {'architecture': 'amd64',
+                                     'boot_id': '5ebe5f49-35fd-4306-a0c0-7b41df95f1ff',
+                                     'container_runtime_version': 'docker://18.9.0',
+                                     'kernel_version': '4.4.0-131-generic',
+                                     'kube_proxy_version': 'v1.15.12',
+                                     'kubelet_version': 'v1.15.12',
+                                     'machine_id': '8dc98b6bfe8ae63d8de029965bf79b4b',
+                                     'operating_system': 'linux',
+                                     'os_image': 'Ubuntu 16.04.6 LTS',
+                                     'system_uuid': '584756D2-95BF-0440-E146-107B44B12B73'},
+                       'phase': None,
+                       'volumes_attached': None,
+                       'volumes_in_use': None}},
+            ]
+        }
+        return [ {'nodeName': 'c', 'GPUID': 'c2'},
+                 {'nodeName': 'a', 'GPUID': 'a1'},
+                 {'nodeName': 'b', 'GPUID': 'b2'}
+                ]
+        """
+
+        node_infos = self._client_service.list_node()
+
+        node_gpus = dict()
+
+        for node_info in node_infos.items:
+
+            # if the node doesnt have gpu label or gpu is false, skip this node
+            if NodeLabes.Gpu not in node_info.metadata.labels or not node_info.metadata.labels[NodeLabes.Gpu]:
+                continue
+
+            gpu_summary = node_info.metadata.labels[NodeLabes.GpuSummary]
+
+            node_name = node_info.metadata.labels[NodeLabes.NodeName]
+
+            for gpu_info in gpu_summary.split("."):
+                gpu_device_id = gpu_info.split("_")[0]
+                free_memory = gpu_info.split("_")[1]
+                node_gpus[node_name+'__'+gpu_device_id] = int(free_memory)
+
+        top_n = sorted(node_gpus.items(), key=lambda d: d[1], reverse=True)[:n]
+        print("top_n:  ", top_n)
+        node_gpuid = [{"nodeName": ele[0].split('__')[0], "GPUID": ele[0].split('__')[1]} for ele in top_n]
+
+        print("node_gpuid:  ", node_gpuid)
+        return node_gpuid
+
+    def _create_clusterip_service_config(self, service_name, publish_port):
+        content = \
+            {'apiVersion': 'v1',
+             'kind': 'Service',
+             'metadata': {'labels': {'name': service_name},
+                          'name': service_name},
+             'spec': {'ports': [{'port': int(publish_port), 'targetPort': int(publish_port)}],
+                      'selector': {'name': service_name},
+                      'type': 'ClusterIP'}}
+
         return content
 
     def _create_service_config(self,
@@ -217,10 +493,12 @@ class KubernetesContainerManager(ContainerManager):
                                replicas,
                                args,
                                environment_vars,
-                               mounts={},
+                               mounts=None,
                                publish_port=None,
                                gpus=0):
         #admin service
+        if mounts is None:
+            mounts = {}
         content = {}
         content.setdefault('apiVersion', 'v1')
         content.setdefault('kind', 'Service')
