@@ -23,7 +23,7 @@ As for User:
 
 3. Install Python 3.6 such that the ``python`` and ``pip`` commands point to the correct installation of Python 3.6 (see :ref:`installing-python`).
 
-4. pip install singa-auto==0.3.2
+4. pip install singa-auto==0.3.4
 
 5. start the service using : sago
    stop the service using : sastop
@@ -69,6 +69,18 @@ If using kubernetes, to destroy SINGA-Auto's complete stack:
     .. code-block:: shell
 
         bash scripts/kubernetes/stop.sh
+
+Updating docker images
+--------------------------------------------------------------------
+
+    .. code-block:: shell
+
+        bash scripts/kubernetes/build_images.sh
+        bash scripts/push_images.sh
+
+By default, you can read logs of SINGA-Auto Admin & any of SINGA-Auto's workers
+in ``./logs`` directory at the root of the project's directory of the master node.
+
 
 Scaling SINGA-Auto
 --------------------------------------------------------------------
