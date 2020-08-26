@@ -37,12 +37,13 @@ class SingaAutoConnectionError(ConnectionError):
 DOCS_URL = 'https://nginyc.github.io/rafiki/docs/latest/docs/src/python/rafiki.client.Client.html'
 
 def rafiki_response_handler(resp):
-    if isinstance(resp, dict):
-        if resp.get('success', 0) == 0:
-            return resp['data']
-        else:
-            raise generate_error(resp.get('error_code', 500))
-    else:
+    # if isinstance(resp, dict):
+    #     if resp.get('success', 0) == 0:
+    #         return resp['data']
+    #     else:
+    #         raise generate_error(resp.get('error_code', 500))
+    # else:
+    #     return resp
         return resp
 
 # Returns a decorator that warns user about the method being deprecated

@@ -65,14 +65,16 @@ def create_app():
 
     @app.after_request
     def after_request_handler(resp):
-        if resp.is_json:
-            data = resp.get_json()
-            if isinstance(data, dict):
-                if 'error_code' and 'message' and 'success' in data:
-                    return resp
-            result = ResultSuccess(data)
-            return jsonify(dict(result))
-        else:
+
+        # if resp.is_json:
+        #     data = resp.get_json()
+        #     if isinstance(data, dict):
+        #         if 'error_code' and 'message' and 'success' in data:
+        #             return resp
+        #     result = ResultSuccess(data)
+        #     return jsonify(dict(result))
+        # else:
+        #     return resp
             return resp
 
     return app
