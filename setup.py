@@ -20,7 +20,7 @@
 from setuptools import setup
 
 setup(name='singa-auto',
-      version='0.3.2',
+      version='0.3.4',
       description='The SINGA-Auto',
       url='https://github.com/nusdbsystem/singa-auto.git',
       author='Naili',
