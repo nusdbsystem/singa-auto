@@ -119,6 +119,7 @@ def parse_model_install_command(dependencies, enable_gpu=False):
                 parse_ctc_decoder_url(ver)))
         else:
             # Assume that dependency is the exact PIP package name
+            commands.append("pip install --upgrade pip")
             commands.append('pip --no-cache-dir install {}=={}'.format(
                 dep, ver))
 
