@@ -319,6 +319,7 @@ class KubernetesContainerManager(ContainerManager):
         container = {}
         container.setdefault('name', service_name)
         container.setdefault('image', docker_image)
+        spec.setdefault('imagePullPolicy', 'Always')
         volumeMounts = container.setdefault('volumeMounts', [])
         volumes = []
         mounts_count = 0
