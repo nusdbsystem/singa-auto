@@ -19,11 +19,11 @@
 
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get -y upgrade
 
 # Install conda with pip and python 3.6
 ARG CONDA_ENVIORNMENT
-RUN apt-get -y install curl bzip2 \
+RUN apt-get update --fix-missing && apt-get -y upgrade && apt-get install -y \
+  curl bzip2 \
   && curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
   && bash /tmp/miniconda.sh -bfp /usr/local \
   && rm -rf /tmp/miniconda.sh \
