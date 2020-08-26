@@ -24,7 +24,7 @@ else
 	export HOST_WORKDIR_PATH=$PWD
 fi
 
-source $HOST_WORKDIR_PATH//scripts/base_utils.sh
+source $HOST_WORKDIR_PATH/scripts/base_utils.sh
 
 pull_image()
 {
@@ -36,7 +36,7 @@ pull_image()
         docker pull $1 || exit 1
     fi
 }
-
+docker login -u singaauto -p singaauto
 title "Pulling images..."
 echo "Pulling images required by Sinag-Auto from Docker Hub..."
 pull_image $IMAGE_POSTGRES

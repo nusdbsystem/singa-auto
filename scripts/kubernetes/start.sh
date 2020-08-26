@@ -176,7 +176,7 @@ kubectl create clusterrolebinding add-on-cluster-admin \
     --clusterrole=cluster-admin --serviceaccount=default:default
 
 # Pull images from Docker Hub
-bash $HOST_WORKDIR_PATH/scripts/pull_images.sh || exit 1
+#bash $HOST_WORKDIR_PATH/scripts/pull_images.sh || exit 1
 
 # Generate config files
 echo "Generate config files"
