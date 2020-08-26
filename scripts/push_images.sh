@@ -26,7 +26,7 @@ else
 	export HOST_WORKDIR_PATH=$PWD
 fi
 
-docker login
+docker login -u singaauto -p singaauto
 
 source $HOST_WORKDIR_PATH/scripts/kubernetes/.env.sh
 
