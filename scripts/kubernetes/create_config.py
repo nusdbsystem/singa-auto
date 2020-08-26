@@ -317,6 +317,7 @@ if __name__ == '__main__':
     container = {}
     container.setdefault('name', ADMIN_HOST)
     container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_ADMIN, SINGA_AUTO_VERSION))
+    container.setdefault('imagePullPolicy', "Always")
     if APP_MODE == 'DEV':
         container.setdefault('volumeMounts', [{'name': ADMIN_HOST, 'mountPath': '/var/run/docker.sock'},
                                               {'name': 'admin-log', 'mountPath': DOCKER_WORKDIR_PATH}])
@@ -433,6 +434,7 @@ if __name__ == '__main__':
     template.setdefault('metadata', {'labels': {'name': WEB_ADMIN_HOST}})
     container = {}
     container.setdefault('name', WEB_ADMIN_HOST)
+    container.setdefault('imagePullPolicy', "Always")
     container.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_WEB_ADMIN, SINGA_AUTO_VERSION))
 
     template.setdefault('spec', {'containers': [container]})
@@ -612,7 +614,7 @@ if __name__ == '__main__':
     spec.setdefault('type', 'Scala')
     spec.setdefault('mode', 'cluster')
     spec.setdefault('image', '{}:{}'.format(SINGA_AUTO_IMAGE_SPARKAPP, SINGA_AUTO_VERSION))
-    spec.setdefault('imagePullPolicy', 'IfNotPresent')
+    spec.setdefault('imagePullPolicy', 'Always')
     spec.setdefault('mainClass', "com.singa.auto.monitor.stream.LogStreamProcess")
     spec.setdefault('mainApplicationFile', "local://{}/log_minitor-jar-with-dependencies.jar".format(SPAEK_DOCKER_JARS_PATH))
     spec.setdefault('sparkVersion', "2.4.5")
