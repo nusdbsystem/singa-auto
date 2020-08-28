@@ -157,7 +157,7 @@ class RunPrediction extends React.Component {
 
     try {
       const res = await axios.post(
-        `http://${this.state.predictorHost}/predict`,
+        `http://${this.state.predictorHost}`,
         formData,
         {
           headers: {
@@ -318,7 +318,7 @@ class RunPrediction extends React.Component {
               UploadType={`Image`}
             />
             <br />
-            <Button
+            {/* <Button
               variant="contained"
               color="primary"
               onClick={this.handleCommit}
@@ -327,7 +327,7 @@ class RunPrediction extends React.Component {
                 this.state.formState === "loading"}
             >
               Predict
-            </Button>
+            </Button> */}
           </div>
         </MainContent>
         <MainContent>
