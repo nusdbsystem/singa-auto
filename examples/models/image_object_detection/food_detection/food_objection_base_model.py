@@ -88,6 +88,7 @@ class FoodDetectionBase(ObjtDetModel):
                 result = dict()
                 result['status'] = "ok"
                 result['predictions'] = []
+
                 print("Detection is done, begin to do the classification")
                 for index, box in enumerate(predications):
                     prob = box[1]
@@ -102,10 +103,12 @@ class FoodDetectionBase(ObjtDetModel):
 
                     class_id = np.argsort(y[0])[::-1][0]
                     str_class = self.class_dict[class_id]
+                    class_prob = y[0][class_id]
+
                     jbox = dict()
                     jbox['label_id'] = str(class_id)
                     jbox['label'] = str(str_class)
-                    jbox['probability'] = prob
+                    jbox['probability'] = str(class_prob)
 
                     jbox['detection_box'] = [max(0, upper / height), max(0, left / width),
                                              min(1, down / height), min(1, right / width)]
