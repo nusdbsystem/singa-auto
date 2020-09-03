@@ -45,6 +45,7 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Grid from '@material-ui/core/Grid'
 
 
 const styles = theme => ({
@@ -122,7 +123,10 @@ class TrialDetails extends React.Component {
 
     for (const i in logs.plots) {
       const { series, plotOption } = getPlotDetails(logs.plots[i], logs.metrics)
-      plotManager.updatePlot(`plot-${i}`, series, plotOption)
+      console.log(series, plotOption)
+      for (const j in logs.plots[i].metrics) {
+          plotManager.updatePlot(`plot-${j}`, series[j], plotOption)
+      }
     }
   }
 
@@ -216,15 +220,19 @@ class TrialDetails extends React.Component {
           <Typography gutterBottom variant="h3">
             Plots
           </Typography>
-          {Object.values(logs.plots).map((x, i) => {
+          <Grid container spacing={24}>
+          {Object.values(logs.plots[0].metrics).map((x, i) => {
             return (
+              <Grid item sm ={6}>
               <Paper
                 key={x.title}
                 id={`plot-${i}`}
                 className={classes.plotPaper}
               ></Paper>
-            )
+              </Grid>
+            ) 
           })}
+          </Grid>
         </React.Fragment>
       )
     )

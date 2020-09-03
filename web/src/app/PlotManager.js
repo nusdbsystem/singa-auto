@@ -45,10 +45,10 @@ export default class PlotManager {
     const xAxisType = _.get(plotOption, "xAxis.type", "time")
 
     return {
-      ...(plotOption.title
+      ...(series.name
         ? {
             title: {
-              text: plotOption.title,
+              text: series.name,
             },
           }
         : {}),
@@ -69,13 +69,19 @@ export default class PlotManager {
           show: false,
         },
       },
-      series: series.map(x => {
-        return {
-          name: x.name,
-          type: "line",
-          data: x.data.filter(y => y.reduce(z => {return z})),
-        }
-      }),
+      series: {
+        name: series.name,
+        type: "line",
+        data: series.data.filter(y => y.reduce(z => {return z})),
+      }
+      // series.map(x => {
+      //   return {
+      //     name: x.name,
+      //     type: "line",
+      //     data: x.data.filter(y => y.reduce(z => {return z})),
+      //   }
+      // })
+      ,
     }
   }
 }
