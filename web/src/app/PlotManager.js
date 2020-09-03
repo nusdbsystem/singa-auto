@@ -73,7 +73,7 @@ export default class PlotManager {
         return {
           name: x.name,
           type: "line",
-          data: x.data,
+          data: x.data.filter(y => y.reduce(z => {return z})),
         }
       }),
     }
