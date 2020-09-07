@@ -180,7 +180,7 @@ class InferenceJobDetails extends React.Component {
                     </CopyToClipboard>
                     {this.state.copied ? alert('Host link copied to clipboard'):null}
                   </Grid>
-                  <Grid item >
+                  {/* <Grid item >
                     <Button
                       onClick={this.handleClickRunPrediction}
                       color="secondary"
@@ -188,7 +188,7 @@ class InferenceJobDetails extends React.Component {
                     >
                       Predict
                     </Button>
-                  </Grid>
+                  </Grid> */}
                   <Grid item>
                     <Button
                       onClick={this.handleClickStopInferenceJob}

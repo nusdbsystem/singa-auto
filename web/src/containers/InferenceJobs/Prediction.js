@@ -12,7 +12,7 @@ import * as ConsoleActions from "../ConsoleAppFrame/actions"
 import { withStyles } from "@material-ui/core/styles"
 import Typography from "@material-ui/core/Typography"
 import Divider from '@material-ui/core/Divider';
-import Button from '@material-ui/core/Button';
+// import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 // for display of response
@@ -157,7 +157,7 @@ class RunPrediction extends React.Component {
 
     try {
       const res = await axios.post(
-        `http://${this.state.predictorHost}/predict`,
+        `http://${this.state.predictorHost}`,
         formData,
         {
           headers: {
@@ -318,7 +318,7 @@ class RunPrediction extends React.Component {
               UploadType={`Image`}
             />
             <br />
-            <Button
+            {/* <Button
               variant="contained"
               color="primary"
               onClick={this.handleCommit}
@@ -327,7 +327,7 @@ class RunPrediction extends React.Component {
                 this.state.formState === "loading"}
             >
               Predict
-            </Button>
+            </Button> */}
           </div>
         </MainContent>
         <MainContent>
