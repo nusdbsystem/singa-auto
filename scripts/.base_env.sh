@@ -82,6 +82,12 @@ export LOGS_DIR_PATH=logs # Shares a folder with containers that stores componen
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir
 
 export CONDA_ENVIORNMENT=singa_auto
+# Check the path existence first. If it does not exist, define it
+if [ $HOST_WORKDIR_PATH ];then
+	echo "HOST_WORKDIR_PATH is exist, and echo to = $HOST_WORKDIR_PATH"
+else
+	export HOST_WORKDIR_PATH=$PWD
+fi
 export WORKDIR_PATH=$HOST_WORKDIR_PATH # Specifying workdir if Python programs are run natively
 
 
