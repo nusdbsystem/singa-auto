@@ -38,6 +38,9 @@ class FileParamStore(ParamStore):
         file_name = '{}_{}.model'.format(self.model_class, uuid.uuid4())
         dest_file_path = os.path.join(self._params_dir, file_name)
         params_bytes = self._serialize_params(params)
+        # Check the directory. In case the directory doesn't exist, if so, create the path
+        if not os.path.exists(self._params_dir):
+            os.makedirs(self._params_dir)
         with open(dest_file_path, 'wb') as f:
             f.write(params_bytes)
 
