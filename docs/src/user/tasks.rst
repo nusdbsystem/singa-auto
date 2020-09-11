@@ -415,7 +415,7 @@ An size-``N-1`` dictionary representing feature-value pairs.
 Prediction Format 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A size-``k`` list of floats, representing the probabilities of each class from ``0`` to ``k-1`` for the target column.
+An integer, representing the predicted class from ``0`` to ``k-1`` for the target column.
 
 
 TABULAR_REGRESSION
