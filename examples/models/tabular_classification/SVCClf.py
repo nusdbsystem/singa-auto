@@ -96,9 +96,10 @@ class SVCClf(TabularClfModel):
         return accuracy
 
     def predict(self, queries):
-        queries = [pd.DataFrame(query, index=[0]) for query in queries]
+        queries = pd.DataFrame.from_records(queries, index=[0])
         data = self.prepare_X(queries)
-        probs = self._clf.predict_proba(data)
+        probs = self._clf.predict(data)
+        # return probs
         return probs.tolist()
 
     def destroy(self):
@@ -157,6 +158,8 @@ class SVCClf(TabularClfModel):
         data = self.median_dataset(df)
         X = StandardScaler().fit_transform(data)
         return X
+
+
     def _build_classifier(self, C, kernel, degree, gamma, coef0, shrinking, tol,
                           decision_function_shape, probability):
         clf = SVC(
@@ -183,16 +186,17 @@ if __name__ == '__main__':
                      train_args={
                          'features': [
                              'Pregnancies', 'Glucose', 'BloodPressure',
-                             'SkinThickness', 'Insulin', 'BMI', 'Age'
-                         ],
+                             'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
                          'target': 'Outcome'
                      },
                      queries=[{
                          'Pregnancies': 3,
-                         'Glucose': '130',
+                         'Glucose': 130,
                          'BloodPressure': 92,
                          'SkinThickness': 30,
                          'Insulin': 90,
+                         'DiabetesPedigreeFunction': 1,
                          'BMI': 30.4,
                          'Age': 40
                      }])
+

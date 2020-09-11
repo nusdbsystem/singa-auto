@@ -70,7 +70,7 @@ class RandomForestClf(TabularClfModel):
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
         probs = [
-            self._clf.predict_proba(self._features_mapping(query)).tolist()[0]
+            self._clf.predict(self._features_mapping(query)).tolist()[0]
             for query in queries
         ]
         return probs
@@ -164,8 +164,8 @@ if __name__ == '__main__':
                          'features': ['Pclass', 'Sex', 'Age'],
                          'target': 'Survived'
                      },
-                     queries=[{
+                     queries={
                          'Pclass': 1,
                          'Sex': 'female',
                          'Age': 16.0
-                     }])
+                     })
