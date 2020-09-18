@@ -23,8 +23,6 @@ import pandas as pd
 import json
 import pickle
 import base64
-import warnings
-warnings.filterwarnings("ignore")
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
@@ -98,9 +96,9 @@ class SVCClf(TabularClfModel):
     def predict(self, queries):
         queries = pd.DataFrame.from_records(queries, index=[0])
         data = self.prepare_X(queries)
-        probs = self._clf.predict(data)
-        # return probs
+        probs = self._clf.predict_proba(data)
         return probs.tolist()
+        
 
     def destroy(self):
         pass
@@ -189,7 +187,7 @@ if __name__ == '__main__':
                              'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
                          'target': 'Outcome'
                      },
-                     queries=[{
+                     queries={
                          'Pregnancies': 3,
                          'Glucose': 130,
                          'BloodPressure': 92,
@@ -198,5 +196,5 @@ if __name__ == '__main__':
                          'DiabetesPedigreeFunction': 1,
                          'BMI': 30.4,
                          'Age': 40
-                     }])
+                     })
 

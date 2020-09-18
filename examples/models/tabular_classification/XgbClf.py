@@ -96,10 +96,7 @@ class XgbClf(TabularClfModel):
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        probs = [
-            self._clf.predict(self._features_mapping(query)).tolist()[0]
-            for query in queries
-        ]
+        probs = [self._clf.predict_proba(self._features_mapping(query)).tolist()[0] for query in queries]
         return probs
 
     def destroy(self):

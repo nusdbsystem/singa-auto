@@ -69,10 +69,7 @@ class RandomForestClf(TabularClfModel):
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        probs = [
-            self._clf.predict(self._features_mapping(query)).tolist()[0]
-            for query in queries
-        ]
+        probs = [self._clf.predict_proba(self._features_mapping(query)).tolist()[0] for query in queries]
         return probs
 
     def destroy(self):
@@ -125,7 +122,7 @@ class RandomForestClf(TabularClfModel):
         encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
             if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
 
-        # Recover the missing elements (Use XGBoost to automatically handle them)
+        # Recover the missing elements 
         encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
 
         # Generate the dict that maps categorical features to numerical
