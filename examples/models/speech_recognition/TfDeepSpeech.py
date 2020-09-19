@@ -434,7 +434,7 @@ class TfDeepSpeech(BaseModel):
         eye_filter = tf.constant(
             np.eye(window_width * num_channels).reshape(
                 window_width, num_channels, window_width * num_channels),
-            tf.float32)  # pylint: disable=bad-continuation
+            tf.float32)  # pylint: disable=bad-option-value 
 
         # Create overlapping windows
         batch_x = tf.nn.conv1d(batch_x, eye_filter, stride=1, padding='SAME')
