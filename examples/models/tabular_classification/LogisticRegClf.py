@@ -75,10 +75,7 @@ class LogisticRegClf(TabularClfModel):
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        probs = [
-            self._clf.predict(self._features_mapping(query)).tolist()[0]
-            for query in queries
-        ]
+        probs = [self._clf.predict_proba(self._features_mapping(query)).tolist()[0] for query in queries]
         return probs
 
     def destroy(self):
@@ -171,13 +168,17 @@ if __name__ == '__main__':
                      val_dataset_path='data/diabetes_val.csv',
                      train_args={
                          'features': [
-                             'Pregnancies', 'Glucose', 'BloodPressure', 'Age'],
+                             'Pregnancies', 'Glucose', 'BloodPressure',
+                             'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
                          'target': 'Outcome'
                      },
                      queries={
                          'Pregnancies': 3,
                          'Glucose': 130,
                          'BloodPressure': 92,
+                         'SkinThickness': 30,
+                         'Insulin': 90,
+                         'DiabetesPedigreeFunction': 1,
+                         'BMI': 30.4,
                          'Age': 40
-                     }
-                     )
+                     })
