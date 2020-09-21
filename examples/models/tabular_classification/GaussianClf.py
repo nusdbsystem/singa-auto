@@ -1,36 +1,52 @@
-import numpy as np
-import pandas as pd
-import json
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 import pickle
 import base64
+import pandas as pd
+import numpy as np
+import json
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+# from sklearn.preprocessing import StandardScaler
 
-from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class KNNClf(TabularClfModel):
+class GaussianClf(TabularClfModel):
     '''
-    Implements K-Nearest Neighbors Classifier using Pima Indian Diabetes dataset.
+    Implements Gaussian Naive Bayes Classifier using heart disease UCI dataset
     '''
 
     @staticmethod
     def get_knob_config():
         return {
-            'n_neighbors': IntegerKnob(2, 3),
-            'p': IntegerKnob(2, 3),
-            'metric': CategoricalKnob(['minkowski', 'euclidean']),
+            'var_smoothing': FloatKnob(1e-07, 1e-05),
         }
 
     def __init__(self, **knobs):
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self._knobs.get("n_neighbors"),
-                                           self._knobs.get("p"),
-                                           self._knobs.get("metric"))
+        self._clf = self._build_classifier(self._knobs.get("var_smoothing"))
+
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -99,7 +115,6 @@ class KNNClf(TabularClfModel):
         self._features = json.loads(params['features'])
         self._target = params['target']
 
-
     def _extract_xy(self, data):
         features = self._features
         target = self._target
@@ -141,33 +156,38 @@ class KNNClf(TabularClfModel):
             df_temp[col] = df[col].map(self._encoding_dict[col])
         df = df_temp
         return df
-        
 
-    def _build_classifier(self, n_neighbors, p, metric):
-        clf = KNeighborsClassifier(n_neighbors=n_neighbors, p=p, metric=metric)
+    def _build_classifier(self, var_smoothing):
+        clf = GaussianNB(var_smoothing=var_smoothing)
         return clf
 
 
 if __name__ == '__main__':
     test_model_class(model_file_path=__file__,
-                     model_class='KNNClf',
+                     model_class='GaussianClf',
                      task='TABULAR_CLASSIFICATION',
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
-                     train_dataset_path='data/diabetes_train.csv',
-                     val_dataset_path='data/diabetes_val.csv',
+                     train_dataset_path='data/heart_train.csv',
+                     val_dataset_path='data/heart_val.csv',
                      train_args={
                          'features': [
-                             'Pregnancies', 'Glucose', 'BloodPressure',
-                             'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
-                         'target': 'Outcome'
+                             'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs',
+                             'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 
+                             'ca', 'thal'], 
+                             'target': 'target'
                      },
                      queries={
-                         'Pregnancies': 3,
-                         'Glucose': 130,
-                         'BloodPressure': 92,
-                         'SkinThickness': 30,
-                         'Insulin': 90,
-                         'DiabetesPedigreeFunction': 1,
-                         'BMI': 30.4,
-                         'Age': 40
+                         'age': 48,
+                         'sex': 1,
+                         'cp': 2,
+                         'trestbps': 130,
+                         'chol': 225,
+                         'fbs': 1,
+                         'restecg': 1,
+                         'thalach': 172,
+                         'exang': 1,
+                         'oldpeak': 1.7,
+                         'slope': 2,
+                         'ca': 0,
+                         'thal': 3
                      })
