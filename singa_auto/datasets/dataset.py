@@ -202,7 +202,6 @@ class DatasetUtils:
         pil_images = []
         for image_path in image_paths:
             pil_images.append(load(image_path))
-        images = np.array([np.asarray(x) for x in pil_images])
 
         return pil_images
 
