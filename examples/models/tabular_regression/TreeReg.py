@@ -19,12 +19,11 @@
 
 import pickle
 import base64
-import pandas as pd
 import numpy as np
+import pandas as pd
 import json
 
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
 from singa_auto.model import BaseModel, IntegerKnob, FloatKnob, CategoricalKnob, logger
@@ -59,6 +58,7 @@ class TreeReg(BaseModel):
             self._knobs.get("min_impurity_decrease"),
             self._knobs.get("min_impurity_split"))
 
+
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
@@ -71,13 +71,13 @@ class TreeReg(BaseModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
 
         self._regressor.fit(X, y)
 
         # Compute train root mean square error
         preds = self._regressor.predict(X)
-
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
 
@@ -89,18 +89,21 @@ class TreeReg(BaseModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
 
         preds = self._regressor.predict(X)
-
         rmse = np.sqrt(mean_squared_error(y, preds))
         return 1 / rmse
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        data = self.prepare_X(queries)
-        result = self._regressor.predict(data)
-        return result.tolist()[0]
+        results = [
+            self._regressor.predict(self._features_mapping(query)).tolist()[0]
+            for query in queries
+        ]
+        return results
+
 
     def destroy(self):
         pass
@@ -112,9 +115,9 @@ class TreeReg(BaseModel):
         regressor_bytes = pickle.dumps(self._regressor)
         regressor_base64 = base64.b64encode(regressor_bytes).decode('utf-8')
         params['regressor_base64'] = regressor_base64
+        params['encoding_dict'] = json.dumps(self._encoding_dict)
         params['features'] = json.dumps(self._features)
-        if self._target:
-            params['target'] = self._target
+        params['target'] = self._target
 
         return params
 
@@ -123,14 +126,11 @@ class TreeReg(BaseModel):
         assert 'regressor_base64' in params
         regressor_base64 = params['regressor_base64']
         regressor_bytes = base64.b64decode(regressor_base64.encode('utf-8'))
-
         self._regressor = pickle.loads(regressor_bytes)
-        self._features = json.loads(params['features'])
 
-        if "target" in params:
-            self._target = params['target']
-        else:
-            self._target = None
+        self._encoding_dict = json.loads(params['encoding_dict'])
+        self._features = json.loads(params['features'])
+        self._target = params['target']
 
     def _extract_xy(self, data):
         features = self._features
@@ -148,17 +148,33 @@ class TreeReg(BaseModel):
 
         return (X, y)
 
-    def median_dataset(self, df):
-        #replace zero values by median so that 0 will not affect median.
-        for col in df.columns:
-            df[col].replace(0, np.nan, inplace=True)
-            df[col].fillna(df[col].median(), inplace=True)
+
+    def _encoding_categorical_type(self, cols):
+        # Apply label encoding for those categorical columns
+        cat_cols = list(
+            filter(lambda x: cols[x].dtype == 'object', cols.columns))
+        encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
+            if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
+
+        # Recover the missing elements (Use XGBoost to automatically handle them)
+        encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
+
+        # Generate the dict that maps categorical features to numerical
+        encoding_dict = {col: {cat: n for n, cat in enumerate(cols[col].astype('category'). \
+            cat.categories)} for col in cat_cols}
+        self._encoding_dict = encoding_dict
+
+        return encoded_cols
+
+    def _features_mapping(self, df):
+        # Encode the categorical features with pre saved encoding dict
+        cat_cols = list(filter(lambda x: df[x].dtype == 'object', df.columns))
+        df_temp = df.copy()
+        for col in cat_cols:
+            df_temp[col] = df[col].map(self._encoding_dict[col])
+        df = df_temp
         return df
 
-    def prepare_X(self, df):
-        data = self.median_dataset(df)
-        X = StandardScaler().fit_transform(df)
-        return X
 
     def _build_regressor(self, criterion, splitter, min_samples_split,
                          max_features, random_state, min_impurity_decrease,
