@@ -19,6 +19,7 @@ import tempfile
 import base64
 import argparse
 from ds_ctcdecoder import ctc_beam_search_decoder_batch, ctc_beam_search_decoder, Scorer
+import struct
 
 from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, \
     PolicyKnob, utils, logger
@@ -1358,21 +1359,22 @@ class AttrDict(dict):
 
 
 class Alphabet(object):
-
+    ''' This Alphabet class follows DeepSpeech v0.7.3'''
     def __init__(self, config_file):
         self._config_file = config_file
-        self._label_to_str = []
+        self._label_to_str = {}
         self._str_to_label = {}
         self._size = 0
-        with codecs.open(config_file, 'r', 'utf-8') as fin:
-            for line in fin:
-                if line[0:2] == '\\#':
-                    line = '#\n'
-                elif line[0] == '#':
-                    continue
-                self._label_to_str += line[:-1]  # remove the line ending
-                self._str_to_label[line[:-1]] = self._size
-                self._size += 1
+        if config_file:
+            with open(config_file, 'r', encoding='utf-8') as fin:
+                for line in fin:
+                    if line[0:2] == '\\#':
+                        line = '#\n'
+                    elif line[0] == '#':
+                        continue
+                    self._label_to_str[self._size] = line[:-1] # remove the line ending
+                    self._str_to_label[line[:-1]] = self._size
+                    self._size += 1
 
     def string_from_label(self, label):
         return self._label_to_str[label]
@@ -1382,14 +1384,41 @@ class Alphabet(object):
             return self._str_to_label[string]
         except KeyError as e:
             raise KeyError(
-                '''ERROR: Your transcripts contain characters which do not occur in `alphabet.txt`!'''
+                'ERROR: Your transcripts contain characters (e.g. \'{}\') which do not occur in \'{}\'! Use ' \
+                'util/check_characters.py to see what characters are in your [train,dev,test].csv transcripts, and ' \
+                'then add all these to \'{}\'.'.format(string, self._config_file, self._config_file)
             ).with_traceback(e.__traceback__)
+
+    def has_char(self, char):
+        return char in self._str_to_label
+
+    def encode(self, string):
+        res = []
+        for char in string:
+            res.append(self.label_from_string(char))
+        return res
 
     def decode(self, labels):
         res = ''
         for label in labels:
             res += self.string_from_label(label)
         return res
+
+    def serialize(self):
+        # Serialization format is a sequence of (key, value) pairs, where key is
+        # a uint16_t and value is a uint16_t length followed by `length` UTF-8
+        # encoded bytes with the label.
+        res = bytearray()
+
+        # We start by writing the number of pairs in the buffer as uint16_t.
+        res += struct.pack('<H', self._size)
+        for key, value in self._label_to_str.items():
+            value = value.encode('utf-8')
+            # struct.pack only takes fixed length strings/buffers, so we have to
+            # construct the correct format string with the length of the encoded
+            # label.
+            res += struct.pack('<HH{}s'.format(len(value)), key, len(value), value)
+        return bytes(res)
 
     def size(self):
         return self._size
