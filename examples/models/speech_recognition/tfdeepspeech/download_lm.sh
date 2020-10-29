@@ -20,5 +20,5 @@ LM_PATH=tfdeepspeech/lm.binary
 
 # Download pre-built LM from https://github.com/mozilla/DeepSpeech/tree/v0.6.0-alpha.4/data/lm
 mkdir -p tfdeepspeech/
-curl https://media.githubusercontent.com/media/mozilla/DeepSpeech/v0.6.0-alpha.4/data/lm/lm.binary -o $LM_PATH
+wget https://github.com/mozilla/DeepSpeech/releases/download/v0.6.0-alpha.4/lm.binary -O $LM_PATH
 echo "LM downloaded to $LM_PATH"
