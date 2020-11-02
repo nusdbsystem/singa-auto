@@ -292,7 +292,8 @@ class AudioFilesDataset(ModelDataset):
     def __init__(self, dataset_path, dataset_dir):
         self._dataset_dir = dataset_dir
         self.df = self._load(dataset_path)
-
+    def __getitem__():
+        pass
     def _load(self, dataset_path):
         '''
             Loading the dataset into a pandas dataframe. Called in the class __init__ method.
