@@ -94,10 +94,10 @@ class PassiveAClf(TabularClfModel):
         return accuracy
 
     def predict(self, queries):
-        queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        data = self.prepare_X(queries)
-        probs = self._clf.predict_proba(data)
-        return probs.tolist()
+        df = pd.DataFrame.from_records(queries, index=[0])
+        data = self.prepare_X(df)
+        probs = self._clf.predict(data)
+        return probs
 
     def destroy(self):
         pass
@@ -185,16 +185,17 @@ if __name__ == '__main__':
                      train_args={
                          'features': [
                              'Pregnancies', 'Glucose', 'BloodPressure',
-                             'SkinThickness', 'Insulin', 'BMI', 'Age'
-                         ],
+                             'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
                          'target': 'Outcome'
                      },
                      queries=[{
                          'Pregnancies': 3,
-                         'Glucose': '130',
+                         'Glucose': 130,
                          'BloodPressure': 92,
                          'SkinThickness': 30,
                          'Insulin': 90,
+                         'DiabetesPedigreeFunction': 1,
                          'BMI': 30.4,
                          'Age': 40
                      }])
+

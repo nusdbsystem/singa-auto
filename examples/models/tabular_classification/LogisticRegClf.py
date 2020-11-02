@@ -3,10 +3,7 @@ import pandas as pd
 import json
 import pickle
 import base64
-import warnings
-warnings.filterwarnings("ignore")
 from sklearn.linear_model import LogisticRegression
-from sklearn.decomposition import PCA
 
 from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
@@ -31,11 +28,7 @@ class LogisticRegClf(TabularClfModel):
     def __init__(self, **knobs):
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self._knobs.get("penalty"),
-                                           self._knobs.get("tol"),
-                                           self._knobs.get("C"),
-                                           self._knobs.get("fit_intercept"),
-                                           self._knobs.get("solver"))
+
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -49,7 +42,16 @@ class LogisticRegClf(TabularClfModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
+
+        num_class = y.unique().size
+
+        self._clf = self._build_classifier(self._knobs.get("penalty"),
+                                           self._knobs.get("tol"),
+                                           self._knobs.get("C"),
+                                           self._knobs.get("fit_intercept"),
+                                           self._knobs.get("solver"))
 
         self._clf.fit(X, y)
 
@@ -57,7 +59,7 @@ class LogisticRegClf(TabularClfModel):
         score = self._clf.score(X, y)
         logger.log('Train accuracy: {}'.format(score))
 
-    def evaluate(self, dataset_path, **kwargs):
+    def evaluate(self, dataset_path,  **kwargs):
         # Load CSV file as pandas dataframe
         csv_path = dataset_path
         data = pd.read_csv(csv_path)
@@ -65,16 +67,16 @@ class LogisticRegClf(TabularClfModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
 
         accuracy = self._clf.score(X, y)
         return accuracy
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        data = self.prepare_X(queries)
-        probs = self._clf.predict_proba(data)
-        return probs.tolist()
+        probs = [self._clf.predict_proba(self._features_mapping(query)).tolist()[0] for query in queries]
+        return probs
 
     def destroy(self):
         pass
@@ -86,10 +88,9 @@ class LogisticRegClf(TabularClfModel):
         clf_bytes = pickle.dumps(self._clf)
         clf_base64 = base64.b64encode(clf_bytes).decode('utf-8')
         params['clf_base64'] = clf_base64
+        params['encoding_dict'] = json.dumps(self._encoding_dict)
         params['features'] = json.dumps(self._features)
-
-        if self._target:
-            params['target'] = self._target
+        params['target'] = self._target
 
         return params
 
@@ -100,12 +101,9 @@ class LogisticRegClf(TabularClfModel):
         clf_bytes = base64.b64decode(clf_base64.encode('utf-8'))
 
         self._clf = pickle.loads(clf_bytes)
+        self._encoding_dict = json.loads(params['encoding_dict'])
         self._features = json.loads(params['features'])
-
-        if 'target' in params:
-            self._target = params['target']
-        else:
-            self._target = None
+        self._target = params['target']
 
     def _extract_xy(self, data):
         features = self._features
@@ -123,26 +121,41 @@ class LogisticRegClf(TabularClfModel):
 
         return (X, y)
 
-    def median_dataset(self, df):
-        #replace zero values by median so that 0 will not affect median.
-        for col in df.columns:
-            df[col].replace(0, np.nan, inplace=True)
-            df[col].fillna(df[col].median(), inplace=True)
+    def _encoding_categorical_type(self, cols):
+        # Apply label encoding for those categorical columns
+        cat_cols = list(
+            filter(lambda x: cols[x].dtype == 'object', cols.columns))
+        encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
+            if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
+
+        # Recover the missing elements (Use XGBoost to automatically handle them)
+        encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
+
+        # Generate the dict that maps categorical features to numerical
+        encoding_dict = {col: {cat: n for n, cat in enumerate(cols[col].astype('category'). \
+            cat.categories)} for col in cat_cols}
+        self._encoding_dict = encoding_dict
+
+        return encoded_cols
+
+    def _features_mapping(self, df):
+        # Encode the categorical features with pre saved encoding dict
+        cat_cols = list(filter(lambda x: df[x].dtype == 'object', df.columns))
+        df_temp = df.copy()
+        for col in cat_cols:
+            df_temp[col] = df[col].map(self._encoding_dict[col])
+        df = df_temp
         return df
 
-    def prepare_X(self, df):
-        data = self.median_dataset(df)
-        X = PCA().fit_transform(data)
-        return X
 
     def _build_classifier(self, penalty, tol, C, fit_intercept, solver):
         clf = LogisticRegression(
-            penalty=penalty,
-            tol=tol,
-            C=C,
-            fit_intercept=fit_intercept,
-            solver=solver,
-        )
+                                penalty=penalty,
+                                tol=tol,
+                                C=C,
+                                fit_intercept=fit_intercept,
+                                solver=solver,
+                                )
         return clf
 
 
@@ -153,12 +166,19 @@ if __name__ == '__main__':
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
                      train_dataset_path='data/diabetes_train.csv',
                      val_dataset_path='data/diabetes_val.csv',
-                     queries=[{
+                     train_args={
+                         'features': [
+                             'Pregnancies', 'Glucose', 'BloodPressure',
+                             'SkinThickness', 'Insulin', 'DiabetesPedigreeFunction','BMI', 'Age'],
+                         'target': 'Outcome'
+                     },
+                     queries={
                          'Pregnancies': 3,
-                         'Glucose': '130',
+                         'Glucose': 130,
                          'BloodPressure': 92,
                          'SkinThickness': 30,
                          'Insulin': 90,
+                         'DiabetesPedigreeFunction': 1,
                          'BMI': 30.4,
                          'Age': 40
-                     }])
+                     })

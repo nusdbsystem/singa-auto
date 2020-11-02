@@ -1,36 +1,52 @@
-from sklearn.ensemble import RandomForestClassifier
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 import pickle
 import base64
 import pandas as pd
 import numpy as np
 import json
 
-from singa_auto.model import TabularClfModel, IntegerKnob, CategoricalKnob, logger
+from sklearn.naive_bayes import GaussianNB
+# from sklearn.preprocessing import StandardScaler
+
+from singa_auto.model import TabularClfModel, IntegerKnob, FloatKnob, logger
 from singa_auto.model.dev import test_model_class
 from singa_auto.constants import ModelDependency
 
 
-class RandomForestClf(TabularClfModel):
+class GaussianClf(TabularClfModel):
     '''
-    Implements Random Forest Classifier for tabular data classification task
+    Implements Gaussian Naive Bayes Classifier using heart disease UCI dataset
     '''
 
     @staticmethod
     def get_knob_config():
         return {
-            'n_estimators': IntegerKnob(50, 200),
-            'oob_score': CategoricalKnob([True, False]),
-            'max_depth': IntegerKnob(10, 100),
-            'max_features': CategoricalKnob(['auto', 'sqrt', 'log2'])
+            'var_smoothing': FloatKnob(1e-07, 1e-05),
         }
 
     def __init__(self, **knobs):
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self._knobs.get("n_estimators"),
-                                           self._knobs.get("max_depth"),
-                                           self._knobs.get("oob_score"),
-                                           self._knobs.get("max_features"))
+        self._clf = self._build_classifier(self._knobs.get("var_smoothing"))
+
 
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
@@ -141,28 +157,37 @@ class RandomForestClf(TabularClfModel):
         df = df_temp
         return df
 
-    def _build_classifier(self, n_estimators, max_depth, oob_score,
-                          max_features):
-        clf = RandomForestClassifier(n_estimators=n_estimators,
-                                     max_depth=max_depth,
-                                     oob_score=oob_score,
-                                     max_features=max_features)
+    def _build_classifier(self, var_smoothing):
+        clf = GaussianNB(var_smoothing=var_smoothing)
         return clf
 
 
 if __name__ == '__main__':
     test_model_class(model_file_path=__file__,
-                     model_class='RandomForestClf',
+                     model_class='GaussianClf',
                      task='TABULAR_CLASSIFICATION',
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
-                     train_dataset_path='data/titanic_train.csv',
-                     val_dataset_path='data/titanic_test.csv',
+                     train_dataset_path='data/heart_train.csv',
+                     val_dataset_path='data/heart_val.csv',
                      train_args={
-                         'features': ['Pclass', 'Sex', 'Age'],
-                         'target': 'Survived'
+                         'features': [
+                             'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs',
+                             'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 
+                             'ca', 'thal'], 
+                             'target': 'target'
                      },
                      queries={
-                         'Pclass': 1,
-                         'Sex': 'female',
-                         'Age': 16.0
+                         'age': 48,
+                         'sex': 1,
+                         'cp': 2,
+                         'trestbps': 130,
+                         'chol': 225,
+                         'fbs': 1,
+                         'restecg': 1,
+                         'thalach': 172,
+                         'exang': 1,
+                         'oldpeak': 1.7,
+                         'slope': 2,
+                         'ca': 0,
+                         'thal': 3
                      })

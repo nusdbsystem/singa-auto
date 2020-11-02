@@ -19,11 +19,10 @@
 
 import pickle
 import base64
-import pandas as pd
 import numpy as np
+import pandas as pd
 import json
 
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
@@ -34,7 +33,7 @@ from singa_auto.constants import ModelDependency
 
 class RidgeReg(BaseModel):
     '''
-    Implements a Linear Ridge Regressor for regression task using boston housing price dataset.
+    Implements a Linear Ridge Regressor for regression task using bodyfat dataset.
     '''
 
     @staticmethod
@@ -70,15 +69,16 @@ class RidgeReg(BaseModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
 
         self._regressor.fit(X, y)
 
         # Compute train root mean square error
         preds = self._regressor.predict(X)
-
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
+
 
     def evaluate(self, dataset_path,  **kwargs):
         # Load CSV file as pandas dataframe
@@ -88,19 +88,21 @@ class RidgeReg(BaseModel):
         # Extract X & y from dataframe
         (X, y) = self._extract_xy(data)
 
-        X = self.prepare_X(X)
+        # Encode categorical features
+        X = self._encoding_categorical_type(X)
 
         preds = self._regressor.predict(X)
-
         rmse = np.sqrt(mean_squared_error(y, preds))
-
         return 1 / rmse
 
     def predict(self, queries):
         queries = [pd.DataFrame(query, index=[0]) for query in queries]
-        data = self.prepare_X(queries)
-        result = self._regressor.predict(data)
-        return result.tolist()[0]
+        results = [
+            self._regressor.predict(self._features_mapping(query)).tolist()[0]
+            for query in queries
+        ]
+        return results
+
 
     def destroy(self):
         pass
@@ -112,25 +114,24 @@ class RidgeReg(BaseModel):
         regressor_bytes = pickle.dumps(self._regressor)
         regressor_base64 = base64.b64encode(regressor_bytes).decode('utf-8')
         params['regressor_base64'] = regressor_base64
+        params['encoding_dict'] = json.dumps(self._encoding_dict)
         params['features'] = json.dumps(self._features)
-        if self._target:
-            params['target'] = self._target
+        params['target'] = self._target
 
         return params
+
 
     def load_parameters(self, params):
         # Load model parameters
         assert 'regressor_base64' in params
         regressor_base64 = params['regressor_base64']
         regressor_bytes = base64.b64decode(regressor_base64.encode('utf-8'))
-
         self._regressor = pickle.loads(regressor_bytes)
-        self._features = json.loads(params['features'])
 
-        if "target" in params:
-            self._target = params['target']
-        else:
-            self._target = None
+        self._encoding_dict = json.loads(params['encoding_dict'])
+        self._features = json.loads(params['features'])
+        self._target = params['target']
+
 
     def _extract_xy(self, data):
         features = self._features
@@ -148,17 +149,35 @@ class RidgeReg(BaseModel):
 
         return (X, y)
 
-    def median_dataset(self, df):
-        #replace zero values by median so that 0 will not affect median.
-        for col in df.columns:
-            df[col].replace(0, np.nan, inplace=True)
-            df[col].fillna(df[col].median(), inplace=True)
+
+    def _encoding_categorical_type(self, cols):
+        # Apply label encoding for those categorical columns
+        cat_cols = list(
+            filter(lambda x: cols[x].dtype == 'object', cols.columns))
+        encoded_cols = pd.DataFrame({col: cols[col].astype('category').cat.codes \
+            if cols[col].dtype == 'object' else cols[col] for col in cols}, index=cols.index)
+
+        # Recover the missing elements (Use XGBoost to automatically handle them)
+        encoded_cols = encoded_cols.replace(to_replace=-1, value=np.nan)
+
+        # Generate the dict that maps categorical features to numerical
+        encoding_dict = {col: {cat: n for n, cat in enumerate(cols[col].astype('category'). \
+            cat.categories)} for col in cat_cols}
+        self._encoding_dict = encoding_dict
+
+        return encoded_cols
+
+
+    def _features_mapping(self, df):
+        # Encode the categorical features with pre saved encoding dict
+        cat_cols = list(filter(lambda x: df[x].dtype == 'object', df.columns))
+        df_temp = df.copy()
+        for col in cat_cols:
+            df_temp[col] = df[col].map(self._encoding_dict[col])
+        df = df_temp
         return df
 
-    def prepare_X(self, df):
-        data = self.median_dataset(df)
-        X = PolynomialFeatures(interaction_only=True).fit_transform(df)
-        return X
+
     def _build_regressor(self, alpha, normalize, copy_X, tol, solver,
                          random_state):
         regressor = Ridge(
@@ -177,27 +196,29 @@ if __name__ == '__main__':
                      model_class='RidgeReg',
                      task='TABULAR_REGRESSION',
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
-                     train_dataset_path='data/boston_train.csv',
-                     val_dataset_path='data/boston_val.csv',
+                     train_dataset_path='data/bodyfat_train.csv',
+                     val_dataset_path='data/bodyfat_val.csv',
                      train_args={
                          'features': [
-                             'CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE',
-                             'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT'
+                             'density', 'age', 'weight', 'height', 'neck',
+                             'chest', 'abdomen', 'hip', 'thigh', 'knee',
+                             'ankle', 'biceps', 'forearm', 'wrist'
                          ],
-                         'target': 'MEDV'
+                         'target': 'bodyfat'
                      },
                      queries=[{
-                         'CRIM': 60.1,
-                         'ZN': 0.001,
-                         'INDUS': 18.1,
-                         'CHAS': 0,
-                         'NOX': 597,
-                         'RM': 6.23,
-                         'AGE': 50.0,
-                         'DIS': 1.222,
-                         'RAD': 23,
-                         'TAX': 700,
-                         'PTRATIO': 20.1,
-                         'B': 1.54,
-                         'LSTAT': 11.09
+                         'density': 1.0207,
+                         'age': 65,
+                         'weight': 224.5,
+                         'height': 68.25,
+                         'neck': 38.8,
+                         'chest': 119.6,
+                         'abdomen': 118.0,
+                         'hip': 114.3,
+                         'thigh': 61.3,
+                         'knee': 42.1,
+                         'ankle': 23.4,
+                         'biceps': 34.9,
+                         'forearm': 30.1,
+                         'wrist': 19.4
                      }])
