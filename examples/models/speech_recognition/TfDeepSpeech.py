@@ -161,6 +161,8 @@ class TfDeepSpeech(BaseModel):
     ```
     ...and subsequently create the model with an additional `docker_image` option pointing to that Docker image.
     '''
+    def __init__(self, **knobs):
+        super().__init__(**knobs)
 
     @staticmethod
     def get_knob_config():
@@ -1211,7 +1213,7 @@ class TfDeepSpeech(BaseModel):
 
         predictions = []
         for query in queries:
-            wav_bytes = base64.b64decode(query.encode('utf-8'))
+            wav_bytes = tf.read_file(query)
             features, features_len = self.audiofile_to_features(wav_bytes)
 
             # Add batch dimension
@@ -1373,7 +1375,10 @@ class Alphabet(object):
                     elif line[0] == '#':
                         continue
                     self._label_to_str[self._size] = line[:-1] # remove the line ending
-                    self._str_to_label[line[:-1]] = self._size
+                    # {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h', 8: 'i', 9: 'j', 10: 'k', 11: 'l', 12: 'm', 13: 'n', 14: 'o', 15: 'p', 16: 'q', 17: 'r', 18: 's', 19: 't', 20: 'u', 21: 'v', 22: 'w', 23: 'x', 24: 'y', 25: 'z', 26: ' ', 27: "'", 28: ''}
+                    self._str_to_label[line[:-1]] = self._size 
+                    # {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9, 'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18, 't': 19, 'u': 20, 'v': 21, 'w': 22, 'x': 23, 'y': 24, 'z': 25, ' ': 26, "'": 27, '': 28}
+                    
                     self._size += 1
 
     def string_from_label(self, label):
@@ -1504,7 +1509,8 @@ if __name__ == '__main__':
                 '1.12.0',
             # Use ds_ctcdecoder version compatible with the trie file you download or generate
             ModelDependency.DS_CTCDECODER:
-                '0.6.0-alpha.4',
+                # '0.6.0-alpha.4',
+                '0.6.1',
         },
         train_dataset_path=args.train_path,
         val_dataset_path=args.val_path,
