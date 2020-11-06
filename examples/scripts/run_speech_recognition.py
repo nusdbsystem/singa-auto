@@ -32,7 +32,7 @@ from examples.scripts.quickstart import get_predictor_host, \
 from examples.datasets.audio_files.load_librispeech import load_librispeech
 
 IMAGE_TFDEEPSPEECH_VERSION = os.environ['SINGA_AUTO_VERSION']
-IMAGE_TFDEEPSPEECH = f'singa_auto_tfdeepspeech:{'SINGA_AUTO_VERSION'}'
+IMAGE_TFDEEPSPEECH = f'singa_auto_tfdeepspeech:{os.environ['SINGA_AUTO_VERSION']}'
 
 
 def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
