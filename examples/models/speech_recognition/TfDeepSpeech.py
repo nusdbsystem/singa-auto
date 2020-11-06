@@ -161,8 +161,6 @@ class TfDeepSpeech(BaseModel):
     ```
     ...and subsequently create the model with an additional `docker_image` option pointing to that Docker image.
     '''
-    def __init__(self, **knobs):
-        super().__init__(**knobs)
 
     @staticmethod
     def get_knob_config():
