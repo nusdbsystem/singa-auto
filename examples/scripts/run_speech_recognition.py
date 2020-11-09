@@ -31,8 +31,8 @@ from examples.scripts.quickstart import get_predictor_host, \
 
 from examples.datasets.audio_files.load_librispeech import load_librispeech
 
-IMAGE_TFDEEPSPEECH_NAME = os.environ['IMAGE_TFDEEPSPEECH_NAME']
-IMAGE_TFDEEPSPEECH_VERSION = os.environ['SINGA_AUTO_VERSION']
+IMAGE_TFDEEPSPEECH_NAME = os.environ.get('IMAGE_TFDEEPSPEECH_NAME', 'singa-auto-tfdeepspeech')
+IMAGE_TFDEEPSPEECH_VERSION = os.environ.get('SINGA_AUTO_VERSION', 'dev')
 
 IMAGE_TFDEEPSPEECH = f'{IMAGE_TFDEEPSPEECH_NAME}:{SINGA_AUTO_VERSION}'
 
