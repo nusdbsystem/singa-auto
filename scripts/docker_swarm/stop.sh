@@ -78,6 +78,8 @@ python3 $HOST_WORKDIR_PATH/scripts/stop_all_jobs.py
 
 stop_db || exit 1
 
+docker stop $POSTGRES_HOST $ZOOKEEPER_HOST $KAFKA_HOST $REDIS_HOST $ADMIN_HOST $WEB_ADMIN_HOST $KIBANA_HOST $LOGSTASH_HOST $ES_HOST
+
 title "Stopping SINGA-Auto's Zookeeper..."
 docker rm -f $ZOOKEEPER_HOST || echo "Failed to stop SINGA-Auto's Zookeeper"
 
