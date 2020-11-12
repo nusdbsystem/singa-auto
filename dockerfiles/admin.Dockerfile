@@ -40,18 +40,13 @@ WORKDIR $DOCKER_WORKDIR_PATH
 ENV PYTHONPATH $DOCKER_WORKDIR_PATH
 
 # Install python dependencies
-COPY singa_auto/requirements.txt singa_auto/requirements.txt
+COPY singa_auto/ singa_auto/
 RUN pip install -r singa_auto/requirements.txt
-COPY singa_auto/utils/requirements.txt singa_auto/utils/requirements.txt
 RUN pip install -r singa_auto/utils/requirements.txt
-COPY singa_auto/meta_store/requirements.txt singa_auto/meta_store/requirements.txt
 RUN pip install -r singa_auto/meta_store/requirements.txt
-COPY singa_auto/container/requirements.txt singa_auto/container/requirements.txt
 RUN pip install -r singa_auto/container/requirements.txt
-COPY singa_auto/admin/requirements.txt singa_auto/admin/requirements.txt
 RUN pip install -r singa_auto/admin/requirements.txt
 
-COPY singa_auto/ singa_auto/
 COPY scripts/ scripts/
 
 EXPOSE 3000
