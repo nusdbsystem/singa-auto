@@ -21,5 +21,5 @@ TRIE_PATH=tfdeepspeech/trie
 
 # Download pre-built trie from https://github.com/mozilla/DeepSpeech/tree/v0.6.0-alpha.4/data/lm
 mkdir -p tfdeepspeech/
-curl https://media.githubusercontent.com/media/mozilla/DeepSpeech/v0.6.0-alpha.4/data/lm/trie -o $TRIE_PATH
+wget https://github.com/mozilla/DeepSpeech/releases/download/v0.6.1/trie -O $TRIE_PATH
 echo "Trie downloaded to $TRIE_PATH"
