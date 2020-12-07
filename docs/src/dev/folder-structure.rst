@@ -73,7 +73,7 @@ Folder Structure
 
 - `examples/`
     
-    Sample usage code for SINGA-Auto.
+    Sample usage code for SINGA-Auto, such as standard models, datasets dowloading and processing codes, sample image/question data, and quick test code
 
 - `docs/`
 
@@ -87,6 +87,22 @@ Folder Structure
 
     Shell & python scripts for initializing, starting and stopping various components of SINGA-Auto's stack
 
-- `.env.sh`
+    - `docker_swarm/`
 
-    Stores configuration variables for SINGA-Auto
+        Containing server environment settings and scripts for running Docker
+
+    - `kubernetes/`
+
+        Containing server environment settings and scripts for running Kubernetes
+
+    - `.base_env.sh`
+
+        Stores configuration variables for SINGA-Auto
+
+- `log_minitor/`
+
+    Dockerfile and configurations for elasticsearch and logstash
+
+- `singa_auto_scheduler/`
+
+    Dockerfiles and configurations for scheduler and monitor
