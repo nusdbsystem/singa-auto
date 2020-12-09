@@ -102,7 +102,10 @@ If using kubernetes, putting all these nodes into kubernetes.
 
 .. seealso:: :ref:`architecture`
 
+
+.. _`GPUs on docker swarm`:
 To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the following:
+
 
 1. If SINGA-Auto is running, stop SINGA-Auto with 
 
@@ -145,8 +148,9 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 
         bash scripts/docker_swarm/setup_node.sh
 
-
+.. _`GPUs on kubernetes`:
 To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following:
+
 
 1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/kubernetes/stop.sh``
 
@@ -160,13 +164,13 @@ To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following
 
 5. For *each node that has GPUs*:
 
-    6.1. `Install NVIDIA drivers <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html>`__ for CUDA *9.0* or above
+    5.1. `Install NVIDIA drivers <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html>`__ for CUDA *9.0* or above
 
-    6.2. `Install nvidia-docker2 <https://github.com/NVIDIA/nvidia-docker>`__
+    5.2. `Install nvidia-docker2 <https://github.com/NVIDIA/nvidia-docker>`__
 
-    6.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
+    5.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
 
-    6.4. Install nvidia-device-plugin, use command "*kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml*" on the *master node*
+    5.4. Install nvidia-device-plugin, use command "*kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml*" on the *master node*
 
 7. On the *master node*, start SINGA-Auto with ``bash scripts/kubernetes/start.sh``
 
