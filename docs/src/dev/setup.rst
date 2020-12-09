@@ -48,7 +48,7 @@ As for Developer
 
     .. code-block:: shell
 
-        bash scripts/start.sh
+        bash scripts/docker_swarm/start.sh
 
    If using kubernetes, Setup SINGA-Auto's complete stack with the setup script:
 
@@ -56,13 +56,13 @@ As for Developer
 
         bash scripts/kubernetes/start.sh
 
-*SINGA-Auto Admin* and *SINGA-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively.
+*SINGA-Auto Admin* and *SINGA-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively, or the server specified as 'IP_ADRESS' in scripts/docker_swarm/.env.sh or scripts/kubernetes/.env.sh.
 
 If using docker, to destroy SINGA-Auto's complete stack:
 
     .. code-block:: shell
 
-        bash scripts/stop.sh
+        bash scripts/docker_swarm/stop.sh
 
 If using kubernetes, to destroy SINGA-Auto's complete stack:
 
@@ -76,6 +76,12 @@ Updating docker images
     .. code-block:: shell
 
         bash scripts/kubernetes/build_images.sh
+
+or
+
+    .. code-block:: shell
+
+        bash scripts/docker_swarm/build_images.sh
         bash scripts/push_images.sh
 
 By default, you can read logs of SINGA-Auto Admin & any of SINGA-Auto's workers
@@ -98,7 +104,12 @@ If using kubernetes, putting all these nodes into kubernetes.
 
 To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the following:
 
-1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/stop.sh``
+1. If SINGA-Auto is running, stop SINGA-Auto with 
+
+    ::
+
+        bash scripts/docker_swarm/stop.sh
+
 
 2. Have all nodes `leave any Docker Swarm <https://docs.docker.com/engine/reference/commandline/swarm_leave/>`__ they are in
 
@@ -120,7 +131,11 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 
     6.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
 
-7. On the *master node*, start SINGA-Auto with ``bash scripts/start.sh``
+7. On the *master node*, start SINGA-Auto with 
+
+    ::
+
+        bash scripts/docker_swarm/start.sh
 
 8. For *each worker node*, have the node `join the master node's Docker Swarm <https://docs.docker.com/engine/swarm/join-nodes/>`__
 
@@ -128,7 +143,8 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 
     ::
 
-        bash scripts/setup_node.sh
+        bash scripts/docker_swarm/setup_node.sh
+
 
 To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following:
 
