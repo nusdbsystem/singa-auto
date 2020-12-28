@@ -44,6 +44,22 @@ As for Developer
 
 4. Clone the project at https://github.com/nusdbsystem/singa-auto (e.g. with `Git <https://git-scm.com/downloads>`__)
 
+   In file web/src/HTTPconfig.js, developers have to modify the following values to conform with their server setting:
+
+    .. code-block:: shell
+    
+        const adminHost = '127.0.0.1' # Singa-Auto server address, in str format
+        const adminPort = '3000'      # Singa-Auto server port, in str format
+
+        const LocalGateways = {...
+          // NOTE: must append '/' at the end!
+          singa_auto: "http://127.0.0.1:3000/", # http://<ServerAddress>:<Port>/, in str format
+        }
+
+        HTTPconfig.adminHost = `127.0.0.1`  # Singa-Auto server address, in str format
+        HTTPconfig.adminPort = `3000`       # Singa-Auto server port, in str format
+   By using 127.0.0.1 as Singa-Auto server address, it means Singa-Auto will be deployed on your 'local' machine.
+
 5. If using docker, Setup SINGA-Auto's complete stack with the setup script:
 
     .. code-block:: shell
@@ -100,6 +116,7 @@ Scaling SINGA-Auto horizontally and enabling GPU usage involves setting up *Netw
 installing & configuring the default Docker runtime to `nvidia` for each GPU-bearing node. If using docker swarm, putting all these nodes into a single Docker Swarm.
 If using kubernetes, putting all these nodes into kubernetes.
 
+
 .. seealso:: :ref:`architecture`
 
 
@@ -152,7 +169,11 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following:
 
 
-1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/kubernetes/stop.sh``
+1. If SINGA-Auto is running, stop SINGA-Auto with 
+
+    ::
+
+        bash scripts/kubernetes/stop.sh
 
 2. Put all nodes you need in kubernetes cluster, reference to `kubeadm join <https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/>`__
 
@@ -189,7 +210,7 @@ Example:
 
     export SINGA_AUTO_ADDR=172.28.176.35
 
-Re-deploy SINGA-Auto. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
+Re-deploy SINGA-Auto with step 4, changing Singa-Auto server address to conform. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
 over ports 3000 and 3001 (by default), assuming incoming connections to these ports are allowed.
 
 **Before you expose SINGA-Auto to the public,
