@@ -44,7 +44,7 @@ As for Developer
 
 4. Clone the project at https://github.com/nusdbsystem/singa-auto (e.g. with `Git <https://git-scm.com/downloads>`__)
 
-   In file web/src/HTTPconfig.js, developers have to modify the following values to conform with their server setting:
+   In file web/src/HTTPconfig.js, there are parameters specifying backend server and port that Web UI interacts with. Developers have to modify the following values to conform with their server setting:
 
     .. code-block:: shell
     
