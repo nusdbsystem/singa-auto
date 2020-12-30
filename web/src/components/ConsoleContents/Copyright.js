@@ -10,7 +10,7 @@ function Copyright() {
         color="inherit"
         href="https://github.com/nusdbsystem/singa-auto/"
       >
-        SINGA-Auto
+        PANDA
       </Link>{" "}
       {new Date().getFullYear()}
     </Typography>

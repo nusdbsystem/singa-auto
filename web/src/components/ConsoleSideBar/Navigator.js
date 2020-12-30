@@ -221,7 +221,7 @@ class Navigator extends React.Component {
             )}
           >
             <img alt="logo" src={Logo} className={classes.logo} />
-            SINGA-Auto
+            PANDA
           </ListItem>
 
           {categories.map(({ id, collapseID, collapseIn, children }) => (
