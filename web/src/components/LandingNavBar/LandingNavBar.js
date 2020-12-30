@@ -17,7 +17,7 @@ import IconButton from "@material-ui/core/IconButton"
 import AvatarRegion from "components/RootComponents/AvatarRegion"
 
 import Toolbar, { styles as toolbarStyles } from "../LandingComponents/Toolbar"
-import Logo from "../../assets/LOGO_Rafiki-4.svg"
+import Logo from "../../assets/Logo_Panda.png"
 
 const styles = theme => ({
   LandingAppBar: {
