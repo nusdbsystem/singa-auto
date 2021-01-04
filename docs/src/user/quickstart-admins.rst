@@ -7,8 +7,8 @@ To learn about how to manage models, go to :ref:`quickstart-model-developers`.
 
 To learn about how to manage train & inference jobs, go to :ref:`quickstart-app-developers`.
 
-This guide assumes that you have access to a running instance of *SINGA-Auto Admin* at ``<singa_auto_host>:<admin_port>``
-and *SINGA-Auto Web Admin* at ``<singa_auto_host>:<web_admin_port>``.
+This guide assumes that you have access to a running instance of *SINGA-Auto Admin* at ``<singa_auto_host>:<admin_port>``, e.g., ``127.0.0.1:3000``, 
+and *SINGA-Auto Web Admin* at ``<singa_auto_host>:<web_admin_port>``, e.g., ``127.0.0.1:3001``.
 
 Installation
 --------------------------------------------------------------------
@@ -24,7 +24,7 @@ Example:
     .. code-block:: python
 
         from singa_auto.client import Client
-        client = Client(admin_host='localhost', admin_port=3000)
+        client = Client(admin_host='localhost', admin_port=3000) # 'localhost' can be replaced by '127.0.0.1' or other server address
         client.login(email='superadmin@singaauto', password='singa_auto')
 
 .. seealso:: :meth:`singa_auto.client.Client.login`
