@@ -71,13 +71,13 @@ function AppFooter(props) {
                   <GithubIcon />
                 </a>
               </Grid>
-              <Grid item>© 2020 SINGA-Auto</Grid>
+              <Grid item>© 2021 PANDA</Grid>
             </Grid>
           </Grid>
           <Grid item>
             <Typography variant="caption">
               {
-                "SINGA-Auto is brought to you by the team from DBsystem NUS School of Computing"
+                "PANDA is brought to you by the team from DBsystem NUS School of Computing"
               }
             </Typography>
           </Grid>
