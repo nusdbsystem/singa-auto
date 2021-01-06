@@ -30,7 +30,7 @@ import ExpandLess from "@material-ui/icons/ExpandLess"
 import ExpandMore from "@material-ui/icons/ExpandMore"
 
 // import Logo from "assets/Logo-Rafiki-cleaned.png"
-import Logo from "assets/LOGO_Rafiki-4.svg"
+import Logo from "assets/Logo_Panda.png"
 
 // Navigator basic color dark blue specified in
 // ConsoleTheme MuiDrawer's paper
@@ -221,7 +221,7 @@ class Navigator extends React.Component {
             )}
           >
             <img alt="logo" src={Logo} className={classes.logo} />
-            SINGA-Auto
+            PANDA
           </ListItem>
 
           {categories.map(({ id, collapseID, collapseIn, children }) => (

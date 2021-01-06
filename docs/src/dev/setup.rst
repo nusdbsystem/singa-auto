@@ -44,11 +44,27 @@ As for Developer
 
 4. Clone the project at https://github.com/nusdbsystem/singa-auto (e.g. with `Git <https://git-scm.com/downloads>`__)
 
+   In file web/src/HTTPconfig.js, there are parameters specifying backend server and port that Web UI interacts with. Developers have to modify the following values to conform with their server setting:
+
+    .. code-block:: shell
+    
+        const adminHost = '127.0.0.1' # Singa-Auto server address, in str format
+        const adminPort = '3000'      # Singa-Auto server port, in str format
+
+        const LocalGateways = {...
+          // NOTE: must append '/' at the end!
+          singa_auto: "http://127.0.0.1:3000/", # http://<ServerAddress>:<Port>/, in str format
+        }
+
+        HTTPconfig.adminHost = `127.0.0.1`  # Singa-Auto server address, in str format
+        HTTPconfig.adminPort = `3000`       # Singa-Auto server port, in str format
+   By using 127.0.0.1 as Singa-Auto server address, it means Singa-Auto will be deployed on your 'local' machine.
+
 5. If using docker, Setup SINGA-Auto's complete stack with the setup script:
 
     .. code-block:: shell
 
-        bash scripts/start.sh
+        bash scripts/docker_swarm/start.sh
 
    If using kubernetes, Setup SINGA-Auto's complete stack with the setup script:
 
@@ -56,13 +72,13 @@ As for Developer
 
         bash scripts/kubernetes/start.sh
 
-*SINGA-Auto Admin* and *SINGA-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively.
+*SINGA-Auto Admin* and *SINGA-Auto Web Admin* will be available at ``127.0.0.1:3000`` and ``127.0.0.1:3001`` respectively, or the server specified as 'IP_ADRESS' in scripts/docker_swarm/.env.sh or scripts/kubernetes/.env.sh.
 
 If using docker, to destroy SINGA-Auto's complete stack:
 
     .. code-block:: shell
 
-        bash scripts/stop.sh
+        bash scripts/docker_swarm/stop.sh
 
 If using kubernetes, to destroy SINGA-Auto's complete stack:
 
@@ -76,6 +92,12 @@ Updating docker images
     .. code-block:: shell
 
         bash scripts/kubernetes/build_images.sh
+
+or
+
+    .. code-block:: shell
+
+        bash scripts/docker_swarm/build_images.sh
         bash scripts/push_images.sh
 
 By default, you can read logs of SINGA-Auto Admin & any of SINGA-Auto's workers
@@ -94,11 +116,20 @@ Scaling SINGA-Auto horizontally and enabling GPU usage involves setting up *Netw
 installing & configuring the default Docker runtime to `nvidia` for each GPU-bearing node. If using docker swarm, putting all these nodes into a single Docker Swarm.
 If using kubernetes, putting all these nodes into kubernetes.
 
+
 .. seealso:: :ref:`architecture`
 
+
+.. _`GPUs on docker swarm`:
 To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the following:
 
-1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/stop.sh``
+
+1. If SINGA-Auto is running, stop SINGA-Auto with 
+
+    ::
+
+        bash scripts/docker_swarm/stop.sh
+
 
 2. Have all nodes `leave any Docker Swarm <https://docs.docker.com/engine/reference/commandline/swarm_leave/>`__ they are in
 
@@ -120,7 +151,11 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 
     6.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
 
-7. On the *master node*, start SINGA-Auto with ``bash scripts/start.sh``
+7. On the *master node*, start SINGA-Auto with 
+
+    ::
+
+        bash scripts/docker_swarm/start.sh
 
 8. For *each worker node*, have the node `join the master node's Docker Swarm <https://docs.docker.com/engine/swarm/join-nodes/>`__
 
@@ -128,11 +163,17 @@ To run SINGA-Auto on multiple machines with GPUs on docker swarm, do the followi
 
     ::
 
-        bash scripts/setup_node.sh
+        bash scripts/docker_swarm/setup_node.sh
 
+.. _`GPUs on kubernetes`:
 To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following:
 
-1. If SINGA-Auto is running, stop SINGA-Auto with ``bash scripts/kubernetes/stop.sh``
+
+1. If SINGA-Auto is running, stop SINGA-Auto with 
+
+    ::
+
+        bash scripts/kubernetes/stop.sh
 
 2. Put all nodes you need in kubernetes cluster, reference to `kubeadm join <https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/>`__
 
@@ -144,13 +185,13 @@ To run SINGA-Auto on multiple machines with GPUs on kubernetes, do the following
 
 5. For *each node that has GPUs*:
 
-    6.1. `Install NVIDIA drivers <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html>`__ for CUDA *9.0* or above
+    5.1. `Install NVIDIA drivers <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html>`__ for CUDA *9.0* or above
 
-    6.2. `Install nvidia-docker2 <https://github.com/NVIDIA/nvidia-docker>`__
+    5.2. `Install nvidia-docker2 <https://github.com/NVIDIA/nvidia-docker>`__
 
-    6.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
+    5.3. Set the ``default-runtime`` of Docker to `nvidia` (e.g. `instructions here <https://lukeyeager.github.io/2018/01/22/setting-the-default-docker-runtime-to-nvidia.html>`__)
 
-    6.4. Install nvidia-device-plugin, use command "*kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml*" on the *master node*
+    5.4. Install nvidia-device-plugin, use command "*kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml*" on the *master node*
 
 7. On the *master node*, start SINGA-Auto with ``bash scripts/kubernetes/start.sh``
 
@@ -169,7 +210,7 @@ Example:
 
     export SINGA_AUTO_ADDR=172.28.176.35
 
-Re-deploy SINGA-Auto. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
+Re-deploy SINGA-Auto with step 4, changing Singa-Auto server address to conform. SINGA-Auto Admin and SINGA-Auto Web Admin will be available at that IP address,
 over ports 3000 and 3001 (by default), assuming incoming connections to these ports are allowed.
 
 **Before you expose SINGA-Auto to the public,

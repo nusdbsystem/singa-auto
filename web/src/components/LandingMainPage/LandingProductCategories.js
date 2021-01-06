@@ -27,7 +27,7 @@ function ProductCategories(props) {
         <div className="section_center">
           <div className="center__description">
             <p className="description__text">
-              SINGA-Auto’s system architecture consists of 3 static components, 2
+              PANDA’s system architecture consists of 3 static components, 2
               central databases, 3 types of dynamic components, and 1
               client-side SDK, which can be illustrated with a 3-layer
               architecture diagram.
