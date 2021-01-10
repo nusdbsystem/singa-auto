@@ -3,6 +3,8 @@ Example:
     .. code-block:: python
 
         client.get_available_models(task='IMAGE_CLASSIFICATION')
+        # While leave the "task" unspecified, the method will retrieve information of all uploaded models 
+        client.get_available_models()
 
     Output:
 
