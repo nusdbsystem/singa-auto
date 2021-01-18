@@ -153,6 +153,7 @@ class Admin(object):
         # and ensure the zip file is correctly named with extension, nor hidden zip file.
         # Current implementation changes all uploaded zip datasets extension into '.data',
         # so by default, '.data' file should be treated as '.zip'
+        # (see singa_auto/data_store/file.py)
         if len(os.path.splitext(data_file_path)) == 2 and (os.path.splitext(
                 data_file_path)[1] == '.zip' or os.path.splitext(data_file_path)[1] == '.data'):
             dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
