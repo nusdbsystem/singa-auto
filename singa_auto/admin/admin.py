@@ -149,13 +149,8 @@ class Admin(object):
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
         stat = dict()
-        # the default dataset uploading format is zip, otherwise the below code hunk won't unzip it
-        # and ensure the zip file is correctly named with extension, nor hidden zip file.
-        # Current implementation changes all uploaded zip datasets extension into '.data',
-        # so by default, '.data' file should be treated as '.zip'
-        # (see singa_auto/data_store/file.py)
-        if len(os.path.splitext(data_file_path)) == 2 and (os.path.splitext(
-                data_file_path)[1] == '.zip' or os.path.splitext(data_file_path)[1] == '.data'):
+        # the default dataset uploading format is zip, named with random array, e.g. "/tmp/tmp2gvvcpd_"
+        if True:
             dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
             # when .zip file is a image dataset and contains images.csv as label file
             # images.csv includes pairs of the image names and their labels
