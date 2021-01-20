@@ -8,10 +8,18 @@ By default, the `TfDeepSpeech` model should use the pre-built language model (LM
 which works for the *English* language. You'll need to first download this model's file dependencies by running (in Rafiki's root folder):
     
 ```
-bash examples/models/speech_recognition/tfdeepspeech/download_file_deps.sh
+bash examples/models/speech_recognition/tfdeepspeech/download_lm.sh
+bash examples/models/speech_recognition/tfdeepspeech/download_trie.sh
+wget https://github.com/mozilla/DeepSpeech/releases/download/v0.7.3/deepspeech-0.7.3-models.scorer -P <model_root_directory>/tfdeepspeech
 ```
 
-This downloads the files `alphabet.txt`, `lm.binary` and `trie` into `<rafiki_root_directory>/tfdeepspeech`, where the `TfDeepSpeech` model reads its dependencies from by default.
+This downloads the files `alphabet.txt`, `lm.binary`, `trie` and `scorer` into `<model_root_directory>/tfdeepspeech`, where the `TfDeepSpeech` model reads its dependencies from by default.
+
+```
+pip --no-cache-dir install tensorflow==1.12.0
+pip install ds_ctcdecoder==0.6.1
+```
+This will download dependencies={"ds_ctcdecoder":"0.6.1", "tensorflow":'1.12.0', }
 
 If you wish to generate your own language models and trie files instead, or wish to implement TfDeepSpeech to other languages, see instructions provided below.
 
