@@ -34,7 +34,7 @@ The TfDeepSpeech model requires a binary n-gram language model compiled by `kenl
     python examples/models/speech_recognition/tfdeepspeech/download_lm_txt.py
     ```
 
-1. Install dependencies
+1. Install dependencies for building language model
 
     ```sh
     sudo apt-get install build-essential libboost-all-dev cmake zlib1g-dev libbz2-dev liblzma-dev
@@ -99,5 +99,57 @@ Run
 
     ```sh
     python examples/datasets/audio_files/load_sample_ldc93s1.py
+    python examples/datasets/audio_files/load_librispeech.py 
     ```
-to download the testing dataset.
+to download the sample and training datasets.
+
+### Run Test with Sample Dataset
+
+Run the below script to install dependencies for model in the host server environment (e.g. docker container)
+
+    ```sh
+    pip install -U pip \
+    && pip install -r examples/models/speech_recognition/requirements.txt
+    ```
+
+Use Python API to create model, pls run
+
+    ```python
+    import os
+    from singa_auto.client import Client
+    from singa_auto.constants import BudgetOption, ModelDependency
+    
+    # change localhost address and port number accordingly 
+    # to conform with settings in web/src/HTTPconfig.js, scripts/docker_swarm/.env.sh, scripts/.base_env.sh
+    client = Client(admin_host='localhost', admin_port=3000) 
+    client.login(email='<USER_EMAIL>', password='<USER_PASSWORD>')
+
+    task = 'SPEECH_RECOGNITION'
+    
+    # if nessacery, you can change into other dataset
+    data_dir = 'data/libri'
+    train_dataset_path = os.path.join(data_dir, 'dev-clean.zip') 
+    
+    created_model=client.create_model(name='<MODEL_NAME>',
+        task='SPEECH_RECOGNITION',
+        model_file_path='examples/models/speech_recognition/TfDeepSpeech.py',
+        model_class='TfDeepSpeech',model_preload_file_path ='examples/models/speech_recognition/TfDeepSpeech.py',
+        dependencies={"ds_ctcdecoder":"0.6.1", "tensorflow":'1.12.0', })
+
+    budget = {BudgetOption.TIME_HOURS: 0.5, BudgetOption.GPU_COUNT: 0, BudgetOption.MODEL_TRIAL_COUNT: 1}
+    
+    # to create a inference job with speech_recognition model
+    client.create_inference_job_by_checkpoint(model_name= created_model['name'], budget= budget)
+    
+    # to obtain the predictor_host
+    client.get_running_inference_job(app=created_model['name'])
+    
+    import json
+    import requests
+    data = ['data/ldc93s1/ldc93s1/LDC93S1.wav']
+    data = json.dumps(data)
+    res = requests.post('http://{}'.format(<PREDICTOR_HOST>), json=data[0])
+    
+    # to print out the prediction result
+    print(res.text)
+    ```
