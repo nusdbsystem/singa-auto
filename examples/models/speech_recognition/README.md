@@ -10,6 +10,7 @@ which works for the *English* language. You'll need to first download this model
 ```
 bash examples/models/speech_recognition/tfdeepspeech/download_lm.sh
 bash examples/models/speech_recognition/tfdeepspeech/download_trie.sh
+cp examples/models/speech_recognition/tfdeepspeech/alphabet.txt tfdeepspeech/alphabet.txt
 wget https://github.com/mozilla/DeepSpeech/releases/download/v0.7.3/deepspeech-0.7.3-models.scorer -P <model_root_directory>/tfdeepspeech
 ```
 
@@ -25,7 +26,7 @@ If you wish to generate your own language models and trie files instead, or wish
 
 ### Generating Language Models
 
-The TfDeepSpeech model requires a binary n-gram language model compiled by `kenlm` to make predictions. Follow the steps in the example below to generate a LibriSpeech language model for English language:
+The TfDeepSpeech model requires a binary n-gram language model compiled by `kenlm` to make predictions. You can simple download pre-built lm.binary, alphabet.txt and trie files using above stpes, or should you in need to generate your own language model, please follow the steps in the example below to generate a LibriSpeech language model for English language:
 
 1. Download the required txt.gz by running the python script
 
@@ -77,7 +78,7 @@ The TfDeepSpeech model requires a binary n-gram language model compiled by `kenl
     
 ### Generating Trie 
 
-See documentation on [DeepSpeech Git Repo](https://github.com/mozilla/DeepSpeech/tree/master/native_client) to generate the trie for your language model. Follow the steps up to **Compile libdeepspeech.so & generate_trie** section. The generated binaries will be saved to `bazel-bin/native-client/`.
+See documentation on [DeepSpeech Git Repo](https://github.com/mozilla/DeepSpeech/tree/master/native_client) to generate the trie for your language model. You can simple download pre-built lm.binary, alphabet.txt and trie files using above stpes, or should you in need to generate your own language model, please follow the steps below up to **Compile libdeepspeech.so & generate_trie** section. The generated binaries will be saved to `bazel-bin/native-client/`.
 
 Remember to modify the `alphabet.txt` file if you are training TfDeepSpeech on languages other than English.
 
@@ -90,3 +91,13 @@ bazel-bin/native-clinet/generate_trie ../rafiki/examples/datasets/speech_recogni
 The `trie` file is now in the data directory.
 
 *Note: The `generate_trie` binaries are subject to updates by the DeepSpeech team. If you find mismatch of trie file version, update the version of ctc_decoder package by amending the `VERSION` variable in `examples/models/speech_recognition/utils/taskcluster.py`.*
+
+
+### Test with Sample Dataset
+
+Run
+
+    ```sh
+    python examples/datasets/audio_files/load_sample_ldc93s1.py
+    ```
+to download the testing dataset.
