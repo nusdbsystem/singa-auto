@@ -146,9 +146,8 @@ Use Python API to create model, pls run
     
     import json
     import requests
-    data = ['data/ldc93s1/ldc93s1/LDC93S1.wav']
-    data = json.dumps(data)
-    res = requests.post('http://{}'.format(<PREDICTOR_HOST>), json=data[0])
+    data = 'data/ldc93s1/ldc93s1/LDC93S1.wav'
+    res = requests.post('http://{}'.format(<PREDICTOR_HOST>), json=data)
     
     # to print out the prediction result
     print(res.text)
