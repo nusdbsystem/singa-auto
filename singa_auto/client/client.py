@@ -258,7 +258,7 @@ class Client:
         :param model_class: The name of the model class inside the Python file. This class should implement :class:`singa_auto.model.BaseModel`
         :param dependencies: List of Python dependencies & their versions
         :param access_right: Model access right
-        :param model_preload_file_path: pretrained mdoel file
+        :param model_preload_file_path: pretrained model file
         :param docker_image: A custom Docker image that extends ``singa_auto/singa_auto_worker``, publicly available on Docker Hub.
         :returns: Created model as dictionary
 
