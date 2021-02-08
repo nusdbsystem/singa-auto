@@ -176,7 +176,7 @@ if __name__ == '__main__':
                              'ca', 'thal'], 
                              'target': 'target'
                      },
-                     queries={
+                     queries=[{
                          'age': 48,
                          'sex': 1,
                          'cp': 2,
@@ -190,4 +190,34 @@ if __name__ == '__main__':
                          'slope': 2,
                          'ca': 0,
                          'thal': 3
-                     })
+                     },
+                    {
+                         'age': 48,
+                         'sex': 0,
+                         'cp': 2,
+                         'trestbps': 130,
+                         'chol': 275,
+                         'fbs': 0,
+                         'restecg': 1,
+                         'thalach': 139,
+                         'exang': 0,
+                         'oldpeak': 0.2,
+                         'slope': 2,
+                         'ca': 0,
+                         'thal': 2
+                     },
+                    {
+                         'age': 58,
+                         'sex': 0,
+                         'cp': 0,
+                         'trestbps': 170,
+                         'chol': 225,
+                         'fbs': 1,
+                         'restecg': 0,
+                         'thalach': 146,
+                         'exang': 1,
+                         'oldpeak': 2.8,
+                         'slope': 1,
+                         'ca': 2,
+                         'thal': 1
+                     }])
