@@ -40,6 +40,77 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 ]
 
 
+def fectch_from_train_set(root_path, split_ratio=0.8):
+    image_train_folder = os.path.join(root_path, "train", "image")
+    image_val_folder = os.path.join(root_path, "val", "image")
+    annotation_train_folder = os.path.join(root_path, "train", "annotation")
+    annotation_val_folder = os.path.join(root_path, "val", "annotation")
+
+    os.makedirs(image_val_folder, exist_ok=True)
+    os.makedirs(annotation_val_folder, exist_ok=True)
+
+    list_image = list(sorted(os.listdir(image_train_folder)))
+    list_annotation = list(sorted(os.listdir(annotation_train_folder)))
+
+    union_list = []
+    for image_name in list_image:
+        base_name, _ = os.path.splitext(image_name)
+
+        if base_name + ".json" in list_annotation:
+            union_list.append(image_name)
+
+    disordered_index = np.random.permutation(range(len(union_list)))
+    val_list = disordered_index[np.int(len(union_list) * split_ratio):]
+    import shutil
+
+    for image_idx in val_list:
+        image_name = union_list[image_idx]
+        annotation_name = os.path.splitext(image_name)[0] + ".json"
+
+        shutil.move(os.path.join(image_train_folder, image_name), os.path.join(image_val_folder, image_name))
+        shutil.move(os.path.join(annotation_train_folder, annotation_name), os.path.join(annotation_val_folder, annotation_name))
+
+
+def split_dataset(root_path, split_ratio=0.8):
+    image_path = os.path.join(root_path, "image")
+    annotation_path = os.path.join(root_path, "annotation")
+
+    image_train_folder = os.path.join(root_path, "train", "image")
+    image_val_folder = os.path.join(root_path, "val", "image")
+    annotation_train_folder = os.path.join(root_path, "train", "annotation")
+    annotation_val_folder = os.path.join(root_path, "val", "annotation")
+
+    os.makedirs(image_train_folder, exist_ok=True)
+    os.makedirs(image_val_folder, exist_ok=True)
+    os.makedirs(annotation_train_folder, exist_ok=True)
+    os.makedirs(annotation_val_folder, exist_ok=True)
+
+    list_image = list(sorted(os.listdir(image_path)))
+    list_annotation = list(sorted(os.listdir(annotation_path)))
+
+    union_list = []
+    for image_name in list_image:
+        base_name, _ = os.path.splitext(image_name)
+
+        if base_name + ".json" in list_annotation:
+            union_list.append(image_name)
+    
+    disordered_index = np.random.permutation(range(len(union_list)))
+    train_list = disordered_index[:np.int(len(union_list) * split_ratio)]
+    val_list = disordered_index[np.int(len(union_list) * split_ratio):]
+
+    import shutil
+    for image_idx, image_name in enumerate(union_list):
+        annotation_name = os.path.splitext(image_name)[0] + ".json"
+
+        if image_idx in train_list:
+            shutil.copy(os.path.join(image_path, image_name), os.path.join(image_train_folder, image_name))
+            shutil.copy(os.path.join(annotation_path, annotation_name), os.path.join(annotation_train_folder, annotation_name))
+        else:
+            shutil.copy(os.path.join(image_path, image_name), os.path.join(image_val_folder, image_name))
+            shutil.copy(os.path.join(annotation_path, annotation_name), os.path.join(annotation_val_folder, annotation_name))
+
+
 class YoloCoco(object):
     def __init__(self, annotation_path=None, is_single_json_file=False):
         """

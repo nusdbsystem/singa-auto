@@ -44,6 +44,8 @@ from singa_auto.darknet.utils import resize
 from singa_auto.darknet.utils import weights_init_normal
 from singa_auto.darknet.utils import xywh2xyxy
 from singa_auto.datasets.image_detection_dataset import YoloDataset
+from singa_auto.datasets.image_detection_dataset import fetch_from_train_set
+from singa_auto.datasets.image_detection_dataset import split_dataset
 from singa_auto.model import ObjtDetModel, FixedKnob, utils
 from singa_auto.model.dev import test_model_class
 
