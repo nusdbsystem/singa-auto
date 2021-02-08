@@ -44,13 +44,13 @@ class KnobValue():
     @staticmethod
     def _parse_value(value):
         value_type = None
-
-        if isinstance(value, int):
+        # put the test for bool type first, for isinstance(True, int) and isinstance(False, int) also return True
+        if isinstance(value, bool):
+            value_type = bool
+        elif isinstance(value, int):
             value_type = int
         elif isinstance(value, float):
             value_type = float
-        elif isinstance(value, bool):
-            value_type = bool
         elif isinstance(value, str):
             value_type = str
         else:
