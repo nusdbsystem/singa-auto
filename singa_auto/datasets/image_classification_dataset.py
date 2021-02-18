@@ -33,7 +33,8 @@ class ImageDataset4Clf(ClfModelDataset):
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
         self.label_mapper = dict()
-        self.image_size = None
+        # to read accual self.image_size
+        self.__getitem__(0)
         if if_shuffle:
             (self._image_names,
              self._image_classes) = self._shuffle(self._image_names,
