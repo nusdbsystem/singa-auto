@@ -39,7 +39,7 @@ class TfVgg16(ImageClfBase):
     @staticmethod
     def get_knob_config():
         return {
-            'max_epochs': FixedKnob(10),
+            'max_epochs': FixedKnob(1),
             'learning_rate': FloatKnob(1e-5, 1e-2, is_exp=True),
             'batch_size': CategoricalKnob([16, 32, 64, 128]),
             'max_image_size': CategoricalKnob([32, 64, 128, 224]),
@@ -120,14 +120,12 @@ class TfVgg16(ImageClfBase):
         with self._graph.as_default():
             with self._sess.as_default():
                 (loss, accuracy) = self._model.evaluate(images, classes)
-
         utils.logger.log('Validation loss: {}'.format(loss))
-
-        return accuracy
+        return float(accuracy)
 
     def predict(self, queries):
         image_size = self._image_size
-        images = utils.dataset.transform_images(queries,
+        images, pil_images = utils.dataset.transform_images(queries,
                                                 image_size=image_size,
                                                 mode='RGB')
         (images, _, _) = utils.dataset.normalize_images(images,
@@ -196,7 +194,6 @@ class TfVgg16(ImageClfBase):
 
     def _build_model(self, num_classes, image_size):
         lr = self._knobs.get('learning_rate')
-
         model = keras.applications.VGG16(include_top=True,
                                          input_shape=(image_size, image_size,
                                                       3),
