@@ -65,4 +65,4 @@ if __name__ == '__main__':
     parser.add_argument('--validation_split', type=float, default=0.1)
     args = parser.parse_args()
 
-    load_fashion_mnist(limit=args.limit, validation_split=args.validation_split)
+    load_mnist(limit=args.limit, validation_split=args.validation_split)
