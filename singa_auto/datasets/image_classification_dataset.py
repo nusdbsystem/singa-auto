@@ -188,7 +188,7 @@ class TorchImageDataset(torch.utils.data.Dataset):
         self._scores = np.zeros(self.dataset_size)
         self._loss_threshold = -0.00001
         # No threshold means all data samples are effective
-        self._effective_dataset_size = dataset_size
+        self._effective_dataset_size = self.dataset_size
         # equivalent mapping in default i.e.
         # 0 - 0
         # 1 - 1
