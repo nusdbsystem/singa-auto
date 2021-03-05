@@ -90,7 +90,7 @@ class ImageDataset4Clf(ClfModelDataset):
                     class_csv_path = self.dataset_zipfile.extract('class_name.csv', path=d)
                 except:
                     class_csv_path = self.dataset_zipfile.extract('meta.csv', path=d)
-            csv = pd.read_csv(class_csv_path)
+                csv = pd.read_csv(class_csv_path)
             if len(csv.columns[1:])==1:
                 name = csv[csv.columns[1]]
                 label = csv[csv.columns[0]]
