@@ -9,6 +9,9 @@ import torchvision.transforms as transforms
 import numpy as np
 from singa_auto.datasets.dataset_base import _load_pil_image, ClfModelDataset
 import pandas as pd
+import logging 
+logger = logging.getLogger(__name__)
+
 
 
 class ImageDataset4Clf(ClfModelDataset):
@@ -29,10 +32,12 @@ class ImageDataset4Clf(ClfModelDataset):
         self.mode = mode
         self.path = dataset_path
         self.dataset_zipfile = None
+        self.label_mapper = dict()
         (self._image_names, self._image_classes, self.size, self.classes) = self._extract_zip(self.path)
+      
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
-        self.label_mapper = dict()
+        
         self.image_size = None
         if if_shuffle:
             (self._image_names,
@@ -44,6 +49,7 @@ class ImageDataset4Clf(ClfModelDataset):
             raise StopIteration
         try:
             pil_image = self._extract_item(item_path=self._image_names[index])
+           
             (image, image_size) = self._preprocess(pil_image,
                                                    self.min_image_size,
                                                    self.max_image_size)
@@ -53,6 +59,8 @@ class ImageDataset4Clf(ClfModelDataset):
             return (image, image_class)
 
         except:
+            logging.error('getitem')
+            logging.error(self._image_names[index])
             raise
 
     def _preprocess(self, pil_image, min_image_size, max_image_size):
@@ -78,46 +86,69 @@ class ImageDataset4Clf(ClfModelDataset):
         with tempfile.TemporaryDirectory() as d:
             extracted_item_path = self.dataset_zipfile.extract(item_path,
                                                                path=d)
+         
+
             pil_image = _load_pil_image(extracted_item_path, mode=self.mode)
 
         return pil_image
 
     def _extract_zip(self, dataset_path):
+        
+        flag=0
         self.dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
-        if 'images.csv' in self.dataset_zipfile.namelist():
+        print(self.dataset_zipfile.namelist())
+        with tempfile.TemporaryDirectory() as d:
+            for fileName in self.dataset_zipfile.namelist():
+                if fileName.endswith('class_name.csv'):
+                    class_csv_path = self.dataset_zipfile.extract(fileName,
+                                                                            path=d)
+            
+                    csv = pd.read_csv(class_csv_path)
+                    name = csv[csv.columns[1]]
+                    label = csv[csv.columns[0]]
+                    for single_name,single_label in zip(name,label):
+                        self.label_mapper[str(single_label)]=single_name
+        print('label_mapper')
+        print(self.label_mapper)
+                  
+        for fileName in self.dataset_zipfile.namelist():
+            if fileName.endswith('images.csv'):
+                flag=1
             # Create temp directory to unzip to extract paths/classes/numbers only,
             # no actual images would be extracted
-            with tempfile.TemporaryDirectory() as d:
-                # obtain csv file
-                for fileName in self.dataset_zipfile.namelist():
-                    if fileName.endswith('.csv'):
-                        # Extract a single csv file from zip
-                        images_csv_path = self.dataset_zipfile.extract(fileName,
-                                                                       path=d)
-                        break
-                try:
-                    csv = pd.read_csv(images_csv_path)
-                    image_classes = csv[csv.columns[1:]]
-                    image_paths = csv[csv.columns[0]]
-                except:
-                    traceback.print_stack()
-                    raise
-            num_classes = len(csv[csv.columns[1]].unique())
-            num_labeled_samples = len(csv[csv.columns[0]].unique())
-            image_classes = tuple(np.array(image_classes).squeeze().tolist())
-            image_paths = tuple(image_paths)
+            if flag==1:
+                with tempfile.TemporaryDirectory() as d:
+                    # obtain csv file
+                    for fileName in self.dataset_zipfile.namelist():
+                        if fileName.endswith('images.csv'):
+                            # Extract a single csv file from zip
+                            images_csv_path = self.dataset_zipfile.extract(fileName,
+                                                                        path=d)
+                            break
+                    try:
+                        csv = pd.read_csv(images_csv_path)
+                        image_classes = csv[csv.columns[1]]
+                        image_paths = csv[csv.columns[0]]
+                        print(image_classes)
+                    except:
+                        traceback.print_stack()
+                        raise
+                num_classes = len(csv[csv.columns[1]].unique())
+                num_labeled_samples = len(csv[csv.columns[0]].unique())
+                image_classes = tuple(np.array(image_classes).squeeze().tolist())
+                image_paths = tuple(image_paths)
 
-        else:
-            # make image name list and remove dir from list
-            image_paths = [
-                x for x in self.dataset_zipfile.namelist()
-                if x.endswith('/') == False
-            ]
-            num_labeled_samples = len(image_paths)
-            str_labels = [os.path.dirname(x) for x in image_paths]
-            self.str_labels_set = list(set(str_labels))
-            num_classes = len(self.str_labels_set)
-            image_classes = [self.str_labels_set.index(x) for x in str_labels]
+            else:
+                # make image name list and remove dir from list
+                image_paths = [
+                    x for x in self.dataset_zipfile.namelist()
+                    if x.endswith('/') == False
+                ]
+                num_labeled_samples = len(image_paths)
+                str_labels = [os.path.dirname(x) for x in image_paths]
+                self.str_labels_set = list(set(str_labels))
+                num_classes = len(self.str_labels_set)
+                image_classes = [self.str_labels_set.index(x) for x in str_labels]
         return (image_paths, image_classes, num_labeled_samples, num_classes)
 
     def _shuffle(self, images, classes):

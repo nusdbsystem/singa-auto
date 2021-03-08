@@ -19,6 +19,9 @@
 
 import os
 
+from singa_auto.constants import ServiceType
+from singa_auto.utils.service import run_worker
+from singa_auto.meta_store import MetaStore
 
 # Run install command
 install_command = os.environ.get('WORKER_INSTALL_COMMAND', '')
@@ -36,10 +39,6 @@ else:
         'Install command gave non-zero exit code: "{}"'.format(install_command))
 
 worker = None
-
-from singa_auto.constants import ServiceType
-from singa_auto.utils.service import run_worker
-from singa_auto.meta_store import MetaStore
 
 
 def start_worker(service_id, service_type, container_id):

@@ -12,8 +12,8 @@ def _load_pil_image(image_path, mode='RGB'):
 
     try:
         with open(image_path, 'rb') as f:
-            encoded = io.BytesIO(f.read())
-            pil_image = Image.open(encoded).convert(mode)
+            #encoded = io.BytesIO(f.read())
+            pil_image = Image.open(image_path).convert(mode)
     except:
         print('error accurs when handling : ', image_path)
         raise

@@ -188,6 +188,14 @@ class InferenceWorker():
         try:
             predictions = self._model_inst.predict([x.query for x in queries])
         except:
+            logger.error('queries')
+            logger.error(queries)
+            logger.error('x.query')
+            query_list=[x.query for x in queries]
+            logger.error(query_list)
+            logger.error(len(queries))
+            logger.error(type(query_list[0]))
+            logger.error(len(query_list[0]))
             logger.error('Error while making predictions:')
             logger.error(traceback.format_exc())
             predictions = [None for x in range(len(queries))]

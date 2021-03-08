@@ -98,7 +98,6 @@ class SVCClf(TabularClfModel):
         data = self.prepare_X(queries)
         probs = self._clf.predict_proba(data)
         return probs.tolist()
-        
 
     def destroy(self):
         pass
@@ -156,7 +155,6 @@ class SVCClf(TabularClfModel):
         data = self.median_dataset(df)
         X = StandardScaler().fit_transform(data)
         return X
-
 
     def _build_classifier(self, C, kernel, degree, gamma, coef0, shrinking, tol,
                           decision_function_shape, probability):

@@ -1,4 +1,4 @@
-STOLON_PATH=$HOST_WORKDIR_PATH/scripts/kubernetes/stolon
+STOLON_PATH=scripts/kubernetes/stolon
 cp -f $STOLON_PATH/secret.yaml.template $STOLON_PATH/secret.yaml
 sed -ri "s/STOLON_PASSWD/$POSTGRES_STOLON_PASSWD/g" $STOLON_PATH/secret.yaml
 
@@ -14,7 +14,7 @@ sed -ri "s/POSTGRES_PORT/$POSTGRES_PORT/g"             $STOLON_PATH/stolon-proxy
 
 # replace config for stolon sentinel
 cp -f $STOLON_PATH/stolon-sentinel.yaml.template       $STOLON_PATH/stolon-sentinel.yaml
-sed -ri "s#RAFIKI_IMAGE_STOLON#$RAFIKI_IMAGE_STOLON#"  $STOLON_PATH/stolon-sentinel.yaml
+sed -ri "s#SINGA_AUTO_IMAGE_STOLON#$SINGA_AUTO_IMAGE_STOLON#"  $STOLON_PATH/stolon-sentinel.yaml
 
 # replace config for stolon proxy service
 cp -f $STOLON_PATH/stolon-proxy-service.yaml.template  $STOLON_PATH/stolon-proxy-service.yaml

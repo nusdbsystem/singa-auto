@@ -210,7 +210,8 @@ def tune_model(
 
 
 def make_predictions(queries: List[Any], task: str,
-                     py_model_class: Type[BaseModel], proposal: Proposal, fine_tune_dataset_path,
+                     py_model_class: Type[BaseModel], proposal: Proposal,
+                     fine_tune_dataset_path,
                      params: Params) -> List[Any]:
     inference_cache: InferenceCache = InferenceCache()
     worker_id = 'local'
@@ -249,8 +250,8 @@ def make_predictions(queries: List[Any], task: str,
     _print_header('Making predictions with trained model...')
     predictions = model_inst.predict([x.query for x in queries_at_worker])
 
-
-    predictions = [Prediction(x, query.id, worker_id)
+    predictions = [
+        Prediction(x, query.id, worker_id)
         for (x, query) in zip(predictions, queries_at_worker)
     ]
 
@@ -265,6 +266,7 @@ def make_predictions(queries: List[Any], task: str,
         assert prediction is not None
         predictions_at_predictor.append(prediction)
 
+    # Predictor ensembles predictions
     ensemble_method = get_ensemble_method(task)
     print(f'Ensemble method: {ensemble_method}')
     out_predictions = []
