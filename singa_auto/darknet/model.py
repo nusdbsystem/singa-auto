@@ -157,19 +157,29 @@ class YOLOLayer(nn.Module):
 class DarkNet(nn.Module):
     """YOLOv3 object detection model"""
 
-    def __init__(self, config_path, img_size=416):
+    def __init__(self, config_path=None, model_cfg=None, img_size=416):
+        """
+        one of config_path and model_cfg is valid, not both
+        """
         super(DarkNet, self).__init__()
-        self.module_defs = self.parse_model_config(config_path)
+        self._model_cfg = None
+
+        self.module_defs = self.parse_model_config(path=config_path, model_cfg=model_cfg)
         self.hyperparams, self.module_list = self.create_modules(self.module_defs)
         self.yolo_layers = [layer[0] for layer in self.module_list if hasattr(layer[0], "metrics")]
         self.img_size = img_size
         self.seen = 0
         self.header_info = np.array([0, 0, 0, self.seen, 0], dtype=np.int32)
     
+    @property
+    def model_cfg(self):
+        return self._model_cfg
+
     def create_modules(self, module_defs):
         """
         Constructs module list of layer blocks from module configuration in module_defs
         """
+
         hyperparams = module_defs.pop(0)
         output_filters = [int(hyperparams["channels"])]
         module_list = nn.ModuleList()
@@ -309,15 +319,21 @@ class DarkNet(nn.Module):
                 conv_layer.weight.data.copy_(conv_w)
                 ptr += num_w
 
-    def parse_model_config(self, path):
+    def parse_model_config(self, path=None, model_cfg=None):
         """Parses the yolo-v3 layer configuration file and returns module definitions"""
-        file = open(path, 'r')
-        lines = file.read().split('\n')
-        lines = [x for x in lines if x and not x.startswith('#')]
-        lines = [x.rstrip().lstrip() for x in lines] # get rid of fringe whitespaces
+        if model_cfg is None:
+            if path is None:
+                raise ValueError("path and model_cfg should not both be None")
+
+            file = open(path, 'r')
+            lines = file.read().split('\n')
+            lines = [x for x in lines if x and not x.startswith('#')]
+            self._model_cfg = [x.rstrip().lstrip() for x in lines] # get rid of fringe whitespaces
+        else:
+            self._model_cfg = model_cfg
 
         module_defs = []
-        for line in lines:
+        for line in self._model_cfg:
             if line.startswith('['): # This marks the start of a new block
                 module_defs.append({})
                 module_defs[-1]['type'] = line[1:-1].rstrip()

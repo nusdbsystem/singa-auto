@@ -57,7 +57,6 @@ class BaseModel(abc.ABC):
     def __init__(self, **knobs: Knobs):
         pass
 
-
     @staticmethod
     @abc.abstractmethod
     def get_knob_config() -> KnobConfig:

@@ -169,7 +169,8 @@ def build_targets(pred_boxes, pred_cls, target, anchors, ignore_thres):
 
 
 def compute_ap(recall, precision):
-    """ Compute the average precision, given the recall and precision curves.
+    """
+    Compute the average precision, given the recall and precision curves.
     Code originally from https://github.com/rbgirshick/py-faster-rcnn.
 
     # Arguments

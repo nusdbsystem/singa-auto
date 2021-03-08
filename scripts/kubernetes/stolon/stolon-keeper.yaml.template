@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: stolon-keeper
-        image: RAFIKI_IMAGE_STOLON
+        image: SINGA_AUTO_IMAGE_STOLON
         command:
           - "/bin/bash"
           - "-ec"

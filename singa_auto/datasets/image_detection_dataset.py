@@ -40,7 +40,7 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 ]
 
 
-def fectch_from_train_set(root_path, split_ratio=0.8):
+def fetch_from_train_set(root_path, split_ratio=0.8):
     image_train_folder = os.path.join(root_path, "train", "image")
     image_val_folder = os.path.join(root_path, "val", "image")
     annotation_train_folder = os.path.join(root_path, "train", "annotation")

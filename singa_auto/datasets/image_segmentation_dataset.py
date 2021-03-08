@@ -8,7 +8,7 @@ import torch
 from glob import glob
 
 
-def ImageFetch(train_data_path, split_rate=0.8):
+def ImageFetch(train_data_path, split_rate=0.9):
     '''
     load image as PIL.Image into a list for dataloader, split train/val subsets automatically 
     train_data_path: already unzipped dataset folder path

@@ -58,7 +58,6 @@ class TreeReg(BaseModel):
             self._knobs.get("min_impurity_decrease"),
             self._knobs.get("min_impurity_split"))
 
-
     def train(self, dataset_path, features=None, target=None, **kwargs):
         # Record features & target
         self._features = features
@@ -78,6 +77,7 @@ class TreeReg(BaseModel):
 
         # Compute train root mean square error
         preds = self._regressor.predict(X)
+
         rmse = np.sqrt(mean_squared_error(y, preds))
         logger.log('Train RMSE: {}'.format(rmse))
 
@@ -93,6 +93,7 @@ class TreeReg(BaseModel):
         X = self._encoding_categorical_type(X)
 
         preds = self._regressor.predict(X)
+
         rmse = np.sqrt(mean_squared_error(y, preds))
         return 1 / rmse
 
@@ -126,6 +127,7 @@ class TreeReg(BaseModel):
         assert 'regressor_base64' in params
         regressor_base64 = params['regressor_base64']
         regressor_bytes = base64.b64decode(regressor_base64.encode('utf-8'))
+
         self._regressor = pickle.loads(regressor_bytes)
 
         self._encoding_dict = json.loads(params['encoding_dict'])

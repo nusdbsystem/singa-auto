@@ -63,6 +63,7 @@ def predict():
             queries = [data]
         else:
             return jsonify({'ErrorMsg': 'data should be either at files (set "img" as key) or json payload'}), 400
+            
         predictor = get_predictor()
         predictions: List[Any] = predictor.predict(queries)
         return jsonify(predictions), 200
@@ -70,5 +71,4 @@ def predict():
         # for debug,print the error
         traceback.print_exc()
         logging.error(traceback.format_exc())
-        return jsonify({'ErrorMsg': 'Server Error:{}'.format(traceback.format_exc())}
-                       ), 500
+        return jsonify({'ErrorMsg': 'Server Error:{}'.format(traceback.format_exc())}), 500

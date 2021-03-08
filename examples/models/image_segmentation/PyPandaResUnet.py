@@ -1,8 +1,8 @@
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "6"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 os.environ['WORKDIR_PATH'] = '/home/taomingyang/git/'
-os.environ['PARAMS_DIR_PATH'] = 'singa'
+os.environ['PARAMS_DIR_PATH'] = 'singa_hub'
 
 import sys
 sys.path.append(os.getcwd())

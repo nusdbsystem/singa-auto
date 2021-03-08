@@ -1,7 +1,7 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "7"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 os.environ['WORKDIR_PATH'] = '/home/taomingyang/git/'
-os.environ['PARAMS_DIR_PATH'] = 'singa'
+os.environ['PARAMS_DIR_PATH'] = 'singa_hub'
 
 import sys
 sys.path.append(os.getcwd())
@@ -21,7 +21,6 @@ import torchvision
 import tqdm
 import zipfile
 
-
 import PIL
 
 from PIL import Image
@@ -34,6 +33,7 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 from typing import List
 
+# Singa-auto Dependency
 from singa_auto.darknet.model import DarkNet
 from singa_auto.darknet.utils import ap_per_class
 from singa_auto.darknet.utils import get_batch_statistics
@@ -46,8 +46,10 @@ from singa_auto.darknet.utils import xywh2xyxy
 from singa_auto.datasets.image_detection_dataset import YoloDataset
 from singa_auto.datasets.image_detection_dataset import fetch_from_train_set
 from singa_auto.datasets.image_detection_dataset import split_dataset
-from singa_auto.model import ObjtDetModel, FixedKnob, utils
 from singa_auto.model.dev import test_model_class
+from singa_auto.model.knob import FixedKnob
+from singa_auto.model.object_detection import ObjtDetModel
+from singa_auto.model.utils import utils
 
 
 logger = logging.getLogger(__name__)
@@ -84,7 +86,7 @@ class SaYolo(ObjtDetModel):
             "lr": FixedKnob(0.01),
             "model_def": FixedKnob("./singa_auto/darknet/yolov3.cfg"),
             # "momentum": FixedKnob(0.7),
-            "pretrained_weights": FixedKnob("./config/darknet53.conv.74"),
+            "pretrained_weights": FixedKnob("./singa_auto/darknet/darknet53.conv.74"),
             # "weight_decay": FixedKnob(0.0005),
         }
 
@@ -115,6 +117,7 @@ class SaYolo(ObjtDetModel):
 
         # root_path = r"/home/taomingyang/dataset/coco_mini/"
 
+        # load 
         print("unzip dataset")
         logger.info("unzip dataset")
         dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
@@ -178,7 +181,7 @@ class SaYolo(ObjtDetModel):
         )
 
         # get the model using our helper function
-        self.model = DarkNet(self._knobs.get("model_def")).to(self.device)
+        self.model = DarkNet(config_path=self._knobs.get("model_def"), model_cfg=self.model_cfg).to(self.device)
         self.model.apply(weights_init_normal)
 
         # pretrained weights
@@ -317,24 +320,29 @@ class SaYolo(ObjtDetModel):
         params = {}
         with tempfile.NamedTemporaryFile() as tmp:
             # Save whole model to temp h5 file
-            torch.save(self.model, tmp.name)
+            torch.save(self.model.state_dict(), tmp.name)
             # Read from temp h5 file & encode it to base64 string
             with open(tmp.name, 'rb') as f:
                 weight_base64 = f.read()
         params['weight_base64'] = base64.b64encode(weight_base64).decode('utf-8')
-        params["filter_classes"] = json.dumps(self.filter_classes)
+        params["module_cfg"] = json.dumps(self.model.model_cfg)
         return params
 
     def load_parameters(self, params):
         """
         load parameters from local file
         """
-        self.filter_classes = json.loads(params["filter_classes"])
+
+        logger.info("load parameters")
         weight_base64 = params['weight_base64']
+        self.module_cfg = json.loads(params["module_cfg"])
 
         weight_base64_bytes = base64.b64decode(weight_base64.encode('utf-8'))
 
-        self.model = torch.load(io.BytesIO(weight_base64_bytes), map_location=self.device)
+        state_dict = torch.load(io.BytesIO(weight_base64_bytes), map_location=self.device)
+        self.model = DarkNet(model_cfg=self.module_cfg).to(self.device)
+        self.model.load_state_dict(state_dict)
+        self.model.cuda()
 
     def evaluate(self, dataset_path, **kwargs):
         print(kwargs)
@@ -429,23 +437,42 @@ class SaYolo(ObjtDetModel):
 
         for img in queries:
             img_res = dict()
-            img = np.asarray(img).astype(np.uint8)
+
+            if isinstance(img, List):
+                print(len(img))
+                img = np.array(img[0])
+                img_data = Image.fromarray(np.uint8(img))
+            elif isinstance(img, np.ndarray):
+                img_data = Image.fromarray(img)
+            else:
+                img_data = img
 
             # get prediction
-            res = self.__get_prediction(img, threshold=0.8)
+            res = self.__get_prediction(img_data, threshold=0.8)
             if res is None:
-                img_with_box = img_with_segmentation = img
+                img_with_box = img_with_segmentation = img_data
                 boxes, pred_cls = None, None
             else:
                 boxes, pred_cls = res
-                img_with_box = self.__get_bounding_box(img, boxes, pred_cls)
+                img_data = np.asarray(img_data).astype(np.uint8)
+                img_with_box = self.__get_bounding_box(img_data, boxes, pred_cls)
 
             # the response format is only used to show on origin web ui
             img_res['explanations'] = {}
-            img_res['explanations']['lime_img'] = self.__convert_img_to_str(img_with_box)
-            img_res['explanations']['box_info'] = boxes
-            img_res['explanations']['classes'] = pred_cls
+            # img_res['explanations']['lime_img'] = self.__convert_img_to_str(img_with_box)
+            # img_res['explanations']['box_info'] = boxes
+            # img_res['explanations']['classes'] = pred_cls
+            
+            img_res['explanations']['box_info'] = []
+            
+            if boxes is not None and pred_cls is not None and len(boxes) == len(pred_cls):
+                for box_coord, class_name in zip(boxes, pred_cls):
+                    img_res['explanations']['box_info'].append({
+                        "coord": box_coord,
+                        "class_name": class_name,
+                    })
             img_res['mc_dropout'] = []
+            
             result.append(img_res)
         return result
 
@@ -509,7 +536,6 @@ class SaYolo(ObjtDetModel):
             cv2.putText(img, pred_cls[i], (boxes[i][0], boxes[i][1]), cv2.FONT_HERSHEY_SIMPLEX, text_size, (0, 255, 0),
                         thickness=text_th)
 
-        cv2.imwrite("./results/{:04d}.png".format(random.randint(0, 9999)), img)
         return img
 
     def __get_segmentation(self, img, masks):
@@ -596,7 +622,7 @@ if __name__ == "__main__":
     test_model_class(
         model_file_path=__file__,
         model_class='SaYolo',
-        task='IMAGE_DETECTION',
+        task='OBJECT_DETECTION',
         dependencies={
             "opencv-python": "4.4.0.46",
             "terminaltables": "3.1.0",
@@ -611,7 +637,7 @@ if __name__ == "__main__":
             "model_def": "./singa_auto/darknet/yolov3.cfg",
             "filter_classes": ["car", 'cat'],
             "num_epoch": 1,
-            "pretrained_weights": "./config/darknet53.conv.74",
+            "pretrained_weights": "./singa_auto/darknet/darknet53.conv.74",
         },
         queries=queries
     )

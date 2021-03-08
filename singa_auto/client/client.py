@@ -36,7 +36,7 @@ class SingaAutoConnectionError(ConnectionError):
 
 DOCS_URL = 'https://nginyc.github.io/rafiki/docs/latest/docs/src/python/rafiki.client.Client.html'
 
-def rafiki_response_handler(resp):
+def singa_auto_response_handler(resp):
     # if isinstance(resp, dict):
     #     if resp.get('success', 0) == 0:
     #         return resp['data']
@@ -839,7 +839,7 @@ class Client:
 
         content_type = res.headers.get('content-type')
         if content_type == 'application/json':
-            res = rafiki_response_handler(res.json())
+            res = singa_auto_response_handler(res.json())
             return res
         elif content_type == 'application/octet-stream':
             return res.content
