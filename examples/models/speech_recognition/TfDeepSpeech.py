@@ -1211,7 +1211,7 @@ class TfDeepSpeech(BaseModel):
 
         predictions = []
         for query in queries:
-            wav_bytes = tf.read_file(query)
+            wav_bytes = base64.b64decode(query.encode('utf-8'))
             features, features_len = self.audiofile_to_features(wav_bytes)
 
             # Add batch dimension
