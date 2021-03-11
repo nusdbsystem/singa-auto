@@ -85,6 +85,18 @@ class ImageDataset4Clf(ClfModelDataset):
 
     def _extract_zip(self, dataset_path):
         self.dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+        if 'class_name.csv' in self.dataset_zipfile.namelist() or 'meta.csv' in self.dataset_zipfile.namelist():
+            with tempfile.TemporaryDirectory() as d:
+                try:
+                    class_csv_path = self.dataset_zipfile.extract('class_name.csv', path=d)
+                except:
+                    class_csv_path = self.dataset_zipfile.extract('meta.csv', path=d)
+                csv = pd.read_csv(class_csv_path)
+            if len(csv.columns[1:])==1:
+                name = csv[csv.columns[1]]
+                label = csv[csv.columns[0]]
+            for single_name,single_label in zip(name,label):
+                self.label_mapper[str(single_label)]=single_name
         if 'images.csv' in self.dataset_zipfile.namelist():
             # Create temp directory to unzip to extract paths/classes/numbers only,
             # no actual images would be extracted
