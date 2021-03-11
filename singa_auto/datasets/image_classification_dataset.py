@@ -181,20 +181,23 @@ class TorchImageDataset(torch.utils.data.Dataset):
                 transforms.ToTensor(),
                 transforms.Normalize(norm_mean, norm_std)
             ])
-
+        try:
+            self.dataset_size = self.dataset.size
+        except:
+            self.dataset_size = len(self.dataset)
         # initialize parameters for Self-paced Learning (SPL) module
-        self._scores = np.zeros(self.dataset.size)
+        self._scores = np.zeros(self.dataset_size)
         self._loss_threshold = -0.00001
         # No threshold means all data samples are effective
-        self._effective_dataset_size = self.dataset.size
+        self._effective_dataset_size = self.dataset_size
         # equivalent mapping in default i.e.
         # 0 - 0
         # 1 - 1
         # ...
         # N - N
         self._indice_mapping = np.linspace(start=0,
-                                           stop=self.dataset.size - 1,
-                                           num=self.dataset.size).astype(np.int32)
+                                           stop=self.dataset_size - 1,
+                                           num=self.dataset_size).astype(np.int32)
 
     def __len__(self):
         return self._effective_dataset_size
@@ -208,7 +211,7 @@ class TorchImageDataset(torch.utils.data.Dataset):
 
         returns:
             NOTE: being different from the standard procedure, the function returns
-            tuple that contains RAW datasample index [0 .. self.dataset.size - 1] as
+            tuple that contains RAW datasample index [0 .. self.dataset_size - 1] as
             the first element
         """
         # translate the index to raw index in singa-auto dataset
@@ -238,8 +241,8 @@ class TorchImageDataset(torch.utils.data.Dataset):
         effective_data_mask = self._scores > self._loss_threshold
 
         self._indice_mapping = np.linspace(
-            start=0, stop=self.dataset.size - 1,
-            num=self.dataset.size)[effective_data_mask].astype(np.int32)
+            start=0, stop=self.dataset_size - 1,
+            num=self.dataset_size)[effective_data_mask].astype(np.int32)
 
         self._effective_dataset_size = len(self._indice_mapping)
         print("dataset threshold = {}, the effective sized = {}".format(
