@@ -480,11 +480,27 @@ The following optional train arguments are supported:
     +----------------------+-----------------------------------------------------------------------------------------------------------+
 
     The train & validation datasets should have the same columns.
+    
+    
+.. code:: text
+
+      age,sex,cp,trestbps,chol,fbs,restecg,thalach,exang,oldpeak,slope,ca,thal,target
+      48,0,2,130,275,0,1,139,0,0.2,2,0,2,1
+      58,0,0,170,225,1,0,146,1,2.8,1,2,1,0
 
 Query Format
 ~~~~~~~~~~~~
 
 An size-\ ``N-1`` dictionary representing feature-value pairs.
+
+E.g.
+
+.. code:: text
+
+      queries=[
+      {'age': 48,'sex': 1,'cp': 2,'trestbps': 130,'chol': 225,'fbs': 1,'restecg': 1,'thalach': 172,'exang': 1,'oldpeak': 1.7,'slope': 2,'ca': 0,'thal': 3},
+      {'age': 48,'sex': 0,'cp': 2,'trestbps': 130,'chol': 275,'fbs': 0,'restecg': 1,'thalach': 139,'exang': 0,'oldpeak': 0.2,'slope': 2,'ca': 0,'thal': 2},
+      ]
 
 Prediction Format
 ~~~~~~~~~~~~~~~~~
