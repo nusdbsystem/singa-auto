@@ -11,13 +11,13 @@ Before you could run training using the TfDeepSpeech model, you will need to sup
 
 ## Download and Preprocess the Dataset
 
-Speech Recognition models in Rafiki require a specific dataset format, see [Supported Dataset Types](https://nginyc.github.io/rafiki/docs/latest/src/user/datasets.html#) for more details. Two examples scripts has been provided in this directory.
+Speech Recognition models in Singa-Auto require a specific dataset format, see [Supported Dataset Types](https://nginyc.github.io/rafiki/docs/latest/src/user/datasets.html#) for more details. Two examples scripts has been provided in this directory.
 
-Do the following in `<rafiki_root_directory>`:
+Do the following in `<singaauto_root_directory>`:
 
-For testing purposes, you could run `python examples/datasets/speech_recognition/load_tiny_format.py` to download a dataset with only one voice sample.
+For testing purposes, you could run `python examples/datasets/audio_files/load_sample_ldc93s1.py ` to download a dataset with only one voice sample.
 
-For real training, you might want to use a voice corpus of considerable size. `python examples/datasets/speech_recognition/load_librispeech_format.py` helps you to load a benchmark dataset (~55GB) sufficient for training a functional Speech Recognition model.
+For real training, you might want to use a voice corpus of considerable size. `python examples/datasets/audio_files/load_librispeech.py` helps you to load a benchmark dataset (~55GB) sufficient for training a functional Speech Recognition model.
 
 
 ## Use Pre-built LM and Trie
@@ -26,7 +26,7 @@ For English language Speech Recognition tasks, you can use pre-built Language Mo
 
 The files are available at https://github.com/mozilla/DeepSpeech/tree/master/data/lm. You will need Git Large File Storage to clone the repository properly. Follow the instructions [here](https://git-lfs.github.com/) to install `git-lfs`.
 
-Then clone the repository and copy the `lm.binary` and `trie` files into `<rafiki_root_directory>/data`, which is the default directory to store the two files as specified by the TfDeepSpeech model.
+Then clone the repository and copy the `lm.binary` and `trie` files into `<singaauto_root_directory>/data`, which is the default directory to store the two files as specified by the TfDeepSpeech model.
 
 You are now ready to train your own TfDeepSpeech model!
 
@@ -73,14 +73,14 @@ The TfDeepSpeech model requires a binary n-gram language model compiled by `kenl
     
 4. Quantize and produce trie binary
 
-    Now substitute `<rafiki_root_directory>` with the path to rafiki root, and run the following:
+    Now substitute `<singaauto_root_directory>` with the path to Singa-Auto root, and run the following:
 
     ```sh
     bin/build_binary -a 255 \
                      -q 8 \
                      trie \
                      /tmp/lm.arpa \
-                     <rafiki_root_directory>/data/lm.binary
+                     <singaauto_root_directory>/data/lm.binary
     rm /tmp/lm.arpa
     ```
     The `lm.binary` binary Language Model file is now in the data directory.
@@ -94,7 +94,7 @@ Remember to modify the `alphabet.txt` file if you are training TfDeepSpeech on l
 Run
 
 ```sh
-bazel-bin/native-clinet/generate_trie ../rafiki/examples/datasets/speech_recognition/alphabet.txt ../rafiki/data/lm.binary ../rafiki/data/trie
+bazel-bin/native-clinet/generate_trie ../singa-auto/examples/datasets/speech_recognition/alphabet.txt ../singa-auto/data/lm.binary ../singa-auto/data/trie
 ```
 
 The `trie` file is now in the data directory.
