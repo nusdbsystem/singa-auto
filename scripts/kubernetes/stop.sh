@@ -83,7 +83,7 @@ then
 
 else
 
-#      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/nvidia-device-plugin.yml
+#      kubectl delete -f $HOST_WORKDIR_PATH/scripts/kubernetes/yaml/nvidia-device-plugin.yml
 
       title "Stopping any existing jobs..."
       python $HOST_WORKDIR_PATH/scripts/stop_all_jobs.py

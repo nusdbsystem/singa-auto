@@ -77,6 +77,7 @@ export KIBANA_EXT_PORT=31009
 export DOCKER_WORKDIR_PATH=/root
 export DB_DIR_ROOT=db
 export DB_DIR_PATH=db/data
+export DB_PATH_ON_MASTER=/data0/singa_auto_data
 export DATA_DIR_PATH=data # Shares a data folder with containers, relative to workdir
 export LOGS_DIR_PATH=logs # Shares a folder with containers that stores components' logs, relative to workdir
 export PARAMS_DIR_PATH=params # Shares a folder with containers that stores model parameters, relative to workdir
@@ -97,14 +98,17 @@ export ES_DOCKER_WORKDIR_PATH=/usr/share/elasticsearch
 
 
 # Docker images for SINGA-Auto's custom components
-export SINGA_AUTO_IMAGE_ADMIN=singaauto/singa_auto_admin
-export SINGA_AUTO_IMAGE_WEB_ADMIN=singaauto/singa_auto_admin_web
-export SINGA_AUTO_IMAGE_WORKER=singaauto/singa_auto_worker
-export SINGA_AUTO_IMAGE_PREDICTOR=singaauto/singa_auto_predictor
-export SINGA_AUTO_IMAGE_LOGSTASH=singaauto/singa_auto_logstash
-export SINGA_AUTO_IMAGE_ES=singaauto/singa_auto_es
-
-export SINGA_AUTO_IMAGE_TEST=singaauto/singa_auto_test
+export SINGA_AUTO_IMAGE_ADMIN=singa_auto/singa_auto_admin
+export SINGA_AUTO_IMAGE_WEB_ADMIN=singa_auto/singa_auto_admin_web
+export SINGA_AUTO_IMAGE_WORKER=singa_auto/singa_auto_worker
+export SINGA_AUTO_IMAGE_WORKER_CU90=singa_auto/singa_auto_worker_cu90
+export SINGA_AUTO_IMAGE_WORKER_CU100=singa_auto/singa_auto_worker_cu100
+export SINGA_AUTO_IMAGE_WORKER_CU101=singa_auto/singa_auto_worker_cu101
+export SINGA_AUTO_IMAGE_WORKER_CU110=singa_auto/singa_auto_worker_cu110
+export SINGA_AUTO_IMAGE_PREDICTOR=singa_auto/singa_auto_predictor
+export SINGA_AUTO_IMAGE_LOGSTASH=singa_auto/singa_auto_logstash
+export SINGA_AUTO_IMAGE_ES=singa_auto/singa_auto_es
+export SINGA_AUTO_IMAGE_TEST=singa_auto/singa_auto_test
 
 # Docker images for dependent services
 export IMAGE_POSTGRES=postgres:10.5-alpine

@@ -6,7 +6,7 @@ if [ $# -lt 8 ]; then
 fi
 
 TMP_NFS_PV_YAML=$HOST_WORKDIR_PATH/scripts/kubernetes/yaml/tmp-nfs-pv.yaml
-cp $HOST_WORKDIR_PATH/scripts/kubernetes//yaml/nfs-pv.yaml.template $TMP_NFS_PV_YAML
+cp $HOST_WORKDIR_PATH/scripts/kubernetes/yaml/nfs-pv.yaml.template $TMP_NFS_PV_YAML
 sed -ri "s/PV_NAME/$1/g" $TMP_NFS_PV_YAML
 sed -ri "s/PV_IP/$2/g" $TMP_NFS_PV_YAML
 sed -ri "s#PV_PATH#$3/#" $TMP_NFS_PV_YAML

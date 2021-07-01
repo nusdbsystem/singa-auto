@@ -98,7 +98,7 @@ def parse_model_install_command(dependencies, enable_gpu=False):
             commands.append(
                 'pip --no-cache-dir install scikit-learn=={}'.format(ver))
         elif dep == ModelDependency.TENSORFLOW:
-            if enable_gpu:
+            if enable_gpu and dep.split('.')[0]=='1':
                 commands.append(
                     'pip --no-cache-dir install tensorflow-gpu=={}'.format(ver))
             else:

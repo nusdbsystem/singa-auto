@@ -1,8 +1,6 @@
 import os
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-os.environ['WORKDIR_PATH'] = '/home/taomingyang/git/'
-os.environ['PARAMS_DIR_PATH'] = 'singa_hub'
 
 import sys
 sys.path.append(os.getcwd())
@@ -34,7 +32,7 @@ from torchvision.transforms import functional as F
 from torchvision.transforms.transforms import Pad, Resize
 from tqdm import tqdm
 
-from singa_auto.model import ObjtDetModel, CategoricalKnob, FixedKnob, utils
+from singa_auto.model import SegmentationModel, CategoricalKnob, FixedKnob, utils
 from singa_auto.model.knob import BaseKnob
 # from singa_auto.utils.metrics import do_kaggle_metric
 
@@ -158,7 +156,7 @@ logger = logging.getLogger(__name__)
 
 
 # main process procedure
-class PyPandaResUnet(ObjtDetModel):
+class PyPandaResUnet(SegmentationModel):
     '''
     train UNet
     '''
@@ -542,7 +540,7 @@ if __name__ == "__main__":
                      task='IMAGE_SEGMENTATION',
                      dependencies={"torch": "1.6.0+cu101",
                                    "torchvision": "0.7.0+cu101",
-                                   "opencv": "3.4.2",
+                                   "opencv-python": "4.4.0.46",
                                    "tqdm": "4.28.0"},
                      train_dataset_path=args.train_path,
                      val_dataset_path=args.val_path,

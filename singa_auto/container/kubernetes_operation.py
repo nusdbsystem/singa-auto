@@ -34,6 +34,10 @@ RETRY_TIMES = 5
 
 logger = logging.getLogger(__name__)
 
+ENVIRONMENT_VARIABLES_AUTOFORWARD = [
+    'KUBERNETES_ADVERTISE_ADDR',# 'DB_PATH_ON_MASTER',
+]
+
 
 class KubernetesContainerManager(ContainerManager):
 
@@ -49,6 +53,9 @@ class KubernetesContainerManager(ContainerManager):
         aConfiguration.host = "https://{}:{}".format(
             os.getenv('KUBERNETES_SERVICE_HOST'),
             os.getenv('KUBERNETES_SERVICE_PORT'))
+
+        # self._params_root_path = os.environ['DB_PATH_ON_MASTER']
+        self._kubernetes_advertise_addr = os.environ['KUBERNETES_ADVERTISE_ADDR']
 
         # Security part.
         # In this simple example we are not going to verify the SSL certificate of
@@ -67,6 +74,7 @@ class KubernetesContainerManager(ContainerManager):
         self._client_deployment = client.AppsV1Api(aApiClient)
         self._client_service = client.CoreV1Api(aApiClient)
         self.api_instance = client.NetworkingV1beta1Api(aApiClient)
+        self._client_networkpolicy = client.NetworkingV1Api(aApiClient)
 
     def update_ingress(self, ingress_name: str, ingress_body: dict):
         paths = self._update_ingress_paths(ingress_body)
@@ -125,11 +133,24 @@ class KubernetesContainerManager(ContainerManager):
         return paths
 
     def destroy_service(self, service: ContainerService):
-        self._client_deployment.delete_namespaced_deployment(service.id, namespace='default')
-        self._client_service.delete_namespaced_service(service.id, namespace='default')
+        try:
+            self._client_deployment.delete_namespaced_deployment(service.id, namespace='default')
+        except(Exception):
+            logger.error('Error while stopping kubernetes deployment {}.'.format(service.id))
+
+        try:
+            self._client_networkpolicy.delete_namespaced_network_policy(name=service.id, namespace='default')
+        except(Exception):
+            logger.error('Error while stopping kubernetes network policy {}.'.format(service.id))
+
+        try:
+            self._client_service.delete_namespaced_service(service.id, namespace='default')
+        except(Exception):
+            logger.error('Error while stopping kubernetes service {}.'.format(service.id))
 
     def create_service(self,
                        service_name,
+                       service_type,
                        docker_image,
                        replicas,
                        args,
@@ -137,10 +158,14 @@ class KubernetesContainerManager(ContainerManager):
                        mounts=None,
                        publish_port=None,
                        gpus=0,
-                       dist_workers=0) -> ContainerService:
+                       dist_workers=0,
+                       gpu_allocated=None) -> ContainerService:
         if mounts is None:
             mounts = {}
         hostname = service_name
+        node_name = 'default'
+        gpu_list = ""
+
         if publish_port is not None:
             service_config = self._create_service_config(service_name, docker_image, replicas,
                             args, environment_vars, mounts, publish_port,
@@ -167,7 +192,7 @@ class KubernetesContainerManager(ContainerManager):
 
             if gpus > 0:
                 # run the scheduler algorithm, choose the gpu and node for few pods.
-                node_gpuid = self._get_top_gpus(dist_workers)
+                node_gpuid = self._get_dist_top_gpus(dist_workers)
 
             for index in range(dist_workers):
                 environment_vars["RANK"] = str(index)
@@ -209,19 +234,24 @@ class KubernetesContainerManager(ContainerManager):
                                                          environment_vars, mounts, select_gpu, select_node_name)
                     print("pod_config", pod_config)
                     _retry(self._client_service.create_namespaced_pod)(namespace='default', body=pod_config)
-
         else:
-            deployment_config = self._create_deployment_config(service_name, docker_image, replicas,
-                                                               environment_vars, mounts, gpus
-                                                               )
+            list_hostname = []
+            list_gpu_selected = []
+            deployment_config = self._create_deployment_config(hostname, service_name, service_type, docker_image, replicas,
+                                                               environment_vars, mounts, gpus, gpu_allocated, list_gpu_selected, list_hostname)
+            if len(list_hostname) > 0:
+                node_name = list_hostname[0] 
+            if len(list_gpu_selected) > 0:
+                gpu_list = list_gpu_selected[0]
 
             _retry(self._client_deployment.create_namespaced_deployment)(namespace='default', body=deployment_config)
 
         info = {
-            'node_id': 'default',
+            'node_id': node_name,
             'gpu_nos': gpus,
             'service_name': service_name,
-            'replicas': replicas
+            'replicas': replicas,
+            'gpu_list': gpu_list,
         }
 
         service = ContainerService(
@@ -247,7 +277,8 @@ class KubernetesContainerManager(ContainerManager):
             })
             volumes.append({
                 'name': 'v' + str(mounts_count),
-                'hostPath': {
+                'nfs':{
+                    'server': self._kubernetes_advertise_addr,
                     'path': k
                 }
             })
@@ -297,12 +328,17 @@ class KubernetesContainerManager(ContainerManager):
         return content
 
     def _create_deployment_config(self,
+                                  hostname,
                                   service_name,
+                                  service_type,
                                   docker_image,
                                   replicas,
                                   environment_vars,
                                   mounts,
-                                  gpus=0
+                                  gpus=0,
+                                  gpu_allocated=None,
+                                  list_gpu_selected=[],
+                                  list_hostname=[]
                                   ):
         content = {}
         content.setdefault('apiVersion', 'apps/v1')
@@ -330,38 +366,50 @@ class KubernetesContainerManager(ContainerManager):
             })
             volumes.append({
                 'name': 'v' + str(mounts_count),
-                'hostPath': {
+                'nfs':{
+                    'server': self._kubernetes_advertise_addr,
                     'path': k
                 }
             })
             mounts_count += 1
-        template.setdefault('spec', {
-            'containers': [container],
-            'volumes': volumes
-        })
         env = [{'name': k, 'value': v} for (k, v) in environment_vars.items()]
 
+        select_node_name = hostname
+        
         if gpus > 0:
-            node_gpuid = self._get_top_gpus(1)
-            if node_gpuid and node_gpuid[0]:
-                select_node_name, select_gpu = node_gpuid[0]["nodeName"], node_gpuid[0]["GPUID"]
-                # nodeSelector can be used to bind a pod to a node
-                nodeSelector = {NodeLabes.NodeName: select_node_name}
-                template["spec"]["nodeSelector"] = nodeSelector
+            node_gpuid = self._get_gpus_on_node(gpus, gpu_allocated)
+            
+            if node_gpuid and "max_min_free_node" in node_gpuid and "max_gpu_free_ratio" in node_gpuid:
+                select_node_name = node_gpuid["max_gpu_free_ratio"]
+            
+                list_hostname.append(select_node_name)
+            
+                env.append({"name": "NVIDIA_VISIBLE_DEVICES", "value": ', '.join(node_gpuid[select_node_name]["gpu_id"])})
+                list_gpu_selected.append(', '.join(node_gpuid[select_node_name]["gpu_id"]))
 
-                # NVIDIA_VISIBLE_DEVICES is used to expose a specific gpu to this pod
-                env.append({"name": "NVIDIA_VISIBLE_DEVICES", "value": select_gpu})
-
-            container.setdefault('resources',
-                                 {'limits': {
-                                     'nvidia.com/gpu': gpus
-                                 }})
         container.setdefault('env', env)
+
+        if gpus > 0:
+            template.setdefault('spec', {
+                'nodeName': select_node_name,
+                'containers': [container],
+                'volumes': volumes
+            })
+            container.setdefault('resources', {
+                'limits': {
+                    'nvidia.com/gpu': gpus
+                },
+            })
+        else:
+            template.setdefault('spec', {
+                # 'nodeName': select_node_name,
+                'containers': [container],
+                'volumes': volumes
+            })
+
         return content
 
-    def _get_top_gpus(self, n) -> List[dict]:
-
-
+    def _get_dist_top_gpus(self, n) -> List[dict]:
         """
         This method is used to find the top n gpus, the one with most free memory
         nodeInfo is format of following:
@@ -474,6 +522,59 @@ class KubernetesContainerManager(ContainerManager):
         node_gpuid = [{"nodeName": ele[0].split('__')[0], "GPUID": ele[0].split('__')[1]} for ele in top_n]
 
         print("node_gpuid:  ", node_gpuid)
+        return node_gpuid
+
+    def _get_gpus_on_node(self, n, gpu_allocated=None) -> List[dict]:
+        node_infos = self._client_service.list_node()
+
+        node_gpuid = dict()
+        
+        max_min_free_memory = 0
+        max_gpu_used_ratio = 0
+
+        
+        for node_info in node_infos.items:
+            # if the node doesnt have gpu label or gpu is false, skip this node
+            if NodeLabes.Gpu not in node_info.metadata.labels or not node_info.metadata.labels[NodeLabes.Gpu]:
+                continue
+
+            gpu_summary = node_info.metadata.labels[NodeLabes.GpuSummary]
+
+            node_name = node_info.metadata.labels[NodeLabes.NodeName]
+
+            num_gpu = int(node_info.status.allocatable["nvidia.com/gpu"])
+            if num_gpu < 1:
+                continue
+
+            gpu_used_on_node = []
+            if node_name in gpu_allocated:
+                gpu_used_on_node = gpu_allocated[node_name]
+
+            node_gpus = dict()
+            for gpu_info in gpu_summary.split("."):
+                gpu_device_id = gpu_info.split("_")[0]
+                if gpu_device_id not in gpu_used_on_node:
+                    free_memory = gpu_info.split("_")[1]
+                    node_gpus[gpu_device_id] = free_memory
+
+            if len(node_gpus) < n:
+                continue
+            
+            top_n = sorted(node_gpus.items(), key=lambda d: d[1], reverse=False)[:n]
+            logger.info("top_n: {}".format(top_n))
+            node_gpuid[node_name] = {
+                "gpu_id": [ele[0] for ele in top_n],
+                "min_free_memory": top_n[n-1][1],
+                "gpu_free_ratio": len(node_gpus) / num_gpu,
+            }
+            node_min_free_memory = int(node_gpuid[node_name]["min_free_memory"])
+            if max_min_free_memory < node_min_free_memory:
+                max_min_free_memory = node_min_free_memory
+                node_gpuid["max_min_free_node"] = node_name
+            node_gpu_used_ratio = len(node_gpus) / num_gpu
+            if max_gpu_used_ratio < node_gpu_used_ratio:
+                max_gpu_used_ratio = node_gpu_used_ratio
+                node_gpuid["max_gpu_free_ratio"] = node_name
         return node_gpuid
 
     def _create_clusterip_service_config(self, service_name, publish_port):

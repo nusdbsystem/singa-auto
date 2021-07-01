@@ -35,10 +35,32 @@ title "Building SINGA-Auto Admin's image..."
 docker build -t $SINGA_AUTO_IMAGE_ADMIN:$SINGA_AUTO_VERSION -f ./dockerfiles/admin.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
 title "Building SINGA-Auto Worker's image..."
 docker build -t $SINGA_AUTO_IMAGE_WORKER:$SINGA_AUTO_VERSION -f ./dockerfiles/worker.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
+title "Building SINGA-Auto Worker's image with cu90..."
+docker build -t $SINGA_AUTO_IMAGE_WORKER_CU90:$SINGA_AUTO_VERSION -f ./dockerfiles/worker_cu90.Dockerfile \
+    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
+    --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
+title "Building SINGA-Auto Worker's image with cu100..."
+docker build -t $SINGA_AUTO_IMAGE_WORKER_CU100:$SINGA_AUTO_VERSION -f ./dockerfiles/worker_cu100.Dockerfile \
+    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
+    --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
+title "Building SINGA-Auto Worker's image with cu101..."
+docker build -t $SINGA_AUTO_IMAGE_WORKER_CU101:$SINGA_AUTO_VERSION -f ./dockerfiles/worker_cu101.Dockerfile \
+    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
+    --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
+title "Building SINGA-Auto Worker's image with cu110..."
+docker build -t $SINGA_AUTO_IMAGE_WORKER_CU110:$SINGA_AUTO_VERSION -f ./dockerfiles/worker_cu110.Dockerfile \
+    --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \
+     --build-arg CONDA_ENVIORNMENT=$CONDA_ENVIORNMENT $PWD || exit 1
+
 title "Building SINGA-Auto Predictor's image..."
 docker build -t $SINGA_AUTO_IMAGE_PREDICTOR:$SINGA_AUTO_VERSION -f ./dockerfiles/predictor.Dockerfile \
     --build-arg DOCKER_WORKDIR_PATH=$DOCKER_WORKDIR_PATH \

@@ -109,7 +109,7 @@ class YOLOLayer(nn.Module):
                 pred_cls=pred_cls,
                 target=targets,
                 anchors=self.scaled_anchors,
-                ignore_thres=self.ignore_thresh,
+                ignore_thresh=self.ignore_thresh,
             )
 
             # Loss : Mask outputs to ignore non-existing objects (except with conf. loss)

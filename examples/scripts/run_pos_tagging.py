@@ -26,7 +26,7 @@ from singa_auto.config import SUPERADMIN_EMAIL
 from singa_auto.constants import BudgetOption, ModelDependency
 
 from examples.scripts.quickstart import get_predictor_host, \
-    wait_until_train_job_has_stopped, make_predictions, gen_id
+    wait_until_train_job_has_stopped, make_predictions_json, gen_id
 
 from examples.datasets.corpus.load_sample_ptb import load_sample_ptb
 
@@ -102,7 +102,7 @@ def run_pos_tagging(client, train_dataset_path, val_dataset_path, gpus, hours):
                    '1,214', 'cars', 'in', 'the', 'U.S.'
                ]]
     print(queries)
-    predictions = make_predictions(client, predictor_host, queries)
+    predictions = make_predictions_json(client, predictor_host, queries)
     print('Predictions are:')
     print(predictions)
 

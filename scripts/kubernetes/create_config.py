@@ -101,6 +101,7 @@ if __name__ == '__main__':
     SINGA_AUTO_IMAGE_SPARKAPP = sys.argv[68]
     SPAEK_DOCKER_JARS_PATH = sys.argv[69]
     ES_DOCKER_WORKDIR_PATH = sys.argv[70]
+    DB_PATH_ON_MASTER = sys.argv[71]
 
     #zk service
     content = {}
@@ -373,6 +374,8 @@ if __name__ == '__main__':
     env.append({'name': 'CONTAINER_MODE', 'value': CONTAINER_MODE})
     env.append({'name': 'INGRESS_NAME', 'value': INGRESS_NAME})
     env.append({'name': 'INGRESS_EXT_PORT', 'value': INGRESS_EXT_PORT})
+    env.append({'name': 'KUBERNETES_ADVERTISE_ADDR', 'value': KUBERNETES_ADVERTISE_ADDR})
+    env.append({'name': 'DB_PATH_ON_MASTER', 'value': DB_PATH_ON_MASTER})
     container.setdefault('env', env)
     with open('{}/scripts/kubernetes/start_admin_deployment.json'.format(PYTHONPATH), 'w') as f:
         f.write(json.dumps(content, indent=4))
@@ -474,7 +477,7 @@ if __name__ == '__main__':
                           {'name': 'log-path', 'mountPath': '{}/{}'.format(LOGSTASH_DOCKER_WORKDIR_PATH, LOGS_DIR_PATH)}, \
                           {'name': 'docker-path', 'mountPath': '/var/run/docker.sock'}])
     template['spec']['volumes'] = [
-        {'name': 'conf-path', 'hostPath': {'path': '{}/scripts/config/logstash.conf'.format(HOST_WORKDIR_PATH)}}, \
+        {'name': 'conf-path', 'hostPath': {'path': '{}/log_minitor/config/logstash.conf'.format(HOST_WORKDIR_PATH)}}, \
         {'name': 'log-path', 'hostPath': {'path': '{}/{}'.format(HOST_WORKDIR_PATH, LOGS_DIR_PATH)}}, \
         {'name': 'docker-path', 'hostPath': {'path': '/var/run/docker.sock'}}]
 
@@ -569,7 +572,7 @@ if __name__ == '__main__':
                          [{'name': 'conf-path', 'mountPath': '{}/config/elasticsearch.yml'.format(LOGSTASH_DOCKER_WORKDIR_PATH)},\
                           {'name': 'docker-path', 'mountPath': '/var/run/docker.sock'}])
     template['spec']['volumes'] = [
-        {'name': 'conf-path', 'hostPath': {'path': '{}/scripts/config/elasticsearch.yml'.format(HOST_WORKDIR_PATH)}}, \
+        {'name': 'conf-path', 'hostPath': {'path': '{}/log_minitor/config/elasticsearch.yml'.format(HOST_WORKDIR_PATH)}}, \
         {'name': 'docker-path', 'hostPath': {'path': '/var/run/docker.sock'}}]
 
     with open('{}/scripts/kubernetes/start_es_deployment.json'.format(PYTHONPATH), 'w') as f:

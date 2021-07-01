@@ -58,7 +58,7 @@ spec:
       serviceAccountName: sasche-sa
       containers:
         - name: sasche
-          image: singaauto/singa_auto_nodegpumonitor:dev
+          image: singa_auto/singa_auto_nodegpumonitor:dev
           imagePullPolicy: Always
           env:
             - name: NODE_NAME

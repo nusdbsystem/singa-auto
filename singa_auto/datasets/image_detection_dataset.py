@@ -374,7 +374,7 @@ class YoloCoco(object):
 
 
 
-class YoloDataset(torch.utils.data.Dataset):
+class YoloDataset(DetectionModelDataset, torch.utils.data.Dataset):
     """
     dataset of yolo
     """

@@ -17,34 +17,61 @@
 # under the License.
 #
 
-FROM ubuntu:16.04
+FROM nvidia/cuda:10.1-base-ubuntu16.04
 
 RUN apt-get update && apt-get -y upgrade && \
     apt-get install -y vim && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# update and install dependencies
-RUN apt-get update &&  \
-    apt-get install -y \
+# `tensorflow-gpu` dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      cuda-command-line-tools-10-1 \
+      cuda-cufft-10-1 \
+      cuda-curand-10-1 \
+      cuda-cusolver-10-1 \
+      cuda-cusparse-10-1 \      
+      libcublas10=10.2.3.254-1 \
+      libcublas-dev=10.2.3.254-1 \
+      libcudnn7=7.6.4.38-1+cuda10.1 \
+      libcudnn7-dev=7.6.4.38-1+cuda10.1  \
+      libfreetype6-dev \
+      libhdf5-serial-dev \
+      libpng-dev \
+      libgl1-mesa-glx \
+      libsm6 \
+      libxrender1 \
+      libzmq3-dev \
+      pkg-config \
       software-properties-common \
-      wget \
-    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
-    && apt-get update \
-    && apt-get install -y \
-        make \
-        git \
-        curl \
-        vim \
-        vim-gnome \
-    && apt-get install -y cmake=3.5.1-1ubuntu3 \
-    && apt-get install -y \
-        gcc-4.9 g++-4.9 gcc-4.9-base \
-        gcc-4.8 g++-4.8 gcc-4.8-base \
-        gcc-4.7 g++-4.7 gcc-4.7-base \
-        gcc-4.6 g++-4.6 gcc-4.6-base \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 100 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 100
+      unzip \
+      lsb-core \
+      && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# cuda-10.1 package install cublas in cuda-10.2
+# call ldconfig to link them
+RUN cp -r /usr/local/cuda-10.2/* /usr/local/cuda-10.1/ && \
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/ && \
+    ldconfig /etc/ld.so.conf.d
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libnvinfer5=5.1.5-1+cuda10.1 \
+      libnvinfer6=6.0.1-1+cuda10.1 \
+      libnvinfer-dev=5.1.5-1+cuda10.1 \
+      libnvinfer-dev=6.0.1-1+cuda10.1 \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# install cuda/bin
+# RUN mkdir -p /usr/local/cuda-10.1/bin
+# COPY /usr/local/cuda-10.1/bin/ /usr/local/cuda-10.1/bin/
 
 # Install conda with pip and python 3.6
 ARG CONDA_ENVIORNMENT

@@ -54,7 +54,7 @@ spec:
             name: scheduler-config
       containers:
         - name: sascheduler
-          image: singaauto/singa_auto_scheduler:dev
+          image: singa_auto/singa_auto_scheduler:dev
           imagePullPolicy: Always
           args:
             - sascheduler

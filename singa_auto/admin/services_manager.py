@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 import json
 import os
 import logging
@@ -45,9 +46,10 @@ ENVIRONMENT_VARIABLES_AUTOFORWARD = [
     'SUPERADMIN_PASSWORD',
     'REDIS_HOST', 'REDIS_PORT', 'REDIS_PASSWORD',
     'ADMIN_HOST', 'ADMIN_PORT',
-    'DATA_DIR_PATH', 'LOGS_DIR_PATH', 'PARAMS_DIR_PATH',
+    'DATA_DIR_PATH', 'LOGS_DIR_PATH', 'PARAMS_DIR_PATH', 'DB_PATH_ON_MASTER',
     'KAFKA_HOST', 'KAFKA_PORT',
-
+    'CONTAINER_MODE', 'KUBERNETES_ADVERTISE_ADDR',
+    'KUBERNETES_INNER_NETWORK_RANGE'
 ]
 
 DEFAULT_TRAIN_GPU_COUNT = 0
@@ -84,6 +86,7 @@ class ServicesManager(object):
         self._data_dir_path = os.environ['DATA_DIR_PATH']
         self._logs_dir_path = os.environ['LOGS_DIR_PATH']
         self._params_dir_path = os.environ['PARAMS_DIR_PATH']
+        self._params_root_path = os.environ['DB_PATH_ON_MASTER']
         self._host_workdir_path = os.environ['HOST_WORKDIR_PATH']
         self._docker_workdir_path = os.environ['DOCKER_WORKDIR_PATH']
         self._predictor_image = f"{os.environ['SINGA_AUTO_IMAGE_PREDICTOR']}:{version}"
@@ -204,13 +207,17 @@ class ServicesManager(object):
                 # Create advisor
                 self._create_advisor(sub_train_job)
 
-                # 1 GPU per worker
-                for _ in range(gpus):
-                    self._create_train_job_worker(sub_train_job, dist_workers=dist_workers)
+                # # 1 GPU per worker
+                # for gpu_idx in range(gpus):
+                #     self._create_train_job_worker(sub_train_job, dist_workers=dist_workers)
+                #     logger.info("gpu idx {} created".format(gpu_idx))
 
-                # CPU workers
-                for _ in range(cpus):
-                    self._create_train_job_worker(sub_train_job, dist_workers=dist_workers, gpus=0)
+                # # CPU workers
+                # for cpu_idx in range(cpus):
+                #     self._create_train_job_worker(sub_train_job, dist_workers=dist_workers, gpus=0)
+                #     logger.info("cpu idx {} created".format(cpu_idx))
+                
+                self._create_train_job_worker(sub_train_job, dist_workers=dist_workers, gpus=gpus)
 
             return train_job
 
@@ -380,7 +387,7 @@ class ServicesManager(object):
         }
 
         service = self._create_service(service_type=service_type,
-                                       docker_image=model.docker_image,
+                                       docker_image=self._get_docker_image_by_dependency(model.docker_image, gpus, model.dependencies),
                                        environment_vars=environment_vars,
                                        gpus=gpus)
 
@@ -411,6 +418,33 @@ class ServicesManager(object):
 
         return service
 
+    def _get_docker_image_by_dependency(self, docker_image_name, gpus, dependencies):
+        logger.info("docker_image_name is {} with type {}".format(docker_image_name, type(docker_image_name)))
+        if gpus == 0:
+            selected_image_name = docker_image_name
+        elif "torch" in dependencies:
+            torch_dependency = '.'.join(dependencies["torch"].split('.')[:2])
+            if torch_dependency in ["0.4", "1.0", "1.1"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu90")
+            elif torch_dependency in ["1.2", "1.3", "1.4"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu100")
+            elif torch_dependency in ["1.5", "1.6", "1.7", "1.8"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu101")
+        elif "tensorflow" in dependencies:
+            tf_dependency = '.'.join(dependencies["tensorflow"].split('.')[:2])
+            if tf_dependency in ["1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11", "1.12"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu90")
+            elif tf_dependency in ["1.13", "1.14", "1.15", "2.0"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu100")
+            elif tf_dependency in ["2.1", "2.2", "2.3"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu101")
+            elif tf_dependency in ["2.4"]:
+                selected_image_name = docker_image_name.replace("singa_auto_worker", "singa_auto_worker_cu110")
+        else:
+            selected_image_name = docker_image_name
+        
+        return selected_image_name
+
     def _create_train_job_worker(self, sub_train_job, dist_workers=0, gpus=1):
         model = self._meta_store.get_model(sub_train_job.model_id)
         service_type = ServiceType.TRAIN
@@ -421,7 +455,7 @@ class ServicesManager(object):
         }
 
         service = self._create_service(service_type=service_type,
-                                       docker_image=model.docker_image,
+                                       docker_image=self._get_docker_image_by_dependency(model.docker_image, gpus, model.dependencies),
                                        environment_vars=environment_vars,
                                        gpus=gpus,
                                        dist_workers=dist_workers)
@@ -507,20 +541,22 @@ class ServicesManager(object):
         }
 
         if self._app_mode == 'DEV':
-            # Mount whole root directory
-            mounts = {self._host_workdir_path: self._docker_workdir_path}
-        else:
-            # Mount only data, logs and params folders to containers' work directories
             mounts = {
                 os.path.join(self._host_workdir_path, self._data_dir_path):
-                    os.path.join(self._docker_workdir_path,
-                                 self._data_dir_path),
+                    os.path.join(self._docker_workdir_path, self._data_dir_path),
                 os.path.join(self._host_workdir_path, self._logs_dir_path):
-                    os.path.join(self._docker_workdir_path,
-                                 self._logs_dir_path),
+                    os.path.join(self._docker_workdir_path, self._logs_dir_path),
                 os.path.join(self._host_workdir_path, self._params_dir_path):
-                    os.path.join(self._docker_workdir_path,
-                                 self._params_dir_path)
+                    os.path.join(self._docker_workdir_path, self._params_dir_path)
+            }
+        else:
+            mounts = {
+                os.path.join(self._params_root_path, self._data_dir_path):
+                    os.path.join(self._docker_workdir_path, self._data_dir_path),
+                os.path.join(self._params_root_path, self._logs_dir_path):
+                    os.path.join(self._docker_workdir_path, self._logs_dir_path),
+                os.path.join(self._params_root_path, self._params_dir_path):
+                    os.path.join(self._docker_workdir_path, self._params_dir_path)
             }
 
         # Expose container port if it exists
@@ -541,8 +577,32 @@ class ServicesManager(object):
             container_service_name = '{}-{}-{}'.format(
                 service_app_name, service_type.lower(), service.id.split('-')[0])
 
+            if service_type in ["TRAIN", "INFERENCE"]:
+                gpu_allocated = dict()
+                gpu_in_use_by_train = self._meta_store.get_services(service_type = "TRAIN")
+                for service_info in gpu_in_use_by_train:
+                    if service_info.status in ["RUNNING", "DEPLOYING"] and "default" != service_info.container_service_info["node_id"]:
+                        gpu_node_name = service_info.container_service_info["node_id"]
+                        if gpu_node_name not in gpu_allocated:
+                            gpu_allocated[gpu_node_name] = []
+                        gpu_list = (service_info.container_service_info["gpu_list"] if "gpu_list" in service_info.container_service_info else "").split(',')
+                        for gpu_idx in gpu_list:
+                            gpu_allocated[gpu_node_name].append(gpu_idx.strip())
+
+                gpu_in_use_by_inference = self._meta_store.get_services(service_type = "INFERENCE")
+                for service_info in gpu_in_use_by_inference:
+                    if service_info.status in ["RUNNING", "DEPLOYING"] and "default" != service_info.container_service_info["node_id"]:
+                        gpu_node_name = service_info.container_service_info["node_id"]
+                        if gpu_node_name not in gpu_allocated:
+                            gpu_allocated[gpu_node_name] = []
+                        gpu_list = (service_info.container_service_info["gpu_list"] if "gpu_list" in service_info.container_service_info else "").split(',')
+                        gpu_allocated[gpu_node_name].append(gpu_list)
+            else:
+                gpu_allocated=None
+
             container_service = self._container_manager.create_service(
                 service_name=container_service_name,
+                service_type=service_type,
                 docker_image=docker_image,
                 replicas=replicas,
                 args=args,
@@ -550,7 +610,8 @@ class ServicesManager(object):
                 mounts=mounts,
                 publish_port=publish_port,
                 gpus=gpus,
-                dist_workers=dist_workers)
+                dist_workers=dist_workers,
+                gpu_allocated=gpu_allocated)
 
             self._meta_store.mark_service_as_deploying(
                 service,
@@ -573,8 +634,7 @@ class ServicesManager(object):
                    service_port=int(self._predictor_port))
 
                 self._container_manager.update_ingress(ingress_name=_ingress_name,
-                                                       ingress_body=json.loads(ingress_info.ingress_body)
-                                                       )
+                                                       ingress_body=json.loads(ingress_info.ingress_body))
 
                 self._meta_store.commit()
 

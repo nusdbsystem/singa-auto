@@ -209,7 +209,7 @@ def tune_model(
     return (best_proposal, best_model_test_score, best_params)
 
 
-def make_predictions(queries: List[Any], task: str,
+def make_predictions_json(queries: List[Any], task: str,
                      py_model_class: Type[BaseModel], proposal: Proposal,
                      fine_tune_dataset_path,
                      params: Params) -> List[Any]:
@@ -343,7 +343,7 @@ def test_model_class(model_file_path: str,
     model_inst = None
     predictions = None
     if best_proposal is not None and best_params is not None and queries is not None:
-        (predictions, model_inst) = make_predictions(queries, task,
+        (predictions, model_inst) = make_predictions_json(queries, task,
                                                      py_model_class,
                                                      best_proposal, fine_tune_dataset_path, best_params)
 

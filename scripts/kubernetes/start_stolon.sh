@@ -31,8 +31,18 @@ fi
 echo "Create PV..."
 # With stolon, we use some default parameters to make nfs as pv, if your have another choice or want to change the default parameters,
 # your should modify this script
-bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-0 $NFS_HOST_IP /home/singa_auto/database/db0 100Gi ReadWriteOnce Retain pv database-pv-0
-bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-1 $NFS_HOST_IP /home/singa_auto/database/db1 100Gi ReadWriteOnce Retain pv database-pv-1
+
+if [ ! -d $DB_PATH_ON_MASTER ]; then
+    echo "create database folder"
+    mkdir -p $DB_PATH_ON_MASTER/database/db0
+    mkdir -p $DB_PATH_ON_MASTER/database/db1
+    mkdir -p $DB_PATH_ON_MASTER/$DATA_DIR_PATH
+    mkdir -p $DB_PATH_ON_MASTER/$LOGS_DIR_PATH
+    mkdir -p $DB_PATH_ON_MASTER/$PARAMS_DIR_PATH
+fi
+
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-0 $NFS_HOST_IP $DB_PATH_ON_MASTER/database/db0 100Gi ReadWriteOnce Retain pv database-pv-0
+bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pv.sh database-pv-1 $NFS_HOST_IP $DB_PATH_ON_MASTER/database/db1 100Gi ReadWriteOnce Retain pv database-pv-1
 echo "Create PVC..."
 # PVC Name is Fixed
 bash $HOST_WORKDIR_PATH/scripts/kubernetes/create_nfs_pvc.sh database-stolon-keeper-0 100Gi ReadWriteOnce pv database-pv-0

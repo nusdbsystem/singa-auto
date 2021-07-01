@@ -1,11 +1,8 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-os.environ['WORKDIR_PATH'] = '/home/taomingyang/git/'
-os.environ['PARAMS_DIR_PATH'] = 'singa_hub'
 
 import sys
 sys.path.append(os.getcwd())
-
 
 import base64
 import copy
@@ -18,7 +15,6 @@ import random
 import tempfile
 import torch
 import torchvision
-import tqdm
 import zipfile
 
 import PIL
@@ -48,6 +44,7 @@ from singa_auto.datasets.image_detection_dataset import fetch_from_train_set
 from singa_auto.datasets.image_detection_dataset import split_dataset
 from singa_auto.model.dev import test_model_class
 from singa_auto.model.knob import FixedKnob
+# from singa_auto.model.model import BaseModel
 from singa_auto.model.object_detection import ObjtDetModel
 from singa_auto.model.utils import utils
 
@@ -64,665 +61,15 @@ class SaYolo(ObjtDetModel):
         self._knobs = knobs
 
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        print("self.device", self.device)
-        logger.info(self.device)
+        print("using device", self.device)
+        logger.info("using device", self.device)
 
         self.model = None
         self.dataset_name = None
         self.gradient_accumulations = 2
-        
-        self.model_cfg = []
-        self.model_cfg.append("[net]")
-        self.model_cfg.append("batch=16")
-        self.model_cfg.append("subdivisions=1")
-        self.model_cfg.append("width=416")
-        self.model_cfg.append("height=416")
-        self.model_cfg.append("channels=3")
-        self.model_cfg.append("momentum=0.9")
-        self.model_cfg.append("decay=0.0005")
-        self.model_cfg.append("angle=0")
-        self.model_cfg.append("saturation = 1.5")
-        self.model_cfg.append("exposure = 1.5")
-        self.model_cfg.append("hue=.1")
-        self.model_cfg.append("learning_rate=0.001")
-        self.model_cfg.append("burn_in=1000")
-        self.model_cfg.append("max_batches = 500200")
-        self.model_cfg.append("policy=steps")
-        self.model_cfg.append("steps=400000,450000")
-        self.model_cfg.append("scales=.1,.1")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=32")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=64")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=32")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=64")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=64")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=64")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[shortcut]")
-        self.model_cfg.append("from=-3")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=1024")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=255")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[yolo]")
-        self.model_cfg.append("mask = 6,7,8")
-        self.model_cfg.append("anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326")
-        self.model_cfg.append("classes=80")
-        self.model_cfg.append("num=9")
-        self.model_cfg.append("jitter=.3")
-        self.model_cfg.append("ignore_thresh = .7")
-        self.model_cfg.append("truth_thresh = 1")
-        self.model_cfg.append("random=1")
-        self.model_cfg.append("[route]")
-        self.model_cfg.append("layers = -4")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[upsample]")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("[route]")
-        self.model_cfg.append("layers = -1, 61")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=512")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=255")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[yolo]")
-        self.model_cfg.append("mask = 3,4,5")
-        self.model_cfg.append("anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326")
-        self.model_cfg.append("classes=80")
-        self.model_cfg.append("num=9")
-        self.model_cfg.append("jitter=.3")
-        self.model_cfg.append("ignore_thresh = .7")
-        self.model_cfg.append("truth_thresh = 1")
-        self.model_cfg.append("random=1")
-        self.model_cfg.append("[route]")
-        self.model_cfg.append("layers = -4")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[upsample]")
-        self.model_cfg.append("stride=2")
-        self.model_cfg.append("[route]")
-        self.model_cfg.append("layers = -1, 36")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("filters=128")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("batch_normalize=1")
-        self.model_cfg.append("size=3")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=256")
-        self.model_cfg.append("activation=leaky")
-        self.model_cfg.append("[convolutional]")
-        self.model_cfg.append("size=1")
-        self.model_cfg.append("stride=1")
-        self.model_cfg.append("pad=1")
-        self.model_cfg.append("filters=255")
-        self.model_cfg.append("activation=linear")
-        self.model_cfg.append("[yolo]")
-        self.model_cfg.append("mask = 0,1,2")
-        self.model_cfg.append("anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326")
-        self.model_cfg.append("classes=80")
-        self.model_cfg.append("num=9")
-        self.model_cfg.append("jitter=.3")
-        self.model_cfg.append("ignore_thresh = .7")
-        self.model_cfg.append("truth_thresh = 1")
-        self.model_cfg.append("random=1")
 
-        # default is person , only one class
-        self.filter_classes = ["person"]
+        # default is cat , only one class
+        self.filter_classes = ['cat']
 
         # # make sure results folder exists
         # if os.path.exists(r"./results/"):
@@ -733,11 +80,11 @@ class SaYolo(ObjtDetModel):
     @staticmethod
     def get_knob_config():
         return {
+            "conf_thresh": FixedKnob(0.1),
             "lr": FixedKnob(0.01),
-            "model_def": FixedKnob("./singa_auto/darknet/yolov3.cfg"),
-            # "momentum": FixedKnob(0.7),
+            "model_def": FixedKnob("./singa_auto/darknet/yolov3-tiny.cfg"),
+            "nms_thresh": FixedKnob(0.2),
             "pretrained_weights": FixedKnob("./singa_auto/darknet/darknet53.conv.74"),
-            # "weight_decay": FixedKnob(0.0005),
         }
 
     def is_predict_valid(self, box_info, class_info, image_size):
@@ -756,25 +103,23 @@ class SaYolo(ObjtDetModel):
         logger.info("Training params: {}".format(json.dumps(kwargs)))
 
         # num_classes = len(self._knobs.get("filter_classes"))
-        num_epoch = kwargs["num_epoch"] if "num_epoch" in kwargs else 10
-        batch_size = kwargs["batch_size"] if "batch_size" in kwargs else 2
+        num_epoch = kwargs["num_epoch"] if "num_epoch" in kwargs else 2
+        batch_size = kwargs["batch_size"] if "batch_size" in kwargs else 8
 
         if "filter_classes" in kwargs:
             self.filter_classes = kwargs["filter_classes"]
 
-        print(self.filter_classes)
-        logger.info(self.filter_classes)
+        print("{} in train.".format(self.filter_classes))
+        logger.info("{} in train.".format(self.filter_classes))
 
-        # root_path = r"/home/taomingyang/dataset/coco_mini/"
+        # root_path = r"/home/taomingyang/dataset/coco_mini_cat/"
 
         # load 
-        print("unzip dataset")
-        logger.info("unzip dataset")
         dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
         train_folder = tempfile.TemporaryDirectory()
         dataset_zipfile.extractall(path=train_folder.name)
         root_path = train_folder.name
-        print(root_path)
+        print("root_path: {}".format(root_path))
         logger.info("root_path: {}".format(root_path))
 
         print("prepare dataset")
@@ -818,8 +163,8 @@ class SaYolo(ObjtDetModel):
             multiscale=False
         )
 
-        logger.info("Training the model YOLO using {}".format(self.device))
         print("Training the model YOLO using {}".format(self.device))
+        logger.info("Training the model YOLO using {}".format(self.device))
 
         # define training and validation data loaders
         data_loader_train = torch.utils.data.DataLoader(
@@ -831,23 +176,25 @@ class SaYolo(ObjtDetModel):
         )
 
         # get the model using our helper function
-        self.model = DarkNet(config_path=self._knobs.get("model_def"), model_cfg=self.model_cfg).to(self.device)
+        self.model = DarkNet(config_path=self._knobs.get("model_def")).to(self.device)
         self.model.apply(weights_init_normal)
 
         # pretrained weights
         if self._knobs.get("pretrained_weights"):
-            if self._knobs.get("pretrained_weights").endswith(".pth"):
-                if os.path.exists(self._knobs.get("pretrained_weights")):
-                    self.model.load_state_dict(torch.load(self._knobs.get("pretrained_weights"), map_location="cpu"))
+            pretrained_weights_path = self._knobs.get("pretrained_weights")
+            if pretrained_weights_path.endswith(".pth"):
+                if os.path.exists(pretrained_weights_path):
+                    self.model.load_state_dict(torch.load(pretrained_weights_path, map_location="cpu"))
+                    logger.info("using pretrained_weights {}".format(pretrained_weights_path))
                 else:
-                    logger.warning("pretrained_weights {} not exists.".format(self._knobs.get("pretrained_weights")))
+                    logger.warning("pretrained_weights {} not exists.".format(pretrained_weights_path))
             else:
-                pretrained_weights_path = self._knobs.get("pretrained_weights")
                 if not os.path.exists(pretrained_weights_path):
                     import wget
                     os.makedirs(os.path.dirname(pretrained_weights_path), exist_ok=True)
                     pretrained_weights_path = wget.download(r"https://pjreddie.com/media/files/darknet53.conv.74", out=os.path.dirname(pretrained_weights_path))
                 self.model.load_darknet_weights(pretrained_weights_path)
+                logger.info("using pretrained_weights {}".format(pretrained_weights_path))
 
         # # move model to the right device
         # self.model.to(self.device)
@@ -864,8 +211,8 @@ class SaYolo(ObjtDetModel):
             # train for one epoch, printing every 10 iterations
             loss_value = self._train_one_epoch(self.model, optimizer, data_loader_train, epoch)
 
-            logger.info("loss is {}".format(loss_value))
             print("loss is {}".format(loss_value))
+            logger.info("loss is {}".format(loss_value))
 
             if loss_value is None:
                 break
@@ -873,14 +220,17 @@ class SaYolo(ObjtDetModel):
             # update the learning rate
             # lr_scheduler.step()
 
+            print("begin to evalute after epoch: {}".format(epoch))
             logger.info("begin to evalute after epoch: {}".format(epoch))
             precision, recall, AP, f1, ap_class = self._evaluate(data_loader_test)
             print("Average Precisions:")
+            logger.info("Average Precisions:")
             for i, c in enumerate(ap_class):
-                print("\t+ Class \"{}\" ({}) - AP: {:.5f}".format(c, dataset_test.coco.cats[dataset_test.label_to_cat[c]]['name'], AP[i]))
+                info_str = "\t+ Class \"{}\" ({}) - AP: {:.5f}".format(c, dataset_test.coco.cats[dataset_test.label_to_cat[c]]['name'], AP[i])
+                print(info_str)
+                logger.info(info_str)
             print("mAP: {:.9f}".format(AP.mean()))
-
-            logger.info("evalute after epoch {}, result is:".format(epoch))
+            logger.info("mAP: {:.9f}".format(AP.mean()))
 
     def _train_one_epoch(self, model, optimizer, data_loader, epoch):
         model.train()
@@ -913,6 +263,7 @@ class SaYolo(ObjtDetModel):
         ]
 
         for batch_i, (_, images, targets) in enumerate(data_loader):
+            logger.info("\t batch {}/{}".format(batch_i, len(data_loader)))
             batches_done = len(data_loader) * epoch + batch_i
             
             images = images.to(self.device)
@@ -930,32 +281,32 @@ class SaYolo(ObjtDetModel):
                 optimizer.step()
                 optimizer.zero_grad()
 
-            log_str = "\n---- [Epoch %d, Batch %d/%d] ----\n" % (epoch, batch_i, len(data_loader))
-
-            metric_table = [["Metrics", *[f"YOLO Layer {i}" for i in range(len(self.model.yolo_layers))]]]
-
-            # Log metrics at each YOLO layer
-            for i, metric in enumerate(metrics):
-                formats = {m: "%.6f" for m in metrics}
-                formats["grid_size"] = "%2d"
-                formats["cls_acc"] = "%.2f%%"
-                row_metrics = [formats[metric] % yolo.metrics.get(metric, 0) for yolo in self.model.yolo_layers]
-                metric_table += [[metric, *row_metrics]]
-
-                # # Tensorboard logging
-                # tensorboard_log = []
-                # for j, yolo in enumerate(model.yolo_layers):
-                #     for name, metric in yolo.metrics.items():
-                #         if name != "grid_size":
-                #             tensorboard_log += [(f"{name}_{j+1}", metric)]
-                # tensorboard_log += [("loss", loss.item())]
-                # summary_logger.list_of_scalars_summary(tensorboard_log, batches_done)
-
-            log_str += AsciiTable(metric_table).table
-            log_str += f"\nTotal loss {loss.item()}"
-            print(log_str)
-            logger.info(log_str)
-
+            # log_str = "\n---- [Epoch %d, Batch %d/%d] ----\n" % (epoch, batch_i, len(data_loader))
+            # 
+            # metric_table = [["Metrics", *[f"YOLO Layer {i}" for i in range(len(self.model.yolo_layers))]]]
+            # 
+            # # Log metrics at each YOLO layer
+            # for i, metric in enumerate(metrics):
+            #     formats = {m: "%.6f" for m in metrics}
+            #     formats["grid_size"] = "%2d"
+            #     formats["cls_acc"] = "%.2f%%"
+            #     row_metrics = [formats[metric] % yolo.metrics.get(metric, 0) for yolo in self.model.yolo_layers]
+            #     metric_table += [[metric, *row_metrics]]
+            # 
+            #     # # Tensorboard logging
+            #     # tensorboard_log = []
+            #     # for j, yolo in enumerate(model.yolo_layers):
+            #     #     for name, metric in yolo.metrics.items():
+            #     #         if name != "grid_size":
+            #     #             tensorboard_log += [(f"{name}_{j+1}", metric)]
+            #     # tensorboard_log += [("loss", loss.item())]
+            #     # summary_logger.list_of_scalars_summary(tensorboard_log, batches_done)
+            # 
+            # log_str += AsciiTable(metric_table).table
+            # log_str += f"\nTotal loss {loss.item()}"
+            # print(log_str)
+            # logger.info(log_str)
+            # 
             # if lr_scheduler is not None:
             #     lr_scheduler.step()
 
@@ -992,15 +343,14 @@ class SaYolo(ObjtDetModel):
         state_dict = torch.load(io.BytesIO(weight_base64_bytes), map_location=self.device)
         self.model = DarkNet(model_cfg=self.module_cfg).to(self.device)
         self.model.load_state_dict(state_dict)
-        self.model.cuda()
+        # self.model.cuda()
 
     def evaluate(self, dataset_path, **kwargs):
         print(kwargs)
 
-        # root_path = r"/home/taomingyang/dataset/coco_mini/"
+        # root_path = r"/home/taomingyang/dataset/coco_mini_cat/"
 
         # load 
-        print("unzip dataset")
         dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
         evaluate_folder = tempfile.TemporaryDirectory()
         dataset_zipfile.extractall(path=evaluate_folder.name)
@@ -1052,8 +402,8 @@ class SaYolo(ObjtDetModel):
 
         labels = []
         sample_metrics = []  # List of tuples (TP, confs, pred)
-        for batch_i, (names, images, targets) in enumerate(tqdm.tqdm(data_loader)):
-            logger.info(batch_i)
+
+        for batch_i, (names, images, targets) in enumerate(data_loader):
             # Extract labels
             labels += targets[:, 1].tolist()
             # Rescale target
@@ -1064,9 +414,20 @@ class SaYolo(ObjtDetModel):
 
             with torch.no_grad():
                 outputs = self.model(images)
-                outputs = non_max_suppression(outputs, conf_thres=0.5, nms_thres=0.5)
+                outputs = non_max_suppression(outputs, conf_thresh=self._knobs.get("conf_thresh"), nms_thresh=self._knobs.get("nms_thresh"))
+            
+            for name, image, output in zip(names, images, outputs):
+                tmp = image.cpu().detach().permute((1, 2, 0)).mul(255).clamp(0, 255).numpy()
+                tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2BGR)
+                if output is not None:
+                    for rect_info in output:
+                        coord = rect_info.cpu().numpy()
+                        if self.is_predict_valid(coord, self.filter_classes, image.size(-1)):
+                            cv2.rectangle(tmp, (coord[0], coord[1]), (coord[2], coord[3]), (0, 255, 0), 3)
+            
+                cv2.imwrite('./results/{}'.format(os.path.basename(name)), tmp)
 
-            sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=0.5)
+            sample_metrics += get_batch_statistics(outputs, targets, iou_thresh=0.5)
 
         # return score, evaluate_res_str
         if 0 == len(sample_metrics):
@@ -1083,6 +444,9 @@ class SaYolo(ObjtDetModel):
         """
         predict with trained model
         """
+
+        os.makedirs("./results/", exist_ok=True)
+
         result = list()
 
         for img in queries:
@@ -1098,7 +462,7 @@ class SaYolo(ObjtDetModel):
                 img_data = img
 
             # get prediction
-            res = self.__get_prediction(img_data, threshold=0.8)
+            res = self.__get_prediction(img_data)
             if res is None:
                 img_with_box = img_with_segmentation = img_data
                 boxes, pred_cls = None, None
@@ -1124,6 +488,7 @@ class SaYolo(ObjtDetModel):
             img_res['mc_dropout'] = []
             
             result.append(img_res)
+
         return result
 
     def __warmup_lr_scheduler(self, optimizer, warmup_iters, warmup_factor):
@@ -1135,7 +500,7 @@ class SaYolo(ObjtDetModel):
 
         return torch.optim.lr_scheduler.LambdaLR(optimizer, f)
 
-    def __get_prediction(self, img, threshold):
+    def __get_prediction(self, img):
         self.model.eval()
         
         img = torchvision.transforms.ToTensor()(img)
@@ -1153,7 +518,7 @@ class SaYolo(ObjtDetModel):
         img = torch.unsqueeze(resize(img, 416), 0)
         img = img.to(self.device)
         pred = self.model(img)
-        pred = non_max_suppression(pred, conf_thres=0.2, nms_thres=0.4)
+        pred = non_max_suppression(pred, conf_thresh=self._knobs.get("conf_thresh"), nms_thresh=self._knobs.get("nms_thresh"))
         pred_class = []
         pred_boxes = []
         if pred[0] is None:
@@ -1186,6 +551,7 @@ class SaYolo(ObjtDetModel):
             cv2.putText(img, pred_cls[i], (boxes[i][0], boxes[i][1]), cv2.FONT_HERSHEY_SIMPLEX, text_size, (0, 255, 0),
                         thickness=text_th)
 
+        cv2.imwrite("./results/{:04d}.png".format(random.randint(0, 9999)), img)
         return img
 
     def __get_segmentation(self, img, masks):
@@ -1262,7 +628,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--query_path',
         type=str,
-        default='./examples/data/object_detection/person_cat.jpeg',
+        default='./examples/data/object_detection/cat.jpg',
         help='Path(s) to query image(s), delimited by commas'
     )
 
@@ -1276,16 +642,15 @@ if __name__ == "__main__":
         dependencies={
             "opencv-python": "4.4.0.46",
             "terminaltables": "3.1.0",
-            "torch": "1.4.0+cu100",
-            "torchvision": "0.5.0+cu100",
-            "tqdm": "4.53.0",
+            "torch": "1.4.0",
+            "torchvision": "0.5.0",
         },
         train_dataset_path=args.train_path,
         val_dataset_path=args.val_path,
         train_args={
             "batch_size": 8,
-            "model_def": "./singa_auto/darknet/yolov3.cfg",
-            "filter_classes": ["car", 'cat'],
+            "model_def": "./singa_auto/darknet/yolov3-tiny.cfg",
+            "filter_classes": ['cat'],
             "num_epoch": 1,
             "pretrained_weights": "./singa_auto/darknet/darknet53.conv.74",
         },

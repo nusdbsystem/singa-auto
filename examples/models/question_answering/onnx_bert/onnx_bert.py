@@ -23,7 +23,7 @@ import onnx
 
 from singa_auto.model import BaseModel
 from singa_auto.constants import ModelDependency
-from singa_auto.model.dev import make_predictions, _check_model_class, _print_header, _check_dependencies, inform_user
+from singa_auto.model.dev import make_predictions_json, _check_model_class, _print_header, _check_dependencies, inform_user
 from singa_auto.model.utils import load_model_class
 from singa_auto.advisor.constants import Proposal, ParamsType
 
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     proposal = Proposal(trial_no=0, knobs={},
                         params_type=ParamsType.LOCAL_RECENT)
 
-    (predictions, model_inst) = make_predictions(queries, task,
+    (predictions, model_inst) = make_predictions_json(queries, task,
                                                  py_model_class,
                                                  proposal,
                                                  fine_tune_dataset_path=None,

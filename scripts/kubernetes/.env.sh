@@ -49,11 +49,11 @@ export CONTAINER_MODE=K8S
 # Cluster Mode for SINGA-auto
 export CLUSTER_MODE=SINGLE # CLUSTER or SINGLE
 
+source $HOST_WORKDIR_PATH/scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
+
 if [ "$CLUSTER_MODE" = "CLUSTER" ]; then
     export POSTGRES_HOST=stolon-proxy-service
     export NFS_HOST_IP=$IP_ADRESS      # NFS Host IP - if used nfs as pv for database storage
     export RUN_DIR_PATH=run            # Shares a folder with containers that stores components' running info, relative to workdir
 fi
-
-source $HOST_WORKDIR_PATH/scripts/.base_env.sh $IP_ADRESS $SINGA_AUTO_VERSION || exit 1
 

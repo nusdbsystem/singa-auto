@@ -422,13 +422,16 @@ class MetaStore(object):
         service = self._session.query(Service).get(service_id)
         return service
 
-    def get_services(self, status=None):
+    def get_services(self, status=None, service_type=None):
         query = self._session.query(Service)
 
         if status is not None:
             # pylint: disable=E1111
             query = query.filter(Service.status == status)
-
+        
+        if service_type is not None:
+            query = query.filter(Service.service_type == service_type)
+            
         services = query.all()
 
         return services

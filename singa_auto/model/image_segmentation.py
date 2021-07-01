@@ -17,14 +17,10 @@
 # under the License.
 #
 
-from .image_classification import ImageClfBase
-from .model import BaseModel, Params, KnobConfig, Knobs
-from .object_detection import ObjtDetModel
-from .image_segmentation import SegmentationModel
-from .post_tagging import PosTagModel
-from .tabular_classification import TabularClfModel
-from .log import LoggerUtils
-from .utils import utils, logger, dataset, load_model_class, parse_model_install_command, \
-                    serialize_knob_config, deserialize_knob_config
-from .knob import BaseKnob, CategoricalKnob, IntegerKnob, FloatKnob, FixedKnob, ArchKnob, \
-                    KnobValue, CategoricalValue, PolicyKnob
+from .model import BaseModel
+
+
+class SegmentationModel(BaseModel):
+    # TODO Find some thing in common for this task, and  and abstract them to here
+    pass
+

@@ -56,6 +56,7 @@ class DockerSwarmContainerManager(ContainerManager):
 
     def create_service(self,
                        service_name,
+                       service_type,
                        docker_image,
                        replicas,
                        args,
@@ -63,7 +64,8 @@ class DockerSwarmContainerManager(ContainerManager):
                        mounts=None,
                        publish_port=None,
                        gpus=0,
-                       dist_workers=0) -> ContainerService:
+                       dist_workers=0,
+                       gpu_allocated=None) -> ContainerService:
 
         if mounts is None:
             mounts = {}

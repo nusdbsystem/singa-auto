@@ -37,7 +37,7 @@ title "Starting SINGA-Auto's Monitor..."
      -e KAFKA_HOST=$KAFKA_HOST \
      -p $LOGSTASH_PORT:$LOGSTASH_PORT  \
      -v $HOST_WORKDIR_PATH/$LOGS_DIR_PATH:$LOGSTASH_DOCKER_WORKDIR_PATH/$LOGS_DIR_PATH \
-     -v $HOST_WORKDIR_PATH/scripts/config/logstash.conf:$LOGSTASH_DOCKER_WORKDIR_PATH/logstash.conf  \
+     -v $HOST_WORKDIR_PATH/log_minitor/config/logstash.conf:$LOGSTASH_DOCKER_WORKDIR_PATH/logstash.conf  \
      -d $SINGA_AUTO_IMAGE_LOGSTASH:$SINGA_AUTO_VERSION \
      &> LOGSTADH_LOG_FILE_PATH) &
 

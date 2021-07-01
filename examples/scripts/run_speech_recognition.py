@@ -17,9 +17,12 @@
 # under the License.
 #
 
+import os
+import sys
+sys.path.append(os.getcwd())
+
 from pprint import pprint
 import argparse
-import os
 import base64
 
 from singa_auto.client import Client
@@ -27,7 +30,7 @@ from singa_auto.config import SUPERADMIN_EMAIL
 from singa_auto.constants import BudgetOption, ModelDependency
 
 from examples.scripts.quickstart import get_predictor_host, \
-    wait_until_train_job_has_stopped, make_predictions, gen_id
+    wait_until_train_job_has_stopped, make_predictions_json, gen_id
 
 from examples.datasets.audio_files.load_librispeech import load_librispeech
 

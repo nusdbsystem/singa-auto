@@ -43,7 +43,22 @@ def get_predictor_host(client, app):
             time.sleep(10)
 
 
-def make_predictions(client, predictor_host, queries):
+def make_predictions_image(client, predictor_host, queries):
+    predictions = []
+
+    for query in queries:
+        res = requests.post(url='http://{}/predict'.format(predictor_host),
+                            files={'img': open(query, 'rb')})
+
+        if res.status_code != 200:
+            raise Exception(res.text)
+
+        predictions.append(res.text)
+
+    return predictions
+
+
+def make_predictions_json(client, predictor_host, queries):
     predictions = []
 
     for query in queries:
@@ -131,7 +146,7 @@ def quickstart(client, train_dataset_path, val_dataset_path, gpus, hours,
     print('Making predictions for query images:')
     print(query_paths)
     queries = utils.dataset.load_images(query_paths)
-    predictions = make_predictions(client, predictor_host, queries)
+    predictions = make_predictions_json(client, predictor_host, queries)
     print('Predictions are:')
     print(predictions)
 
