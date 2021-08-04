@@ -68,6 +68,9 @@ More instructions are available in [SINGA-Auto's Developer Guide](https://singa-
 
 Report any issues at [SINGA-Auto's Github Issues](https://github.com/nusdbsystem/singa-auto/issues)
 
+## Jira
+
+View our development records at [SINGA-Auto's Jira Site](https://team-1628053718937.atlassian.net/jira/software/projects/SINGAAUTO/boards/1)
 
 ## Acknowledgements
 
