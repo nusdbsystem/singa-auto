@@ -70,7 +70,7 @@ Report any issues at [SINGA-Auto's Github Issues](https://github.com/nusdbsystem
 
 ## Jira
 
-View our development records at [SINGA-Auto's Jira Site](https://team-1628053718937.atlassian.net/jira/software/projects/SINGAAUTO/boards/1)
+View our development records at [SINGA-Auto's Jira Issues](https://team-1628053718937.atlassian.net/jira/software/projects/SINGAAUTO/issues/)
 
 ## Acknowledgements
 
