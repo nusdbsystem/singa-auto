@@ -22,6 +22,8 @@ import pickle
 import base64
 import numpy as np
 import argparse
+import os
+import random
 
 from singa_auto.model import ImageClfBase, IntegerKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
@@ -30,7 +32,7 @@ from singa_auto.model.dev import test_model_class
 
 class SkDt(ImageClfBase):
     '''
-    Implements a decision tree classifier on Scikit-Learn for IMAGE_CLASSIFICATION
+    This class defines a decision tree classifier on the MNIST / Fashion-MNIST dataset.
     '''
 
     @staticmethod
@@ -38,86 +40,60 @@ class SkDt(ImageClfBase):
         return {
             'max_depth': IntegerKnob(1, 32),
             'splitter': CategoricalKnob(['best', 'random']),
-            'criterion': CategoricalKnob(['gini', 'entropy']),
-            'max_image_size': CategoricalKnob([16, 32])
+            'criterion': CategoricalKnob(['gini', 'entropy'])
         }
 
     def __init__(self, **knobs):
         self._knobs = knobs
         self.__dict__.update(knobs)
-        self._clf = self._build_classifier(self._knobs.get("max_depth"),
-                                           self._knobs.get("criterion"),
-                                           self._knobs.get("splitter"))
 
-    def train(self, dataset_path, **kwargs):
-        dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path,
-            max_image_size=self._knobs.get("max_image_size"),
-            mode='L')
-        self._image_size = dataset.image_size
-        (images, classes) = zip(*[(image, image_class)
-                                  for (image, image_class) in dataset])
-        X = self._prepare_X(images)
+        self._clf = tree.DecisionTreeClassifier(max_depth=self._knobs.get("max_depth"),
+                                                criterion=self._knobs.get("criterion"),
+                                                splitter=self._knobs.get("splitter"))
+
+    def train(self, dataset_path, work_dir = None, **kwargs):
+        dataset = utils.dataset.load_mnist_dataset(dataset_path)
+        (images, classes) = zip(*[(np.asarray(image), image_class)
+                                for (image, image_class) in dataset])
+        
+        X = self.image_flatten(images)
         y = classes
+
+        # Training.
         self._clf.fit(X, y)
 
-        # Compute train accuracy
+        # Compute accuracy on the training set.
         preds = self._clf.predict(X)
         accuracy = sum(y == preds) / len(y)
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
-    def evaluate(self, dataset_path,  **kwargs):
-        dataset = utils.dataset.load_dataset_of_image_files(
-            dataset_path,
-            max_image_size=self._knobs.get("max_image_size"),
-            mode='L')
-        (images, classes) = zip(*[(image, image_class)
-                                  for (image, image_class) in dataset])
-        X = self._prepare_X(images)
+    def evaluate(self, dataset_path,  work_dir = None, **kwargs):
+        dataset = utils.dataset.utils.dataset.load_mnist_dataset(dataset_path)
+        (images, classes) = zip(*[(np.asarray(image), image_class)
+                                for (image, image_class) in dataset])
+        X = self.image_flatten(images)
         y = classes
         preds = self._clf.predict(X)
         accuracy = sum(y == preds) / len(y)
         return accuracy
 
-    def predict(self, queries):
-        queries = utils.dataset.transform_images(queries,
-                                                 image_size=self._image_size,
-                                                 mode='L')
-        X = self._prepare_X(queries)
+    def predict(self, queries, work_dir = None):
+        X, _ = utils.dataset.transform_mnist_images(queries, mode='L')
+        X = self.image_flatten(X)
         probs = self._clf.predict_proba(X)
         return probs.tolist()
 
     def dump_parameters(self):
-        params = {}
-
-        # Put model parameters
-        clf_bytes = pickle.dumps(self._clf)
-        clf_base64 = base64.b64encode(clf_bytes).decode('utf-8')
-        params['clf_base64'] = clf_base64
-
-        # Put image size
-        params['image_size'] = self._image_size
-
+        params = pickle.dumps(self.__dict__)
         return params
 
     def load_parameters(self, params):
-        # Load model parameters
-        clf_base64 = params['clf_base64']
-        clf_bytes = base64.b64decode(clf_base64.encode('utf-8'))
-        self._clf = pickle.loads(clf_bytes)
-
-        # Load image size
-        self._image_size = params['image_size']
-
-    def _prepare_X(self, images):
-        return [np.asarray(image).flatten() for image in images]
-
-    def _build_classifier(self, max_depth, criterion, splitter):
-        clf = tree.DecisionTreeClassifier(max_depth=max_depth,
-                                          criterion=criterion,
-                                          splitter=splitter)
-        return clf
-
+        self.__dict__ = pickle.loads(params)
+    
+    def image_flatten(self, images):
+        X = np.asarray(images)
+        X = X.reshape(X.shape[0], X.shape[1] * X.shape[2])
+        return X
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
