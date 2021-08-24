@@ -28,6 +28,10 @@ import random
 from singa_auto.model import ImageClfBase, IntegerKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
+from PIL import Image
+from io import BytesIO
+
+
 
 
 class SkDt(ImageClfBase):
@@ -68,7 +72,7 @@ class SkDt(ImageClfBase):
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
     def evaluate(self, dataset_path,  work_dir = None, **kwargs):
-        dataset = utils.dataset.utils.dataset.load_mnist_dataset(dataset_path)
+        dataset = utils.dataset.load_mnist_dataset(dataset_path)
         (images, classes) = zip(*[(np.asarray(image), image_class)
                                 for (image, image_class) in dataset])
         X = self.image_flatten(images)
@@ -78,7 +82,12 @@ class SkDt(ImageClfBase):
         return accuracy
 
     def predict(self, queries, work_dir = None):
-        X, _ = utils.dataset.transform_mnist_images(queries, mode='L')
+        X = []
+        for png_bytes in queries:
+            png_image = Image.open(BytesIO(png_bytes))
+            png_array = np.asarray(png_image.convert("L"))
+            X.append(png_array)
+        X = np.asarray(X)
         X = self.image_flatten(X)
         probs = self._clf.predict_proba(X)
         return probs.tolist()
@@ -109,14 +118,15 @@ if __name__ == '__main__':
                         type=str,
                         default='data/fashion_mnist_test.zip',
                         help='Path to test dataset')
-    parser.add_argument(
-        '--query_path',
-        type=str,
-        default='examples/data/image_classification/fashion_mnist_test_1.png',
-        help='Path(s) to query image(s), delimited by commas')
+    parser.add_argument('--query_path',
+                        type=str,
+                        default='examples/data/image_classification/fashion_mnist_test_1.png,examples/data/image_classification/fashion_mnist_test_1.png',
+                        help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
-    queries = utils.dataset.load_images(args.query_path.split(','))
+    query_file_list = args.query_path.split(',')
+    queries = [open(fname, 'rb').read() for fname in query_file_list]
+
     test_model_class(model_file_path=__file__,
                      model_class='SkDt',
                      task='IMAGE_CLASSIFICATION',
