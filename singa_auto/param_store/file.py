@@ -37,9 +37,17 @@ class FileParamStore(ParamStore):
         # Serialize params and save bytes to params dir
         file_name = '{}_{}.model'.format(self.model_class, uuid.uuid4())
         dest_file_path = os.path.join(self._params_dir, file_name)
-        params_bytes = self._serialize_params(params)
-        with open(dest_file_path, 'wb') as f:
-            f.write(params_bytes)
+        # Store all model parameters into a single file. 
+        if not os.path.exists(self._params_dir):
+                os.makedirs(self._params_dir)
+        if isinstance(params, bytes):
+            with open(dest_file_path, 'wb') as f:
+                f.write(params)
+        else:
+            params_bytes = self._serialize_params(params)
+            # Check the directory. In case the directory doesn't exist, if so, create the path
+            with open(dest_file_path, 'wb') as f:
+                f.write(params_bytes)
 
         # ID for params is its file name
         params_id = file_name
@@ -52,6 +60,10 @@ class FileParamStore(ParamStore):
         file_path = os.path.join(self._params_dir, file_name)
         with open(file_path, 'rb') as f:
             params_bytes = f.read()
-        params = self._deserialize_params(params_bytes)
+        # Load all model parameters.
+        try:
+            params = self._deserialize_params(params_bytes)
+        except:
+            params = params_bytes
 
         return params
