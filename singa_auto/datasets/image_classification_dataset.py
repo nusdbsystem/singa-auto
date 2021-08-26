@@ -33,7 +33,8 @@ class ImageDataset4Clf(ClfModelDataset):
         self.min_image_size = min_image_size
         self.max_image_size = max_image_size
         self.label_mapper = dict()
-        self.image_size = None
+        # to read accual self.image_size
+        self.__getitem__(0)
         if if_shuffle:
             (self._image_names,
              self._image_classes) = self._shuffle(self._image_names,
@@ -84,6 +85,18 @@ class ImageDataset4Clf(ClfModelDataset):
 
     def _extract_zip(self, dataset_path):
         self.dataset_zipfile = zipfile.ZipFile(dataset_path, 'r')
+        if 'class_name.csv' in self.dataset_zipfile.namelist() or 'meta.csv' in self.dataset_zipfile.namelist():
+            with tempfile.TemporaryDirectory() as d:
+                try:
+                    class_csv_path = self.dataset_zipfile.extract('class_name.csv', path=d)
+                except:
+                    class_csv_path = self.dataset_zipfile.extract('meta.csv', path=d)
+                csv = pd.read_csv(class_csv_path)
+            if len(csv.columns[1:])==1:
+                name = csv[csv.columns[1]]
+                label = csv[csv.columns[0]]
+            for single_name,single_label in zip(name,label):
+                self.label_mapper[str(single_label)]=single_name
         if 'images.csv' in self.dataset_zipfile.namelist():
             # Create temp directory to unzip to extract paths/classes/numbers only,
             # no actual images would be extracted
@@ -180,20 +193,23 @@ class TorchImageDataset(torch.utils.data.Dataset):
                 transforms.ToTensor(),
                 transforms.Normalize(norm_mean, norm_std)
             ])
-
+        try:
+            self.dataset_size = self.dataset.size
+        except:
+            self.dataset_size = len(self.dataset)
         # initialize parameters for Self-paced Learning (SPL) module
-        self._scores = np.zeros(self.dataset.size)
+        self._scores = np.zeros(self.dataset_size)
         self._loss_threshold = -0.00001
         # No threshold means all data samples are effective
-        self._effective_dataset_size = self.dataset.size
+        self._effective_dataset_size = self.dataset_size
         # equivalent mapping in default i.e.
         # 0 - 0
         # 1 - 1
         # ...
         # N - N
         self._indice_mapping = np.linspace(start=0,
-                                           stop=self.dataset.size - 1,
-                                           num=self.dataset.size).astype(np.int32)
+                                           stop=self.dataset_size - 1,
+                                           num=self.dataset_size).astype(np.int32)
 
     def __len__(self):
         return self._effective_dataset_size
@@ -207,7 +223,7 @@ class TorchImageDataset(torch.utils.data.Dataset):
 
         returns:
             NOTE: being different from the standard procedure, the function returns
-            tuple that contains RAW datasample index [0 .. self.dataset.size - 1] as
+            tuple that contains RAW datasample index [0 .. self.dataset_size - 1] as
             the first element
         """
         # translate the index to raw index in singa-auto dataset
@@ -237,8 +253,8 @@ class TorchImageDataset(torch.utils.data.Dataset):
         effective_data_mask = self._scores > self._loss_threshold
 
         self._indice_mapping = np.linspace(
-            start=0, stop=self.dataset.size - 1,
-            num=self.dataset.size)[effective_data_mask].astype(np.int32)
+            start=0, stop=self.dataset_size - 1,
+            num=self.dataset_size)[effective_data_mask].astype(np.int32)
 
         self._effective_dataset_size = len(self._indice_mapping)
         print("dataset threshold = {}, the effective sized = {}".format(

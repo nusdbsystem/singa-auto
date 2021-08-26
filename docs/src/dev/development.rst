@@ -7,7 +7,10 @@ Development
 
     .. code-block:: shell
 
-        source .env.sh
+        source scripts/docker_swarm/.env.sh
+
+In '.env.sh', the default server is fixed by 'IP_ADRESS=127.0.0.1', which means that Singa-Auto will be using the 'local' machine as the server.
+HOST_WORKDIR_PATH by default is the current directory, and 'SINGA_AUTO_VERSION' is set to 'dev' for development mode, otherwise, a specific version should be given.
 
 Refer to :ref:`architecture` and :ref:`folder-structure` for a developer's overview of SINGA-Auto.
 
@@ -18,11 +21,11 @@ Testing Latest Code Changes
 
 To test the lastet code changes e.g. in the ``dev`` branch, you'll need to do the following:
 
-    1. Build SINGA-Auto's images on each participating node (the quickstart instructions pull pre-built `SINGA-Auto's images <https://hub.docker.com/r/rafikiai/>`_ from Docker Hub):
+    1. Build SINGA-Auto's images on each participating node (the quickstart instructions pull pre-built `SINGA-Auto's images <https://hub.docker.com/u/singaauto>`_ from Docker Hub):
 
     .. code-block:: shell
 
-        bash scripts/build_images.sh
+        bash scripts/docker_swarm/build_images.sh
 
     2. Purge all of SINGA-Auto's data (since there might be database schema changes):
 
@@ -50,27 +53,27 @@ In general, before making a release to ``master`` from ``dev``, ensure that the 
 
 After merging ``dev`` into ``master``, do the following:
 
-    1. Build & push SINGA-Auto's new Docker images to `SINGA-Auto’s own Docker Hub account <https://hub.docker.com/u/rafikiai>`_:
+    1. Build & push SINGA-Auto's new Docker images to `SINGA-Auto’s own Docker Hub account <https://hub.docker.com/u/singaauto>`_:
 
         .. code-block:: shell
 
-            bash scripts/build_images.sh
+            bash scripts/docker_swarm/build_images.sh
             bash scripts/push_images.sh
 
         Get Docker Hub credentials from @nginyc.
 
-    2. Build & deploy SINGA-Auto's new documentation to ``SINGA-Auto's microsite powered by Github Pages``. Checkout SINGA-Auto's ``gh-pages`` branch, then run the following:
+    2. Build & deploy SINGA-Auto's new documentation to ``SINGA-Auto's microsite powered by Github Pages``. Run the following:
 
         .. code-block:: shell
 
-            bash scripts/build_docs.sh latest
+            bash scripts/docker_swarm/build_docs.sh latest
 
-        Finally, commit all resultant generated documentation changes and push them to `gh-pages` branch. The latest documentation should be reflected at https://https://singa-auto.readthedocs.io/en/latest/.
+        Finally, commit all resultant generated documentation changes and push them to `dev` branch. The latest documentation should be reflected at https://singa-auto.readthedocs.io/en/latest/.
         
         Refer to `documentation on Github Pages <https://guides.github.com/features/pages/>` to understand more on how this works. 
 
 
-    3. `Draft a new release on Github <https://github.com/nusdbsystem/singa-auto/releases/new>`_. Make sure to include the list of changes relative to the previous release.
+    3. Draft a new `Singa-Auto Github release <https://github.com/nusdbsystem/singa-auto/releases>`_. Make sure to include the list of changes relative to the previous release.
 
 
 Subsequently, you'll need to increase ``SINGA_AUTO_VERSION`` in ``.env.sh`` to reflect a new release.
@@ -88,14 +91,6 @@ By default, you can connect to the PostgreSQL DB using a PostgreSQL client (e.g 
         POSTGRES_USER=singa_auto
         POSTGRES_DB=singa_auto
         POSTGRES_PASSWORD=singa_auto
-
-
-You can start & stop SINGA-Auto's DB independently of the rest of SINGA-Auto's stack with:
-
-    .. code-block:: shell
-
-        bash scripts/start_db.sh
-        bash scripts/stop_db.sh
     
 
 Connecting to SINGA-Auto's Redis
@@ -105,7 +100,7 @@ You can connect to Redis DB with `rebrow <https://github.com/marians/rebrow>`_:
 
     .. code-block:: shell
 
-        bash scripts/start_rebrow.sh
+        bash scripts/docker_swarm/test/start_rebrow.sh
 
 ...with these credentials by default:
 
@@ -128,12 +123,12 @@ To push the SINGA-Auto's latest images to Docker Hub (e.g. to reflect the latest
 Building SINGA-Auto's Documentation
 --------------------------------------------------------------------
 
-SINGA-Auto uses `Sphinx documentation <http://www.sphinx-doc.org>`_ and hosts the documentation with `Github Pages <https://pages.github.com/>`_ on the `gh-pages branch <https://github.com/nusdbsystem/singa-auto/tree/gh-pages>`_. 
+SINGA-Auto uses `Sphinx documentation <http://www.sphinx-doc.org>`_ and hosts the documentation with `Github Pages <https://pages.github.com/>`_ on the `dev branch <https://github.com/nusdbsystem/singa-auto/tree/dev>`_. 
 Build & view SINGA-Auto's Sphinx documentation on your machine with the following commands:
 
     .. code-block:: shell
 
-        bash scripts/build_docs.sh latest
+        bash scripts/docker_swarm/build_docs.sh latest
         open docs/index.html
 
 .. _`testing-singa_auto`:
@@ -151,8 +146,7 @@ Then, run all integration tests with:
 
         pip install -r singa_auto/requirements.txt
         pip install -r singa_auto/advisor/requirements.txt
-        pip install -r test/requirements.txt
-        bash scripts/test.sh
+        bash scripts/docker_swarm/test/test.sh
 
 
 Troubleshooting

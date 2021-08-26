@@ -1,0 +1,24 @@
+tensorflow==1.12.0
+sox
+scikit-optimize
+ds-ctcdecoder==0.6.1
+pypi-kenlm
+# https://github.com/mozilla/DeepSpeech/blob/master/setup.py
+numpy
+progressbar2
+six
+pyxdg
+attrdict
+absl-py
+semver
+opuslib == 2.0.0
+optuna
+sox
+bs4
+pandas
+requests
+numba == 0.47.0 # ships py3.5 wheel
+llvmlite == 0.31.0 # for numba==0.47.0
+librosa
+soundfile
+requests_toolbelt

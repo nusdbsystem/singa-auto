@@ -29,6 +29,7 @@ import ContentBar from "components/ConsoleContents/ContentBar"
 
 // Third parts
 import * as moment from "moment"
+import { CSVLink } from "react-csv";
 
 /* ListJobs are able to view trials and Trial details*/
 
@@ -65,11 +66,24 @@ class ListTrials extends React.Component {
     this.props.requestTrialsListOfJob(app, appVersion)
   }
 
-  componentDidUpdate(prevProps, prevState) {}
+  componentDidUpdate(prevProps, prevState) { }
 
   componentWillUnmount() {
     this.props.resetLoadingBar()
   }
+  convertToCSV(obj) {
+    var csv = 'Trial No, Score \n'
+    obj.map(it => {
+      var arr = []
+      arr.push(it.no, it.score)
+      var row = arr.join(',')
+      csv += row + '\n'
+      return null
+    })
+    return csv
+  }
+
+
 
   render() {
     const { classes, jobsList, match } = this.props
@@ -81,6 +95,7 @@ class ListTrials extends React.Component {
     // eslint-disable-next-line
     if (job != undefined) {
       trialsList = job.trials || []
+      var csv = this.convertToCSV(trialsList)
     }
     return (
       <React.Fragment>
@@ -92,35 +107,36 @@ class ListTrials extends React.Component {
             mainBtnLink={`/console/inferencejobs/${appId}/${app}/${appVersion}/create_inference_job`}
             refreshAction={this.reloadListOfTrials}
           />
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell> Train Job ID </TableCell>
-                  <TableCell> App Name </TableCell>
-                  <TableCell> App Version</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell> {appId}</TableCell>
-                  <TableCell> {app} </TableCell>
-                  <TableCell> {appVersion}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            <div className={classes.contentWrapper}>
-              <Typography color="textSecondary" align="center">
-                {trialsList.length === 0
-                  ? "You do not have any trials for this train job"
-                  : "Trials for this train job"}
-              </Typography>
-              <TableContainer>
-                <Table
-                  className={classes.table}
-                  aria-labelledby="tableTitle"
-                  size={'medium'}
-                  aria-label="enhanced table"
-                >
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell> Train Job ID </TableCell>
+                <TableCell> App Name </TableCell>
+                <TableCell> App Version</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell> {appId}</TableCell>
+                <TableCell> {app} </TableCell>
+                <TableCell> {appVersion}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <div className={classes.contentWrapper}>
+            <Typography color="textSecondary" align="center">
+              {trialsList.length === 0
+                ? "You do not have any trials for this train job"
+                : "Trials for this train job" }<br/>
+              {trialsList.length !== 0 && (<CSVLink data={csv}>Download trial scores</CSVLink>)}
+            </Typography>
+            <TableContainer>
+              <Table
+                className={classes.table}
+                aria-labelledby="tableTitle"
+                size={'medium'}
+                aria-label="enhanced table"
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell>Details</TableCell>

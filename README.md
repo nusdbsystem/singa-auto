@@ -69,6 +69,11 @@ More instructions are available in [SINGA-Auto's Developer Guide](https://singa-
 Report any issues at [SINGA-Auto's Github Issues](https://github.com/nusdbsystem/singa-auto/issues)
 
 
+## Jira
+
+View our development records at [SINGA-Auto's Jira Issues](https://team-1628053718937.atlassian.net/jira/software/projects/SINGAAUTO/issues/)
+
+
 ## Acknowledgements
 
 The research is supported by the National Research Foundation, Prime Minister’s Office, Singapore under its National Cybersecurity R\&D Programme (Grant No. NRF2016NCR-NCR002-020), National Natural Science Foundation of China (No. 61832001), National Key Research and Development Program of China  (No. 2017YFB1201001), China Thousand Talents Program for Young Professionals (3070011 181811).

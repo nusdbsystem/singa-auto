@@ -149,10 +149,8 @@ class Admin(object):
         store_dataset_id = store_dataset.id
         size_bytes = store_dataset.size_bytes
         stat = dict()
-        # ensure the uploaded dataset extension is .zip format, otherwise the below code hunk won't unzip it
-        # and ensure the zip file is correctly named, nor hidden zip file
-        if len(os.path.splitext(data_file_path)) == 2 and os.path.splitext(
-                data_file_path)[1] == '.zip':
+        # the default dataset uploading format is zip, named with random array, e.g. "/tmp/tmp2gvvcpd_"
+        if True:
             dataset_zipfile = zipfile.ZipFile(data_file_path, 'r')
             # when .zip file is a image dataset and contains images.csv as label file
             # images.csv includes pairs of the image names and their labels

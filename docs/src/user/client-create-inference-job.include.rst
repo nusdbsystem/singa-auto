@@ -7,6 +7,8 @@ Example:
     .. code-block:: python
 
         client.create_inference_job(app='fashion_mnist_app')
+        # Or with more details specified, such as Number of GPU 'GPU_COUNT' 
+        client.create_inference_job(app='fashion_mnist_app', app_version=1, budget={'GPU_COUNT': 1} )
 
     Output:
 

@@ -31,8 +31,10 @@ from examples.scripts.quickstart import get_predictor_host, \
 
 from examples.datasets.audio_files.load_librispeech import load_librispeech
 
-IMAGE_TFDEEPSPEECH_VERSION = os.environ['RAFIKI_VERSION']
-IMAGE_TFDEEPSPEECH = f'rafiki_tfdeepspeech:{IMAGE_TFDEEPSPEECH_VERSION}'
+IMAGE_TFDEEPSPEECH_NAME = os.environ.get('IMAGE_TFDEEPSPEECH_NAME', 'singa-auto-tfdeepspeech')
+SINGA_AUTO_VERSION = os.environ.get('SINGA_AUTO_VERSION', 'dev')
+
+IMAGE_TFDEEPSPEECH = f'{IMAGE_TFDEEPSPEECH_NAME}:{SINGA_AUTO_VERSION}'
 
 
 def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
@@ -48,7 +50,7 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
     app = 'speech_recognition_app_{}'.format(app_id)
     tf_model_name = 'TfDeepSpeech_{}'.format(app_id)
 
-    print('Creating & uploading datasets onto SINGA-Autp...')
+    print('Creating & uploading datasets onto SINGA-Auto...')
     train_dataset = client.create_dataset('{}_train'.format(app), task,
                                           train_dataset_path)
     pprint(train_dataset)
@@ -69,7 +71,7 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
         })
     pprint(tf_model)
 
-    print('Creating train job for app "{}" on SINGA-Autp...'.format(app))
+    print('Creating train job for app "{}" on SINGA-Auto...'.format(app))
     budget = {BudgetOption.TIME_HOURS: hours, BudgetOption.GPU_COUNT: gpus}
     train_job = client.create_train_job(app,
                                         task,
@@ -79,7 +81,7 @@ def run_speech_recognition(client, train_dataset_path, val_dataset_path, gpus,
                                         models=[tf_model['id']])
     pprint(train_job)
 
-    print('Monitor the train job on SINGA-Autp Web Admin')
+    print('Monitor the train job on SINGA-Auto Web Admin')
 
 
 if __name__ == '__main__':

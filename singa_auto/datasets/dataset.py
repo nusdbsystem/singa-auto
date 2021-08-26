@@ -202,7 +202,6 @@ class DatasetUtils:
         pil_images = []
         for image_path in image_paths:
             pil_images.append(load(image_path))
-        images = np.array([np.asarray(x) for x in pil_images])
 
         return pil_images
 
@@ -292,7 +291,8 @@ class AudioFilesDataset(ModelDataset):
     def __init__(self, dataset_path, dataset_dir):
         self._dataset_dir = dataset_dir
         self.df = self._load(dataset_path)
-
+    def __getitem__(self, idx):
+        return self.df.iloc[idx]
     def _load(self, dataset_path):
         '''
             Loading the dataset into a pandas dataframe. Called in the class __init__ method.

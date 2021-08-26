@@ -17,7 +17,7 @@ import IconButton from "@material-ui/core/IconButton"
 import AvatarRegion from "components/RootComponents/AvatarRegion"
 
 import Toolbar, { styles as toolbarStyles } from "../LandingComponents/Toolbar"
-import Logo from "../../assets/LOGO_Rafiki-4.svg"
+import Logo from "../../assets/Logo_Panda.png"
 
 const styles = theme => ({
   LandingAppBar: {
@@ -174,7 +174,7 @@ class LandingNavBar extends React.Component {
                 <img alt="logo" src={Logo} className={classes.logo} />
               </Link>
               <Link to="/" className={classes.title}>
-                {"SINGA-Auto"}
+                {"PANDA"}
               </Link>
               <Hidden smDown>
                 {navLinks.map((link, index) =>

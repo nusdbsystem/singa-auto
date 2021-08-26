@@ -16,7 +16,7 @@ This guide assumes you have deployed your own empty instance of SINGA-Auto and y
     
 Follow the sequence of examples below to submit the `Fashion MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`_ for training and inference.
 Alternatively, refer and run the scripted version of this quickstart 
-`./examples/scripts/quickstart.py <https://github.com/nusdbsystem/singa-auto/blob/master/examples/scripts/quickstart.py>`_.
+`./examples/scripts/quickstart.py <https://github.com/nusdbsystem/singa-auto/blob/dev/examples/scripts/quickstart.py>`_.
 
 To learn more about what else you can do on SINGA-Auto, explore the methods of :class:`singa_auto.client.Client`.
 
@@ -45,7 +45,7 @@ Example:
     .. code-block:: python
 
         from singa_auto.client import Client
-        client = Client(admin_host='localhost', admin_port=3000)
+        client = Client(admin_host='localhost', admin_port=3000) # 'localhost' can be replaced by '127.0.0.1' or other server address
         client.login(email='superadmin@singaauto', password='singa_auto')
 
 

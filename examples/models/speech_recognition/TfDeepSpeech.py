@@ -19,6 +19,7 @@ import tempfile
 import base64
 import argparse
 from ds_ctcdecoder import ctc_beam_search_decoder_batch, ctc_beam_search_decoder, Scorer
+import struct
 
 from singa_auto.model import BaseModel, FixedKnob, IntegerKnob, FloatKnob, CategoricalKnob, \
     PolicyKnob, utils, logger
@@ -1358,21 +1359,25 @@ class AttrDict(dict):
 
 
 class Alphabet(object):
-
+    ''' This Alphabet class follows DeepSpeech v0.7.3'''
     def __init__(self, config_file):
         self._config_file = config_file
-        self._label_to_str = []
+        self._label_to_str = {}
         self._str_to_label = {}
         self._size = 0
-        with codecs.open(config_file, 'r', 'utf-8') as fin:
-            for line in fin:
-                if line[0:2] == '\\#':
-                    line = '#\n'
-                elif line[0] == '#':
-                    continue
-                self._label_to_str += line[:-1]  # remove the line ending
-                self._str_to_label[line[:-1]] = self._size
-                self._size += 1
+        if config_file:
+            with open(config_file, 'r', encoding='utf-8') as fin:
+                for line in fin:
+                    if line[0:2] == '\\#':
+                        line = '#\n'
+                    elif line[0] == '#':
+                        continue
+                    self._label_to_str[self._size] = line[:-1] # remove the line ending
+                    # {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h', 8: 'i', 9: 'j', 10: 'k', 11: 'l', 12: 'm', 13: 'n', 14: 'o', 15: 'p', 16: 'q', 17: 'r', 18: 's', 19: 't', 20: 'u', 21: 'v', 22: 'w', 23: 'x', 24: 'y', 25: 'z', 26: ' ', 27: "'", 28: ''}
+                    self._str_to_label[line[:-1]] = self._size 
+                    # {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9, 'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18, 't': 19, 'u': 20, 'v': 21, 'w': 22, 'x': 23, 'y': 24, 'z': 25, ' ': 26, "'": 27, '': 28}
+                    
+                    self._size += 1
 
     def string_from_label(self, label):
         return self._label_to_str[label]
@@ -1382,14 +1387,41 @@ class Alphabet(object):
             return self._str_to_label[string]
         except KeyError as e:
             raise KeyError(
-                '''ERROR: Your transcripts contain characters which do not occur in `alphabet.txt`!'''
+                'ERROR: Your transcripts contain characters (e.g. \'{}\') which do not occur in \'{}\'! Use ' \
+                'util/check_characters.py to see what characters are in your [train,dev,test].csv transcripts, and ' \
+                'then add all these to \'{}\'.'.format(string, self._config_file, self._config_file)
             ).with_traceback(e.__traceback__)
+
+    def has_char(self, char):
+        return char in self._str_to_label
+
+    def encode(self, string):
+        res = []
+        for char in string:
+            res.append(self.label_from_string(char))
+        return res
 
     def decode(self, labels):
         res = ''
         for label in labels:
             res += self.string_from_label(label)
         return res
+
+    def serialize(self):
+        # Serialization format is a sequence of (key, value) pairs, where key is
+        # a uint16_t and value is a uint16_t length followed by `length` UTF-8
+        # encoded bytes with the label.
+        res = bytearray()
+
+        # We start by writing the number of pairs in the buffer as uint16_t.
+        res += struct.pack('<H', self._size)
+        for key, value in self._label_to_str.items():
+            value = value.encode('utf-8')
+            # struct.pack only takes fixed length strings/buffers, so we have to
+            # construct the correct format string with the length of the encoded
+            # label.
+            res += struct.pack('<HH{}s'.format(len(value)), key, len(value), value)
+        return bytes(res)
 
     def size(self):
         return self._size
@@ -1475,7 +1507,8 @@ if __name__ == '__main__':
                 '1.12.0',
             # Use ds_ctcdecoder version compatible with the trie file you download or generate
             ModelDependency.DS_CTCDECODER:
-                '0.6.0-alpha.4',
+                # '0.6.0-alpha.4',
+                '0.6.1',
         },
         train_dataset_path=args.train_path,
         val_dataset_path=args.val_path,
