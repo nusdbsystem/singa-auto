@@ -23,6 +23,8 @@ from typing import Union
 import traceback
 import time
 from datetime import datetime
+import pickle
+import inspect
 
 from singa_auto.utils.auth import superadmin_client
 from singa_auto.meta_store import MetaStore
@@ -208,10 +210,23 @@ class TrainWorker:
         train_args = self._monitor.train_args
 
         logger.info('Training model...')
-        model_inst.train(train_dataset_path,
-                         annotation_dataset_path=annotation_dataset_path,
-                         shared_params=shared_params,
-                         **(train_args or {}))
+
+        # Some models require local storages to store temporary data.
+        # In this case, a folder in tmp/Worker-<Workder ID> is created to store the temporary data.
+        if "work_dir" in inspect.getargspec(model_inst.train).args:
+            work_dir = "tmp/Worker-%s"%str(self._worker_id)
+            cmd = "mkdir %s"%work_dir
+            os.system(cmd)
+            model_inst.train(train_dataset_path,
+                             work_dir=work_dir,
+                             annotation_dataset_path=annotation_dataset_path,
+                             shared_params=shared_params,
+                             **(train_args or {}))
+        else:
+            model_inst.train(train_dataset_path,
+                             annotation_dataset_path=annotation_dataset_path,
+                             shared_params=shared_params,
+                             **(train_args or {}))
 
     def _evaluate_model(self, model_inst: BaseModel,
                         proposal: Proposal) -> TrialResult:
@@ -221,10 +236,22 @@ class TrainWorker:
             return TrialResult(proposal)
 
         logger.info('Evaluating model...')
-        if annotation_dataset_path:
-            score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+
+        # Some models require local storages to store temporary data.
+        # In this case, a folder in tmp/Worker-<Workder ID> is created to store the temporary data.
+        if "work_dir" in inspect.getargspec(model_inst.evaluate).args:
+            work_dir = "tmp/Worker-%s"%str(self._worker_id)
+            cmd = "mkdir %s"%work_dir
+            os.system(cmd)
+            if annotation_dataset_path:
+                score = model_inst.evaluate(val_dataset_path, work_dir=work_dir, annotation_dataset_path=annotation_dataset_path)
+            else:
+                score = model_inst.evaluate(val_dataset_path, work_dir=work_dir)
         else:
-            score = model_inst.evaluate(val_dataset_path)
+            if annotation_dataset_path:
+                score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+            else:
+                score = model_inst.evaluate(val_dataset_path)
         score = float(score)
         logger.info(f'Score on validation dataset: {score}')
         return TrialResult(proposal, score=score)
@@ -236,6 +263,8 @@ class TrainWorker:
 
         logger.info('Dumping model parameters...')
         params = model_inst.dump_parameters()
+        
+        #params = pickle.dumps(model_inst.__dict__)
         if proposal.to_cache_params:
             logger.info('Storing shared params in cache...')
             self._param_cache.store_params(params,
@@ -345,6 +374,7 @@ class _SubTrainJobMonitor:
             self._meta_store.add_trial_log(trial, log_line, log_lvl)
 
     def _load_datasets(self, train_job):
+        
         try:
 
             train_dataset = self._meta_store.get_dataset(train_job.train_dataset_id)
