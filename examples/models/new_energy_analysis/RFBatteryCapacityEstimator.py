@@ -168,62 +168,6 @@ class RFBatteryCapacityEstimator(BaseModel):
 
         return data_header, feat_data, tgt_data
 
-
-    def read_discharge_data(self, data_file):
-
-        time_interval = self.time_interval
-        time_length = self.time_length
-
-        f = open(data_file, "r")
-        data_header = ""
-        feat_data = []
-        tgt_data = []
-        for x in f.readlines():
-            x = x.replace("\n","")
-            if x == "":
-                continue
-            if data_header == "":
-                data_header = x.split(",")
-                continue
-
-            if x == "<Start of Discharging>":
-                data_matrix = []
-                continue
-
-            elif x == "<End of Discharging>":
-                data_matrix = np.asarray(data_matrix)
-                t = data_matrix[:,data_header.index("Time")]
-                if "Capacity" in data_header:
-                    target = data_matrix[-1,data_header.index("Capacity")]
-                else:
-                    target = None
-                data_matrix_ali = []
-
-                for i in range(len(data_header)):
-                    if data_header[i] == "Capacity":
-                        continue
-                    elif data_header[i] == "Time":
-                        continue
-                    else:
-                        v = data_matrix.T[i].T.tolist()
-                        v_ali, t_ali = self.data_alignment(v, t, time_interval)
-                        data_matrix_ali.append(v_ali)
-                data_matrix_ali = np.asarray(data_matrix_ali).T
-                for i in range(data_matrix_ali.shape[0]-time_length):
-                    feature = data_matrix_ali[i:(i+time_length),:]
-                    feature = feature.reshape(feature.shape[0] * feature.shape[1])
-                    feat_data.append(feature)
-                    tgt_data.append(target)
-            else:
-                x = x.split(",")
-                x = [float(p) for p in x]
-                data_matrix.append(x)
-
-        return data_header, feat_data, tgt_data
-
-
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path',
