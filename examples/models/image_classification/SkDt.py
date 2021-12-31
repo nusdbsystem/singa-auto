@@ -28,9 +28,9 @@ import random
 from singa_auto.model import ImageClfBase, IntegerKnob, CategoricalKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
+from singa_auto.datasets.image_classification_dataset import ImageDataset4Clf
 from PIL import Image
 from io import BytesIO
-
 
 
 
@@ -56,7 +56,7 @@ class SkDt(ImageClfBase):
                                                 splitter=self._knobs.get("splitter"))
 
     def train(self, dataset_path, work_dir = None, **kwargs):
-        dataset = utils.dataset.load_mnist_dataset(dataset_path)
+        dataset = ImageDataset4Clf(dataset_path, mode='L')
         (images, classes) = zip(*[(np.asarray(image), image_class)
                                 for (image, image_class) in dataset])
         
@@ -72,7 +72,7 @@ class SkDt(ImageClfBase):
         utils.logger.log('Train accuracy: {}'.format(accuracy))
 
     def evaluate(self, dataset_path,  work_dir = None, **kwargs):
-        dataset = utils.dataset.load_mnist_dataset(dataset_path)
+        dataset = ImageDataset4Clf(dataset_path, mode='L')
         (images, classes) = zip(*[(np.asarray(image), image_class)
                                 for (image, image_class) in dataset])
         X = self.image_flatten(images)
@@ -90,7 +90,8 @@ class SkDt(ImageClfBase):
         X = np.asarray(X)
         X = self.image_flatten(X)
         probs = self._clf.predict_proba(X)
-        return probs.tolist()
+        predictions = [str(y.tolist()) for y in probs]
+        return predictions
 
     def dump_parameters(self):
         params = pickle.dumps(self.__dict__)
