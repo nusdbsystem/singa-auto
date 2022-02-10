@@ -170,38 +170,6 @@ class MLPFoodRecommendationModel(BaseModel):
                     self.KB[h][p][t] = self.KB[h][p][t] / imp_sum
         return 0
     
-    def sample_tree_from_knowledge_base(self, entity, depth, width):
-    
-        if depth == 0:
-            return entity
-    
-        tree = [entity]
-    
-        h = entity
-        for w in range(width):
-            entity_next = "None"
-            predicate = "None"
-            v = random.random()
-            for p in self.KB[h]:
-                for t in self.KB[h][p]:
-                    if v > self.KB[h][p][t]:
-                        v = v- self.KB[h][p][t]
-                    else:
-                        predicate = p
-                        entity_next = t
-                        break
-                if predicate != "None":
-                    break
-    
-            if predicate != "None":
-                sub_tree = self.sample_trees_from_knowledge_base(entity_next, depth - 1, width)
-            else:
-                sub_tree = "None"
-    
-            tree.append([predicate, sub_tree])
-
-        return tree
-    
     def sample_triples_from_knowledge_base(self, entity, n):
         result = []
         h = entity
