@@ -125,20 +125,22 @@ def tune_model(
 
         if annotation_dataset_path:
             model_inst.train(train_dataset_path,
+                         work_dir = "test_tmp_dir",
                          annotation_dataset_path=annotation_dataset_path,
                          shared_params=shared_params,
                          **(train_args or {}))
         else:
             model_inst.train(train_dataset_path,
+                         work_dir = "test_tmp_dir",
                          shared_params=shared_params,
                          **(train_args or {}))
 
 
         # Worker evaluates model
         if annotation_dataset_path:
-            result = _evaluate_model(model_inst, proposal, val_dataset_path, annotation_dataset_path)
+            result = _evaluate_model(model_inst, proposal, val_dataset_path, work_dir = "test_tmp_dir", annotation_dataset_path=annotation_dataset_path)
         else:
-            result = _evaluate_model(model_inst, proposal, val_dataset_path)
+            result = _evaluate_model(model_inst, proposal, val_dataset_path, work_dir = "test_tmp_dir")
 
 
         # Worker caches/saves model parameters
@@ -159,9 +161,9 @@ def tune_model(
             if test_dataset_path is not None:
                 print('Evaluating new best model on test dataset...')
                 if annotation_dataset_path:
-                    best_model_test_score = model_inst.evaluate(test_dataset_path , annotation_dataset_path=annotation_dataset_path)
+                    best_model_test_score = model_inst.evaluate(test_dataset_path, work_dir = "test_tmp_dir", annotation_dataset_path=annotation_dataset_path)
                 else:
-                    best_model_test_score = model_inst.evaluate(test_dataset_path)
+                    best_model_test_score = model_inst.evaluate(test_dataset_path, work_dir = "test_tmp_dir")
                 inform_user(
                     'Score on test dataset: {}'.format(best_model_test_score))
 
@@ -247,7 +249,7 @@ def make_predictions(queries: List[Any], task: str,
 
     # Worker makes prediction on queries
     _print_header('Making predictions with trained model...')
-    predictions = model_inst.predict([x.query for x in queries_at_worker])
+    predictions = model_inst.predict([x.query for x in queries_at_worker], work_dir = "test_tmp_dir")
 
 
     predictions = [Prediction(x, query.id, worker_id)
@@ -265,6 +267,9 @@ def make_predictions(queries: List[Any], task: str,
         assert prediction is not None
         predictions_at_predictor.append(prediction)
 
+    """
+    # No need to use ensemble methods here.
+    # So, the following code is commented out.
     ensemble_method = get_ensemble_method(task)
     print(f'Ensemble method: {ensemble_method}')
     out_predictions = []
@@ -273,8 +278,11 @@ def make_predictions(queries: List[Any], task: str,
         _assert_jsonable(
             prediction,
             Exception('Each `prediction` should be JSON serializable'))
+        input(prediction)
         out_prediction = ensemble_method([prediction])
         out_predictions.append(out_prediction)
+    """
+    out_predictions = [y.prediction for y in predictions_at_predictor]
 
     print('Predictions: {}'.format(out_predictions))
 
@@ -370,7 +378,7 @@ def _pull_shared_params(proposal: Proposal, param_cache: ParamCache):
 
 
 def _evaluate_model(model_inst: BaseModel, proposal: Proposal,
-                    val_dataset_path: str, annotation_dataset_path = None) -> TrialResult:
+        val_dataset_path: str, work_dir: str, annotation_dataset_path = None) -> TrialResult:
                     # val_dataset_path: str) -> TrialResult:
 
     if not proposal.to_eval:
@@ -378,9 +386,9 @@ def _evaluate_model(model_inst: BaseModel, proposal: Proposal,
 
     print('Evaluating model...')
     if annotation_dataset_path:
-        score = model_inst.evaluate(val_dataset_path, annotation_dataset_path=annotation_dataset_path)
+        score = model_inst.evaluate(val_dataset_path, work_dir = work_dir, annotation_dataset_path = annotation_dataset_path)
     else:
-        score = model_inst.evaluate(val_dataset_path)
+        score = model_inst.evaluate(val_dataset_path, work_dir = work_dir)
 
     if not isinstance(score, float):
         raise Exception('`evaluate()` should return a float!')
