@@ -194,7 +194,7 @@ class MLPFoodRecommendationModel(BaseModel):
                     break
     
             if predicate != "None":
-                sub_tree = sample_trees_from_knowledge_base(entity_next, depth - 1, width)
+                sub_tree = self.sample_trees_from_knowledge_base(entity_next, depth - 1, width)
             else:
                 sub_tree = "None"
     
