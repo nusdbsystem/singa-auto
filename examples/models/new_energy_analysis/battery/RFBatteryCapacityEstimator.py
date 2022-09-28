@@ -24,7 +24,7 @@ import argparse
 import os
 import random
 
-from singa_auto.model import BaseModel, IntegerKnob, utils
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 from PIL import Image
@@ -41,7 +41,10 @@ class RFBatteryCapacityEstimator(BaseModel):
     @staticmethod
     def get_knob_config():
         return {
-            'max_depth': IntegerKnob(8, 16)
+            'max_depth': IntegerKnob(8, 16),
+            'n_estimators': IntegerKnob(8, 32),
+            'max_features': CategoricalKnob(['auto', 'sqrt', 'log2']),
+            'min_impurity_decrease': FloatKnob(0.0, 0.05)
         }
 
     def __init__(self, **knobs):
@@ -52,8 +55,11 @@ class RFBatteryCapacityEstimator(BaseModel):
         self.time_length = 60
 
         max_depth = self._knobs.get("max_depth")
+        n_estimators = self._knobs.get("n_estimators")
+        max_features = self._knobs.get("max_features")
+        min_impurity_decrease = self._knobs.get("min_impurity_decrease")
         
-        self._regr = RandomForestRegressor(max_depth=max_depth, random_state=0)
+        self._regr = RandomForestRegressor(n_estimators = n_estimators, max_depth=max_depth, max_features = max_features, min_impurity_decrease = min_impurity_decrease, random_state=0)
 
     def train(self, dataset_path, work_dir = None, **kwargs):
 
@@ -134,16 +140,23 @@ class RFBatteryCapacityEstimator(BaseModel):
                 continue
             if data_header == "":
                 data_header = x.split(",")
+                if not("Capacity" in data_header):
+                    is_query = True
+                else:
+                    is_query = False
                 continue
 
-            if x == "<Start of Discharging>":
+            if "<Start of Discharging>" in x:
                 data_matrix = []
                 continue
 
-            elif x == "<End of Discharging>":
+            elif "<End of Discharging>" in x:
                 data_matrix = np.asarray(data_matrix)
                 t = data_matrix[:,data_header.index("Time")]
-                target = data_matrix[-1,data_header.index("Capacity")]
+                if is_query == True:
+                    target = "Unknown"
+                else:
+                    target = data_matrix[-1,data_header.index("Capacity")]
                 data_matrix_ali = []
 
                 for i in range(len(data_header)):
@@ -168,6 +181,8 @@ class RFBatteryCapacityEstimator(BaseModel):
 
         return data_header, feat_data, tgt_data
 
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path',
@@ -184,7 +199,7 @@ if __name__ == '__main__':
                         help='Path to test dataset')
     parser.add_argument('--query_path',
                         type=str,
-                        default='data/B0005_eval.csv,data/B0005_eval.csv',
+                        default='data/B0005_query.csv,data/B0005_query.csv',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
@@ -198,6 +213,7 @@ if __name__ == '__main__':
                      train_dataset_path=args.train_path,
                      val_dataset_path=args.val_path,
                      test_dataset_path=args.test_path,
+                     #budget={'TIME_HOURS': 0.001},
+                     budget={'MODEL_TRIAL_COUNT': 100, 'TIME_HOURS': 1.0},
                      queries=queries)
-
 
