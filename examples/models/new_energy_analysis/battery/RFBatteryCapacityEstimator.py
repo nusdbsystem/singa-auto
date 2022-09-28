@@ -24,24 +24,27 @@ import argparse
 import os
 import random
 
-from singa_auto.model import BaseModel, IntegerKnob, utils
+from singa_auto.model import BaseModel, IntegerKnob, CategoricalKnob, FloatKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 from PIL import Image
 from io import BytesIO
 
-from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import RandomForestRegressor
 
-class MLPBatteryCapacityEstimator(BaseModel):
+class RFBatteryCapacityEstimator(BaseModel):
 
     '''
-    This class defines a MLP battery capacity estimator.
+    This class defines a Random Forest battery capacity estimator.
     '''
 
     @staticmethod
     def get_knob_config():
         return {
-            'num_hid_layers': IntegerKnob(2, 4)
+            'max_depth': IntegerKnob(8, 16),
+            'n_estimators': IntegerKnob(8, 32),
+            'max_features': CategoricalKnob(['auto', 'sqrt', 'log2']),
+            'min_impurity_decrease': FloatKnob(0.0, 0.05)
         }
 
     def __init__(self, **knobs):
@@ -51,16 +54,16 @@ class MLPBatteryCapacityEstimator(BaseModel):
         self.time_interval = 10
         self.time_length = 60
 
-        num_hid_layers = self._knobs.get("num_hid_layers")
-        hidden_layer_sizes = [256] * int(num_hid_layers)
+        max_depth = self._knobs.get("max_depth")
+        n_estimators = self._knobs.get("n_estimators")
+        max_features = self._knobs.get("max_features")
+        min_impurity_decrease = self._knobs.get("min_impurity_decrease")
         
-        self._regr = MLPRegressor(random_state=1, max_iter=100000, hidden_layer_sizes = hidden_layer_sizes)
+        self._regr = RandomForestRegressor(n_estimators = n_estimators, max_depth=max_depth, max_features = max_features, min_impurity_decrease = min_impurity_decrease, random_state=0)
 
     def train(self, dataset_path, work_dir = None, **kwargs):
 
         _, feat_train, tgt_train = self.read_discharge_data(dataset_path)
-        self.min_arr, self.max_arr = self.get_min_max_arr(feat_train)
-        feat_train = self.min_max_normalisation(feat_train, self.min_arr, self.max_arr)
 
         # Training.
         self._regr.fit(feat_train, tgt_train)
@@ -72,7 +75,6 @@ class MLPBatteryCapacityEstimator(BaseModel):
     def evaluate(self, dataset_path,  work_dir = None, **kwargs):
 
         _, feat_eval, tgt_eval = self.read_discharge_data(dataset_path)
-        feat_eval = self.min_max_normalisation(feat_eval, self.min_arr, self.max_arr)
         R2_eval = self._regr.score(feat_eval, tgt_eval)
         return R2_eval
 
@@ -83,7 +85,6 @@ class MLPBatteryCapacityEstimator(BaseModel):
             f.write(data_bytes)
             f.close()
             _, feat, _ = self.read_discharge_data(work_dir + "/query.csv")
-            feat = self.min_max_normalisation(feat, self.min_arr, self.max_arr)
             prediction = self._regr.predict(feat)
             predictions.append(str(np.mean(prediction)))
         return predictions
@@ -124,24 +125,6 @@ class MLPBatteryCapacityEstimator(BaseModel):
         t_idx = t_idx * 60 + t[5]
         return t_idx
 
-    def get_min_max_arr(self, feat_data):
-        x = np.min(feat_data, axis = 0)
-        y = np.max(feat_data, axis = 0)
-        return x, y
-
-    def min_max_normalisation(self, feat_data, min_arr, max_arr):
-        res = []
-        i = -1
-        for x in np.array(feat_data).T:
-            i = i + 1
-            s = max_arr[i] - min_arr[i]
-            y = x - min_arr[i]
-            if s != 0:
-                y = y / s
-            res.append(y)
-        res = np.array(res).T
-        return res
-
     def read_discharge_data(self, data_file):
 
         time_interval = self.time_interval
@@ -157,19 +140,23 @@ class MLPBatteryCapacityEstimator(BaseModel):
                 continue
             if data_header == "":
                 data_header = x.split(",")
+                if not("Capacity" in data_header):
+                    is_query = True
+                else:
+                    is_query = False
                 continue
 
-            if x == "<Start of Discharging>":
+            if "<Start of Discharging>" in x:
                 data_matrix = []
                 continue
 
-            elif x == "<End of Discharging>":
+            elif "<End of Discharging>" in x:
                 data_matrix = np.asarray(data_matrix)
                 t = data_matrix[:,data_header.index("Time")]
-                if "Capacity" in data_header:
-                    target = data_matrix[-1,data_header.index("Capacity")]
+                if is_query == True:
+                    target = "Unknown"
                 else:
-                    target = None
+                    target = data_matrix[-1,data_header.index("Capacity")]
                 data_matrix_ali = []
 
                 for i in range(len(data_header)):
@@ -196,7 +183,6 @@ class MLPBatteryCapacityEstimator(BaseModel):
 
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path',
@@ -213,7 +199,7 @@ if __name__ == '__main__':
                         help='Path to test dataset')
     parser.add_argument('--query_path',
                         type=str,
-                        default='data/B0005_eval.csv,data/B0005_eval.csv',
+                        default='data/B0005_query.csv,data/B0005_query.csv',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
@@ -221,12 +207,13 @@ if __name__ == '__main__':
     queries = [open(fname, 'rb').read() for fname in query_file_list]
 
     test_model_class(model_file_path=__file__,
-                     model_class='MLPBatteryCapacityEstimator',
+                     model_class='RFBatteryCapacityEstimator',
                      task='GENERAL_TASK',
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
                      train_dataset_path=args.train_path,
                      val_dataset_path=args.val_path,
                      test_dataset_path=args.test_path,
+                     #budget={'TIME_HOURS': 0.001},
+                     budget={'MODEL_TRIAL_COUNT': 100, 'TIME_HOURS': 1.0},
                      queries=queries)
-
 
