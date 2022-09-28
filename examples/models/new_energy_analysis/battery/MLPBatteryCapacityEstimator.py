@@ -41,7 +41,8 @@ class MLPBatteryCapacityEstimator(BaseModel):
     @staticmethod
     def get_knob_config():
         return {
-            'num_hid_layers': IntegerKnob(2, 4)
+            'num_hid_layers': IntegerKnob(2, 4),
+            'num_hid_units': IntegerKnob(64, 512)
         }
 
     def __init__(self, **knobs):
@@ -52,7 +53,8 @@ class MLPBatteryCapacityEstimator(BaseModel):
         self.time_length = 60
 
         num_hid_layers = self._knobs.get("num_hid_layers")
-        hidden_layer_sizes = [256] * int(num_hid_layers)
+        num_hid_units = self._knobs.get("num_hid_units")
+        hidden_layer_sizes = [int(num_hid_units)] * int(num_hid_layers)
         
         self._regr = MLPRegressor(random_state=1, max_iter=100000, hidden_layer_sizes = hidden_layer_sizes)
 
@@ -157,19 +159,23 @@ class MLPBatteryCapacityEstimator(BaseModel):
                 continue
             if data_header == "":
                 data_header = x.split(",")
+                if not("Capacity" in data_header):
+                    is_query = True
+                else:
+                    is_query = False
                 continue
 
-            if x == "<Start of Discharging>":
+            if "<Start of Discharging>" in x:
                 data_matrix = []
                 continue
 
-            elif x == "<End of Discharging>":
+            elif "<End of Discharging>" in x:
                 data_matrix = np.asarray(data_matrix)
                 t = data_matrix[:,data_header.index("Time")]
-                if "Capacity" in data_header:
-                    target = data_matrix[-1,data_header.index("Capacity")]
+                if is_query == True:
+                    target = "Unknown"
                 else:
-                    target = None
+                    target = data_matrix[-1,data_header.index("Capacity")]
                 data_matrix_ali = []
 
                 for i in range(len(data_header)):
@@ -195,8 +201,6 @@ class MLPBatteryCapacityEstimator(BaseModel):
         return data_header, feat_data, tgt_data
 
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path',
@@ -213,7 +217,7 @@ if __name__ == '__main__':
                         help='Path to test dataset')
     parser.add_argument('--query_path',
                         type=str,
-                        default='data/B0005_eval.csv,data/B0005_eval.csv',
+                        default='data/B0005_query.csv,data/B0005_query.csv',
                         help='Path(s) to query image(s), delimited by commas')
     (args, _) = parser.parse_known_args()
 
@@ -227,6 +231,6 @@ if __name__ == '__main__':
                      train_dataset_path=args.train_path,
                      val_dataset_path=args.val_path,
                      test_dataset_path=args.test_path,
+                     budget={'MODEL_TRIAL_COUNT': 10, 'TIME_HOURS': 1.0},
                      queries=queries)
-
 
