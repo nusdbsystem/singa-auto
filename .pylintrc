@@ -79,6 +79,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
+"""
 disable=print-statement,
         parameter-unpacking,
         unpacking-in-except,
@@ -164,6 +165,7 @@ disable=print-statement,
         unsubscriptable-object, # false positive on tensor.shape
         no-name-in-module, # proto object available after compilation
         access-member-before-definition # conv layer re-instantiate handle when batch number changed
+"""
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
