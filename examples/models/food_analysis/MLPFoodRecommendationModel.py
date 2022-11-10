@@ -23,10 +23,9 @@ import numpy as np
 import argparse
 import os
 import random
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 
-from singa_auto.model import BaseModel, utils
+from singa_auto.model import BaseModel, IntegerKnob, utils
 from singa_auto.constants import ModelDependency
 from singa_auto.model.dev import test_model_class
 from singa_auto.datasets.image_classification_dataset import ImageDataset4Clf
@@ -42,7 +41,10 @@ class MLPFoodRecommendationModel(BaseModel):
 
     @staticmethod
     def get_knob_config():
-        return {}
+        return {
+            'num_hid_layers': IntegerKnob(3, 6),
+            'num_hid_units': IntegerKnob(64, 512)
+        }
 
     def __init__(self, **knobs):
 
@@ -169,7 +171,7 @@ class MLPFoodRecommendationModel(BaseModel):
                 for t in self.KB[h][p]:
                     self.KB[h][p][t] = self.KB[h][p][t] / imp_sum
         return 0
-    
+   
     def sample_triples_from_knowledge_base(self, entity, n):
         result = []
         h = entity
@@ -256,9 +258,7 @@ class MLPFoodRecommendationModel(BaseModel):
                 for j in range(encodings.shape[1]):
                     feat.append(encodings[i][j])
                     tgt.append(int(y[1]))
-                    #input(y[0])
-                    #input(feat[-1])
-                    #input(tgt[-1])
+
         #feat = np.array(feat)
         #tgt = np.array(tgt) 
         return feat, tgt
@@ -307,10 +307,13 @@ class MLPFoodRecommendationModel(BaseModel):
 
         self.clf = dict()
         for tag in self.tag_list:
-            self.clf[tag] = MLPClassifier(random_state = 1, max_iter = 100, solver = "lbfgs", hidden_layer_sizes = (128, 128, 128, 128))
-            # can use random forests if MLP is too slow.
-            #self.clf[tag] = RandomForestClassifier(n_estimators = 10, random_state=0)
+            num_hid_layers = self._knobs.get("num_hid_layers")
+            num_hid_units = self._knobs.get("num_hid_units")
+            hidden_layer_sizes = [int(num_hid_units)] * int(num_hid_layers)
 
+            self.clf[tag] = MLPClassifier(random_state = 1, max_iter=1000, solver = "lbfgs", hidden_layer_sizes = hidden_layer_sizes)
+
+            #self.clf[tag] = MLPClassifier(random_state = 1, max_iter = 100, solver = "lbfgs", hidden_layer_sizes = (128, 128, 128, 128))
 
         print("Reading knowledge base...")
         kb_path = "%s/training_data/food_knowledge_base.tri"%work_dir
@@ -410,7 +413,7 @@ if __name__ == "__main__":
 
     (args, _) = parser.parse_known_args()
 
-    queries = [str(["海菜", "puerpera_tag"]), str(["鱼肉", "pregnant_tag"]), str(["Mars", "pregnant_tag"])]
+    queries = [str(["海菜", "puerpera_tag"]), str(["鱼肉", "pregnant_tag"]), str(["Milk", "pregnant_tag"])]
 
     test_model_class(model_file_path=__file__,
                      model_class='MLPFoodRecommendationModel',
@@ -419,5 +422,6 @@ if __name__ == "__main__":
                      train_dataset_path=args.train_path,
                      val_dataset_path=args.val_path,
                      #test_dataset_path=args.test_path,
+                     budget={'MODEL_TRIAL_COUNT': 10, 'TIME_HOURS': 1.0},
                      queries=queries)
 
