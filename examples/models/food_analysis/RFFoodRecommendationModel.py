@@ -23,7 +23,7 @@ import numpy as np
 import argparse
 import os
 import random
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 from singa_auto.model import BaseModel, IntegerKnob, utils
 from singa_auto.constants import ModelDependency
@@ -33,17 +33,16 @@ from io import BytesIO
 
 
 
-class MLPFoodRecommendationModel(BaseModel):
+class RFFoodRecommendationModel(BaseModel):
 
     '''
-    This class defines a MLP food recommendation model with knowledge graphs.
+    This class defines a random forest food recommendation model with knowledge graphs.
     '''
 
     @staticmethod
     def get_knob_config():
         return {
-            'num_hid_layers': IntegerKnob(3, 6),
-            'num_hid_units': IntegerKnob(64, 512)
+            'n_estimators': IntegerKnob(8, 32)
         }
 
     def __init__(self, **knobs):
@@ -258,7 +257,6 @@ class MLPFoodRecommendationModel(BaseModel):
                 for j in range(encodings.shape[1]):
                     feat.append(encodings[i][j])
                     tgt.append(int(y[1]))
-
         #feat = np.array(feat)
         #tgt = np.array(tgt) 
         return feat, tgt
@@ -307,13 +305,10 @@ class MLPFoodRecommendationModel(BaseModel):
 
         self.clf = dict()
         for tag in self.tag_list:
-            num_hid_layers = self._knobs.get("num_hid_layers")
-            num_hid_units = self._knobs.get("num_hid_units")
-            hidden_layer_sizes = [int(num_hid_units)] * int(num_hid_layers)
+            n_estimators = self._knobs.get("n_estimators")
+            self.clf[tag] = RandomForestClassifier(n_estimators = n_estimators, random_state=0)
+            #self.clf[tag] = RandomForestClassifier(n_estimators = 10, random_state=0)
 
-            self.clf[tag] = MLPClassifier(random_state = 1, max_iter=1000, solver = "lbfgs", hidden_layer_sizes = hidden_layer_sizes)
-
-            #self.clf[tag] = MLPClassifier(random_state = 1, max_iter = 100, solver = "lbfgs", hidden_layer_sizes = (128, 128, 128, 128))
 
         print("Reading knowledge base...")
         kb_path = "%s/training_data/food_knowledge_base.tri"%work_dir
@@ -416,7 +411,7 @@ if __name__ == "__main__":
     queries = [str(["海菜", "puerpera_tag"]), str(["鱼肉", "pregnant_tag"]), str(["Milk", "pregnant_tag"])]
 
     test_model_class(model_file_path=__file__,
-                     model_class='MLPFoodRecommendationModel',
+                     model_class='RFFoodRecommendationModel',
                      task='GENERAL_TASK',
                      dependencies={ModelDependency.SCIKIT_LEARN: '0.20.0'},
                      train_dataset_path=args.train_path,
