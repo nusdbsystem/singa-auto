@@ -1,4 +1,4 @@
-# Singa-Auto Demo - Battery Capacity Estimator.
+# Singa-Auto Demo - Food Recommendation.
 
 This folder contains a number of models for food recommendation with knowledge graphs.
 
