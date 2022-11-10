@@ -10,25 +10,25 @@ The "training_data" folder has the following files:
 
 (1) food_knowledge_base.tri: It is a knowledge base containing triples of the form "\<subject\> \<predicate\> \<object\>". For example:
 
-milk contain protein
-milk contain vitamin_a
-protein is_good_for brain
-...
-prawn contain protein
+milk contain protein  
+milk contain vitamin_a  
+protein is_good_for brain  
+...  
+prawn contain protein  
 
 (2) tag_list.txt: It contains N prediction tags. For example:
 
-pregnant_tag
-puerpera_tag
-lactation_tag
-baby_tag
+pregnant_tag  
+puerpera_tag  
+lactation_tag  
+baby_tag  
 
 (3) N files named "\<tag_name\>_training.txt". Each file contains training data of the form "\<entity\> \<class\>", which indicates the class of the entity with respect to the tag. For example, let Class 0 denote food suitable for a baby, and Class 1 denote food not suitable for a baby, we have a file named "baby_tag_training.txt":
 
-milk 0
-prawn 1
-...
-orange 0
+milk 0  
+prawn 1  
+...  
+orange 0  
 
 The data is used to train classifiers predicting the probability that a given entity belongs to each class. Trained classifiers are evaluated using the "evaluation_data" folder that has N files named "\<tag_name\>_evaluation.txt". The format of evaluation data is the same as training data.
 
